@@ -93,3 +93,5 @@ install( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/mac
 #
 install(TARGETS restG4 DESTINATION bin)
 
+set(package_added "restG4")
+set(package_added ${package_added} PARENT_SCOPE)
