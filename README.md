@@ -1,4 +1,5 @@
-			    
+This README requires a full revision!
+
  Survey G4RadioactiveDecay process. See Physics Reference Manual, chapter 36.
  See also http://ie.lbl.gov/decay.html
  	
