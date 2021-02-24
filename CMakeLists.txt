@@ -1,6 +1,5 @@
 #-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 #Setup the project
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(restG4)
 message("===============  restG4  ==============")
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake ${CMAKE_MODULE_PATH})
