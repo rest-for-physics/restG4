@@ -47,6 +47,7 @@
 #include "G4EmPenelopePhysics.hh"
 #include "G4EmProcessOptions.hh"
 #include "G4EmStandardPhysics_option3.hh"
+#include "G4EmStandardPhysics_option4.hh"
 //#include "PhysListEmStandard.hh"
 //#include "PhysListEmStandardSS.hh"
 //#include "PhysListEmStandardNR.hh"
@@ -153,6 +154,11 @@ void PhysicsList::InitializePhysicsLists() {
 
     if (restPhysList->FindPhysicsList("G4EmStandardPhysics_option3") >= 0) {
         if (fEmPhysicsList == NULL) fEmPhysicsList = new G4EmStandardPhysics_option3();
+        emCounter++;
+    }
+
+    if (restPhysList->FindPhysicsList("G4EmStandardPhysics_option4") >= 0) {
+        if (fEmPhysicsList == NULL) fEmPhysicsList = new G4EmStandardPhysics_option4();
         emCounter++;
     }
 
