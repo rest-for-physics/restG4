@@ -157,6 +157,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     for (int id = 0; id < restG4Metadata->GetNumberOfActiveVolumes(); id++) {
         G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)restG4Metadata->GetActiveVolumeName(id));
+        if (pVol != NULL) {
+            G4LogicalVolume* lVol = pVol->GetLogicalVolume();
+            lVol->SetUserLimits(new G4UserLimits(restG4Metadata->GetMaxTargetStepSize() * mm));
+        }
 
         cout << "Activating volume : " << restG4Metadata->GetActiveVolumeName(id) << endl;
         restG4Event->AddActiveVolume((string)restG4Metadata->GetActiveVolumeName(id));
