@@ -17,7 +17,7 @@ build:
     - cd framework
     - git submodule init source/libraries/geant4
     - git submodule update source/libraries/geant4
-    - cd source/libraries/geant/
+    - cd source/libraries/geant4/
     - git checkout master
     - cd ../../../
     - git submodule init source/packages/restG4
