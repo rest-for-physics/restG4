@@ -42,6 +42,15 @@ loadRESTLibs:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - restRoot -b -q
 
+03_MuonScan:
+  type: examples
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cd ${CI_PROJECT_DIR}/install/examples/04.MuonScan/
+    - restG4 Muon.rml
+    - geant4-config --version
+    - restRoot -b -q Validate.C'("Run00111_restG4_MuonsFromPoint_rest.root")'
+
 #addSignalNoise: 
 #  type: process
 #  script:
