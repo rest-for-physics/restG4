@@ -76,7 +76,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         // In future Geant4 versions it seems possible to define field at particular volumes
         // vol->setFieldManager(localFieldMgr, true);
         G4Material* mat = vol->GetMaterial();
-        vol->SetUserLimits(new G4UserLimits(restG4Metadata->GetMaxTargetStepSize() * mm));
         G4cout << "Sensitivity volume properties" << G4endl;
         G4cout << "==============" << G4endl;
         G4cout << "Sensitivity volume name : " << mat->GetName() << G4endl;
@@ -156,17 +155,22 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     }
 
     for (int id = 0; id < restG4Metadata->GetNumberOfActiveVolumes(); id++) {
-        G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)restG4Metadata->GetActiveVolumeName(id));
+        TString actVolName = restG4Metadata->GetActiveVolumeName(id);
+        G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)actVolName);
         if (pVol != NULL) {
             G4LogicalVolume* lVol = pVol->GetLogicalVolume();
-            lVol->SetUserLimits(new G4UserLimits(restG4Metadata->GetMaxTargetStepSize() * mm));
+            if (restG4Metadata->GetMaxStepSize(actVolName) > 0) {
+                G4cout << "Setting maxStepSize = " << restG4Metadata->GetMaxStepSize(actVolName)
+                       << "mm for volume : " << actVolName << G4endl;
+                lVol->SetUserLimits(new G4UserLimits(restG4Metadata->GetMaxStepSize(actVolName) * mm));
+            }
         }
 
-        cout << "Activating volume : " << restG4Metadata->GetActiveVolumeName(id) << endl;
-        restG4Event->AddActiveVolume((string)restG4Metadata->GetActiveVolumeName(id));
+        cout << "Activating volume : " << actVolName << endl;
+        restG4Event->AddActiveVolume((string)actVolName);
         if (pVol == NULL) {
-            cout << "REST Warning : " << restG4Metadata->GetActiveVolumeName(id)
-                 << " is not defined in the geometry" << endl;
+            cout << "DetectorConstruction. Volume " << actVolName << " is not defined in the geometry"
+                 << endl;
             exit(1);
         }
     }
