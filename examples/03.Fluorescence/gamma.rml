@@ -18,8 +18,8 @@ By default REST units are mm, keV and degrees
 
   <TRestRun name="Run metadata" title="REST Metadata run info (template)">
     <parameter name="experimentName" value="Fluorescence"/>
-    <parameter name="runType" value="simulation"/>
-    <parameter name="runNumber" value="auto"/>
+    <parameter name="runType" value="restG4"/>
+    <parameter name="runNumber" value="111"/>
 	<parameter name="runTag" value="Gamma" />
     <parameter name="outputFileName" value="Run[fRunNumber]_[fRunTag]_[fExperimentName].root" />
     <parameter name="runDescription" value=""/>
@@ -27,13 +27,12 @@ By default REST units are mm, keV and degrees
     <parameter name="readOnly" value="false" />
   </TRestRun>
 
-  <TRestGeant4Metadata name="DBDsimulation" title="NLDBD">
+  <TRestGeant4Metadata name="Fluorescence" title="Fluorescence">
 
     <parameter name="gdml_file" value="geometry/setup.gdml"/>
-    <parameter name="maxTargetStepSize" value="1mm" />
     <parameter name="subEventTimeDelay" value="100" units="us" />
 
-    <parameter name="seed" value="17021981" />
+    <parameter name="seed" value="17022000" />
 
     <!-- The number of events to be simulated is now defined in TRestGeant4Metadata -->
     <parameter name="Nevents" value="30000" />

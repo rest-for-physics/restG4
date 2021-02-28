@@ -42,7 +42,17 @@ loadRESTLibs:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - restRoot -b -q
 
-03_MuonScan:
+03_Fluorescence:
+  type: examples
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cd ${CI_PROJECT_DIR}/install/examples/03.Fluorescence/
+    - restG4 gamma.rml
+    - restManager --c g4Analysis.rml --f Run00111_Gamma_Fluorescence.root
+    - geant4-config --version
+    - restRoot -b -q Validate.C'("Run00111_g4Analysis_Gamma_rest.root")'
+
+04_MuonScan:
   type: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
