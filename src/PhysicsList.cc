@@ -33,31 +33,25 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "PhysicsList.hh"
+
 #include "G4ParticleTypes.hh"
 #include "G4RadioactiveDecay.hh"
 #include "G4UnitsTable.hh"
 //#include "G4ScreenedNuclearRecoil.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
-#include "G4LossTableManager.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4UAtomicDeexcitation.hh"
-
 #include "G4EmLivermorePhysics.hh"
 #include "G4EmParameters.hh"
 #include "G4EmPenelopePhysics.hh"
 #include "G4EmProcessOptions.hh"
 #include "G4EmStandardPhysics_option3.hh"
 #include "G4EmStandardPhysics_option4.hh"
+#include "G4LossTableManager.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4UAtomicDeexcitation.hh"
 //#include "PhysListEmStandard.hh"
 //#include "PhysListEmStandardSS.hh"
 //#include "PhysListEmStandardNR.hh"
-#include "G4ParticleTable.hh"
-#include "G4ParticleTypes.hh"
-#include "G4ProcessManager.hh"
-#include "G4ProductionCuts.hh"
-#include "G4Region.hh"
-#include "G4RegionStore.hh"
-#include "Particles.hh"
+#include <G4StepLimiter.hh>
 
 #include "G4BetheBlochIonGasModel.hh"
 #include "G4BraggIonGasModel.hh"
@@ -70,11 +64,16 @@
 #include "G4IonFluctuations.hh"
 #include "G4IonParametrisedLossModel.hh"
 #include "G4NeutronTrackingCut.hh"
+#include "G4ParticleTable.hh"
+#include "G4ParticleTypes.hh"
+#include "G4ProcessManager.hh"
+#include "G4ProductionCuts.hh"
 #include "G4RadioactiveDecayPhysics.hh"
+#include "G4Region.hh"
+#include "G4RegionStore.hh"
 #include "G4StoppingPhysics.hh"
 #include "G4UniversalFluctuation.hh"
-
-#include <G4StepLimiter.hh>
+#include "Particles.hh"
 
 Int_t emCounter = 0;
 
@@ -175,13 +174,13 @@ void PhysicsList::InitializePhysicsLists() {
 
     // Hadronic PhysicsList
     if (restPhysList->FindPhysicsList("G4HadronPhysicsQGSP_BIC_HP") >= 0)
-        fHadronPhys.push_back(new G4HadronElasticPhysicsHP());
+        fHadronPhys.push_back(new G4HadronPhysicsQGSP_BIC_HP());
 
     if (restPhysList->FindPhysicsList("G4IonBinaryCascadePhysics") >= 0)
         fHadronPhys.push_back(new G4IonBinaryCascadePhysics());
 
     if (restPhysList->FindPhysicsList("G4HadronElasticPhysicsHP") >= 0)
-        fHadronPhys.push_back(new G4HadronPhysicsQGSP_BIC_HP());
+        fHadronPhys.push_back(new G4HadronElasticPhysicsHP());
 
     if (restPhysList->FindPhysicsList("G4NeutronTrackingCut") >= 0)
         fHadronPhys.push_back(new G4NeutronTrackingCut());
