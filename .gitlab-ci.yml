@@ -43,7 +43,7 @@ loadRESTLibs:
     - restRoot -b -q
 
 01_NLDBD:
-  type: restG4
+  type: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/01.NLDBD/
