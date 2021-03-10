@@ -21,7 +21,7 @@ By default REST units are mm, keV and degrees
     <parameter name="runType" value="simulation"/>
 
     // Value "auto" can add simulation run into database ???
-    <parameter name="runNumber" value="auto"/>
+    <parameter name="runNumber" value="1"/>
 
     // If no runTag is given in a restG4 simulation. The title of TRestGeant4Metadata will be used
 	<parameter name="runTag" value="NLDBD" />
