@@ -34,7 +34,6 @@
     <TRestGeant4Metadata name="restG4 run"  title="${REST_ISOTOPE}_readout_surface_1um">
 
 		<parameter name="gdml_file" value="geometry/setup.gdml"/>
-        <parameter name="maxTargetStepSize" value="${STEP_SIZE}" />
         <parameter name="subEventTimeDelay" value="100us" />
 
         <parameter name="Nevents" value="${REST_NEVENTS}" />
@@ -49,7 +48,7 @@
 
         <storage sensitiveVolume="gas">
             <parameter name="energyRange" value="(0,1)" units="GeV" />
-            <activeVolume name="gas" chance="1" /> 
+			<activeVolume name="gas" chance="1" maxStepSize="${STEP_SIZE}" /> 
         </storage>
     </TRestGeant4Metadata>
 

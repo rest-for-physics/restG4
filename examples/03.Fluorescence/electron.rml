@@ -31,7 +31,6 @@ By default REST units are mm, keV and degrees
   <TRestGeant4Metadata name="Electron" title="ElectronFluor">
 
     <parameter name="gdml_file" value="geometry/setup.gdml"/>
-    <parameter name="maxTargetStepSize" value="1mm" />
     <parameter name="subEventTimeDelay" value="100" units="us" />
 
     <parameter name="seed" value="17021981" />
@@ -50,7 +49,7 @@ By default REST units are mm, keV and degrees
 
     <storage sensitiveVolume="detector">
       <parameter name="energyRange" value="(0,30)" units="keV" />
-      <activeVolume name="detector" chance="1" />
+      <activeVolume name="detector" chance="1" maxStepSize="1mm" />
     </storage>
   </TRestGeant4Metadata>
 

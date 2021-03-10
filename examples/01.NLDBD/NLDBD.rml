@@ -39,7 +39,6 @@ By default REST units are mm, keV and degrees
   <TRestGeant4Metadata name="DBDsimulation" title="NLDBD">
 
     <parameter name="gdml_file" value="geometry/mySetupTemplate.gdml"/>
-    <parameter name="maxTargetStepSize" value="1mm" />
     <parameter name="subEventTimeDelay" value="100" units="us" />
 
     <parameter name="seed" value="17021981" />
@@ -70,7 +69,7 @@ By default REST units are mm, keV and degrees
 
     <storage sensitiveVolume="gas">
       <parameter name="energyRange" value="(0,5)" units="MeV" />
-      <activeVolume name="gas" chance="1" />
+      <activeVolume name="gas" chance="1" maxStepSize="1mm" />
     </storage>
   </TRestGeant4Metadata>
 
