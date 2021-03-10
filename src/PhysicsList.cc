@@ -299,6 +299,20 @@ while ((*theParticleIterator)())
         else if (partname == "mu+")
             processManager->AddDiscreteProcess(new G4StepLimiter("mu+Step"));
     }
+
+    // There might be a better way to do this
+    for (int Z = 1; Z <= 40; Z++)
+        for (int A = 2 * Z; A <= 3 * Z; A++) {
+            for (unsigned int n = 0; n < restPhysList->GetIonStepList().size(); n++) {
+                if (restPhysList->GetIonStepList()[n] == G4IonTable::GetIonTable()->GetIonName(Z, A)) {
+                    G4ParticleDefinition* particle = G4IonTable::GetIonTable()->GetIon(Z, A, 0);
+                    G4String particle_name = G4IonTable::GetIonTable()->GetIonName(Z, A, 0);
+                    cout << "Found ion: " << particle_name << " Z " << Z << " A " << A << endl;
+                    G4ProcessManager* processManager = particle->GetProcessManager();
+                    processManager->AddDiscreteProcess(new G4StepLimiter("ionStep"));
+                }
+            }
+        }
 #endif  // G4104
 }
 
