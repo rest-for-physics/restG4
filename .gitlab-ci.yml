@@ -50,10 +50,6 @@ loadRESTLibs:
     - restG4 NLDBD.rml
     - geant4-config --version
     - restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
-  artifacts:
-    paths:
-      - ${CI_PROJECT_DIR}/install/examples/01.NLDBD/Run00001_NLDBD_Test.root
-    expire_in: 1 day
 
 03_Fluorescence:
   type: examples
@@ -73,6 +69,14 @@ loadRESTLibs:
     - restG4 Muon.rml
     - geant4-config --version
     - restRoot -b -q Validate.C'("Run00111_restG4_MuonsFromPoint_rest.root")'
+
+05_PandaXIII:
+  type: examples
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cd ${CI_PROJECT_DIR}/install/examples/05.PandaXIII/
+    - restG4 Xe136bb0n.rml
+    - restRoot -b -q ValidateG4.C'("Xe136bb0n_n2E06.root")'
 
 #addSignalNoise: 
 #  type: process
