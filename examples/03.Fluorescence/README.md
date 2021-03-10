@@ -9,9 +9,6 @@ This example implements a simple geometry composed by an empty `detector` cylind
 #### Event generator
 The event generator will launch electrons (`electron.rml`) or gammas (`gamma.rml`) in direction to the target. Hits will be registered at the `detector`.
 
-#### Images directory
-It contains the spectrum obtained at the detector showing the copper fluorescences.
-
 #### Testing the example
 
 Execute the following to launch gammas
@@ -40,3 +37,11 @@ Then open and explore the file using:
 restRoot
 [0] new TBrowser
 ```
+
+#### Results
+
+The execution of the example should produce the following fluorescences.
+
+![CopperFluorescences](images/copperFluorescences.png)
+
+![CopperFluorescencesLogScale](images/copperFluorescencesLog.png)
