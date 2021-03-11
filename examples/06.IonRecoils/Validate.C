@@ -25,8 +25,8 @@ Int_t Validate(string fname) {
 
     cout.precision(12);
 
-    cout << "Time since simulation ended : " << time(NULL) - run->GetEndTimeStamp() << endl;
-    Double_t delay = time(NULL) - run->GetEndTimeStamp();
+    cout << "Time since simulation ended : " << time(NULL) - run->GetEndTimestamp() << endl;
+    Double_t delay = time(NULL) - run->GetEndTimestamp();
 
     if (delay < 0 || delay > 20) {
         cout << "The end timestamp is probably wrong" << endl;
