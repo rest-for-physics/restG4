@@ -172,7 +172,6 @@ int main(int argc, char** argv) {
 
     // choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
-    time_t systime = time(NULL);
     long seed = restG4Metadata->GetSeed();
     CLHEP::HepRandom::setTheSeed(seed);
 
@@ -271,6 +270,9 @@ int main(int argc, char** argv) {
         step->SetAngularDistribution(angularDistribution[biasing - 1]);
         step->SetSpatialDistribution(spatialDistribution[biasing - 1]);
     }
+
+    time_t systime = time(NULL);
+    restRun->SetStartTimeStamp((Double_t)systime);
 
     cout << "Events : " << N_events << endl;
     if (N_events > 0)  // batch mode
@@ -445,6 +447,8 @@ throw std::exception();
 
     // restRun->CloseOutputFile();
 
+    systime = time(NULL);
+    restRun->SetEndTimeStamp((Double_t)systime);
     TString Filename = restRun->GetOutputFileName();
 
     restRun->UpdateOutputFile();

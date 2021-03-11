@@ -203,6 +203,9 @@ void EventAction::FillSubEvent(Int_t subId) {
     subRestG4Event->SetRunOrigin(restRun->GetRunNumber());
     subRestG4Event->SetSubRunOrigin(0);
 
+    time_t systime = time(NULL);
+    subRestG4Event->SetTimeStamp((Double_t)systime);
+
     subRestG4Event->SetPrimaryEventOrigin(restG4Event->GetPrimaryEventOrigin());
     for (int n = 0; n < restG4Event->GetNumberOfPrimaries(); n++) {
         subRestG4Event->SetPrimaryEventParticleName(restG4Event->GetPrimaryEventParticleName(n));
@@ -232,15 +235,10 @@ void EventAction::FillSubEvent(Int_t subId) {
 }
 
 void EventAction::ReOrderTrackIds(Int_t subId) {
-    Double_t minTimestamp = 0;
-    if (subRestG4Event->GetNumberOfTracks() > 0) minTimestamp = subRestG4Event->GetTrack(0)->GetGlobalTime();
-
-    for (int n = 0; n < subRestG4Event->GetNumberOfTracks(); n++) {
-        if (subRestG4Event->GetTrack(n)->GetGlobalTime() < minTimestamp)
-            minTimestamp = subRestG4Event->GetTrack(n)->GetGlobalTime();
-    }
-
-    subRestG4Event->SetTimeStamp(minTimestamp);
+    // We define as event timestamp the system time.
+    // We will be always able to extract the global simulation time from Geant4 tracks.
+    time_t systime = time(NULL);
+    subRestG4Event->SetTimeStamp(systime);
 
     if (subId > 0) {
         for (int n = 0; n < restG4Event->GetNumberOfTracks(); n++) {
