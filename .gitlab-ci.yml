@@ -78,6 +78,14 @@ loadRESTLibs:
     - restG4 Xe136bb0n.rml
     - restRoot -b -q ValidateG4.C'("Xe136bb0n_n2E06.root")'
 
+06_IonRecoils:
+  type: examples
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cd ${CI_PROJECT_DIR}/install/examples/06.IonRecoils/
+    - restG4 recoils.rml
+    - restRoot -b -q Validate.C'("Run00001_F20_Recoils.root")'
+
 #addSignalNoise: 
 #  type: process
 #  script:
