@@ -86,9 +86,12 @@ loadRESTLibs:
     - restG4 recoils.rml
     - restRoot -b -q Validate.C'("Run00001_F20_Recoils.root")'
 
-#addSignalNoise: 
-#  type: process
-#  script:
-#    - . ${CI_PROJECT_DIR}/install/thisREST.sh
-#    - cd ${CI_PROJECT_DIR}/pipeline/processes/
-#    - ./addNoise.py
+07_FullChainDecay:
+  type: examples
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cd ${CI_PROJECT_DIR}/install/examples/07.FullChainDecay/
+    - restG4 fullChain.rml
+    - restG4 singleDecay.rml
+    - restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 13)'
+    - restRoot -b -q Validate.C'("Run00002_U238_SingleChainDecay.root", 1)'
