@@ -31,6 +31,12 @@ TH1D* RecoilMFP(string fname) {
 
             TVector3 vector(xO - xR, yO - yR, zO - zR);
 
+            // Instead of working with the components we could just work directly with TVector3
+            // That would be simpler
+            //
+            // TVector3 vector = ev->GetTrack(m)->GetHits()->GetPosition(lHits-1) -
+            // ev->GetTrack(m)->GetTrackOrigin();
+
             cout << "Particle : " << pName << " Kinetic energy : " << Ekin << endl;
             vector.Print();
 
