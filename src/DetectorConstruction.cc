@@ -187,15 +187,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     return W;
 }
-//_____________________________________________________________________________
-G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(G4String physVolName) {
-    G4PhysicalVolumeStore* physVolStore = G4PhysicalVolumeStore::GetInstance();
-    std::vector<G4VPhysicalVolume*>::const_iterator physVol;
-    for (physVol = physVolStore->begin(); physVol != physVolStore->end(); physVol++) {
-        if ((*physVol)->GetName() == physVolName) {
-            return *physVol;
-        }
+
+G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(G4String physicalVolumeName) {
+    G4PhysicalVolumeStore* physicalVolumeStore = G4PhysicalVolumeStore::GetInstance();
+    for (const auto& physicalVolume : *physicalVolumeStore) {
+        cout << "\t" << physicalVolume->GetName() << endl;
+        if (physicalVolume->GetName() == physicalVolumeName) return physicalVolume;
     }
 
-    return NULL;
+    return nullptr;
 }
