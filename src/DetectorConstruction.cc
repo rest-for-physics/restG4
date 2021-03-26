@@ -51,14 +51,22 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // TODO : Take the name of the sensitive volume and use it here to define its
     // StepSize
     string SensVol = (string)restG4Metadata->GetSensitiveVolume();
-    G4VPhysicalVolume* _vol = GetPhysicalVolume(SensVol);
-    if (!_vol) {
-        G4cout << "RESTG4 error. Sensitive volume  " << SensVol << " does not exist in geomtry!!" << G4endl;
-        G4cout << "RESTG4 error. Please, review geometry! Presh a key to crash!!" << G4endl;
+    bool foundSensitiveVolume = false;
+    for (size_t i = 0; i < restG4Metadata->GetNumberOfActiveVolumes(); i++) {
+        string volume = (string)restG4Metadata->GetActiveVolumeName(i);
+        if (volume == SensVol) {
+            foundSensitiveVolume = true;
+            break;
+        }
+    }
+    if (!foundSensitiveVolume) {
+        G4cout << "RESTG4 error. Sensitive volume " << SensVol << " does not exist in geometry!!" << G4endl;
+        G4cout << "RESTG4 error. Please, review geometry! Press a key to crash!!" << G4endl;
         getchar();
         // We need to produce a clean exit at this point
         exit(1);
     }
+    G4VPhysicalVolume* _vol = GetPhysicalVolume(SensVol);
 
     Double_t mx = restG4Metadata->GetMagneticField().X() * tesla;
     Double_t my = restG4Metadata->GetMagneticField().Y() * tesla;
