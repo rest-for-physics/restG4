@@ -210,16 +210,17 @@ void EventAction::FillSubEvent(Int_t subId) {
         subRestG4Event->SetPrimaryEventEnergy(restG4Event->GetPrimaryEventEnergy(n));
     }
 
-    for (int n = 0; n < restG4Event->GetNumberOfActiveVolumes(); n++) {
-        subRestG4Event->AddActiveVolume((string)restG4Metadata->GetActiveVolumeName(n));
-        if (restG4Event->isVolumeStored(n))
-            subRestG4Event->ActivateVolumeForStorage(n);
+    for (int i = 0; i < restG4Metadata->GetNumberOfActiveVolumes(); i++) {
+        string volume_name = (string)restG4Metadata->GetActiveVolumeName(i);
+        subRestG4Event->AddActiveVolume(volume_name);
+        if (restG4Event->isVolumeStored(i))
+            subRestG4Event->ActivateVolumeForStorage(i);
         else
-            subRestG4Event->DisableVolumeForStorage(n);
+            subRestG4Event->DisableVolumeForStorage(i);
     }
 
-    for (int n = 0; n < restG4Event->GetNumberOfTracks(); n++) {
-        TRestGeant4Track* tck = restG4Event->GetTrack(n);
+    for (int i = 0; i < restG4Event->GetNumberOfTracks(); i++) {
+        TRestGeant4Track* tck = restG4Event->GetTrack(i);
 
         if (tck->GetSubEventID() == subId) subRestG4Event->AddTrack(*tck);
     }
