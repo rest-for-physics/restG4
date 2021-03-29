@@ -60,7 +60,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         cout << "\t" << (string)physicalVolume->GetName() << endl;
         if ((string)physicalVolume->GetName() == sensibleVolumeName) {
             foundSensitiveVolume = true;
-            break;
+            // break;
         }
     }
 
@@ -75,6 +75,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         // do an attempt to match logical volume to physical volume before exiting
 
         map<string, string> physicalToLogicalMap;
+        // these are the physical volume names according to GEANT4, not the ROOT/TRestG4Metadata
         for (const auto& physicalVolume : *physicalVolumeStore) {
             physicalToLogicalMap[physicalVolume->GetName()] = physicalVolume->GetLogicalVolume()->GetName();
         }
@@ -85,7 +86,18 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
             if (kv.second == sensibleVolumeName) {
                 count++;
                 sensitivePhysicalVolumeName = kv.first;
+                cout << sensitivePhysicalVolumeName << " " << kv.second << " "
+                     << restG4Metadata->GetActiveVolumeName(0) << endl;
             }
+        }
+
+        for (int i = 0; i < restG4Metadata->GetNumberOfActiveVolumes(); i++) {
+            cout << i << "\t" << restG4Metadata->GetActiveVolumeName(i) << endl;
+        }
+
+        int i = 0;
+        for (const auto& physicalVolume : *physicalVolumeStore) {
+            cout << i++ << "\t" << physicalVolume->GetName() << endl;
         }
 
         if (count == 1) {
@@ -94,7 +106,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
                  << "') from LOGICAL VOLUME name: " << sensibleVolumeName << endl;
             cout << "WARNING: Changing RestG4Metadata Sensitive Volume from '" << sensibleVolumeName
                  << "' to: '" << sensitivePhysicalVolumeName << "'" << endl;
-            restG4Metadata->SetSensitiveVolume((TString)sensitivePhysicalVolumeName);
+            restG4Metadata->SetSensitiveVolume(
+                "gas");  // TODO: NOT HARDCODE THIS! (needed right now for assembly support
             sensibleVolumeName = (string)restG4Metadata->GetSensitiveVolume();
         } else {
             G4cout << "RESTG4 error. Sensitive volume '" << sensibleVolumeName
@@ -111,9 +124,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     Double_t my = restG4Metadata->GetMagneticField().Y() * tesla;
     Double_t mz = restG4Metadata->GetMagneticField().Z() * tesla;
 
-    G4MagneticField* magField = new G4UniformMagField(G4ThreeVector(mx, my, mz));
-    G4FieldManager* localFieldMgr = new G4FieldManager(magField);
-    G4FieldManager* fieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
+    auto magField = new G4UniformMagField(G4ThreeVector(mx, my, mz));
+    auto localFieldMgr = new G4FieldManager(magField);
+    auto fieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
     fieldMgr->SetDetectorField(magField);
     fieldMgr->CreateChordFinder(magField);
 
@@ -125,7 +138,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         G4Material* mat = vol->GetMaterial();
         G4cout << "Sensitivity volume properties" << G4endl;
         G4cout << "==============" << G4endl;
-        G4cout << "Sensitivity volume name : " << mat->GetName() << G4endl;
+        G4cout << "Sensitivity material name : " << mat->GetName() << G4endl;
         G4cout << "Sensitivity volume temperature : " << mat->GetTemperature() << G4endl;
         G4cout << "Sensitivity volume density : " << mat->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
     } else {
@@ -210,12 +223,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
             cout << "\t" << logicalVolume->GetName() << endl;
             if (restG4Metadata->GetMaxStepSize(activeVolumeName) > 0) {
                 G4cout << "Setting maxStepSize = " << restG4Metadata->GetMaxStepSize(activeVolumeName)
-                       << "mm for volume : " << activeVolumeName << G4endl;
+                       << "mm for volume: " << activeVolumeName << G4endl;
                 logicalVolume->SetUserLimits(
                     new G4UserLimits(restG4Metadata->GetMaxStepSize(activeVolumeName) * mm));
             }
 
-            cout << "Activating volume : " << activeVolumeName << endl;
+            cout << "Activating volume: " << activeVolumeName << endl;
             restG4Event->AddActiveVolume((string)activeVolumeName);
             if (logicalVolume == nullptr) {
                 cout << "Error: DetectorConstruction. Logical volume " << activeVolumeName
@@ -226,11 +239,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     }
 
     cout << "Detector constructed : " << W << endl;
-
     return W;
 }
 
-G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(G4String physicalVolumeName) {
+G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physicalVolumeName) {
     G4PhysicalVolumeStore* physicalVolumeStore = G4PhysicalVolumeStore::GetInstance();
     for (const auto& physicalVolume : *physicalVolumeStore) {
         cout << "\t" << physicalVolume->GetName() << endl;

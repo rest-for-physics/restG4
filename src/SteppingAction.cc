@@ -31,6 +31,9 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     nom_part = aStep->GetTrack()->GetDefinition()->GetParticleName();
 
     ener_dep = aStep->GetTotalEnergyDeposit();
+    string sens = (string)restG4Metadata->GetSensitiveVolume();
+    // cout << nom_vol << " " << nom_part << " " << ener_dep << " " << sens << endl;
+
     eKin = aStep->GetTrack()->GetKineticEnergy() / keV;
 
     if (restTrack->GetParticleName() == "geantino" &&

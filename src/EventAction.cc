@@ -49,15 +49,9 @@ extern TRestGeant4Track* restTrack;
 #include <fstream>
 using namespace std;
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 EventAction::EventAction() : G4UserEventAction() { restG4Metadata->isFullChainActivated(); }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 EventAction::~EventAction() {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EventAction::BeginOfEventAction(const G4Event* geant4_event) {
     G4int event_number = geant4_event->GetEventID();
@@ -93,9 +87,8 @@ void EventAction::BeginOfEventAction(const G4Event* geant4_event) {
     }
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void EventAction::EndOfEventAction(const G4Event* geant4_event) {
+    cout << "END OF EVENT" << endl;
     G4int event_number = geant4_event->GetEventID();
 
     if (restG4Metadata->GetVerboseLevel() >= REST_Extreme) {
@@ -221,13 +214,13 @@ void EventAction::FillSubEvent(Int_t subId) {
 
     for (int i = 0; i < restG4Event->GetNumberOfTracks(); i++) {
         TRestGeant4Track* tck = restG4Event->GetTrack(i);
-
         if (tck->GetSubEventID() == subId) subRestG4Event->AddTrack(*tck);
     }
 
-    if (restG4Metadata->isVolumeStored(restG4Metadata->GetSensitiveVolume())) {
-        Int_t sensVolID = restG4Metadata->GetActiveVolumeID(restG4Metadata->GetSensitiveVolume());
+    string sensVol = (string)restG4Metadata->GetSensitiveVolume();
 
+    if (restG4Metadata->isVolumeStored(sensVol)) {
+        Int_t sensVolID = restG4Metadata->GetActiveVolumeID(sensVol);
         subRestG4Event->SetSensitiveVolumeEnergy(subRestG4Event->GetEnergyDepositedInVolume(sensVolID));
     }
 }
@@ -298,24 +291,22 @@ void EventAction::SetTrackSubeventIDs() {
     for (int n = 0; n < nTracks; n++) {
         Double_t trkTime = restG4Event->GetTrack(n)->GetGlobalTime();
 
-        Int_t Ifound = 0;
-        for (unsigned int id = 0; id < fTrackTimestampList.size(); id++)
-            if (absDouble(fTrackTimestampList[id] - trkTime) < timeDelay) {
-                Ifound = 1;
+        Int_t found = 0;
+        for (double id : fTrackTimestampList)
+            if (absDouble(id - trkTime) < timeDelay) {
+                found = 1;
             }
 
-        if (Ifound == 0) fTrackTimestampList.push_back(trkTime);
+        if (found == 0) fTrackTimestampList.push_back(trkTime);
     }
 
     for (unsigned int id = 0; id < fTrackTimestampList.size(); id++) {
         for (int n = 0; n < nTracks; n++) {
-            Double_t trkTime = restG4Event->GetTrack(n)->GetGlobalTime();
+            Double_t trackTime = restG4Event->GetTrack(n)->GetGlobalTime();
 
-            if (absDouble(fTrackTimestampList[id] - trkTime) < timeDelay) {
+            if (absDouble(fTrackTimestampList[id] - trackTime) < timeDelay) {
                 restG4Event->SetTrackSubEventID(n, id);
             }
         }
     }
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
