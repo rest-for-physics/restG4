@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+
+<!--         
+First concept author G. Luzón (16-11-2020) -->
+
+<restG4>
+
+    <TRestRun name="CosmicMuonRun" title="A basic muon test with 2 active volumes">
+        <parameter name="experimentName" value="CosmicMuonScan"/>
+        <parameter name="readOnly" value="false" />
+        <parameter name="runNumber" value="111"/>
+        <parameter name="runDescription" value=""/>
+        <parameter name="user" value="${USER}"/>
+        <parameter name="verboseLevel" value="1"/>
+        <parameter name="overwrite" value="off" />
+        <parameter name="outputFileName" value="Run[fRunNumber]_[fRunType]_[fRunTag]_[fRunUser].root" />
+    </TRestRun>
+
+    <TRestGeant4Metadata name="restG4 run"  title="Simulation_cosmic_muons_from_wall">
+
+        <parameter name="gdml_file" value="setup.gdml"/>
+        <parameter name="subEventTimeDelay" value="100us" />
+
+        <parameter name="Nevents" value="1000" />
+
+         <parameter name="saveAllEvents" value="false" />
+        <parameter name="printProgress" value="true" />
+
+       <generator type="virtualWall" position="(0,0,-50)cm" lenX="30cm" lenY="30cm" rotation="(90,0,0)"  > 
+            <source particle="mu-" excitedLevel="0.0" fullChain="on">
+                <energyDist type="TH1D" file="Muons.root" spctName="cosmicmuon" /> 
+                <angularDist type="TH1D" file="CosmicAngles.root" spctName="Theta2" />
+            </source> 
+        </generator>
+
+        <storage sensitiveVolume="det_dw_01" >
+            <parameter name="energyRange" value="(0,10)"units="GeV" />
+			<activeVolume name="det_dw_01" chance="1" maxStepSize="1mm" />
+			<activeVolume name="det_up_01" chance="1" maxStepSize="1mm" />
+        </storage>
+    </TRestGeant4Metadata>
+
+	<TRestGeant4PhysicsLists name="default" title="First physics list implementation." verboseLevel="warning" >
+		<parameter name="cutForGamma" value="1" units="um" />
+		<parameter name="cutForElectron" value="1" units="um" />
+		<parameter name="cutForPositron" value="1" units="um" />
+
+		<parameter name="cutForMuon" value="1" units="mm" />
+		<parameter name="cutForNeutron" value="1" units="mm" />
+		<parameter name="minEnergyRangeProductionCuts" value="1" units="keV" />
+		<parameter name="maxEnergyRangeProductionCuts" value="1" units="GeV" />
+
+		<!-- EM Physics lists -->
+		<physicsList name="G4EmLivermorePhysics"> </physicsList>
+		<!-- <physicsList name="G4EmPenelopePhysics"> </physicsList> -->
+		<!-- <physicsList name="G4EmStandardPhysics_option3"> </physicsList> -->
+
+		<!-- Decay physics lists -->
+		<physicsList name="G4DecayPhysics"> </physicsList>
+		<physicsList name="G4RadioactiveDecayPhysics"> </physicsList>
+		<physicsList name="G4RadioactiveDecay"> 
+			<option name="ICM" value="true" />
+			<option name="ARM" value="true" />
+		</physicsList>
+
+		<!-- Hadron physics lists -->
+
+		<physicsList name="G4HadronElasticPhysicsHP"> </physicsList>
+		<physicsList name="G4IonBinaryCascadePhysics"> </physicsList>
+		<physicsList name="G4HadronPhysicsQGSP_BIC_HP"> </physicsList>
+		<physicsList name="G4EmExtraPhysics"> </physicsList>
+
+	</TRestGeant4PhysicsLists>
+
+</restG4>
