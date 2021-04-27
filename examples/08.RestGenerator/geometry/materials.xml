@@ -1,0 +1,389 @@
+<define>
+
+    <!-- densities in mg/cm3 @ 293.15K -->
+    <variable name="He_density" value="0.166321"/>
+    <variable name="Ne_density" value="0.838594"/>
+    <variable name="Ar_density" value="1.66201"/>
+    <variable name="Xe_density" value="5.49189"/>
+    <variable name="TMA_density" value="2.42"/>
+    <variable name="iC4H10_density" value="2.51578"/>
+
+</define>
+
+<materials>
+
+<!-- {{{ Elements definition ...........................................................-->
+<element name="Hydrogen" formula="H" Z="1">
+    <atom value="1.00794"/>
+</element>
+<element name="Helium" formula="N" Z="2">
+    <atom value="4.0026"/>
+</element>
+<element name="eBe" formula="Be" Z="4">
+    <atom value="9.012"/>
+</element>
+<element name="Carbon" formula="C" Z="6">
+    <atom value="12.0107"/>
+</element>
+<element name="Nitrogen" formula="N" Z="7">
+    <atom value="14.0067"/>
+</element>
+<element name="Oxygen" formula="N" Z="8">
+    <atom value="15.9994"/>
+</element>
+<element name="Fluor" formula="F" Z="9">
+    <atom value="18.9984"/>
+</element>
+<element name="Neon" formula="N" Z="10">
+    <atom value="20.1797"/>
+</element>
+<element name="Sodium" formula="N" Z="11">
+    <atom value="22.989"/>
+</element>
+<element name="Magnesium" formula="N" Z="12">
+    <atom value="24.305"/>
+</element>
+<element name="Aluminum" formula="Al" Z="13" state="solid">
+    <atom value="26.9815"/>
+</element>
+<element name="Silicon" formula="Si" Z="14" state="solid">
+    <atom value="28.0855"/>
+</element>
+<element name="Argon" formula="Ar" Z="18" state="gas">
+    <atom value="39.948"/>
+</element>
+<element name="Potasium" formula="K" Z="19" state="solid">
+    <atom value="39.0983"/>
+</element>
+<element name="Calcium" formula="Ca" Z="20" state="solid">
+    <atom value="40.078"/>
+</element>
+<element name="Chromium" formula="Cr" Z="24" state="solid">
+    <atom value="51.996"/>
+</element>
+<element name="Manganese" formula="Mn" Z="25">
+    <atom value="54.938045"/>
+</element>
+<element name="Iron" formula="Fe" Z="26" state="solid">
+    <atom value="55.845"/>
+</element>
+<element name="Nickel" formula="Ni" Z="28" state="solid">
+    <atom value="58.6934"/>
+</element>
+<element name="Cd" formula="Cd" Z="48" state="solid">
+    <atom value="112.414"/>
+</element>
+<element name="Xenon" formula="Xe" Z="54" state="gas">
+    <atom value="131.293"/>
+</element>
+<element name="Gd" formula="Gd" Z="64" state="solid">
+    <atom value="157.25"/>
+</element>
+<!-- }}} ...............................................................................-->
+
+<!-- {{{ Quenchers .....................................................................-->
+<material name="TMA" state="gas">
+    <D unit="mg/cm3" value="target_pressure*TMA_density"/>
+    <T unit="K" value="target_temperature"/>
+    <P unit="bar" value="target_pressure"/>
+    <composite n="3" ref="Carbon"/>
+    <composite n="9" ref="Hydrogen"/>
+    <composite n="1" ref="Nitrogen"/>
+</material>
+
+<material name="iC4H10" state="gas">
+    <D unit="mg/cm3" value="target_pressure*iC4H10_density"/>
+    <T unit="K" value="target_pressure"/>
+    <P unit="bar" value="target_pressure"/>
+    <composite n="4" ref="Carbon"/>
+    <composite n="10" ref="Hydrogen"/>
+</material>
+<!-- }}} ...............................................................................-->
+
+<!-- {{{ Pure gases ....................................................................-->
+<!-- {{{ MEE stands for mean excitation energy -->
+<material name="Helium" state="gas">
+    <T unit="K" value="target_temperature"/>
+    <P unit="bar" value="target_pressure"/>
+    <MEE unit="eV" value="188"/>
+    <D unit="mg/cm3" value="He_density*target_pressure"/>
+    <fraction n="1" ref="Helium"/>
+</material>
+
+<material name="Neon" state="gas">
+    <T unit="K" value="target_temperature"/>
+    <P unit="bar" value="target_pressure"/>
+    <MEE unit="eV" value="188"/>
+    <D unit="mg/cm3" value="Ne_density*target_pressure"/>
+    <fraction n="1" ref="Neon"/>
+</material>
+
+<material name="Argon" state="gas">
+    <T unit="K" value="target_temperature"/>
+    <P unit="bar" value="target_pressure"/>
+    <MEE unit="eV" value="188"/>
+    <D unit="mg/cm3" value="Ar_density*target_pressure"/>
+    <fraction n="1" ref="Argon"/>
+</material>
+
+<material name="Xenon" state="gas">
+    <T unit="K" value="target_temperature"/>
+    <P unit="bar" value="target_pressure"/>
+    <MEE unit="eV" value="482"/>
+    <D unit="mg/cm3" value="Xe_density*target_pressure"/>
+    <fraction n="1" ref="Xenon"/>
+</material>
+<!-- }}} ...............................................................................-->
+
+<!-- {{{ Gas mixtures ..................................................................-->
+<material name="He_iC4H10" state="gas">
+    <D unit="mg/cm3"
+       value="target_pressure*(iC4H10_density*0.01*target_quencher+He_density*(1.0-0.01*target_quencher))"/>
+    <P unit="bar" value="target_pressure"/>
+    <T unit="K" value="target_temperature"/>
+    <fraction n="0.01*target_quencher" ref="iC4H10"/>
+    <fraction n="1.0-0.01*target_quencher" ref="Helium"/>
+</material>
+
+<material name="Ne_iC4H10" state="gas">
+    <D unit="mg/cm3"
+       value="target_pressure*(iC4H10_density*0.01*target_quencher+Ne_density*(1.0-0.01*target_quencher))"/>
+    <P unit="bar" value="target_pressure"/>
+    <T unit="K" value="target_temperature"/>
+    <fraction n="0.01*target_quencher" ref="iC4H10"/>
+    <fraction n="1.0-0.01*target_quencher" ref="Neon"/>
+</material>
+
+<material name="Ar_iC4H10" state="gas">
+    <D unit="mg/cm3"
+       value="target_pressure*(iC4H10_density*0.01*target_quencher+Ar_density*(1.0-0.01*target_quencher))"/>
+    <P unit="bar" value="target_pressure"/>
+    <T unit="K" value="target_temperature"/>
+    <fraction n="0.01*target_quencher" ref="iC4H10"/>
+    <fraction n="1.0-0.01*target_quencher" ref="Argon"/>
+</material>
+
+<material name="Xe_iC4H10" state="gas">
+    <D unit="mg/cm3"
+       value="target_pressure*(iC4H10_density*0.01*target_quencher+Xe_density*(1.0-0.01*target_quencher))"/>
+    <P unit="bar" value="target_pressure"/>
+    <T unit="K" value="target_temperature"/>
+    <fraction n="0.01*target_quencher" ref="iC4H10"/>
+    <fraction n="1.0-0.01*target_quencher" ref="Xenon"/>
+</material>
+
+<material name="Xenon_TMA" state="gas">
+    <D unit="mg/cm3" value="target_pressure*(TMA_density*0.01*target_quencher+Xe_density*(1.0-0.01*target_quencher))"/>
+    <P unit="bar" value="target_pressure"/>
+    <T unit="K" value="target_temperature"/>
+    <fraction n="0.01*target_quencher" ref="TMA"/>
+    <fraction n="1.0-0.01*target_quencher" ref="Xenon"/>
+</material>
+<!-- }}} ...............................................................................-->
+
+<!-- {{{ Aluminum http://pml.nist.gov/cgi-bin/Star/compos.pl?matno=013 .................-->
+<isotope N="27" Z="13" name="Al27">
+    <atom unit="g/mole" value="26.982"/>
+</isotope>
+<element name="Al">
+    <fraction n="1.0000" ref="Al27"/>
+</element>
+<material name="Aluminum" state="solid">
+    <D unit="g/cm3" value="2.6989"/>
+    <fraction n="1" ref="Al"/>
+</material>
+<!-- }}} -->
+
+<!-- {{{ Copper http://pml.nist.gov/cgi-bin/Star/compos.pl?matno=029 ...................-->
+<isotope N="63" Z="29" name="Cu63">
+    <atom unit="g/mole" value="62.9296"/>
+</isotope>
+<isotope N="65" Z="29" name="Cu65">
+    <atom unit="g/mole" value="64.9278"/>
+</isotope>
+<element name="Cu">
+    <fraction n="0.6917" ref="Cu63"/>
+    <fraction n="0.3083" ref="Cu65"/>
+</element>
+<material name="Copper" state="solid">
+    <MEE unit="eV" value="322"/>
+    <D unit="g/cm3" value="8.96"/>
+    <fraction n="1" ref="Cu"/>
+</material>
+<!-- }}} ...............................................................................-->
+
+<!-- {{{ StainlessSteel ................................................................-->
+<material name="StainlessSteel" state="solid">
+    <MEE unit="eV" value="280.927567486627"/>
+    <D unit="g/cm3" value="8.02"/>
+    <fraction n="0.02" ref="Manganese"/>
+    <fraction n="0.01" ref="Silicon"/>
+    <fraction n="0.19" ref="Chromium"/>
+    <fraction n="0.1" ref="Nickel"/>
+    <fraction n="0.68" ref="Iron"/>
+</material>
+<!-- }}} ...............................................................................-->
+
+
+<!-- {{{ Gadolinium ................................................................-->
+<material name="Gadolinium" state="solid">
+    <MEE unit="eV" value="591.000000"/>
+    <D unit="g/cm3" value="7.90040"/>
+    <fraction n="1" ref="Gd"/>
+</material>
+<!-- }}} ...............................................................................-->
+
+<!-- {{{ Cadmium ................................................................-->
+<material name="Cadmium" state="solid">
+    <MEE unit="eV" value="469.000000"/>
+    <D unit="g/cm3" value="8.65000"/>
+    <fraction n="1" ref="Cd"/>
+</material>
+<!-- }}} ...............................................................................-->
+
+
+<!-- {{{ Air http://pml.nist.gov/cgi-bin/Star/compos.pl?matno=104 ?? ...................-->
+<isotope N="14" Z="7" name="N14">
+    <atom unit="g/mole" value="14.0031"/>
+</isotope>
+<isotope N="15" Z="7" name="N15">
+    <atom unit="g/mole" value="15.0001"/>
+</isotope>
+<element name="Nitrogen">
+    <fraction n="0.99632" ref="N14"/>
+    <fraction n="0.00368" ref="N15"/>
+</element>
+
+<isotope N="16" Z="8" name="O16">
+    <atom unit="g/mole" value="15.9949"/>
+</isotope>
+<isotope N="17" Z="8" name="O17">
+    <atom unit="g/mole" value="16.9991"/>
+</isotope>
+<isotope N="18" Z="8" name="O18">
+    <atom unit="g/mole" value="17.9992"/>
+</isotope>
+<element name="Oxygen">
+    <fraction n="0.99757" ref="O16"/>
+    <fraction n="0.00038" ref="O17"/>
+    <fraction n="0.00205" ref="O18"/>
+</element>
+<material name="Air" state="gas">
+    <T unit="K" value="293.13"/>
+    <MEE unit="eV" value="85.7030667332999"/>
+    <D unit="g/cm3" value="0.00129"/>
+    <fraction n="0.7" ref="Nitrogen"/>
+    <fraction n="0.3" ref="Oxygen"/>
+</material>
+<!-- }}} ...............................................................................-->
+
+<!-- {{{ Vacuum ........................................................................-->
+<material name="Vacuum" state="gas">
+    <T unit="K" value="293.13"/>
+    <MEE unit="eV" value="85.7030667332999"/>
+    <D unit="g/cm3" value="1.e-20"/>
+    <fraction n="0.7" ref="Nitrogen"/>
+    <fraction n="0.3" ref="Oxygen"/>
+</material>
+<!-- }}} ...............................................................................-->
+
+<!-- {{{ Water http://pml.nist.gov/cgi-bin/Star/compos.pl?matno=276 ....................-->
+<element Z="1" formula="H" name="Hydrogen">
+    <atom value="2"/>
+</element>
+<element Z="8" formula="O" name="Oxygen">
+    <atom value="16"/>
+</element>
+<material name="Water" formula="H2O">
+    <D value="1.0"/>
+    <MEE unit="eV" value="75.000000"/>
+    <composite n="2" ref="Hydrogen"/>
+    <composite n="1" ref="Oxygen"/>
+</material>
+<!-- }}} ...............................................................................-->
+
+<!-- {{{ Lead http://pml.nist.gov/cgi-bin/Star/compos.pl?matno=082 .....................-->
+<isotope N="204" Z="82" name="Pb204">
+    <atom unit="g/mole" value="203.973"/>
+</isotope>
+<isotope N="206" Z="82" name="Pb206">
+    <atom unit="g/mole" value="205.974"/>
+</isotope>
+<isotope N="207" Z="82" name="Pb207">
+    <atom unit="g/mole" value="206.976"/>
+</isotope>
+<isotope N="208" Z="82" name="Pb208">
+    <atom unit="g/mole" value="207.977"/>
+</isotope>
+<element name="Pb">
+    <fraction n="0.014" ref="Pb204"/>
+    <fraction n="0.241" ref="Pb206"/>
+    <fraction n="0.221" ref="Pb207"/>
+    <fraction n="0.524" ref="Pb208"/>
+</element>
+<material name="Lead" state="solid">
+    <MEE unit="eV" value="823"/>
+    <D unit="g/cm3" value="11.34"/>
+    <fraction n="1" ref="Pb"/>
+</material>
+<!-- }}} ...............................................................................-->
+
+<!-- {{{ Kapton http://pml.nist.gov/cgi-bin/Star/compos.pl?matno=179 ...................-->
+<material name="Kapton" state="solid">
+    <MEE unit="eV" value="79.6"/>
+    <D unit="g/cm3" value="1.42"/>
+    <fraction n="0.026362" ref="Hydrogen"/>
+    <fraction n="0.691133" ref="Carbon"/>
+    <fraction n="0.073270" ref="Nitrogen"/>
+    <fraction n="0.209235" ref="Oxygen"/>
+</material>
+<!-- }}} ...............................................................................-->
+
+<!-- {{{ Teflon (PTFE C2F4) http://pml.nist.gov/cgi-bin/Star/compos.pl?matno=227 .......-->
+<material name="PTFE" state="solid">
+    <MEE unit="eV" value="99.100000"/>
+    <D unit="g/cm3" value="2.2"/>
+    <fraction n="0.240183" ref="Carbon"/>
+    <fraction n="0.759817" ref="Fluor"/>
+</material>
+<!-- }}} ...............................................................................-->
+
+<!-- {{{ Mylar (PET C10H8O4) http://pml.nist.gov/cgi-bin/Star/compos.pl?matno=222 ......-->
+<material name="Mylar" state="solid">
+    <MEE unit="eV" value="78.700000"/>
+    <D unit="g/cm3" value="1.40"/>
+    <fraction n="0.041959" ref="Hydrogen"/>
+    <fraction n="0.625017" ref="Carbon"/>
+    <fraction n="0.333025" ref="Oxygen"/>
+</material>
+<!-- }}} ...............................................................................-->
+
+<!-- {{{ Plasctic scintillator http://pdg.lbl.gov/2013/AtomicNuclearProperties/HTML_PAGES/216.html -->
+<material name="BC408" state="solid">
+    <MEE unit="eV" value="64.700000"/>
+    <D unit="g/cm3" value="1.03"/>
+    <fraction n="0.085000" ref="Hydrogen"/>
+    <fraction n="0.915000" ref="Carbon"/>
+</material>
+<!-- }}} ...............................................................................-->
+
+<!-- {{{ Plasctic scintillator https://pml.nist.gov/cgi-bin/Star/compos.pl?matno=144 -->
+<material name="Concrete" state="solid">
+    <MEE unit="eV" value="135.2"/>
+    <D unit="g/cm3" value="2.30"/>
+    <fraction n="0.010000" ref="Hydrogen"/>
+    <fraction n="0.001000" ref="Carbon"/>
+    <fraction n="0.529107" ref="Oxygen"/>
+    <fraction n="0.016000" ref="Sodium"/>
+    <fraction n="0.002000" ref="Magnesium"/>
+    <fraction n="0.033872" ref="Aluminum"/>
+    <fraction n="0.337021" ref="Silicon"/>
+    <fraction n="0.013000" ref="Potasium"/>
+    <fraction n="0.044000" ref="Calcium"/>
+    <fraction n="0.014000" ref="Iron"/>
+</material>
+<!-- }}} ...............................................................................-->
+</materials>
+
+
+
