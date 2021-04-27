@@ -45,6 +45,7 @@
 #include "G4EmProcessOptions.hh"
 #include "G4EmStandardPhysics_option3.hh"
 #include "G4EmStandardPhysics_option4.hh"
+#include "G4IonTable.hh"
 #include "G4LossTableManager.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4UAtomicDeexcitation.hh"
