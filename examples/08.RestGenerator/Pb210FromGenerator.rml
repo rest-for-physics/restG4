@@ -33,7 +33,7 @@
         <parameter name="seed" value="17021981"/>
         <parameter name="Nevents" value="10"/>
 
-        <generator>
+        <generator type="Custom">
             <source use="Pb210FromShielding.root"/>
         </generator>
 

@@ -58,9 +58,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
     generator_type_name = g4_metadata_parameters::CleanString(generator_type_name);
     g4_metadata_parameters::generator_types generator_type;
 
-    if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
-        cout << "DEBUG: Generator type: " << generator_type_name << endl;
-    }
+    debug << "DEBUG: Generator type: " << generator_type_name << endl;
 
     if (g4_metadata_parameters::generator_types_map.count(generator_type_name)) {
         generator_type = g4_metadata_parameters::generator_types_map[generator_type_name];
@@ -73,7 +71,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
         }
         cout << endl;
 
-        throw "Invalid generator type";
+        exit(1);
     }
 
     // If there are particle collections stored is because we are using a
@@ -82,8 +80,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
         Int_t rndCollection;
         if (generator_type ==
             g4_metadata_parameters::generator_types::CUSTOM) {  // Generator type "file": no randomisation
-            static int nEvts = 0;
-            rndCollection = nEvts++;
+            static int nEvents = 0;
+            rndCollection = nEvents++;
         } else
             rndCollection = (Int_t)(G4UniformRand() * nCollections);
 
@@ -104,10 +102,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
 
         // ParticleDefinition should be always declared first (after position).
         SetParticleDefinition(j);
-
         // Particle Direction must be always set before energy
         SetParticleEnergy(j);
-
         SetParticleDirection(j);
 
         fParticleGun->GeneratePrimaryVertex(geant4_event);

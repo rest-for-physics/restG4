@@ -196,7 +196,7 @@ int main(int argc, char** argv) {
 
         TH1D* h = (TH1D*)fin.Get(sptName);
         ;
-        if (h == NULL) {
+        if (h == nullptr) {
             cout << "REST ERROR  when trying to find energy spectrum" << endl;
             cout << "File : " << fileFullPath << endl;
             cout << "Spectrum name : " << sptName << endl;
@@ -223,7 +223,7 @@ int main(int argc, char** argv) {
         TString sptName = restG4Metadata->GetParticleSource(0).GetAngularName();
         TH1D* h = (TH1D*)fin.Get(sptName);
         ;
-        if (h == NULL) {
+        if (h == nullptr) {
             cout << "REST ERROR  when trying to find angular spectrum" << endl;
             cout << "File : " << fileFullPath << endl;
             cout << "Spectrum name : " << sptName << endl;
@@ -271,7 +271,7 @@ int main(int argc, char** argv) {
         step->SetSpatialDistribution(spatialDistribution[biasing - 1]);
     }
 
-    time_t systime = time(NULL);
+    time_t systime = time(nullptr);
     restRun->SetStartTimeStamp((Double_t)systime);
 
     cout << "Events : " << N_events << endl;
@@ -442,12 +442,9 @@ throw std::exception();
 #endif
 
     // job termination
-    //
     delete runManager;
 
-    // restRun->CloseOutputFile();
-
-    systime = time(NULL);
+    systime = time(nullptr);
     restRun->SetEndTimeStamp((Double_t)systime);
     TString Filename = restRun->GetOutputFileName();
 
@@ -490,10 +487,10 @@ throw std::exception();
     }
     // father process
     else {
-        int stat_val = 0;
-        pid_t child_pid;
+        // int stat_val = 0;
+        // pid_t child_pid;
 
-        printf("Writing geometry ... \n");
+        // printf("Writing geometry ... \n");
 
         // child_pid = wait(&stat_val);
 
