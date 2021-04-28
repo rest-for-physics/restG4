@@ -3,7 +3,7 @@
 <restG4>
     <globals>
         <parameter name="mainDataPath" value=""/>
-        <parameter name="verboseLevel" value="essential"/>
+        <parameter name="verboseLevel" value="debug"/>
     </globals>
 
     <TRestRun name="Run metadata" title="REST Metadata run info (template)">
@@ -30,15 +30,11 @@
 
         <parameter name="gdml_file" value="geometry/BabyIAXO.gdml"/>
         <parameter name="subEventTimeDelay" value="100" units="us"/>
-
         <parameter name="seed" value="17021981"/>
-
         <parameter name="Nevents" value="10"/>
 
-        <generator type="volume" from="gas">
-
+        <generator>
             <source use="Pb210FromShielding.root"/>
-
         </generator>
 
         <storage sensitiveVolume="gas">
