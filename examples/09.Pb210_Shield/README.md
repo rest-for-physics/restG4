@@ -1,27 +1,20 @@
-**Date:** 12/March/2021
+**Date:** 30/April/2021
 
 **Author:** Javier Galan (javier.galan@unizar.es)
 
-This example tests a radiative chain of a full decay chain of U238. Its daughters, and the correct separation into subevents.
 
 #### Detector geometry
 
-This example implements a simple geometry based on a box made of lead.
+This example implements a small empty lead box, size 10x10x10cm3 and 2mm thickness, which covers a detector of size 6x6x3cm3 filled with xenon at 1bar.
 
 #### Event generator
-The event generator will produce isotope decays from the center of the box. The parent isotope may be changed through the REST_ISOTOPE variable that takes U238 by default.
+The event generator will produce Pb210 isotope decays from the lead volume.
 
 #### Testing the example
-Execute the following to launch a full chain decay till the chain reaches the stable element.
+This example will generate the full Pb210 chain and it will register only the events that produce events in the (0,10)keV range inside the Xenon detection volume.
 
 ```
-restG4 fullChain.rml
-```
-
-Execute the following to launch a single decay of the isotope defined by REST_ISOTOPE
-
-```
-restG4 singleDecay.rml
+restG4 Pb210.rml
 ```
 
 See also `Validation.C` for validation routines executed in the pipeline.
