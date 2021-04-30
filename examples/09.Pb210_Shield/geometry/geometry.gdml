@@ -1,0 +1,44 @@
+<solids>
+    <box name="WorldSolid" x="world_size" y="world_size" z="world_size" lunit="mm" />
+    <box name="detectorSolid" x="60" y="60" z="30" lunit="mm" />
+    <box name="leadSolidIn" x="100" y="100" z="100" lunit="mm" />
+    <box name="leadSolidOut" x="102" y="102" z="102" lunit="mm" />
+
+    <subtraction name="leadBoxSolid">
+        <first ref="leadSolidOut"/>
+        <second ref="leadSolidIn"/>
+    </subtraction>
+
+</solids>
+
+<structure>
+
+    <volume name="leadBoxVolume">
+        <materialref ref="Lead"/>
+        <solidref ref="leadBoxSolid"/>
+    </volume>
+
+
+    <volume name="detectorVolume">
+        <materialref ref="PureXenon"/>
+        <solidref ref="detectorSolid"/>
+    </volume>
+
+    <!-- {{{ Physical volume definition (volume and position assignment) -->
+    <volume name="World">
+        <materialref ref="Vacuum"/>
+        <solidref ref="WorldSolid"/>
+
+        <physvol name="lead">
+            <volumeref ref="leadBoxVolume"/>
+            <position name="leadPos" unit="mm" x="0" y="0" z="0"/>
+        </physvol>
+
+        <physvol name="detector">
+            <volumeref ref="detectorVolume"/>
+            <position name="detectorPos" unit="mm" x="0" y="0" z="0"/>
+        </physvol>
+    </volume>
+    <!-- }}} -->
+
+</structure>
