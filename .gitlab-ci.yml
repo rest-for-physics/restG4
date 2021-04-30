@@ -103,4 +103,4 @@ loadRESTLibs:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/09.Pb210_Shield/
     - restG4 Pb210.rml
-    - restRoot -b -q Validate.C'("Run00001_Pb210_Shielding.root.root")'
+    - restRoot -b -q Validate.C'("Run00001_Pb210_Shielding.root")'
