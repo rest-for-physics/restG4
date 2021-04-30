@@ -65,12 +65,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     Double_t mz = restG4Metadata->GetMagneticField().Z() * tesla;
 
     G4MagneticField* magField = new G4UniformMagField(G4ThreeVector(mx, my, mz));
-    G4FieldManager* localFieldMgr = new G4FieldManager(magField);
+    // G4FieldManager* localFieldMgr = new G4FieldManager(magField);
     G4FieldManager* fieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
     fieldMgr->SetDetectorField(magField);
     fieldMgr->CreateChordFinder(magField);
 
-    if (_vol != NULL) {
+    if (_vol != nullptr) {
         G4LogicalVolume* vol = _vol->GetLogicalVolume();
         // This method seems not available in my Geant4 version 10.4.2
         // In future Geant4 versions it seems possible to define field at particular volumes
@@ -95,10 +95,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // we should RETURN error
     if (type == "volume" && GenVol != "Not defined") {
         G4VPhysicalVolume* pVol = GetPhysicalVolume(GenVol);
-        if (pVol == NULL) {
+        if (pVol == nullptr) {
             cout << "ERROR : The generator volume was not found in the geometry" << endl;
             exit(1);
-            return W;
         }
 
         fGeneratorTranslation = pVol->GetTranslation();
@@ -157,7 +156,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     for (int id = 0; id < restG4Metadata->GetNumberOfActiveVolumes(); id++) {
         TString actVolName = restG4Metadata->GetActiveVolumeName(id);
         G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)actVolName);
-        if (pVol != NULL) {
+        if (pVol != nullptr) {
             G4LogicalVolume* lVol = pVol->GetLogicalVolume();
             if (restG4Metadata->GetMaxStepSize(actVolName) > 0) {
                 G4cout << "Setting maxStepSize = " << restG4Metadata->GetMaxStepSize(actVolName)
@@ -168,7 +167,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
         cout << "Activating volume : " << actVolName << endl;
         restG4Event->AddActiveVolume((string)actVolName);
-        if (pVol == NULL) {
+        if (pVol == nullptr) {
+            if (actVolName == "World") {
+                cout << "Ignoring 'World'" << endl;
+                continue;
+            }
             cout << "DetectorConstruction. Volume " << actVolName << " is not defined in the geometry"
                  << endl;
             exit(1);
@@ -188,6 +191,5 @@ G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(G4String physVolName)
             return *physVol;
         }
     }
-
-    return NULL;
+    return nullptr;
 }

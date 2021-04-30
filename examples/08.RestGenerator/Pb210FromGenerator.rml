@@ -3,7 +3,7 @@
 <restG4>
     <globals>
         <parameter name="mainDataPath" value=""/>
-        <parameter name="verboseLevel" value="debug"/>
+        <parameter name="verboseLevel" value="info"/>
     </globals>
 
     <TRestRun name="Run metadata" title="REST Metadata run info (template)">
@@ -30,8 +30,9 @@
 
         <parameter name="gdml_file" value="geometry/BabyIAXO.gdml"/>
         <parameter name="subEventTimeDelay" value="100" units="us"/>
-        <parameter name="seed" value="17021981"/>
-        <parameter name="Nevents" value="10"/>
+        <parameter name="seed" value="137"/>
+        <parameter name="saveAllEvents" value="false"/>
+        <parameter name="Nevents" value="100000"/>
 
         <generator type="Custom">
             <source use="Pb210FromShielding.root"/>
@@ -39,7 +40,6 @@
 
         <storage sensitiveVolume="gas">
             <parameter name="energyRange" value="(0,5)" units="MeV"/>
-            <activeVolume name="gas" chance="1" maxStepSize="1mm"/>
         </storage>
     </TRestGeant4Metadata>
 
@@ -56,24 +56,22 @@
 
         // Use only one EM physics list
         <!-- EM Physics lists -->
-        <physicsList name="G4EmLivermorePhysics"></physicsList>
-        <!-- <physicsList name="G4EmPenelopePhysics"> </physicsList> -->
-        <!-- <physicsList name="G4EmStandardPhysics_option3"> </physicsList> -->
+        <physicsList name="G4EmLivermorePhysics"/>
 
         <!-- Decay physics lists -->
-        <physicsList name="G4DecayPhysics"></physicsList>
-        <physicsList name="G4RadioactiveDecayPhysics"></physicsList>
+        <physicsList name="G4DecayPhysics"/>
+        <physicsList name="G4RadioactiveDecayPhysics"/>
         <physicsList name="G4RadioactiveDecay">
             <option name="ICM" value="true"/>
             <option name="ARM" value="true"/>
         </physicsList>
 
         <!-- Hadron physics lists -->
-        <physicsList name="G4HadronElasticPhysicsHP"></physicsList>
-        <physicsList name="G4IonBinaryCascadePhysics"></physicsList>
-        <physicsList name="G4HadronPhysicsQGSP_BIC_HP"></physicsList>
-        <physicsList name="G4NeutronTrackingCut"></physicsList>
-        <physicsList name="G4EmExtraPhysics"></physicsList>
+        <physicsList name="G4HadronElasticPhysicsHP"/>
+        <physicsList name="G4IonBinaryCascadePhysics"/>
+        <physicsList name="G4HadronPhysicsQGSP_BIC_HP"/>
+        <physicsList name="G4NeutronTrackingCut"/>
+        <physicsList name="G4EmExtraPhysics"/>
 
     </TRestGeant4PhysicsLists>
 

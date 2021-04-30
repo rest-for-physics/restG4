@@ -227,7 +227,7 @@ void PhysicsList::ConstructProcess() {
     if (fRadDecPhysicsList != nullptr) fRadDecPhysicsList->ConstructProcess();
 
     // hadronic physics lists
-    for (size_t i = 0; i < fHadronPhys.size(); i++) fHadronPhys[i]->ConstructProcess();
+    for (auto& fHadronPhy : fHadronPhys) fHadronPhy->ConstructProcess();
 
     if (restPhysList->FindPhysicsList("G4RadioactiveDecay")) {
         auto radioactiveDecay = new G4RadioactiveDecay();
@@ -244,7 +244,7 @@ void PhysicsList::ConstructProcess() {
                       "ICM not defined."
                    << G4endl;
 
-        // Enabling electron re-arrangment (ARM) option.
+        // Enabling electron re-arrangement (ARM) option.
         if (restPhysList->GetPhysicsListOptionValue("G4RadioactiveDecay", "ARM") == "true")
             radioactiveDecay->SetARM(true);  // Internal Conversion
         else if (restPhysList->GetPhysicsListOptionValue("G4RadioactiveDecay", "ARM") == "false")
@@ -262,22 +262,24 @@ void PhysicsList::ConstructProcess() {
    ph->RegisterProcess( nucr, G4GenericIon::GenericIon());
    */
 
-/* theParticleIterator->reset();
-while ((*theParticleIterator)())
-{
-    G4ParticleDefinition* particle = theParticleIterator->value();
-    G4String partname = particle->GetParticleName();
-    if(partname == "alpha" || partname == "He3" || partname == "GenericIon") {
-        G4BraggIonGasModel* mod1 = new G4BraggIonGasModel();
-        G4BetheBlochIonGasModel* mod2 = new G4BetheBlochIonGasModel();
-        G4double eth = 2.*MeV*particle->GetPDGMass()/CLHEP::proton_mass_c2;
-        em_config.SetExtraEmModel(partname,"braggIoni",mod1,"",0.0,eth,
-                new G4IonFluctuations());
-        em_config.SetExtraEmModel(partname,"betheIoni",mod2,"",eth,100*TeV,
-                new G4UniversalFluctuation());
+    /*
+    theParticleIterator->reset();
+    while ((*theParticleIterator)())
+    {
+        G4ParticleDefinition* particle = theParticleIterator->value();
+        G4String partname = particle->GetParticleName();
+        if(partname == "alpha" || partname == "He3" || partname == "GenericIon") {
+            G4BraggIonGasModel* mod1 = new G4BraggIonGasModel();
+            G4BetheBlochIonGasModel* mod2 = new G4BetheBlochIonGasModel();
+            G4double eth = 2.*MeV*particle->GetPDGMass()/CLHEP::proton_mass_c2;
+            em_config.SetExtraEmModel(partname,"braggIoni",mod1,"",0.0,eth,
+                    new G4IonFluctuations());
+            em_config.SetExtraEmModel(partname,"betheIoni",mod2,"",eth,100*TeV,
+                    new G4UniversalFluctuation());
 
+        }
     }
-} */
+    */
 
 // Requires Geant4 version higher than 10.2.9. Defined at CMakeLists.
 #ifdef G4104
