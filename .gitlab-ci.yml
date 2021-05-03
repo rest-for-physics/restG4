@@ -7,6 +7,10 @@ stages:
 
 before_script:
     - export USER="rest"
+    - pwd
+    - root-config --version
+    - if [ -f "/opt/geant4/install/bin/geant4.sh" ]; then source /opt/geant4/install/bin/geant4.sh; fi
+    - geant4-config --version
 
 build:
   type: build
