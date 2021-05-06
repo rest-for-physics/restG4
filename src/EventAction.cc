@@ -224,7 +224,10 @@ void EventAction::FillSubEvent(Int_t subId) {
     for (int n = 0; n < restG4Event->GetNumberOfTracks(); n++) {
         TRestGeant4Track* tck = restG4Event->GetTrack(n);
 
-        if (tck->GetSubEventID() == subId) subRestG4Event->AddTrack(*tck);
+        if (tck->GetSubEventID() == subId) 
+            if (tck->GetNumberOfHits() > 0 || restG4Metadata->RegisterEmptyTracks()) {
+                subRestG4Event->AddTrack(*tck);
+            }
     }
 
     if (restG4Metadata->isVolumeStored(restG4Metadata->GetSensitiveVolume())) {
