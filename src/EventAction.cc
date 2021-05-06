@@ -317,8 +317,13 @@ int EventAction::SetTrackSubeventIDs() {
                         }
                         break;
                     } else {
-                        ptrack = tracks[ptrack->GetParentID()];
-                        continue;
+                        if (ptrack->GetParentID() == 0) {
+                            track->SetSubEventID(0);
+                            break;
+                        } else {
+                            ptrack = tracks[ptrack->GetParentID()];
+                            continue;
+                        }
                     }
                 } else {
                     cout << "error! parent track is null" << endl;
