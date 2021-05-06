@@ -1,4 +1,5 @@
-image: lobis/root-geant4-garfieldpp:geant4-v10.4.2
+image: lobis/root-geant4-garfieldpp
+#image: lobis/root-geant4-garfieldpp:geant4-v10.4.2
 
 stages:
   - build
