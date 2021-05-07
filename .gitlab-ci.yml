@@ -28,7 +28,7 @@ build:
     - git submodule init source/packages/restG4
     - git submodule update source/packages/restG4
     - cd source/packages/restG4/
-    - git checkout master
+    - git checkout ${CI_COMMIT_BRANCH}
     - cd ../../../
     - if [ -d build ]; then rm -rf build; fi
     - mkdir build
