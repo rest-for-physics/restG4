@@ -292,23 +292,23 @@ int EventAction::SetTrackSubeventIDs() {
     Double_t timeDelay = restG4Metadata->GetSubEventTimeDelay();  // in unit us
 
     // reorder tracks
-    std::map<int, TRestG4Track*> tracks; 
+    std::map<int, TRestGeant4Track*> tracks; 
     for (int n = 0; n < nTracks; n++) {
-        TRestG4Track* track = restG4Event->GetTrack(n);
+        TRestGeant4Track* track = restG4Event->GetTrack(n);
         tracks[track->GetTrackID()] = track;
     }
 
     // scan backwards to the parent tracks and set the track's sub event id
     int max_subid = 0;
     for (auto iter = tracks.begin(); iter != tracks.end(); iter++) {
-        TRestG4Track* track = iter->second;
+        TRestGeant4Track* track = iter->second;
 
         if (track->GetParentID() == 0) {
             track->SetSubEventID(0);
         } else {
             double tadd = 0;
             int parentid = track->GetParentID();
-            TRestG4Track* ptrack = tracks[parentid];
+            TRestGeant4Track* ptrack = tracks[parentid];
             while (1) {
                 if (ptrack != NULL) {
                     tadd += ptrack->GetTrackTimeLength();
