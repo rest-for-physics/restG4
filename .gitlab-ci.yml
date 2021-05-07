@@ -17,9 +17,9 @@ build:
   type: build
   script:
     - echo "**${CI_PROJECT_DIR}**"
-    - rm -rf ${CI_PROJECT_DIR}/install
     - git clone --single-branch --branch development https://github.com/rest-for-physics/framework.git framework
     - cd framework
+    - if [ -d ${CI_PROJECT_DIR}/install ]; then rm -rf ${CI_PROJECT_DIR}/install; fi
     - git submodule init source/libraries/geant4
     - git submodule update source/libraries/geant4
     - cd source/libraries/geant4/
@@ -30,6 +30,7 @@ build:
     - cd source/packages/restG4/
     - git checkout master
     - cd ../../../
+    - if [ -d build ]; then rm -rf build; fi
     - mkdir build
     - cd build
     - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DINSTALL_PREFIX=${CI_PROJECT_DIR}/install
