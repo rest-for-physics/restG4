@@ -1,4 +1,5 @@
-image: lobis/root-geant4-garfieldpp:geant4-v10.4.2
+image: lobis/root-geant4-garfieldpp
+#image: lobis/root-geant4-garfieldpp:geant4-v10.4.2
 
 stages:
   - build
@@ -16,9 +17,9 @@ build:
   type: build
   script:
     - echo "**${CI_PROJECT_DIR}**"
-    - rm -rf ${CI_PROJECT_DIR}/install
     - git clone --single-branch --branch development https://github.com/rest-for-physics/framework.git framework
     - cd framework
+    - if [ -d ${CI_PROJECT_DIR}/install ]; then rm -rf ${CI_PROJECT_DIR}/install; fi
     - git submodule init source/libraries/geant4
     - git submodule update source/libraries/geant4
     - cd source/libraries/geant4/
@@ -27,8 +28,9 @@ build:
     - git submodule init source/packages/restG4
     - git submodule update source/packages/restG4
     - cd source/packages/restG4/
-    - git checkout master
+    - git checkout ${CI_COMMIT_BRANCH}
     - cd ../../../
+    - if [ -d build ]; then rm -rf build; fi
     - mkdir build
     - cd build
     - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DINSTALL_PREFIX=${CI_PROJECT_DIR}/install
@@ -97,7 +99,7 @@ loadRESTLibs:
     - cd ${CI_PROJECT_DIR}/install/examples/07.FullChainDecay/
     - restG4 fullChain.rml
     - restG4 singleDecay.rml
-    - restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 13)'
+    - restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 14)'
     - restRoot -b -q Validate.C'("Run00002_U238_SingleChainDecay.root", 1)'
 
       

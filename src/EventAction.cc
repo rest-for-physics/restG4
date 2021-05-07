@@ -105,11 +105,11 @@ void EventAction::EndOfEventAction(const G4Event* geant4_event) {
     Double_t minimum_energy_stored = restG4Metadata->GetMinimumEnergyStored();
     Double_t maximum_energy_stored = restG4Metadata->GetMaximumEnergyStored();
 
-    SetTrackSubeventIDs();
+    int NSubs = SetTrackSubeventIDs();
 
     Bool_t is_sensitive = false;
 
-    for (int subId = 0; subId < restG4Event->GetNumberOfSubEventIDTracks(); subId++) {
+    for (int subId = 0; subId < NSubs + 1; subId++) {
         FillSubEvent(subId);
 
         Double_t total_deposited_energy = subRestG4Event->GetTotalDepositedEnergy();
@@ -224,7 +224,10 @@ void EventAction::FillSubEvent(Int_t subId) {
     for (int n = 0; n < restG4Event->GetNumberOfTracks(); n++) {
         TRestGeant4Track* tck = restG4Event->GetTrack(n);
 
-        if (tck->GetSubEventID() == subId) subRestG4Event->AddTrack(*tck);
+        if (tck->GetSubEventID() == subId) 
+            if (tck->GetNumberOfHits() > 0 || restG4Metadata->RegisterEmptyTracks()) {
+                subRestG4Event->AddTrack(*tck);
+            }
     }
 
     if (restG4Metadata->isVolumeStored(restG4Metadata->GetSensitiveVolume())) {
@@ -284,35 +287,80 @@ void EventAction::ReOrderTrackIds(Int_t subId) {
     }
 }
 
-void EventAction::SetTrackSubeventIDs() {
+int EventAction::SetTrackSubeventIDs() {
     Int_t nTracks = restG4Event->GetNumberOfTracks();
+    Double_t timeDelay = restG4Metadata->GetSubEventTimeDelay();  // in unit us
 
-    Double_t timeDelay = restG4Metadata->GetSubEventTimeDelay() * REST_Units::s;
-
-    vector<Double_t> fTrackTimestampList;
-    fTrackTimestampList.clear();
-
+    // reorder tracks
+    std::map<int, TRestGeant4Track*> tracks; 
     for (int n = 0; n < nTracks; n++) {
-        Double_t trkTime = restG4Event->GetTrack(n)->GetGlobalTime();
-
-        Int_t Ifound = 0;
-        for (unsigned int id = 0; id < fTrackTimestampList.size(); id++)
-            if (absDouble(fTrackTimestampList[id] - trkTime) < timeDelay) {
-                Ifound = 1;
-            }
-
-        if (Ifound == 0) fTrackTimestampList.push_back(trkTime);
+        TRestGeant4Track* track = restG4Event->GetTrack(n);
+        tracks[track->GetTrackID()] = track;
     }
 
-    for (unsigned int id = 0; id < fTrackTimestampList.size(); id++) {
-        for (int n = 0; n < nTracks; n++) {
-            Double_t trkTime = restG4Event->GetTrack(n)->GetGlobalTime();
+    // scan backwards to the parent tracks and set the track's sub event id
+    int max_subid = 0;
+    for (auto iter = tracks.begin(); iter != tracks.end(); iter++) {
+        TRestGeant4Track* track = iter->second;
 
-            if (absDouble(fTrackTimestampList[id] - trkTime) < timeDelay) {
-                restG4Event->SetTrackSubEventID(n, id);
+        if (track->GetParentID() == 0) {
+            track->SetSubEventID(0);
+        } else {
+            double tadd = 0;
+            int parentid = track->GetParentID();
+            TRestGeant4Track* ptrack = tracks[parentid];
+            while (1) {
+                if (ptrack != NULL) {
+                    tadd += ptrack->GetTrackTimeLength();
+                    if (tadd > timeDelay) {
+                        int subid = ptrack->GetSubEventID() + 1;
+                        track->SetSubEventID(subid);
+                        if (max_subid < subid) {
+                            max_subid = subid;
+                        }
+                        break;
+                    } else {
+                        if (ptrack->GetParentID() == 0) {
+                            track->SetSubEventID(0);
+                            break;
+                        } else {
+                            ptrack = tracks[ptrack->GetParentID()];
+                            continue;
+                        }
+                    }
+                } else {
+                    cout << "error! parent track is null" << endl;
+                    abort();
+                }
             }
         }
     }
+
+    return max_subid;
+    // vector<Double_t> fTrackTimestampList;
+    // fTrackTimestampList.clear();
+
+    // for (int n = 0; n < nTracks; n++) {
+    //    Double_t trkTime = restG4Event->GetTrack(n)->GetGlobalTime();
+
+    //    Int_t Ifound = 0;
+    //    for (unsigned int id = 0; id < fTrackTimestampList.size(); id++)
+    //        if (absDouble(fTrackTimestampList[id] - trkTime) < timeDelay) {
+    //            Ifound = 1;
+    //        }
+
+    //    if (Ifound == 0) fTrackTimestampList.push_back(trkTime);
+    //}
+
+    // for (unsigned int id = 0; id < fTrackTimestampList.size(); id++) {
+    //    for (int n = 0; n < nTracks; n++) {
+    //        Double_t trkTime = restG4Event->GetTrack(n)->GetGlobalTime();
+
+    //        if (absDouble(fTrackTimestampList[id] - trkTime) < timeDelay) {
+    //            restG4Event->SetTrackSubEventID(n, id);
+    //        }
+    //    }
+    //}
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

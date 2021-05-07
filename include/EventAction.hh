@@ -62,7 +62,7 @@ class EventAction : public G4UserEventAction {
         return -x;
     }
 
-    void SetTrackSubeventIDs();
+    int SetTrackSubeventIDs();
     static void FillSubEvent(Int_t subId);
     // old method `FillSubEvent` has been split into `FillSubEvent` and `ReOrderTrackIds` for speed
     static void ReOrderTrackIds(Int_t subId);
