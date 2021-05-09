@@ -8,7 +8,7 @@ stages:
 before_script:
     - export USER="rest"
     - pwd
-    - source ${ROOTSYS}/bin/thisroot.sh
+    - if [ -f "/opt/root/install/bin/thisroot.sh" ]; then source /opt/root/install/bin/thisroot.sh; fi
     - root-config --version
     - if [ -f "/opt/geant4/install/bin/geant4.sh" ]; then source /opt/geant4/install/bin/geant4.sh; fi
     - geant4-config --version
