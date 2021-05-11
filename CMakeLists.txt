@@ -4,15 +4,17 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 message("==================================================  restG4  =================================================")
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake ${CMAKE_MODULE_PATH})
 
+if (NOT CMAKE_CXX_FLAGS)
+    SET(CMAKE_CXX_FLAGS "-std=c++1y")
+endif ()
+
 # Find REST
 find_package(REST REQUIRED)
 
 set(CMAKE_INSTALL_PREFIX ${REST_PATH})
 message("-- Found REST version : ${REST_VERSION}")
 
-if (NOT CMAKE_CXX_FLAGS)
-    SET(CMAKE_CXX_FLAGS "-std=c++1y")
-endif ()
+
 
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
@@ -40,6 +42,11 @@ include_directories(${incdir})
 
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
+
+message("-- Headers: ${headers}")
+message("-- Sources: ${sources}")
+message("-- Libraries: ${external_libs}")
+message("-- Include dirs: ${external_include_dirs}")
 
 add_executable(${PROJECT_NAME} restG4.cc ${sources} ${headers})
 target_link_libraries(${PROJECT_NAME} ${external_libs})
