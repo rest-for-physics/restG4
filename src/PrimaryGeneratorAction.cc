@@ -672,11 +672,11 @@ G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() {
     G4double a, b, c;
     G4double n;
     do {
-        a = (G4UniformRand() - 0.5) / 0.5;
-        b = (G4UniformRand() - 0.5) / 0.5;
-        c = (G4UniformRand() - 0.5) / 0.5;
+        a = 2 * (G4UniformRand() - 0.5);
+        b = 2 * (G4UniformRand() - 0.5);
+        c = 2 * (G4UniformRand() - 0.5);
         n = a * a + b * b + c * c;
-    } while (n > 1 || n == 0.0);
+    } while (n > 1 || n < 0.01);
 
     n = std::sqrt(n);
     a /= n;
