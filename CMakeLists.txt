@@ -1,7 +1,7 @@
 project(restG4)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
-message("===============  restG4  ==============")
+message("==================================================  restG4  =================================================")
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake ${CMAKE_MODULE_PATH})
 
 # Find REST
@@ -33,7 +33,7 @@ find_package(ROOT REQUIRED)
 message("-- Found ROOT version : ${ROOT_VERSION}")
 
 # Set include and libs
-set(external_libs ${Geant4_LIBRARIES} ${REST_LIBRARIES} ${ROOT_LIBRARIES} -L$ENV{ROOTSYS}/lib -lGui -lGeom -lGdml)
+set(external_libs ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${REST_LIBRARIES})
 set(external_include_dirs ${PROJECT_SOURCE_DIR}/include ${Geant4_INCLUDE_DIR} ${ROOT_INCLUDE_DIRS} ${REST_INCLUDE_DIRS})
 
 include_directories(${incdir})
@@ -41,19 +41,11 @@ include_directories(${incdir})
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 
-#----------------------------------------------------------------------------
-# Add the executable, and link it to the Geant4 libraries
-#----------------------------------------------------------------------------
-#message( STATUS "external_libs G4: ${external_libs}" )
-#message( STATUS "external_include_dirs G4: ${external_include_dirs}" )
-#message( STATUS "sources G4: ${sources}" )
-#message( STATUS "headers G4: ${headers}" )
 add_executable(${PROJECT_NAME} restG4.cc ${sources} ${headers})
 target_link_libraries(${PROJECT_NAME} ${external_libs})
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${external_include_dirs})
 
 target_compile_options(${PROJECT_NAME} PRIVATE)
-
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we

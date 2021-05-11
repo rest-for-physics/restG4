@@ -5,14 +5,15 @@
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
 
-#include "G4Event.hh"
-#include "G4Geantino.hh"
-#include "G4IonTable.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4ParticleTable.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4UnitsTable.hh"
-#include "Randomize.hh"
+#include <G4Event.hh>
+#include <G4Geantino.hh>
+#include <G4IonTable.hh>
+#include <G4ParticleDefinition.hh>
+#include <G4ParticleTable.hh>
+#include <G4SPSAngDistribution.hh>
+#include <G4SystemOfUnits.hh>
+#include <G4UnitsTable.hh>
+#include <Randomize.hh>
 
 extern TRestGeant4Metadata* restG4Metadata;
 extern TRestGeant4Event* restG4Event;
@@ -24,18 +25,23 @@ Int_t face = 0;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
-    : G4VUserPrimaryGeneratorAction(), fParticleGun(0), fDetector(pDetector) {
+    : G4VUserPrimaryGeneratorAction(), fParticleGun(nullptr), fDetector(pDetector), fG4AngDist(nullptr) {
     G4int n_particle = 1;
     fParticleGun = new G4ParticleGun(n_particle);
 
     nCollections = restG4Metadata->GetPrimaryGenerator().GetNumberOfCollections();
 
     nBiasingVolumes = restG4Metadata->GetNumberOfBiasingVolumes();
+
+    fG4AngDist = new G4SPSAngDistribution();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
+PrimaryGeneratorAction::~PrimaryGeneratorAction() {
+    delete fParticleGun;
+    delete fG4AngDist;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -665,20 +671,11 @@ void PrimaryGeneratorAction::SetParticlePosition(int n) {
 
 //_____________________________________________________________________________
 G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() {
-    G4double a, b, c;
-    G4double n;
-    do {
-        a = (G4UniformRand() - 0.5) / 0.5;
-        b = (G4UniformRand() - 0.5) / 0.5;
-        c = (G4UniformRand() - 0.5) / 0.5;
-        n = a * a + b * b + c * c;
-    } while (n > 1 || n == 0.0);
-
-    n = std::sqrt(n);
-    a /= n;
-    b /= n;
-    c /= n;
-    return G4ThreeVector(a, b, c);
+    G4String isotropicDistribution = "iso";
+    if (fG4AngDist->GetDistType() != isotropicDistribution) {
+        fG4AngDist->SetAngDistType(isotropicDistribution);
+    }
+    return fG4AngDist->GenerateOne();
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //

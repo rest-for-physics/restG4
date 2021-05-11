@@ -35,21 +35,23 @@
 #ifndef PrimaryGeneratorAction_h
 #define PrimaryGeneratorAction_h 1
 
+#include <TH1D.h>
+
+#include <fstream>
+#include <iostream>
+
 #include "DetectorConstruction.hh"
 #include "G4IonTable.hh"
 #include "G4ParticleGun.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "globals.hh"
 
-#include <TH1D.h>
-
-#include <fstream>
-#include <iostream>
 using namespace std;
 
 const int nSpct = 3000;
 
 class G4Event;
+class G4SPSAngDistribution;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -58,7 +60,6 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     PrimaryGeneratorAction(DetectorConstruction* pDetector);
     ~PrimaryGeneratorAction();
 
-   public:
     virtual void GeneratePrimaries(G4Event*);
     G4ParticleGun* GetParticleGun() { return fParticleGun; };
 
@@ -105,6 +106,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
    private:
     G4ParticleGun* fParticleGun;
     DetectorConstruction* fDetector;
+
+    G4SPSAngDistribution* fG4AngDist;
 
     TH1D* fSpectrum;
     TH1D* fAngularDistribution;
