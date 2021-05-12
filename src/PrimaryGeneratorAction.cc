@@ -134,7 +134,7 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(int n) {
     // if ((particle == nullptr)) {
     // There might be a better way to do this
     for (int Z = 1; Z <= 110; Z++)
-        for (int A = 2 * Z; A <= 3 * Z; A++) {
+        for (int A = 2 * Z - 1; A <= 3 * Z; A++) {
             if (particle_name == G4IonTable::GetIonTable()->GetIonName(Z, A)) {
                 // cout << "particle : " << G4IonTable::GetIonTable()->GetIonName(Z, A, excited_energy) <<
                 // endl;
