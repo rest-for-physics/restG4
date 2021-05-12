@@ -129,32 +129,34 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(int n) {
     }
 
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-    G4ParticleDefinition* particle = particleTable->FindParticle(particle_name);
+    if (!fParticle) {
+        fParticle = particleTable->FindParticle(particle_name);
 
-    for (int Z = 1; Z <= 110; Z++)
-        for (int A = 2 * Z - 1; A <= 3 * Z; A++) {
-            if (particle_name == G4IonTable::GetIonTable()->GetIonName(Z, A)) {
-                // cout << "particle : " << G4IonTable::GetIonTable()->GetIonName(Z, A, excited_energy) <<
-                // endl;
-                particle = G4IonTable::GetIonTable()->GetIon(Z, A, excited_energy);
-                particle_name = G4IonTable::GetIonTable()->GetIonName(Z, A, excited_energy);
-                fParticleGun->SetParticleCharge(charge);
-                if (n == 1)
-                    info << "Found ion: " << particle_name << " Z " << Z << " A " << A << " excited energy"
-                         << excited_energy << endl;
+        for (int Z = 1; Z <= 110; Z++)
+            for (int A = 2 * Z - 1; A <= 3 * Z; A++) {
+                if (particle_name == G4IonTable::GetIonTable()->GetIonName(Z, A)) {
+                    // cout << "particle : " << G4IonTable::GetIonTable()->GetIonName(Z, A, excited_energy) <<
+                    // endl;
+                    fParticle = G4IonTable::GetIonTable()->GetIon(Z, A, excited_energy);
+                    particle_name = G4IonTable::GetIonTable()->GetIonName(Z, A, excited_energy);
+                    fParticleGun->SetParticleCharge(charge);
+                    if (n == 1)
+                        info << "Found ion: " << particle_name << " Z " << Z << " A " << A
+                             << " excited energy" << excited_energy << endl;
+                }
             }
-        }
 
-    if (!particle) {
-        cout << "Particle definition : " << particle_name << " not found!" << endl;
-        exit(1);
+        if (!fParticle) {
+            cout << "Particle definition : " << particle_name << " not found!" << endl;
+            exit(1);
+        }
     }
 
-    fParticleGun->SetParticleDefinition(particle);
+    fParticleGun->SetParticleDefinition(fParticle);
 
     restG4Event->SetPrimaryEventParticleName(particle_name);
 
-    return particle;
+    return fParticle;
 }
 
 void PrimaryGeneratorAction::SetParticleDirection(int n) {

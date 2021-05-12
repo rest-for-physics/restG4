@@ -106,6 +106,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     G4ParticleGun* fParticleGun;
     DetectorConstruction* fDetector;
 
+    G4ParticleDefinition* fParticle = nullptr;
+
     TH1D* fSpectrum;
     TH1D* fAngularDistribution;
 
