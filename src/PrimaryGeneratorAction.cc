@@ -131,8 +131,6 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(int n) {
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
     G4ParticleDefinition* particle = particleTable->FindParticle(particle_name);
 
-    // if ((particle == nullptr)) {
-    // There might be a better way to do this
     for (int Z = 1; Z <= 110; Z++)
         for (int A = 2 * Z - 1; A <= 3 * Z; A++) {
             if (particle_name == G4IonTable::GetIonTable()->GetIonName(Z, A)) {
@@ -146,7 +144,11 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(int n) {
                          << excited_energy << endl;
             }
         }
-    // }
+
+    if (!particle) {
+        cout << "Particle definition : " << particle_name << " not found!" << endl;
+        exit(1);
+    }
 
     fParticleGun->SetParticleDefinition(particle);
 
