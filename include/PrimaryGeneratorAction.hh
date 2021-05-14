@@ -35,16 +35,17 @@
 #ifndef PrimaryGeneratorAction_h
 #define PrimaryGeneratorAction_h 1
 
-#include "DetectorConstruction.hh"
-#include "G4IonTable.hh"
-#include "G4ParticleGun.hh"
-#include "G4VUserPrimaryGeneratorAction.hh"
-#include "globals.hh"
-
 #include <TH1D.h>
 
 #include <fstream>
 #include <iostream>
+
+#include "DetectorConstruction.hh"
+#include "G4IonTable.hh"
+#include "G4ParticleGun.hh"
+#include "G4VUserPrimaryGeneratorAction.hh"
+#include "TRestGeant4Particle.h"
+#include "globals.hh"
 using namespace std;
 
 const int nSpct = 3000;
@@ -103,9 +104,10 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     void SetAngularDistribution(TH1D* ang) { fAngularDistribution = ang; }
 
    private:
+    vector<TRestGeant4Particle> fTempParticles;
+
     G4ParticleGun* fParticleGun;
     DetectorConstruction* fDetector;
-
     G4ParticleDefinition* fParticle = nullptr;
 
     TH1D* fSpectrum;
@@ -122,10 +124,9 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     Double_t lastEnergy;
 
     void SetParticlePosition();
-    void SetParticlePosition(int n);
-    G4ParticleDefinition* SetParticleDefinition(int n);
-    void SetParticleEnergy(int n);
-    void SetParticleDirection(int n);
+    G4ParticleDefinition* SetParticleDefinition(Int_t particlesourceindex, TRestGeant4Particle p);
+    void SetParticleEnergy(Int_t particlesourceindex, TRestGeant4Particle p);
+    void SetParticleDirection(Int_t particlesourceindex, TRestGeant4Particle p);
 
     G4ThreeVector GetIsotropicVector();
     Double_t GetAngle(G4ThreeVector x, G4ThreeVector y);

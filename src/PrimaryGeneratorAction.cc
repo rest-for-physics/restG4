@@ -23,14 +23,20 @@ Int_t face = 0;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+double GeneratorRndm() { return G4UniformRand(); }
+
 PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
     : G4VUserPrimaryGeneratorAction(), fParticleGun(0), fDetector(pDetector) {
     G4int n_particle = 1;
     fParticleGun = new G4ParticleGun(n_particle);
 
-    nCollections = restG4Metadata->GetPrimaryGenerator().GetNumberOfCollections();
+    // nCollections = restG4Metadata->GetPrimaryGenerator().GetNumberOfCollections();
 
     nBiasingVolumes = restG4Metadata->GetNumberOfBiasingVolumes();
+
+    for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
+        restG4Metadata->GetParticleSource(i)->SetRndmMethod(GeneratorRndm);
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -50,77 +56,39 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
     // (in endOfEventAction)
     restG4Event->Initialize();
 
-    // Singling out generator type "file" so as to...
-    // ...not randomize its sequence.
-    // ...set a distinct position for each particle.
-
-    string generator_type_name = (string)restG4Metadata->GetGeneratorType();
-    generator_type_name = g4_metadata_parameters::CleanString(generator_type_name);
-    g4_metadata_parameters::generator_types generator_type;
-
-    if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
-        cout << "DEBUG: Generator type: " << generator_type_name << endl;
+    for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
+        restG4Metadata->GetParticleSource(i)->Update();
     }
 
-    if (g4_metadata_parameters::generator_types_map.count(generator_type_name)) {
-        generator_type = g4_metadata_parameters::generator_types_map[generator_type_name];
-    } else {
-        // if we get here it means the parameter is not valid, we can either assign a default value or stop
-        // execution default value
-        cout << "Invalid generator type (" + generator_type_name + ") valid values are: ";
-        for (const auto& pair : g4_metadata_parameters::generator_types_map) {
-            cout << pair.first << ", ";
+    Int_t nParticles = restG4Metadata->GetNumberOfSources();
+
+    // Set the particle(s)' position, multiple particles generated from multiple
+    // sources shall always have a same origin
+    SetParticlePosition();
+
+    for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
+        vector<TRestGeant4Particle> particles = restG4Metadata->GetParticleSource(i)->GetParticles();
+        for (auto p : particles) {
+            // ParticleDefinition should be always declared first (after position).
+            SetParticleDefinition(i, p);
+
+            // Particle Direction must be always set before energy
+            SetParticleEnergy(i, p);
+
+            SetParticleDirection(i, p);
+
+            fParticleGun->GeneratePrimaryVertex(geant4_event);
         }
-        cout << endl;
-
-        throw "Invalid generator type";
-    }
-
-    // If there are particle collections stored is because we are using a
-    // generator from file
-    if (nCollections > 0) {
-        Int_t rndCollection;
-        if (generator_type ==
-            g4_metadata_parameters::generator_types::CUSTOM) {  // Generator type "file": no randomisation
-            static int nEvts = 0;
-            rndCollection = nEvts++;
-        } else
-            rndCollection = (Int_t)(G4UniformRand() * nCollections);
-
-        restG4Metadata->ReadParticleCollection(rndCollection);
-    }
-
-    Int_t nParticles = restG4Metadata->GetNumberOfPrimaries();
-
-    if (generator_type !=
-        g4_metadata_parameters::generator_types::CUSTOM)  // Except for generator "custom"...
-        // ...Position is common for all particles
-        SetParticlePosition();
-
-    for (int j = 0; j < nParticles; j++) {
-        if (generator_type == g4_metadata_parameters::generator_types::CUSTOM)  // Generator type "custom"...
-            // ...Get position from particle collection
-            SetParticlePosition(j);
-
-        // ParticleDefinition should be always declared first (after position).
-        SetParticleDefinition(j);
-
-        // Particle Direction must be always set before energy
-        SetParticleEnergy(j);
-
-        SetParticleDirection(j);
-
-        fParticleGun->GeneratePrimaryVertex(geant4_event);
     }
 }
 
 //_____________________________________________________________________________
-G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(int n) {
-    string particle_name = (string)restG4Metadata->GetParticleSource(n).GetParticleName();
+G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRestGeant4Particle p) {
+    string particle_name = (string)restG4Metadata->GetParticleSource(n)->GetParticleName();
 
-    Double_t excited_energy = (double)restG4Metadata->GetParticleSource(n).GetExcitationLevel();
+    Double_t excited_energy = (double)restG4Metadata->GetParticleSource(n)->GetExcitationLevel();
 
-    Int_t charge = restG4Metadata->GetParticleSource(n).GetParticleCharge();
+    Int_t charge = restG4Metadata->GetParticleSource(n)->GetParticleCharge();
 
     if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
         cout << "DEBUG: Particle name: " << particle_name << endl;
@@ -159,12 +127,12 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(int n) {
     return fParticle;
 }
 
-void PrimaryGeneratorAction::SetParticleDirection(int n) {
+void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p) {
     G4ThreeVector direction;
     // TODO: maybe reduce code redundancy by defining some functions?
     // TODO: fix bug when giving TH1D with lowercase (e.g. Th1D). string conversion is OK but integral gives
     // exception.
-    string angular_dist_type_name = (string)restG4Metadata->GetParticleSource(n).GetAngularDistType();
+    string angular_dist_type_name = (string)restG4Metadata->GetParticleSource(n)->GetAngularDistType();
     angular_dist_type_name = g4_metadata_parameters::CleanString(angular_dist_type_name);
     g4_metadata_parameters::angular_dist_types angular_dist_type;
 
@@ -331,14 +299,14 @@ void PrimaryGeneratorAction::SetParticleDirection(int n) {
         //       should be = to " << angle << G4endl;
 
     } else if (angular_dist_type == g4_metadata_parameters::angular_dist_types::FLUX) {
-        TVector3 v = restG4Metadata->GetParticleSource(n).GetDirection();
+        TVector3 v = p.GetMomentumDirection();
 
         v = v.Unit();
 
         direction.set(v.X(), v.Y(), v.Z());
 
     } else if (angular_dist_type == g4_metadata_parameters::angular_dist_types::BACK_TO_BACK) {
-        // This should never crash. In TRestGeant4Metadata we have defined that if the
+        // This should never crash. In TRestG4Metadata we have defined that if the
         // first source is backtoback we set it to isotropic
         TVector3 v = restG4Event->GetPrimaryEventDirection(n - 1);
         v = v.Unit();
@@ -350,7 +318,7 @@ void PrimaryGeneratorAction::SetParticleDirection(int n) {
                << G4endl;
     }
 
-    // storing the direction in TRestGeant4Event class
+    // storing the direction in TRestG4Event class
     TVector3 eventDirection(direction.x(), direction.y(), direction.z());
     restG4Event->SetPrimaryEventDirection(eventDirection);
 
@@ -366,10 +334,10 @@ void PrimaryGeneratorAction::SetParticleDirection(int n) {
 }
 
 //_____________________________________________________________________________
-void PrimaryGeneratorAction::SetParticleEnergy(int n) {
+void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
     Double_t energy = 0;
 
-    string energy_dist_type_name = (string)restG4Metadata->GetParticleSource(n).GetEnergyDistType();
+    string energy_dist_type_name = (string)restG4Metadata->GetParticleSource(n)->GetEnergyDistType();
     energy_dist_type_name = g4_metadata_parameters::CleanString(energy_dist_type_name);
 
     if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
@@ -396,12 +364,12 @@ void PrimaryGeneratorAction::SetParticleEnergy(int n) {
     }
 
     if (energy_dist_type == g4_metadata_parameters::energy_dist_types::MONO) {
-        energy = restG4Metadata->GetParticleSource(n).GetEnergy() * keV;
+        energy = p.GetEnergy() * keV;
     } else if (energy_dist_type == g4_metadata_parameters::energy_dist_types::FLAT) {
-        TVector2 enRange = restG4Metadata->GetParticleSource(n).GetEnergyRange();
+        TVector2 enRange = restG4Metadata->GetParticleSource(n)->GetEnergyRange();
         energy = ((enRange.Y() - enRange.X()) * G4UniformRand() + enRange.X()) * keV;
     } else if (energy_dist_type == g4_metadata_parameters::energy_dist_types::LOG) {
-        TVector2 enRange = restG4Metadata->GetParticleSource(n).GetEnergyRange();
+        TVector2 enRange = restG4Metadata->GetParticleSource(n)->GetEnergyRange();
         auto max_energy = enRange.Y() * keV;
         auto min_energy = enRange.X() * keV;
         energy = exp((log(max_energy) - log(min_energy)) * G4UniformRand() + log(min_energy));
@@ -427,7 +395,7 @@ void PrimaryGeneratorAction::SetParticleEnergy(int n) {
         energy = 1 * keV;
     }
 
-    string angular_dist_type_name = (string)restG4Metadata->GetParticleSource(n).GetAngularDistType();
+    string angular_dist_type_name = (string)restG4Metadata->GetParticleSource(n)->GetAngularDistType();
     angular_dist_type_name = g4_metadata_parameters::CleanString(angular_dist_type_name);
     g4_metadata_parameters::angular_dist_types angular_dist_type;
     if (g4_metadata_parameters::angular_dist_types_map.count(angular_dist_type_name)) {
@@ -637,7 +605,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
                << G4endl;
     }
 
-    // storing the direction in TRestGeant4Event class
+    // storing the direction in TRestG4Event class
     TVector3 eventPosition(x, y, z);
     restG4Event->SetPrimaryEventOrigin(eventPosition);
 
@@ -653,34 +621,34 @@ void PrimaryGeneratorAction::SetParticlePosition() {
     fParticleGun->SetParticlePosition(G4ThreeVector(x, y, z));
 }
 
-//_____________________________________________________________________________
-void PrimaryGeneratorAction::SetParticlePosition(int n) {
-    // Storing particle's position to that retrieved from TRestGeant4Particle
-    TVector3 pos = restG4Metadata->GetParticleSource(n).GetOrigin();
-    restG4Event->SetPrimaryEventOrigin(pos);
-
-    if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
-        cout << "DEBUG: Event origin: "
-             << "(" << restG4Event->GetPrimaryEventOrigin().X() << ", "
-             << restG4Event->GetPrimaryEventOrigin().Y() << ", " << restG4Event->GetPrimaryEventOrigin().Z()
-             << ")"
-             << " mm" << endl;
-    }
-
-    // Setting particle position
-    fParticleGun->SetParticlePosition(G4ThreeVector(pos.X(), pos.Y(), pos.Z()));
-}
+////_____________________________________________________________________________
+// void PrimaryGeneratorAction::SetParticlePosition(int n) {
+//    // Storing particle's position to that retrieved from TRestG4Particle
+//    TVector3 pos = p.GetOrigin();
+//    restG4Event->SetPrimaryEventOrigin(pos);
+//
+//    if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
+//        cout << "DEBUG: Event origin: "
+//             << "(" << restG4Event->GetPrimaryEventOrigin().X() << ", "
+//             << restG4Event->GetPrimaryEventOrigin().Y() << ", " << restG4Event->GetPrimaryEventOrigin().Z()
+//             << ")"
+//             << " mm" << endl;
+//    }
+//
+//    // Setting particle position
+//    fParticleGun->SetParticlePosition(G4ThreeVector(pos.X(), pos.Y(), pos.Z()));
+//}
 
 //_____________________________________________________________________________
 G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() {
     G4double a, b, c;
     G4double n;
     do {
-        a = 2 * (G4UniformRand() - 0.5);
-        b = 2 * (G4UniformRand() - 0.5);
-        c = 2 * (G4UniformRand() - 0.5);
+        a = (G4UniformRand() - 0.5) / 0.5;
+        b = (G4UniformRand() - 0.5) / 0.5;
+        c = (G4UniformRand() - 0.5) / 0.5;
         n = a * a + b * b + c * c;
-    } while (n > 1 || n < 0.01);
+    } while (n > 1 || n == 0.0);
 
     n = std::sqrt(n);
     a /= n;
