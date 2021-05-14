@@ -1,3 +1,4 @@
+
 #include "SteppingAction.hh"
 
 #include <TRestGeant4Event.h>
@@ -18,13 +19,12 @@ extern TRestGeant4Metadata* restG4Metadata;
 extern TRestGeant4Track* restTrack;
 extern Int_t biasing;
 
-//_____________________________________________________________________________
 SteppingAction::SteppingAction() {
     if (biasing > 1) restBiasingVolume = restG4Metadata->GetBiasingVolume(biasing - 1);
 }
-//_____________________________________________________________________________
-SteppingAction::~SteppingAction() {}
-//_____________________________________________________________________________
+
+SteppingAction::~SteppingAction() = default;
+
 void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     // Variables that describe a step are taken.
     nom_vol = aStep->GetPreStepPoint()->GetPhysicalVolume()->GetName();
@@ -64,9 +64,6 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     Double_t x = aTrack->GetPosition().x() / mm;
     Double_t y = aTrack->GetPosition().y() / mm;
     Double_t z = aTrack->GetPosition().z() / mm;
-
-    //   G4cout << "Step direction : " << aTrack->GetMomentumDirection() <<
-    //   G4endl;
 
     if (biasing > 0) {
         // In biasing mode we do not store hits. Just check if we observe a gamma
@@ -164,4 +161,3 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
                                 momentumDirection);
     }
 }
-//_____________________________________________________________________________

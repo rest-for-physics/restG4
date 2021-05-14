@@ -1,7 +1,5 @@
 #include "DetectorConstruction.hh"
 
-#include <G4UserLimits.hh>
-
 #include "G4FieldManager.hh"
 #include "G4IonTable.hh"
 #include "G4Isotope.hh"
@@ -9,19 +7,19 @@
 #include "G4Material.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4UniformMagField.hh"
+#include "G4UserLimits.hh "
 
 extern TRestGeant4Event* restG4Event;
 extern TRestGeant4Metadata* restG4Metadata;
 
-//_____________________________________________________________________________
 DetectorConstruction::DetectorConstruction() {
     G4cout << "Detector Construction" << G4endl;
 
     parser = new G4GDMLParser();
 }
-//_____________________________________________________________________________
+
 DetectorConstruction::~DetectorConstruction() { delete parser; }
-//_____________________________________________________________________________
+
 G4VPhysicalVolume* DetectorConstruction::Construct() {
     cout << "Isotope table " << endl;
     cout << *(G4Isotope::GetIsotopeTable()) << endl;
@@ -31,18 +29,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // Reading the geometry
     TString geometryFile = restG4Metadata->Get_GDML_Filename();
 
-    // char originDirectory[255];
-    // sprintf( originDirectory, "%s", get_current_dir_name() );
-
-    // char buffer[255];
-    // sprintf( buffer, "%s", (char *) restG4Metadata->GetGeometryPath().Data() );
-    // chdir( buffer );
     char originDirectory[256];
     sprintf(originDirectory, "%s", getenv("PWD"));
-    auto pathandname = TRestTools::SeparatePathAndName((string)restG4Metadata->Get_GDML_Filename());
-    chdir(pathandname.first.c_str());
+    auto pathAndName = TRestTools::SeparatePathAndName((string)restG4Metadata->Get_GDML_Filename());
+    chdir(pathAndName.first.c_str());
 
-    parser->Read(pathandname.second, false);
+    parser->Read(pathAndName.second, false);
 
     chdir(originDirectory);
 
@@ -70,7 +62,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     fieldMgr->SetDetectorField(magField);
     fieldMgr->CreateChordFinder(magField);
 
-    if (_vol != NULL) {
+    if (_vol) {
         G4LogicalVolume* vol = _vol->GetLogicalVolume();
         // This method seems not available in my Geant4 version 10.4.2
         // In future Geant4 versions it seems possible to define field at particular volumes
@@ -95,7 +87,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // we should RETURN error
     if (type == "volume" && GenVol != "Not defined") {
         G4VPhysicalVolume* pVol = GetPhysicalVolume(GenVol);
-        if (pVol == NULL) {
+        if (!pVol) {
             cout << "ERROR : The generator volume was not found in the geometry" << endl;
             exit(1);
             return W;
@@ -157,7 +149,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     for (int id = 0; id < restG4Metadata->GetNumberOfActiveVolumes(); id++) {
         TString actVolName = restG4Metadata->GetActiveVolumeName(id);
         G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)actVolName);
-        if (pVol != NULL) {
+        if (pVol) {
             G4LogicalVolume* lVol = pVol->GetLogicalVolume();
             if (restG4Metadata->GetMaxStepSize(actVolName) > 0) {
                 G4cout << "Setting maxStepSize = " << restG4Metadata->GetMaxStepSize(actVolName)
@@ -168,7 +160,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
         cout << "Activating volume : " << actVolName << endl;
         restG4Event->AddActiveVolume((string)actVolName);
-        if (pVol == NULL) {
+        if (!pVol) {
             cout << "DetectorConstruction. Volume " << actVolName << " is not defined in the geometry"
                  << endl;
             exit(1);
@@ -179,7 +171,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     return W;
 }
-//_____________________________________________________________________________
+
 G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(G4String physVolName) {
     G4PhysicalVolumeStore* physVolStore = G4PhysicalVolumeStore::GetInstance();
     std::vector<G4VPhysicalVolume*>::const_iterator physVol;
@@ -189,5 +181,5 @@ G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(G4String physVolName)
         }
     }
 
-    return NULL;
+    return nullptr;
 }

@@ -8,14 +8,14 @@ stages:
   - examples
 
 before_script:
-    - export USER="rest"
-    - pwd
-    - if [ -f "/opt/root/install/bin/thisroot.sh" ]; then source /opt/root/install/bin/thisroot.sh; fi
-    - root-config --version
-    - if [ -f "/opt/geant4/install/bin/geant4.sh" ]; then source /opt/geant4/install/bin/geant4.sh; fi
-    - geant4-config --version
-    - python3 --version
-    - apt update && apt install -y wget
+  - export USER="rest"
+  - pwd
+  - if [ -f "/opt/root/install/bin/thisroot.sh" ]; then source /opt/root/install/bin/thisroot.sh; fi
+  - root-config --version
+  - if [ -f "/opt/geant4/install/bin/geant4.sh" ]; then source /opt/geant4/install/bin/geant4.sh; fi
+  - geant4-config --version
+  - python3 --version
+  - apt update && apt install -y wget
 
 # This is the one we use to run validations tests. We save the installation as an artifact.
 build_root_6.22_Geant4_10.4.2:
@@ -132,7 +132,7 @@ loadRESTLibs:
     - restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 14)'
     - restRoot -b -q Validate.C'("Run00002_U238_SingleChainDecay.root", 1)'
 
-      
+
 09_Pb210_Shielding:
   type: examples
   script:

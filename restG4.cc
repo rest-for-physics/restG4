@@ -3,8 +3,6 @@
 // Author : J. Galan
 // Date : Jul-2015
 //
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "DetectorConstruction.hh"
 #include "EventAction.hh"
@@ -74,7 +72,6 @@ Int_t N_events;
 char inputConfigFile[256];
 char restG4Name[256];
 char physListName[256];
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
 int main(int argc, char** argv) {
     auto start_time = chrono::steady_clock::now();

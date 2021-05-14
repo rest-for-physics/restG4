@@ -1,17 +1,16 @@
 #ifndef SteppingAction_h
 #define SteppingAction_h 1
 
-#include "G4RunManager.hh"
-#include "G4UserSteppingAction.hh"
-#include "globals.hh"
-
-#include "TH1D.h"
-#include "TH2D.h"
-
+#include <TH1D.h>
+#include <TH2D.h>
 #include <TRestGeant4BiasingVolume.h>
 
+#include <G4RunManager.hh>
+#include <G4UserSteppingAction.hh>
 #include <fstream>
+#include <globals.hh>
 #include <iostream>
+
 using namespace std;
 
 class SteppingAction : public G4UserSteppingAction {
@@ -47,14 +46,5 @@ class SteppingAction : public G4UserSteppingAction {
     TRestGeant4BiasingVolume restBiasingVolume;
 
     G4ThreeVector previousDirection;
-
-    /*
-       G4ThreeVector momentum;
-       G4double x, y, z;
-       G4int step;
-
-
-       void WriteDefaultInt();
-       */
 };
 #endif

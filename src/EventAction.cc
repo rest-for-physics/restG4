@@ -1,44 +1,12 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-/// \file radioactivedecay/rdecay01/src/EventAction.cc
-/// \brief Implementation of the EventAction class
-//
-// $Id: EventAction.cc 68030 2013-03-13 13:51:27Z gcosmo $
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "EventAction.hh"
 
-#include <TRestRun.h>
-
+#include <fstream>
 #include <iomanip>
 
 #include "G4Event.hh"
 #include "Randomize.hh"
+#include "TRestRun.h"
 
 extern TRestRun* restRun;
 extern TRestGeant4Metadata* restG4Metadata;
@@ -46,18 +14,11 @@ extern TRestGeant4Event* restG4Event;
 extern TRestGeant4Event* subRestG4Event;
 extern TRestGeant4Track* restTrack;
 
-#include <fstream>
 using namespace std;
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 EventAction::EventAction() : G4UserEventAction() { restG4Metadata->isFullChainActivated(); }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-EventAction::~EventAction() {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+EventAction::~EventAction() = default;
 
 void EventAction::BeginOfEventAction(const G4Event* geant4_event) {
     G4int event_number = geant4_event->GetEventID();
@@ -92,8 +53,6 @@ void EventAction::BeginOfEventAction(const G4Event* geant4_event) {
             restG4Event->DisableVolumeForStorage(i);
     }
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EventAction::EndOfEventAction(const G4Event* geant4_event) {
     G4int event_number = geant4_event->GetEventID();
@@ -224,7 +183,7 @@ void EventAction::FillSubEvent(Int_t subId) {
     for (int n = 0; n < restG4Event->GetNumberOfTracks(); n++) {
         TRestGeant4Track* tck = restG4Event->GetTrack(n);
 
-        if (tck->GetSubEventID() == subId) 
+        if (tck->GetSubEventID() == subId)
             if (tck->GetNumberOfHits() > 0 || restG4Metadata->RegisterEmptyTracks()) {
                 subRestG4Event->AddTrack(*tck);
             }
@@ -292,7 +251,7 @@ int EventAction::SetTrackSubeventIDs() {
     Double_t timeDelay = restG4Metadata->GetSubEventTimeDelay();  // in unit us
 
     // reorder tracks
-    std::map<int, TRestGeant4Track*> tracks; 
+    std::map<int, TRestGeant4Track*> tracks;
     for (int n = 0; n < nTracks; n++) {
         TRestGeant4Track* track = restG4Event->GetTrack(n);
         tracks[track->GetTrackID()] = track;
@@ -337,30 +296,4 @@ int EventAction::SetTrackSubeventIDs() {
     }
 
     return max_subid;
-    // vector<Double_t> fTrackTimestampList;
-    // fTrackTimestampList.clear();
-
-    // for (int n = 0; n < nTracks; n++) {
-    //    Double_t trkTime = restG4Event->GetTrack(n)->GetGlobalTime();
-
-    //    Int_t Ifound = 0;
-    //    for (unsigned int id = 0; id < fTrackTimestampList.size(); id++)
-    //        if (absDouble(fTrackTimestampList[id] - trkTime) < timeDelay) {
-    //            Ifound = 1;
-    //        }
-
-    //    if (Ifound == 0) fTrackTimestampList.push_back(trkTime);
-    //}
-
-    // for (unsigned int id = 0; id < fTrackTimestampList.size(); id++) {
-    //    for (int n = 0; n < nTracks; n++) {
-    //        Double_t trkTime = restG4Event->GetTrack(n)->GetGlobalTime();
-
-    //        if (absDouble(fTrackTimestampList[id] - trkTime) < timeDelay) {
-    //            restG4Event->SetTrackSubEventID(n, id);
-    //        }
-    //    }
-    //}
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

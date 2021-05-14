@@ -1,4 +1,3 @@
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "PrimaryGeneratorAction.hh"
 
@@ -21,8 +20,6 @@ extern Int_t biasing;
 
 Int_t face = 0;
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
     : G4VUserPrimaryGeneratorAction(), fParticleGun(0), fDetector(pDetector) {
     G4int n_particle = 1;
@@ -33,11 +30,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
     nBiasingVolumes = restG4Metadata->GetNumberOfBiasingVolumes();
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
     if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
@@ -76,8 +69,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
         throw "Invalid generator type";
     }
 
-    // If there are particle collections stored is because we are using a
-    // generator from file
+    // If there are particle collections stored is because we are using a generator from file
     if (nCollections > 0) {
         Int_t rndCollection;
         if (generator_type ==
@@ -114,7 +106,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
     }
 }
 
-//_____________________________________________________________________________
 G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(int n) {
     string particle_name = (string)restG4Metadata->GetParticleSource(n).GetParticleName();
 
@@ -365,7 +356,6 @@ void PrimaryGeneratorAction::SetParticleDirection(int n) {
     fParticleGun->SetParticleMomentumDirection(direction);
 }
 
-//_____________________________________________________________________________
 void PrimaryGeneratorAction::SetParticleEnergy(int n) {
     Double_t energy = 0;
 
@@ -445,7 +435,6 @@ void PrimaryGeneratorAction::SetParticleEnergy(int n) {
         cout << "DEBUG: Particle energy: " << energy / keV << " keV" << endl;
 }
 
-//_____________________________________________________________________________
 void PrimaryGeneratorAction::SetParticlePosition() {
     double x = 0, y = 0, z = 0;
     string generator_type_name = (string)restG4Metadata->GetGeneratorType();
@@ -671,7 +660,6 @@ void PrimaryGeneratorAction::SetParticlePosition(int n) {
     fParticleGun->SetParticlePosition(G4ThreeVector(pos.X(), pos.Y(), pos.Z()));
 }
 
-//_____________________________________________________________________________
 G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() {
     G4double a, b, c;
     G4double n;
@@ -688,8 +676,7 @@ G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() {
     c /= n;
     return G4ThreeVector(a, b, c);
 }
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//
+
 Double_t PrimaryGeneratorAction::GetAngle(G4ThreeVector x, G4ThreeVector y) {
     Double_t angle = y.angle(x);
 
