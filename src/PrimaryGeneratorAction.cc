@@ -84,11 +84,11 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
 
 //_____________________________________________________________________________
 G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRestGeant4Particle p) {
-    string particle_name = (string)restG4Metadata->GetParticleSource(n)->GetParticleName();
+    string particle_name = (string)p.GetParticleName();
 
-    Double_t excited_energy = (double)restG4Metadata->GetParticleSource(n)->GetExcitationLevel();
+    Double_t excited_energy = (double)p.GetExcitationLevel();
 
-    Int_t charge = restG4Metadata->GetParticleSource(n)->GetParticleCharge();
+    Int_t charge = p.GetParticleCharge();
 
     if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
         cout << "DEBUG: Particle name: " << particle_name << endl;
