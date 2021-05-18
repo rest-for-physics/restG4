@@ -3,25 +3,37 @@
 // Author : J. Galan
 // Date : Jul-2015
 //
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+#include <TGeoVolume.h>
+#include <TH1D.h>
+#include <TH2D.h>
+#include <TRestGDMLParser.h>
+#include <TRestGeant4Event.h>
+#include <TRestGeant4Metadata.h>
+#include <TRestGeant4PhysicsLists.h>
+#include <TRestGeant4Track.h>
+#include <TRestRun.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+
+#include <G4RunManager.hh>
+#include <G4SystemOfUnits.hh>
+#include <G4UImanager.hh>
+#include <Randomize.hh>
+#include <algorithm>
+#include <chrono>
+#include <cstdio>
+#include <cstring>
+#include <fstream>
+#include <iostream>
 
 #include "DetectorConstruction.hh"
 #include "EventAction.hh"
-#include "G4RunManager.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4UImanager.hh"
 #include "PhysicsList.hh"
 #include "PrimaryGeneratorAction.hh"
-#include "Randomize.hh"
 #include "RunAction.hh"
 #include "SteppingAction.hh"
-#include "TRestGDMLParser.h"
-#include "TRestGeant4Event.h"
-#include "TRestGeant4Metadata.h"
-#include "TRestGeant4PhysicsLists.h"
-#include "TRestGeant4Track.h"
-#include "TRestRun.h"
 #include "TrackingAction.hh"
 
 #ifdef G4VIS_USE
@@ -32,21 +44,7 @@
 #include "G4UIExecutive.hh"
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/wait.h>
-
-#include <algorithm>
-#include <chrono>
-#include <cstdio>
-#include <cstring>
-#include <fstream>
-#include <iostream>
 using namespace std;
-
-#include "TH1D.h"
-#include "TH2D.h"
-#include "string"
 
 // We define rest objects that will be used in Geant4
 TRestRun* restRun;
@@ -56,8 +54,6 @@ TRestGeant4Metadata* restG4Metadata;
 TRestGeant4PhysicsLists* restPhysList;
 
 Bool_t saveAllEvents;
-
-#include <TGeoVolume.h>
 
 const Int_t maxBiasingVolumes = 50;
 Int_t biasing = 0;
@@ -74,7 +70,6 @@ Int_t N_events;
 char inputConfigFile[256];
 char restG4Name[256];
 char physListName[256];
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
 int main(int argc, char** argv) {
     auto start_time = chrono::steady_clock::now();
@@ -494,26 +489,8 @@ throw std::exception();
         pid_t child_pid;
 
         printf("Writing geometry ... \n");
-
-        // child_pid = wait(&stat_val);
-
-        // printf("Geometry writting process exited, pid = %d, Code %d\n", child_pid, WEXITSTATUS(stat_val));
-        // if (WEXITSTATUS(stat_val) != 0) printf("REST Error: geometry writting is abnormal!\n");
     }
-    //// Writing the geometry in TGeoManager format to the ROOT file
-    //{
-    //    // writing the geometry object
-    //    TFile* f1 = new TFile(Filename, "update");
-    //    cout << "Writing geometry..." << endl;
 
-    //    TGeoManager* geo2 = gdml->CreateGeoM();
-
-    //    f1->cd();
-    //    geo2->SetName("Geometry");
-    //    geo2->Write();
-    //    cout << "Closing file : " << Filename << endl;
-    //    f1->Close();
-    //}
     cout << "============== Generated file: " << Filename << " ==============" << endl;
     auto end_time = chrono::steady_clock::now();
     cout << "Elapsed time: " << chrono::duration_cast<chrono::seconds>(end_time - start_time).count()
@@ -521,5 +498,3 @@ throw std::exception();
 
     return 0;
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
