@@ -36,7 +36,12 @@ jobs:
           repository: rest-for-physics/framework
           ref: ${{ matrix.framework-branch }}
           path: framework
-
+          
+      - name: Pull submodules
+        run: |
+          cd ${{env.FRAMEWORK_PATH}}
+          python3 pull-submodules.py
+          
       - name: Checkout RestG4 (this repository)
         uses: actions/checkout@v2
         with:
