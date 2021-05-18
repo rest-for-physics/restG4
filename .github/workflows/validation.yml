@@ -46,7 +46,7 @@ jobs:
         run: |
           cd ${{env.FRAMEWORK_PATH}}/source/packages/restG4
           git branch
-          git show | head -n 6
+          git show -s --format=%H
 
       - name: Configure CMake (REST Framework)
         run: |
