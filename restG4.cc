@@ -336,8 +336,8 @@ int main(int argc, char** argv) {
             // the biasing volume
             restG4Metadata->SetGeneratorType(
                 restG4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeType());
-            restG4Metadata->SetGeneratorSize(
-                restG4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeSize());
+            double size = restG4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeSize();
+            restG4Metadata->SetGeneratorSize(TVector3(size,size,size));
             // restG4Metadata->GetBiasingVolume( biasing-1 ).PrintBiasingVolume();
 
             // Definning biasing the number of event to be re-launched

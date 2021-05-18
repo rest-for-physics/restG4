@@ -36,6 +36,7 @@
 #define PrimaryGeneratorAction_h 1
 
 #include <TH1D.h>
+#include <TF3.h>
 
 #include <fstream>
 #include <iostream>
@@ -63,43 +64,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     virtual void GeneratePrimaries(G4Event*);
     G4ParticleGun* GetParticleGun() { return fParticleGun; };
 
-    void SetSpectrum(TH1D* spt, double eMin = 0, double eMax = 0) {
-        TString xLabel = (TString)spt->GetXaxis()->GetTitle();
-
-        if (xLabel.Contains("MeV")) {
-            energyFactor = 1.e3;
-        } else if (xLabel.Contains("GeV")) {
-            energyFactor = 1.e6;
-        } else {
-            energyFactor = 1.;
-        }
-
-        fSpectrum = spt;
-        fSpectrumIntegral = fSpectrum->Integral();
-
-        startEnergyBin = 1;
-        endEnergyBin = fSpectrum->GetNbinsX();
-
-        if (eMin > 0) {
-            for (int i = startEnergyBin; i <= endEnergyBin; i++) {
-                if (fSpectrum->GetBinCenter(i) > eMin) {
-                    startEnergyBin = i;
-                    break;
-                }
-            }
-        }
-
-        if (eMax > 0) {
-            for (int i = startEnergyBin; i <= endEnergyBin; i++) {
-                if (fSpectrum->GetBinCenter(i) > eMax) {
-                    endEnergyBin = i;
-                    break;
-                }
-            }
-        }
-
-        fSpectrumIntegral = fSpectrum->Integral(startEnergyBin, endEnergyBin);
-    }
+    void SetSpectrum(TH1D* spt, double eMin = 0, double eMax = 0);
+    void SetGeneratorSpatialDensity(TString str);
 
     void SetAngularDistribution(TH1D* ang) { fAngularDistribution = ang; }
 
@@ -112,6 +78,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
 
     TH1D* fSpectrum;
     TH1D* fAngularDistribution;
+    TF3* fGeneratorSpatialDensityFunction;
 
     Int_t startEnergyBin;
     Int_t endEnergyBin;
@@ -131,6 +98,18 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     G4ThreeVector GetIsotropicVector();
     Double_t GetAngle(G4ThreeVector x, G4ThreeVector y);
     Double_t GetCosineLowRandomThetaAngle();
+
+    void GenPositionOnGDMLVolume(double& x, double& y, double& z);
+    void GenPositionOnGDMLSurface(double& x, double& y, double& z);
+    void GenPositionOnBoxVolume(double& x, double& y, double& z);
+    void GenPositionOnBoxSurface(double& x, double& y, double& z);
+    void GenPositionOnSphereVolume(double& x, double& y, double& z);
+    void GenPositionOnSphereSurface(double& x, double& y, double& z);
+    void GenPositionOnCylinderVolume(double& x, double& y, double& z);
+    void GenPositionOnCylinderSurface(double& x, double& y, double& z);
+    void GenPositionOnPoint(double& x, double& y, double& z);
+    void GenPositionOnWall(double& x, double& y, double& z);
+    void GenPositionOnPlate(double& x, double& y, double& z);
 
     G4String fParType;
     G4String fGenType;
