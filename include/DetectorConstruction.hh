@@ -1,14 +1,13 @@
+
 #ifndef DetectorConstruction_h
 #define DetectorConstruction_h 1
 
-#include <G4PhysicalVolumeStore.hh>
-#include "G4VUserDetectorConstruction.hh"
-//#include <G4SystemOfUnits.hh>
-
-#include <G4GDMLParser.hh>
-
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
+
+#include <G4GDMLParser.hh>
+#include <G4PhysicalVolumeStore.hh>
+#include <G4VUserDetectorConstruction.hh>
 
 class DetectorConstruction : public G4VUserDetectorConstruction {
    private:
