@@ -25,6 +25,11 @@ jobs:
         framework-branch: [master, development]
 
     steps:
+      - name: Source ROOT and Geant4
+        run: |
+          source /root/.bashrc
+          printenv
+          
       - name: Checkout REST Framework
         uses: actions/checkout@v2
         with:
@@ -39,23 +44,14 @@ jobs:
 
       - name: Debug - Print latest commit info in Framework souce
         run: |
-          cd ${{env.FRAMEWORK_PATH}}/source/libraries/geant4
+          cd ${{env.FRAMEWORK_PATH}}/source/packages/restG4
           git branch
-          git show
-
-      - name: Source ROOT and Geant4
-        run: |
-          source /root/.bashrc
-          printenv
-
-      - name: Install additional dependencies
-        run: |
-          apt update
-          apt install -y libtbb-dev
+          git show | head -n 6
 
       - name: Configure CMake (REST Framework)
         run: |
           source /root/.bashrc
-          cmake -B ${{env.FRAMEWORK_PATH}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DRESTLIB_GEANT4=ON -DREST_G4=ON -DREST_EVE=OFF ${{env.FRAMEWORK_PATH}}
+          cmake -B ${{env.FRAMEWORK_PATH}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DREST_G4=ON ${{env.FRAMEWORK_PATH}}
+          
       - name: Make
         run: make --directory=${{env.FRAMEWORK_PATH}}/build
