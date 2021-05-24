@@ -28,7 +28,9 @@ build:
     - git submodule init source/libraries/geant4
     - git submodule update source/libraries/geant4
     - cd source/libraries/geant4/
-    - git checkout master
+      # We attempt to pull a branch from geant4lib named as the one at restG4. 
+      # If not it will pull master by default
+    - ../../../scripts/checkoutRemoteBranch.sh ${CI_COMMIT_BRANCH}
     - cd ../../../
     - git submodule init source/packages/restG4
     - git submodule update source/packages/restG4
