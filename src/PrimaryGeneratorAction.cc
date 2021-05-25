@@ -461,38 +461,35 @@ void PrimaryGeneratorAction::SetParticlePosition() {
             generator_shape_name)];
 
     while (1) {
-        if (generator_shape == g4_metadata_parameters::generator_shapes::GDML) {
-            if (generator_type == g4_metadata_parameters::generator_types::VOLUME) {
-                GenPositionOnGDMLVolume(x, y, z);
-            } else if (generator_type == g4_metadata_parameters::generator_types::SURFACE) {
-                GenPositionOnGDMLSurface(x, y, z);
-            }
-        } else if (generator_shape == g4_metadata_parameters::generator_shapes::BOX) {
-            if (generator_type == g4_metadata_parameters::generator_types::VOLUME) {
-                GenPositionOnBoxVolume(x, y, z);
-            } else if (generator_type == g4_metadata_parameters::generator_types::SURFACE) {
-                GenPositionOnBoxSurface(x, y, z);
-            }
-        } else if (generator_shape == g4_metadata_parameters::generator_shapes::CYLINDER) {
-            if (generator_type == g4_metadata_parameters::generator_types::VOLUME) {
-                GenPositionOnCylinderVolume(x, y, z);
-            } else if (generator_type == g4_metadata_parameters::generator_types::SURFACE) {
-                GenPositionOnCylinderSurface(x, y, z);
-            }
-        } else if (generator_shape == g4_metadata_parameters::generator_shapes::SPHERE) {
-            if (generator_type == g4_metadata_parameters::generator_types::VOLUME) {
-                GenPositionOnSphereVolume(x, y, z);
-            } else if (generator_type == g4_metadata_parameters::generator_types::SURFACE) {
-                GenPositionOnSphereSurface(x, y, z);
-            }
-        } else if (generator_shape == g4_metadata_parameters::generator_shapes::PLATE) {
-            GenPositionOnPlate(x, y, z);
-        } else if (generator_shape == g4_metadata_parameters::generator_shapes::WALL) {
-            GenPositionOnWall(x, y, z);
-        } else if (generator_shape == g4_metadata_parameters::generator_shapes::POINT) {
+        if (generator_type == g4_metadata_parameters::generator_types::POINT) {
             GenPositionOnPoint(x, y, z);
+        } else if (generator_type == g4_metadata_parameters::generator_types::SURFACE) {
+            if (generator_shape == g4_metadata_parameters::generator_shapes::GDML) {
+                GenPositionOnGDMLSurface(x, y, z);
+            } else if (generator_shape == g4_metadata_parameters::generator_shapes::BOX) {
+                GenPositionOnBoxSurface(x, y, z);
+            } else if (generator_shape == g4_metadata_parameters::generator_shapes::CYLINDER) {
+                GenPositionOnCylinderSurface(x, y, z);
+            } else if (generator_shape == g4_metadata_parameters::generator_shapes::SPHERE) {
+                GenPositionOnSphereSurface(x, y, z);
+            } else if (generator_shape == g4_metadata_parameters::generator_shapes::PLATE) {
+                GenPositionOnPlate(x, y, z);
+            } else if (generator_shape == g4_metadata_parameters::generator_shapes::WALL) {
+                GenPositionOnWall(x, y, z);
+            }
+        } else if (generator_type == g4_metadata_parameters::generator_types::VOLUME) {
+            if (generator_shape == g4_metadata_parameters::generator_shapes::GDML) {
+                GenPositionOnGDMLVolume(x, y, z);
+            } else if (generator_shape == g4_metadata_parameters::generator_shapes::BOX) {
+                GenPositionOnBoxVolume(x, y, z);
+            } else if (generator_shape == g4_metadata_parameters::generator_shapes::CYLINDER) {
+                GenPositionOnCylinderVolume(x, y, z);
+            } else if (generator_shape == g4_metadata_parameters::generator_shapes::SPHERE) {
+                GenPositionOnSphereVolume(x, y, z);
+            }
         } else {
-            G4cout << "WARNING! Generator type was not recognized. Launching particle "
+            G4cout << "WARNING! Generator type \"" << restG4Metadata->GetGeneratorType()
+                   << "\" was not recognized. Launching particle "
                       "from origin (0,0,0)"
                    << G4endl;
         }
