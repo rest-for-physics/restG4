@@ -1,5 +1,6 @@
 #image: lobis/root-geant4-garfieldpp:cxx14_ROOTv6-25-01_Geant4v10.4.2
-image: lobis/root-geant4-garfieldpp:cxx14_ROOTv6-22-08_Geant4v10.4.2
+#image: lobis/root-geant4-garfieldpp:cxx14_ROOTv6-22-08_Geant4v10.4.2
+image: nkx1231/root6-geant4-garfield:0.6
 
 stages:
   - build
@@ -17,7 +18,7 @@ before_script:
     - apt update && apt install -y wget
 
 # This is the one we use to run validations tests. We save the installation as an artifact.
-build_root_6.22_Geant4_10.4.2:
+build:
   type: build
   script:
     - echo "**${CI_PROJECT_DIR}**"
@@ -27,7 +28,9 @@ build_root_6.22_Geant4_10.4.2:
     - git submodule init source/libraries/geant4
     - git submodule update source/libraries/geant4
     - cd source/libraries/geant4/
-    - git checkout master
+      # We attempt to pull a branch from geant4lib named as the one at restG4. 
+      # If not it will pull master by default
+    - ../../../scripts/checkoutRemoteBranch.sh ${CI_COMMIT_BRANCH}
     - cd ../../../
     - git submodule init source/packages/restG4
     - git submodule update source/packages/restG4
