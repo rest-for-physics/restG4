@@ -182,12 +182,12 @@ int main(int argc, char** argv) {
     // set user action classes
     PrimaryGeneratorAction* prim = new PrimaryGeneratorAction(det);
 
-    if (restG4Metadata->GetParticleSource(0).GetEnergyDistType() == "TH1D") {
-        TString fileFullPath = (TString)restG4Metadata->GetParticleSource(0).GetSpectrumFilename();
+    if (restG4Metadata->GetParticleSource(0)->GetEnergyDistType() == "TH1D") {
+        TString fileFullPath = (TString)restG4Metadata->GetParticleSource(0)->GetSpectrumFilename();
 
         TFile fin(fileFullPath);
 
-        TString sptName = restG4Metadata->GetParticleSource(0).GetSpectrumName();
+        TString sptName = restG4Metadata->GetParticleSource(0)->GetSpectrumName();
 
         TH1D* h = (TH1D*)fin.Get(sptName);
         ;
@@ -200,22 +200,22 @@ int main(int argc, char** argv) {
 
         initialEnergySpectrum = *h;
 
-        Double_t minEnergy = restG4Metadata->GetParticleSource(0).GetMinEnergy();
+        Double_t minEnergy = restG4Metadata->GetParticleSource(0)->GetMinEnergy();
         if (minEnergy < 0) minEnergy = 0;
 
-        Double_t maxEnergy = restG4Metadata->GetParticleSource(0).GetMaxEnergy();
+        Double_t maxEnergy = restG4Metadata->GetParticleSource(0)->GetMaxEnergy();
         if (maxEnergy < 0) maxEnergy = 0;
 
         // We set the initial spectrum energy provided from TH1D
         prim->SetSpectrum(&initialEnergySpectrum, minEnergy, maxEnergy);
     }
 
-    if (restG4Metadata->GetParticleSource(0).GetAngularDistType() == "TH1D") {
-        TString fileFullPath = (TString)restG4Metadata->GetParticleSource(0).GetAngularFilename();
+    if (restG4Metadata->GetParticleSource(0)->GetAngularDistType() == "TH1D") {
+        TString fileFullPath = (TString)restG4Metadata->GetParticleSource(0)->GetAngularFilename();
 
         TFile fin(fileFullPath);
 
-        TString sptName = restG4Metadata->GetParticleSource(0).GetAngularName();
+        TString sptName = restG4Metadata->GetParticleSource(0)->GetAngularName();
         TH1D* h = (TH1D*)fin.Get(sptName);
         ;
         if (h == NULL) {
@@ -311,13 +311,13 @@ int main(int argc, char** argv) {
         while (biasing) {
             // Definning isotropic gammas using the spectrum and angular distribution
             // previously obtained
-            restG4Metadata->RemoveSources();
+            restG4Metadata->RemoveParticleSources();
 
-            TRestGeant4ParticleSource src;
-            src.SetParticleName("gamma");
-            src.SetEnergyDistType("TH1D");
-            src.SetAngularDistType("TH1D");
-            restG4Metadata->AddSource(src);
+            TRestGeant4ParticleSource* src = new TRestGeant4ParticleSource();
+            src->SetParticleName("gamma");
+            src->SetEnergyDistType("TH1D");
+            src->SetAngularDistType("TH1D");
+            restG4Metadata->AddParticleSource(src);
 
             // We set the spectrum from previous biasing volume inside the primary
             // generator
@@ -331,8 +331,8 @@ int main(int argc, char** argv) {
             // the biasing volume
             restG4Metadata->SetGeneratorType(
                 restG4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeType());
-            restG4Metadata->SetGeneratorSize(
-                restG4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeSize());
+            double size = restG4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeSize();
+            restG4Metadata->SetGeneratorSize(TVector3(size,size,size));
             // restG4Metadata->GetBiasingVolume( biasing-1 ).PrintBiasingVolume();
 
             // Definning biasing the number of event to be re-launched

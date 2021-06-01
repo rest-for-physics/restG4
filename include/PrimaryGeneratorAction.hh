@@ -2,16 +2,19 @@
 #ifndef PrimaryGeneratorAction_h
 #define PrimaryGeneratorAction_h 1
 
+#include <TF3.h>
 #include <TH1D.h>
+
+#include <fstream>
+#include <iostream>
 
 #include <G4IonTable.hh>
 #include <G4ParticleGun.hh>
 #include <G4VUserPrimaryGeneratorAction.hh>
-#include <fstream>
 #include <globals.hh>
-#include <iostream>
 
 #include "DetectorConstruction.hh"
+#include "TRestGeant4Particle.h"
 
 using namespace std;
 
@@ -28,54 +31,21 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     virtual void GeneratePrimaries(G4Event*);
     G4ParticleGun* GetParticleGun() { return fParticleGun; };
 
-    void SetSpectrum(TH1D* spt, double eMin = 0, double eMax = 0) {
-        TString xLabel = (TString)spt->GetXaxis()->GetTitle();
-
-        if (xLabel.Contains("MeV")) {
-            energyFactor = 1.e3;
-        } else if (xLabel.Contains("GeV")) {
-            energyFactor = 1.e6;
-        } else {
-            energyFactor = 1.;
-        }
-
-        fSpectrum = spt;
-        fSpectrumIntegral = fSpectrum->Integral();
-
-        startEnergyBin = 1;
-        endEnergyBin = fSpectrum->GetNbinsX();
-
-        if (eMin > 0) {
-            for (int i = startEnergyBin; i <= endEnergyBin; i++) {
-                if (fSpectrum->GetBinCenter(i) > eMin) {
-                    startEnergyBin = i;
-                    break;
-                }
-            }
-        }
-
-        if (eMax > 0) {
-            for (int i = startEnergyBin; i <= endEnergyBin; i++) {
-                if (fSpectrum->GetBinCenter(i) > eMax) {
-                    endEnergyBin = i;
-                    break;
-                }
-            }
-        }
-
-        fSpectrumIntegral = fSpectrum->Integral(startEnergyBin, endEnergyBin);
-    }
+    void SetSpectrum(TH1D* spt, double eMin = 0, double eMax = 0);
+    void SetGeneratorSpatialDensity(TString str);
 
     void SetAngularDistribution(TH1D* ang) { fAngularDistribution = ang; }
 
    private:
+    vector<TRestGeant4Particle> fTempParticles;
+
     G4ParticleGun* fParticleGun;
     DetectorConstruction* fDetector;
-
     G4ParticleDefinition* fParticle = nullptr;
 
     TH1D* fSpectrum;
     TH1D* fAngularDistribution;
+    TF3* fGeneratorSpatialDensityFunction;
 
     Int_t startEnergyBin;
     Int_t endEnergyBin;
@@ -88,14 +58,25 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     Double_t lastEnergy;
 
     void SetParticlePosition();
-    void SetParticlePosition(int n);
-    G4ParticleDefinition* SetParticleDefinition(int n);
-    void SetParticleEnergy(int n);
-    void SetParticleDirection(int n);
+    G4ParticleDefinition* SetParticleDefinition(Int_t particlesourceindex, TRestGeant4Particle p);
+    void SetParticleEnergy(Int_t particlesourceindex, TRestGeant4Particle p);
+    void SetParticleDirection(Int_t particlesourceindex, TRestGeant4Particle p);
 
     G4ThreeVector GetIsotropicVector();
     Double_t GetAngle(G4ThreeVector x, G4ThreeVector y);
     Double_t GetCosineLowRandomThetaAngle();
+
+    void GenPositionOnGDMLVolume(double& x, double& y, double& z);
+    void GenPositionOnGDMLSurface(double& x, double& y, double& z);
+    void GenPositionOnBoxVolume(double& x, double& y, double& z);
+    void GenPositionOnBoxSurface(double& x, double& y, double& z);
+    void GenPositionOnSphereVolume(double& x, double& y, double& z);
+    void GenPositionOnSphereSurface(double& x, double& y, double& z);
+    void GenPositionOnCylinderVolume(double& x, double& y, double& z);
+    void GenPositionOnCylinderSurface(double& x, double& y, double& z);
+    void GenPositionOnPoint(double& x, double& y, double& z);
+    void GenPositionOnWall(double& x, double& y, double& z);
+    void GenPositionOnPlate(double& x, double& y, double& z);
 
     G4String fParType;
     G4String fGenType;
