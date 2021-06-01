@@ -1,30 +1,29 @@
+
 #include "SteppingAction.hh"
 
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
 #include <TRestGeant4Track.h>
 
+#include <G4DynamicParticle.hh>
+#include <G4ParticleDefinition.hh>
+#include <G4ParticleTable.hh>
+#include <G4SteppingManager.hh>
 #include <G4SystemOfUnits.hh>
-
-#include "G4DynamicParticle.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4ParticleTable.hh"
-#include "G4SteppingManager.hh"
-#include "G4UnitsTable.hh"
-#include "globals.hh"
+#include <G4UnitsTable.hh>
+#include <globals.hh>
 
 extern TRestGeant4Event* restG4Event;
 extern TRestGeant4Metadata* restG4Metadata;
 extern TRestGeant4Track* restTrack;
 extern Int_t biasing;
 
-//_____________________________________________________________________________
 SteppingAction::SteppingAction() {
     if (biasing > 1) restBiasingVolume = restG4Metadata->GetBiasingVolume(biasing - 1);
 }
-//_____________________________________________________________________________
+
 SteppingAction::~SteppingAction() {}
-//_____________________________________________________________________________
+
 void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     // Variables that describe a step are taken.
     nom_vol = aStep->GetPreStepPoint()->GetPhysicalVolume()->GetName();
@@ -164,4 +163,3 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
                                 momentumDirection);
     }
 }
-//_____________________________________________________________________________

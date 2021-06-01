@@ -1,18 +1,17 @@
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "PrimaryGeneratorAction.hh"
 
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
 
-#include "G4Event.hh"
-#include "G4Geantino.hh"
-#include "G4IonTable.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4ParticleTable.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4UnitsTable.hh"
-#include "Randomize.hh"
+#include <G4Event.hh>
+#include <G4Geantino.hh>
+#include <G4IonTable.hh>
+#include <G4ParticleDefinition.hh>
+#include <G4ParticleTable.hh>
+#include <G4SystemOfUnits.hh>
+#include <G4UnitsTable.hh>
+#include <Randomize.hh>
 
 extern TRestGeant4Metadata* restG4Metadata;
 extern TRestGeant4Event* restG4Event;
@@ -23,6 +22,8 @@ Int_t face = 0;
 
 double GeneratorRndm() { return G4UniformRand(); }
 
+=======
+>>>>>>> origin/master
 PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
     : G4VUserPrimaryGeneratorAction(), fParticleGun(0), fDetector(pDetector) {
     G4int n_particle = 1;
@@ -34,8 +35,6 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
         restG4Metadata->GetParticleSource(i)->SetRndmMethod(GeneratorRndm);
     }
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
 
@@ -448,7 +447,6 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
         cout << "DEBUG: Particle energy: " << energy / keV << " keV" << endl;
 }
 
-//_____________________________________________________________________________
 void PrimaryGeneratorAction::SetParticlePosition() {
     double x = 0, y = 0, z = 0;
     string generator_type_name = (string)restG4Metadata->GetGeneratorType();
@@ -545,7 +543,6 @@ void PrimaryGeneratorAction::SetParticlePosition() {
 //    fParticleGun->SetParticlePosition(G4ThreeVector(pos.X(), pos.Y(), pos.Z()));
 //}
 
-//_____________________________________________________________________________
 G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() {
     G4double a, b, c;
     G4double n;
@@ -562,7 +559,7 @@ G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() {
     c /= n;
     return G4ThreeVector(a, b, c);
 }
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 //
 Double_t PrimaryGeneratorAction::GetAngle(G4ThreeVector x, G4ThreeVector y) {
     Double_t angle = y.angle(x);

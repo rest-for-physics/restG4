@@ -2,8 +2,8 @@
 #ifndef Particles_h
 #define Particles_h 1
 
-#include "G4VPhysicsConstructor.hh"
-#include "globals.hh"
+#include <G4VPhysicsConstructor.hh>
+#include <globals.hh>
 
 class Particles : public G4VPhysicsConstructor {
    public:

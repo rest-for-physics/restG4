@@ -1,83 +1,44 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-/// \file radioactivedecay/rdecay01/src/PhysicsList.cc
-/// \brief Implementation of the PhysicsList class
-//
-//
-// $Id: PhysicsList.cc 73284 2013-08-23 08:35:02Z gcosmo $
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "PhysicsList.hh"
 
-#include "G4ParticleTypes.hh"
-#include "G4RadioactiveDecay.hh"
-#include "G4UnitsTable.hh"
-//#include "G4ScreenedNuclearRecoil.hh"
-#include "CLHEP/Units/PhysicalConstants.h"
-#include "G4EmLivermorePhysics.hh"
-#include "G4EmParameters.hh"
-#include "G4EmPenelopePhysics.hh"
-#include "G4EmProcessOptions.hh"
-#include "G4EmStandardPhysics_option3.hh"
-#include "G4EmStandardPhysics_option4.hh"
-#include "G4LossTableManager.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4UAtomicDeexcitation.hh"
-//#include "PhysListEmStandard.hh"
-//#include "PhysListEmStandardSS.hh"
-//#include "PhysListEmStandardNR.hh"
-#include <G4StepLimiter.hh>
+#include <CLHEP/Units/PhysicalConstants.h>
 
-#include "G4BetheBlochIonGasModel.hh"
-#include "G4BraggIonGasModel.hh"
-#include "G4DecayPhysics.hh"
-#include "G4EmExtraPhysics.hh"
-#include "G4HadronElasticPhysics.hh"
-#include "G4HadronElasticPhysicsHP.hh"
-#include "G4HadronPhysicsQGSP_BIC_HP.hh"
-#include "G4IonBinaryCascadePhysics.hh"
-#include "G4IonFluctuations.hh"
-#include "G4IonParametrisedLossModel.hh"
-#include "G4NeutronTrackingCut.hh"
-#include "G4ParticleTable.hh"
-#include "G4ParticleTypes.hh"
-#include "G4ProcessManager.hh"
-#include "G4ProductionCuts.hh"
-#include "G4RadioactiveDecayPhysics.hh"
-#include "G4Region.hh"
-#include "G4RegionStore.hh"
-#include "G4StoppingPhysics.hh"
-#include "G4UniversalFluctuation.hh"
+#include <G4BetheBlochIonGasModel.hh>
+#include <G4BraggIonGasModel.hh>
+#include <G4DecayPhysics.hh>
+#include <G4EmExtraPhysics.hh>
+#include <G4EmLivermorePhysics.hh>
+#include <G4EmParameters.hh>
+#include <G4EmPenelopePhysics.hh>
+#include <G4EmProcessOptions.hh>
+#include <G4EmStandardPhysics_option3.hh>
+#include <G4EmStandardPhysics_option4.hh>
+#include <G4HadronElasticPhysics.hh>
+#include <G4HadronElasticPhysicsHP.hh>
+#include <G4HadronPhysicsQGSP_BIC_HP.hh>
+#include <G4IonBinaryCascadePhysics.hh>
+#include <G4IonFluctuations.hh>
+#include <G4IonParametrisedLossModel.hh>
+#include <G4LossTableManager.hh>
+#include <G4NeutronTrackingCut.hh>
+#include <G4ParticleTable.hh>
+#include <G4ParticleTypes.hh>
+#include <G4ProcessManager.hh>
+#include <G4ProductionCuts.hh>
+#include <G4RadioactiveDecay.hh>
+#include <G4RadioactiveDecayPhysics.hh>
+#include <G4Region.hh>
+#include <G4RegionStore.hh>
+#include <G4StepLimiter.hh>
+#include <G4StoppingPhysics.hh>
+#include <G4SystemOfUnits.hh>
+#include <G4UAtomicDeexcitation.hh>
+#include <G4UnitsTable.hh>
+#include <G4UniversalFluctuation.hh>
+
 #include "Particles.hh"
 
 Int_t emCounter = 0;
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PhysicsList::PhysicsList() : G4VModularPhysicsList() {
     cout << "restG4. PhysicsList. Wrong constructor!!" << endl;
@@ -112,8 +73,6 @@ PhysicsList::PhysicsList(TRestGeant4PhysicsLists* physicsLists) : G4VModularPhys
     InitializePhysicsLists();
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 PhysicsList::~PhysicsList() {
     delete fEmPhysicsList;
 
@@ -124,7 +83,6 @@ PhysicsList::~PhysicsList() {
     }
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void PhysicsList::InitializePhysicsLists() {
     // Decay physics and all particles
     if (restPhysList->FindPhysicsList("G4DecayPhysics") >= 0)
@@ -203,8 +161,6 @@ void PhysicsList::ConstructParticle() {
 
     for (size_t i = 0; i < fHadronPhys.size(); i++) fHadronPhys[i]->ConstructParticle();
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PhysicsList::ConstructProcess() {
     AddTransportation();
@@ -316,8 +272,6 @@ while ((*theParticleIterator)())
 #endif  // G4104
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void PhysicsList::SetCuts() {
     SetCutsWithDefault();
 
@@ -328,5 +282,3 @@ void PhysicsList::SetCuts() {
     SetCutValue(restPhysList->GetCutForMuon() * mm, "mu-");
     SetCutValue(restPhysList->GetCutForNeutron() * mm, "neutron");
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

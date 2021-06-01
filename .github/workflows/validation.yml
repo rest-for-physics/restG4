@@ -1,0 +1,62 @@
+name: Validation
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  BUILD_TYPE: Debug
+  FRAMEWORK_PATH: /__w/restG4/restG4/framework
+
+defaults:
+  run:
+    shell: bash -ieo pipefail {0}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: lobis/root-geant4-garfieldpp:cxx14_ROOTv6-25-01_Geant4v10.4.3
+
+    strategy:
+      matrix:
+        framework-branch: [master, development]
+
+    steps:
+      - name: Source ROOT and Geant4
+        run: |
+          source /root/.bashrc
+          printenv
+          
+      - name: Checkout REST Framework
+        uses: actions/checkout@v2
+        with:
+          repository: rest-for-physics/framework
+          ref: ${{ matrix.framework-branch }}
+          path: framework
+          
+      - name: Pull submodules
+        run: |
+          cd ${{env.FRAMEWORK_PATH}}
+          python3 pull-submodules.py
+          
+      - name: Checkout RestG4 (this repository)
+        uses: actions/checkout@v2
+        with:
+          path: framework/source/packages/restG4
+
+      - name: Debug - Print latest commit info in Framework souce
+        run: |
+          cd ${{env.FRAMEWORK_PATH}}/source/packages/restG4
+          git branch
+          git show -s --format=%H
+
+      - name: Configure CMake (REST Framework)
+        run: |
+          source /root/.bashrc
+          cmake -B ${{env.FRAMEWORK_PATH}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DREST_G4=ON -DREST_EVE=OFF ${{env.FRAMEWORK_PATH}}
+          
+      - name: Make
+        run: make --directory=${{env.FRAMEWORK_PATH}}/build
