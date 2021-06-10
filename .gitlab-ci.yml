@@ -20,8 +20,9 @@ build:
   type: build
   script:
     - echo "**${CI_PROJECT_DIR}**"
-    - git clone --single-branch --branch development https://github.com/rest-for-physics/framework.git framework
+    - git clone https://github.com/rest-for-physics/framework.git framework
     - cd framework
+    - ./scripts/checkoutRemoteBranch.sh ${CI_COMMIT_BRANCH}
     - if [ -d ${CI_PROJECT_DIR}/install ]; then rm -rf ${CI_PROJECT_DIR}/install; fi
     - git submodule init source/libraries/geant4
     - git submodule update source/libraries/geant4
