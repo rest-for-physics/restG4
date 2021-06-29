@@ -74,8 +74,8 @@ char physListName[256];
 int main(int argc, char** argv) {
     auto start_time = chrono::steady_clock::now();
 
-    // {{{ Getting by argument the simulation config file
-    // sprintf( inputConfigFile, "%s", "myConfig.rml");
+    // Getting by argument the simulation config file
+    // sprintf(inputConfigFile, "%s", "myConfig.rml");
     if (argc < 2) {
         cout << "no input config file" << endl;
         cout << "usage : " << argv[0] << " config_file [section_name]" << endl;
@@ -85,9 +85,8 @@ int main(int argc, char** argv) {
     if (argc >= 3) sprintf(restG4Name, "%s", argv[2]);
 
     sprintf(physListName, "%s", "default");
-    // }}}
 
-    // {{{ Initializing REST classes
+    // Initializing REST classes
     restG4Metadata = new TRestGeant4Metadata(inputConfigFile, (string)restG4Name);
 
     // We need to process and generate a new GDML for several reasons.
@@ -131,9 +130,8 @@ int main(int argc, char** argv) {
     restRun->AddEventBranch(subRestG4Event);
 
     restTrack = new TRestGeant4Track();
-    // }}}
 
-    // {{{ Setting the biasing spectra histograms
+    // Setting the biasing spectra histograms
     biasing = restG4Metadata->GetNumberOfBiasingVolumes();
     for (int i = 0; i < biasing; i++) {
         TString spctName = "Bias_Spectrum_" + TString(Form("%d", i));
@@ -163,7 +161,6 @@ int main(int argc, char** argv) {
             spatialDistribution[i] =
                 new TH2D(spatialDistName, "Biasing spatial distribution", 100, -1, 1, 100, -1, 1);
     }
-    // }}}
 
     // choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
@@ -173,13 +170,13 @@ int main(int argc, char** argv) {
     // Construct the default run manager
     G4RunManager* runManager = new G4RunManager;
 
-    // set mandatory initialization classes
+    // Set mandatory initialization classes
     DetectorConstruction* det = new DetectorConstruction();
 
     runManager->SetUserInitialization(det);
     runManager->SetUserInitialization(new PhysicsList(restPhysList));
 
-    // set user action classes
+    // Set user action classes
     PrimaryGeneratorAction* prim = new PrimaryGeneratorAction(det);
 
     if (restG4Metadata->GetParticleSource(0)->GetEnergyDistType() == "TH1D") {
@@ -247,7 +244,7 @@ int main(int argc, char** argv) {
     // Initialize G4 kernel
     runManager->Initialize();
 
-    // get the pointer to the User Interface manager
+    // Get the pointer to the User Interface manager
     G4UImanager* UI = G4UImanager::GetUIpointer();
 
 #ifdef G4VIS_USE
@@ -256,9 +253,11 @@ int main(int argc, char** argv) {
 #endif
 
     N_events = restG4Metadata->GetNumberOfEvents();
-    // We pass the volume definition to Stepping action so that it records gammas
-    // entering in We pass also the biasing spectrum so that gammas energies
-    // entering the volume are recorded
+    /*
+        We pass the volume definition to Stepping action so that it records gammas
+        entering in We pass also the biasing spectrum so that gammas energies
+        entering the volume are recorded
+    */
     if (biasing) {
         step->SetBiasingVolume(restG4Metadata->GetBiasingVolume(biasing - 1));
         step->SetBiasingSpectrum(biasingSpectrum[biasing - 1]);
@@ -332,7 +331,7 @@ int main(int argc, char** argv) {
             restG4Metadata->SetGeneratorType(
                 restG4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeType());
             double size = restG4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeSize();
-            restG4Metadata->SetGeneratorSize(TVector3(size,size,size));
+            restG4Metadata->SetGeneratorSize(TVector3(size, size, size));
             // restG4Metadata->GetBiasingVolume( biasing-1 ).PrintBiasingVolume();
 
             // Definning biasing the number of event to be re-launched
@@ -384,9 +383,9 @@ int main(int argc, char** argv) {
 
     else  // N_events == -1
     {
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
         cout << "The number of events to be simulated was not recongnized properly!" << endl;
         cout << "Make sure you did not forget the number of events entry in TRestGeant4Metadata." << endl;
         cout << endl;
@@ -395,9 +394,9 @@ int main(int argc, char** argv) {
         cout << "It should be something like : " << endl;
         cout << endl;
         cout << " <parameter name =\"Nevents\" value=\"100\"/>" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
         cout << endl;
     }
     restRun->GetOutputFile()->cd();
@@ -437,7 +436,6 @@ throw std::exception();
 #endif
 
     // job termination
-    //
     delete runManager;
 
     // restRun->CloseOutputFile();
@@ -483,12 +481,12 @@ throw std::exception();
         f1->Close();
         exit(0);
     }
-    // father process
+    // Father process
     else {
         int stat_val = 0;
         pid_t child_pid;
 
-        printf("Writing geometry ... \n");
+        cout << "Writing geometry..." << endl;
     }
 
     cout << "============== Generated file: " << Filename << " ==============" << endl;

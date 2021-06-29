@@ -5,13 +5,12 @@
 #include <TF3.h>
 #include <TH1D.h>
 
-#include <fstream>
-#include <iostream>
-
 #include <G4IonTable.hh>
 #include <G4ParticleGun.hh>
 #include <G4VUserPrimaryGeneratorAction.hh>
+#include <fstream>
 #include <globals.hh>
+#include <iostream>
 
 #include "DetectorConstruction.hh"
 #include "TRestGeant4Particle.h"
