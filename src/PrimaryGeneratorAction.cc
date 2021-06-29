@@ -18,8 +18,6 @@ extern TRestGeant4Event* restG4Event;
 
 Int_t face = 0;
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 double GeneratorRndm() { return G4UniformRand(); }
 
 PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
@@ -35,8 +33,6 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
 }
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
     TString xLabel = (TString)spt->GetXaxis()->GetTitle();
