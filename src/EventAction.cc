@@ -162,7 +162,7 @@ void EventAction::FillSubEvent(Int_t subId) {
     subRestG4Event->SetRunOrigin(restRun->GetRunNumber());
     subRestG4Event->SetSubRunOrigin(0);
 
-    time_t systime = time(NULL);
+    time_t systime = time(nullptr);
     subRestG4Event->SetTimeStamp((Double_t)systime);
 
     subRestG4Event->SetPrimaryEventOrigin(restG4Event->GetPrimaryEventOrigin());
@@ -199,7 +199,7 @@ void EventAction::FillSubEvent(Int_t subId) {
 void EventAction::ReOrderTrackIds(Int_t subId) {
     // We define as event timestamp the system time.
     // We will be always able to extract the global simulation time from Geant4 tracks.
-    time_t systime = time(NULL);
+    time_t systime = time(nullptr);
     subRestG4Event->SetTimeStamp(systime);
 
     if (subId > 0) {
@@ -269,7 +269,7 @@ int EventAction::SetTrackSubEventIDs() {
             int parentid = track->GetParentID();
             TRestGeant4Track* ptrack = tracks[parentid];
             while (1) {
-                if (ptrack != NULL) {
+                if (ptrack != nullptr) {
                     tadd += ptrack->GetTrackTimeLength();
                     if (tadd > timeDelay) {
                         int subid = ptrack->GetSubEventID() + 1;

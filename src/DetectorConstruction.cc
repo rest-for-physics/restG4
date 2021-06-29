@@ -149,7 +149,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     for (int id = 0; id < restG4Metadata->GetNumberOfActiveVolumes(); id++) {
         TString actVolName = restG4Metadata->GetActiveVolumeName(id);
         G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)actVolName);
-        if (pVol != NULL) {
+        if (pVol != nullptr) {
             G4LogicalVolume* lVol = pVol->GetLogicalVolume();
             if (restG4Metadata->GetMaxStepSize(actVolName) > 0) {
                 G4cout << "Setting maxStepSize = " << restG4Metadata->GetMaxStepSize(actVolName)
@@ -160,7 +160,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
         cout << "Activating volume : " << actVolName << endl;
         restG4Event->AddActiveVolume((string)actVolName);
-        if (pVol == NULL) {
+        if (pVol == nullptr) {
             cout << "DetectorConstruction. Volume " << actVolName << " is not defined in the geometry"
                  << endl;
             exit(1);
@@ -181,5 +181,5 @@ G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(G4String physVolName)
         }
     }
 
-    return NULL;
+    return nullptr;
 }
