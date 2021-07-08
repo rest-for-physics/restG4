@@ -16,7 +16,7 @@ First concept author G. Luzón (16-11-2020) -->
         <parameter name="outputFileName" value="Run[fRunNumber]_[fRunType]_[fRunTag]_[fRunUser].root" />
     </TRestRun>
 
-    <TRestGeant4Metadata name="restG4 run"  title="CosmicsFromWall">
+    <TRestGeant4Metadata name="restG4 run"  title="MuonsFromWall">
 
         <parameter name="gdml_file" value="setup.gdml"/>
         <parameter name="subEventTimeDelay" value="100us" />

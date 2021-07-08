@@ -6,7 +6,7 @@ Int_t ValidateWall(string fname) {
     TRestRun* run = new TRestRun(fname);
     TRestGeant4Event* ev = (TRestGeant4Event*)run->GetInputEvent();
 
-    if (run->GetRunTag() != "CosmicsFromWall") {
+    if (run->GetRunTag() != "MuonsFromWall") {
         cout << "Run tag : " << run->GetRunTag() << endl;
         cout << "The run tag of the basic validation test should be 'MuonsFromWall!" << endl;
         return 4;
