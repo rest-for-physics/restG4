@@ -20,7 +20,7 @@ build:
   type: build
   script:
     - echo "**${CI_PROJECT_DIR}**"
-    - git clone --single-branch --branch master https://github.com/rest-for-physics/framework.git framework
+    - git clone https://github.com/rest-for-physics/framework.git framework
     - cd framework
     - ./scripts/checkoutRemoteBranch.sh ${CI_COMMIT_BRANCH}
     - if [ -d ${CI_PROJECT_DIR}/install ]; then rm -rf ${CI_PROJECT_DIR}/install; fi
@@ -106,6 +106,8 @@ loadRESTLibs:
     - restG4 Muon.rml
     - geant4-config --version
     - restRoot -b -q Validate.C'("Run00111_restG4_MuonsFromPoint_rest.root")'
+    - restG4 CosmicMuons.rml
+    - restRoot -b -q ValidateWall.C'("Run00111_restG4_MuonsFromWall_rest.root")'
 
 05_PandaXIII:
   type: examples
