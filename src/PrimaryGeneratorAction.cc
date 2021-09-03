@@ -143,7 +143,7 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
     // if ((particle == nullptr)) {
     // There might be a better way to do this
     for (int Z = 1; Z <= 110; Z++)
-        for (int A = 2 * Z; A <= 3 * Z; A++) {
+        for (int A = 2 * Z - 1; A <= 3 * Z; A++) {
             if (particle_name == G4IonTable::GetIonTable()->GetIonName(Z, A)) {
                 // excited energy is in rest units keV, when input to geant4, we shall convert to MeV
                 particle = G4IonTable::GetIonTable()->GetIon(Z, A, excited_energy / 1000);
