@@ -153,6 +153,11 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
         }
     // }
 
+    if (!particle) {
+        cout << "Particle definition : " << particle_name << " not found!" << endl;
+        exit(1);
+    }
+
     fParticleGun->SetParticleDefinition(particle);
 
     restG4Event->SetPrimaryEventParticleName(particle_name);
