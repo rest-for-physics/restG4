@@ -138,27 +138,28 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
     }
 
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-    G4ParticleDefinition* particle = particleTable->FindParticle(particle_name);
+    if (!fParticle) {
+        fParticle = particleTable->FindParticle(particle_name);
 
-    // if ((particle == nullptr)) {
-    // There might be a better way to do this
-    for (int Z = 1; Z <= 110; Z++)
-        for (int A = 2 * Z - 1; A <= 3 * Z; A++) {
-            if (particle_name == G4IonTable::GetIonTable()->GetIonName(Z, A)) {
-                // excited energy is in rest units keV, when input to geant4, we shall convert to MeV
-                particle = G4IonTable::GetIonTable()->GetIon(Z, A, excited_energy / 1000);
-                particle_name = G4IonTable::GetIonTable()->GetIonName(Z, A, excited_energy / 1000);
-                fParticleGun->SetParticleCharge(charge);
+        // There might be a better way to do this
+        for (int Z = 1; Z <= 110; Z++)
+            for (int A = 2 * Z - 1; A <= 3 * Z; A++) {
+                if (particle_name == G4IonTable::GetIonTable()->GetIonName(Z, A)) {
+                    // excited energy is in rest units keV, when input to geant4, we shall convert to MeV
+                    fParticle = G4IonTable::GetIonTable()->GetIon(Z, A, excited_energy / 1000);
+                    particle_name = G4IonTable::GetIonTable()->GetIonName(Z, A, excited_energy / 1000);
+                    fParticleGun->SetParticleCharge(charge);
+                }
             }
-        }
-    // }
+        // }
 
-    if (!particle) {
-        cout << "Particle definition : " << particle_name << " not found!" << endl;
-        exit(1);
+        if (!fParticle) {
+            cout << "Particle definition : " << particle_name << " not found!" << endl;
+            exit(1);
+        }
     }
 
-    fParticleGun->SetParticleDefinition(particle);
+    fParticleGun->SetParticleDefinition(fParticle);
 
     restG4Event->SetPrimaryEventParticleName(particle_name);
 
