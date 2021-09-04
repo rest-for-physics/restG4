@@ -163,7 +163,7 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
 
     restG4Event->SetPrimaryEventParticleName(particle_name);
 
-    return particle;
+    return fParticle;
 }
 
 void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p) {
