@@ -34,8 +34,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
 
-void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax,
-                                         TString units = "NO_SUCH_PARA") {
+void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax, TString units) {
     TString xLabel = (TString)spt->GetXaxis()->GetTitle();
 
     // if units is not specified (""), then get units from the x axis of the histogram, otherwise use the
