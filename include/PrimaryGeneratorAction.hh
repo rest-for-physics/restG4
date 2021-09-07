@@ -30,7 +30,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     virtual void GeneratePrimaries(G4Event*);
     G4ParticleGun* GetParticleGun() { return fParticleGun; };
 
-    void SetSpectrum(TH1D* spt, double eMin = 0, double eMax = 0);
+    void SetSpectrum(TH1D* spt, double eMin = 0, double eMax = 0, TString units);
     void SetGeneratorSpatialDensity(TString str);
 
     void SetAngularDistribution(TH1D* ang) { fAngularDistribution = ang; }

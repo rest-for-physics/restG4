@@ -34,15 +34,27 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
 
-void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
+void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax,
+                                         TString units = "NO_SUCH_PARA") {
     TString xLabel = (TString)spt->GetXaxis()->GetTitle();
 
-    if (xLabel.Contains("MeV")) {
-        energyFactor = 1.e3;
-    } else if (xLabel.Contains("GeV")) {
-        energyFactor = 1.e6;
+    // if units is not specified (""), then get units from the x axis of the histogram, otherwise use the
+    // units from the RML
+    if (units == "NO_SUCH_PARA") {
+        if (xLabel.Contains("MeV")) {
+            energyFactor = 1.e3;
+        } else if (xLabel.Contains("GeV")) {
+            energyFactor = 1.e6;
+        } else {
+            energyFactor = 1.;
+        }
     } else {
-        energyFactor = 1.;
+        if (units == "keV") {
+            energyFactor = 1.;
+        } else if (units == "MeV") {
+            energyFactor = 1.e3;
+        } else if (units == "GeV")
+            energyFactor = 1.e6;
     }
 
     fSpectrum = spt;

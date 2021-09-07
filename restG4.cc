@@ -185,7 +185,9 @@ int main(int argc, char** argv) {
         TFile fin(fileFullPath);
 
         TString sptName = restG4Metadata->GetParticleSource(0)->GetSpectrumName();
-
+        TString sptUnits =
+            restG4Metadata->GetParticleSource(0)
+                ->GetSpectrumEnergyUnits();  // If user did not set it up manually, this will be NO_SUCH_PARA
         TH1D* h = (TH1D*)fin.Get(sptName);
         ;
         if (h == NULL) {
@@ -204,7 +206,7 @@ int main(int argc, char** argv) {
         if (maxEnergy < 0) maxEnergy = 0;
 
         // We set the initial spectrum energy provided from TH1D
-        prim->SetSpectrum(&initialEnergySpectrum, minEnergy, maxEnergy);
+        prim->SetSpectrum(&initialEnergySpectrum, minEnergy, maxEnergy, sptUnits);
     }
 
     if (restG4Metadata->GetParticleSource(0)->GetAngularDistType() == "TH1D") {
