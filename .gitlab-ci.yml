@@ -134,6 +134,9 @@ loadRESTLibs:
     - restG4 singleDecay.rml
     - restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 14)'
     - restRoot -b -q Validate.C'("Run00002_U238_SingleChainDecay.root", 1)'
+    - export REST_ISOTOPE="Be7"
+    - restG4 singleDecay.rml
+    - restRoot -b -q Validate.C'("Run00002_Be7_SingleChainDecay.root", 1)'
 
       
 09_Pb210_Shielding:
