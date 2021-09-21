@@ -29,8 +29,8 @@ Int_t ValidateWall(string fname) {
     }
 
     cout << "Run entries: " << run->GetEntries() << endl;
-    if (run->GetEntries() != 904) {
-        cout << "The number of entries is not 904!" << endl;
+    if (run->GetEntries() != 850) {
+        cout << "The number of entries less than 850!" << endl;
         cout << "Number of entries : " << run->GetEntries() << endl;
         return 6;
     }
