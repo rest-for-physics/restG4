@@ -28,6 +28,13 @@ Int_t ValidateWall(string fname) {
         return 5;
     }
 
+    cout << "Run entries: " << run->GetEntries() << endl;
+    if (run->GetEntries() < 850) {
+        cout << "The number of entries less than 850!" << endl;
+        cout << "Number of entries : " << run->GetEntries() << endl;
+        return 6;
+    }
+
     cout << "All tests passed! [\033[32mOK\033[0m]\n";
     // Other tests like opening other metadata classes. Detector TGeoManager, etc.
 
