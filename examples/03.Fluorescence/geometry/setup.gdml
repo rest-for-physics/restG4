@@ -2,7 +2,7 @@
 <!-- ##VERSION REST Example 01.NLDBD Version 1.0## -->
 
 <!DOCTYPE gdml [
-        <!ENTITY geometry SYSTEM "myGeometryTemplate.gdml">
+        <!ENTITY geometry SYSTEM "geometry.gdml">
         <!ENTITY materials SYSTEM "https://sultan.unizar.es/materials/materials.xml">
         ]>
 
@@ -21,22 +21,14 @@
     <define>
         <constant name="world_size" value="20000"/>
 
-        <!-- The TPC gas target -->
-        <constant name="gasRadius" value="750"/>
-        <constant name="gasLength" value="2000"/>
-
-        <variable name="targetGasDensity"
-                  value="56.5884"/> <!-- mg/cm3 (This density corresponds to 200Kg in vessel volume) -->
-        <variable name="quencherDensity" value="0.254"/> <!-- mg/cm3 (Corresponds to 1% TMA) -->
+        <!-- We must define these variables that are hardcoded in materials.xml -->
+        <!-- They have no use in this example since we do not use a gas mixture in our simulation -->
+        <!-- This makes non sense, and it could be solved if we would have a dedicated materials file for gas mixtures -->
+        <variable name="targetGasDensity" value="0.254"/>
+        <variable name="quencherDensity" value="0.254"/>
         <variable name="quencherFraction" value="0.01"/>
-        <variable name="gasTemperature" value="300"/> <!-- K -->
-        <variable name="gasPressure" value="10"/> <!-- bar -->
-
-        <!-- The vessel definitions -->
-        <constant name="vesselThickness" value="50"/>
-
-        <!-- The water tank -->
-        <constant name="waterTankSize" value="8000"/>
+        <variable name="gasTemperature" value="300"/>
+        <variable name="gasPressure" value="10"/>
     </define>
 
     &materials;

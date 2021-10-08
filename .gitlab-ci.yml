@@ -1,0 +1,145 @@
+image: nkx1231/root6-geant4-garfield:0.8
+
+stages:
+  - build
+  - loadRESTLibs
+  - examples
+
+before_script:
+  - export USER="rest"
+  - pwd
+  - if [ -f "/opt/root/install/bin/thisroot.sh" ]; then source /opt/root/install/bin/thisroot.sh; fi
+  - root-config --version
+  - if [ -f "/opt/geant4/install/bin/geant4.sh" ]; then source /opt/geant4/install/bin/geant4.sh; fi
+  - geant4-config --version
+  - python3 --version
+  - apt update && apt install -y wget
+
+# This is the one we use to run validations tests. We save the installation as an artifact.
+build:
+  type: build
+  script:
+    - echo "**${CI_PROJECT_DIR}**"
+    - git clone https://github.com/rest-for-physics/framework.git framework
+    - cd framework
+    - ./scripts/checkoutRemoteBranch.sh ${CI_COMMIT_BRANCH}
+    - if [ -d ${CI_PROJECT_DIR}/install ]; then rm -rf ${CI_PROJECT_DIR}/install; fi
+    - git submodule init source/libraries/geant4
+    - git submodule update source/libraries/geant4
+    - cd source/libraries/geant4/
+    # We attempt to pull a branch from geant4lib named as the one at restG4.
+    # If not it will pull master by default
+    - ../../../scripts/checkoutRemoteBranch.sh ${CI_COMMIT_BRANCH}
+    - cd ../../../
+    - git submodule init source/packages/restG4
+    - git submodule update source/packages/restG4
+    - cd source/packages/restG4/
+    - git checkout ${CI_COMMIT_BRANCH}
+    - cd ../../../
+    - if [ -d build ]; then rm -rf build; fi
+    - mkdir build
+    - cd build
+    - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install
+    - make install -j2
+  artifacts:
+    paths:
+      - ${CI_PROJECT_DIR}/install
+      - ${CI_PROJECT_DIR}/framework
+      - ${CI_PROJECT_DIR}/framework/build
+    expire_in: 1 day
+
+### We make sure the build and install directories are different
+##build_root_6.25_Geant4_10.7.1:
+##  image: lobis/root-geant4-garfieldpp:cxx14_ROOTv6-25-01_Geant4v10.7.1
+##  type: build
+##  script:
+##    - echo "**${CI_PROJECT_DIR}**"
+##    - git clone --single-branch --branch development https://github.com/rest-for-physics/framework.git framework
+##    - cd framework
+##    - if [ -d ${CI_PROJECT_DIR}/install2 ]; then rm -rf ${CI_PROJECT_DIR}/install2; fi
+##    - git submodule init source/libraries/geant4
+##    - git submodule update source/libraries/geant4
+##    - cd source/libraries/geant4/
+##    - git checkout master
+##    - cd ../../../
+##    - git submodule init source/packages/restG4
+##    - git submodule update source/packages/restG4
+##    - cd source/packages/restG4/
+##    - git checkout ${CI_COMMIT_BRANCH}
+##    - cd ../../../
+##    - if [ -d build2 ]; then rm -rf build2; fi
+##    - mkdir build2
+##    - cd build2
+##    - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install2
+##    - make install -j2
+
+loadRESTLibs:
+  type: loadRESTLibs
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - restRoot -b -q
+
+01_NLDBD:
+  type: examples
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cd ${CI_PROJECT_DIR}/install/examples/01.NLDBD/
+    - restG4 NLDBD.rml
+    - geant4-config --version
+    - restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
+
+03_Fluorescence:
+  type: examples
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cd ${CI_PROJECT_DIR}/install/examples/03.Fluorescence/
+    - restG4 gamma.rml
+    - restManager --c g4Analysis.rml --f Run00111_Gamma_Fluorescence.root
+    - geant4-config --version
+    - restRoot -b -q Validate.C'("Run00111_g4Analysis_Gamma_rest.root")'
+
+04_MuonScan:
+  type: examples
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cd ${CI_PROJECT_DIR}/install/examples/04.MuonScan/
+    - restG4 Muon.rml
+    - geant4-config --version
+    - restRoot -b -q Validate.C'("Run00111_restG4_MuonsFromPoint_rest.root")'
+    - restG4 CosmicMuons.rml
+    - restRoot -b -q ValidateWall.C'("Run00111_restG4_MuonsFromWall_rest.root")'
+
+05_PandaXIII:
+  type: examples
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cd ${CI_PROJECT_DIR}/install/examples/05.PandaXIII/
+    - restG4 Xe136bb0n.rml
+    - restRoot -b -q ValidateG4.C'("Xe136bb0n_n2E06.root")'
+
+06_IonRecoils:
+  type: examples
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cd ${CI_PROJECT_DIR}/install/examples/06.IonRecoils/
+    - restG4 recoils.rml
+    - restRoot -b -q Validate.C'("Run00001_F20_Recoils.root")'
+
+07_FullChainDecay:
+  type: examples
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cd ${CI_PROJECT_DIR}/install/examples/07.FullChainDecay/
+    - restG4 fullChain.rml
+    - restG4 singleDecay.rml
+    - restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 14)'
+    - restRoot -b -q Validate.C'("Run00002_U238_SingleChainDecay.root", 1)'
+
+
+09_Pb210_Shielding:
+  type: examples
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cd ${CI_PROJECT_DIR}/install/examples/09.Pb210_Shield/
+    - restG4 Pb210.rml
+    - restRoot -b -q Validate.C'("Run00001_Pb210_Shielding.root")'
