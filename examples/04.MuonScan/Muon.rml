@@ -4,69 +4,69 @@
 
     <TRestRun name="MuonRun" title="A basic muon test with 2 active volumes">
         <parameter name="experimentName" value="MuonScan"/>
-        <parameter name="readOnly" value="false" />
+        <parameter name="readOnly" value="false"/>
         <parameter name="runNumber" value="111"/>
         <parameter name="runDescription" value=""/>
         <parameter name="user" value="${USER}"/>
         <parameter name="verboseLevel" value="1"/>
-        <parameter name="overwrite" value="off" />
-        <parameter name="outputFileName" value="Run[fRunNumber]_[fRunType]_[fRunTag]_[fRunUser].root" />
+        <parameter name="overwrite" value="off"/>
+        <parameter name="outputFileName" value="Run[fRunNumber]_[fRunType]_[fRunTag]_[fRunUser].root"/>
     </TRestRun>
 
-    <TRestGeant4Metadata name="restG4 run"  title="MuonsFromPoint" verboseLevel="info">
+    <TRestGeant4Metadata name="restG4 run" title="MuonsFromPoint" verboseLevel="info">
         <parameter name="gdml_file" value="setup.gdml"/>
-        <parameter name="subEventTimeDelay" value="100us" />
+        <parameter name="subEventTimeDelay" value="100us"/>
 
-        <parameter name="Nevents" value="10" />
-		<parameter name="saveAllEvents" value="off" />
+        <parameter name="Nevents" value="10"/>
+        <parameter name="saveAllEvents" value="off"/>
 
-		<parameter name="seed" value="17021981" />
+        <parameter name="seed" value="17021981"/>
 
-        <generator type="point" position="(0,0,-50)cm" > 
+        <generator type="point" position="(0,0,-50)cm">
             <source particle="mu-" excitedLevel="0.0">
-		    <energyDist type="mono" energy="100GeV" />
-		    <angularDist type="flux" direction="(0,0,1)" />
-            </source> 
+                <energyDist type="mono" energy="100GeV"/>
+                <angularDist type="flux" direction="(0,0,1)"/>
+            </source>
         </generator>
 
-        <storage sensitiveVolume="det_dw_01" >
-            <parameter name="energyRange" value="(0,10)"units="GeV" />
-			<activeVolume name="det_dw_01" chance="1" maxStepSize="1mm" />
-			<activeVolume name="det_up_01" chance="1" maxStepSize="1mm" />
+        <storage sensitiveVolume="det_dw_01">
+            <parameter name="energyRange" value="(0,10)" units="GeV"/>
+            <activeVolume name="det_dw_01" chance="1" maxStepSize="1mm"/>
+            <activeVolume name="det_up_01" chance="1" maxStepSize="1mm"/>
         </storage>
-        
+
     </TRestGeant4Metadata>
 
-<TRestGeant4PhysicsLists name="default" title="First physics list implementation." verboseLevel="warning" >
-    <parameter name="cutForGamma" value="1" units="um" />
-    <parameter name="cutForElectron" value="1" units="um" />
-    <parameter name="cutForPositron" value="1" units="um" />
+    <TRestGeant4PhysicsLists name="default" title="First physics list implementation." verboseLevel="warning">
+        <parameter name="cutForGamma" value="1" units="um"/>
+        <parameter name="cutForElectron" value="1" units="um"/>
+        <parameter name="cutForPositron" value="1" units="um"/>
 
-    <parameter name="cutForMuon" value="1" units="mm" />
-    <parameter name="cutForNeutron" value="1" units="mm" />
-    <parameter name="minEnergyRangeProductionCuts" value="1" units="keV" />
-    <parameter name="maxEnergyRangeProductionCuts" value="1" units="GeV" />
+        <parameter name="cutForMuon" value="1" units="mm"/>
+        <parameter name="cutForNeutron" value="1" units="mm"/>
+        <parameter name="minEnergyRangeProductionCuts" value="1" units="keV"/>
+        <parameter name="maxEnergyRangeProductionCuts" value="1" units="GeV"/>
 
-    <!-- EM Physics lists -->
-    <physicsList name="G4EmLivermorePhysics"> </physicsList>
-    <!-- <physicsList name="G4EmPenelopePhysics"> </physicsList> -->
-    <!-- <physicsList name="G4EmStandardPhysics_option3"> </physicsList> -->
+        <!-- EM Physics lists -->
+        <physicsList name="G4EmLivermorePhysics"></physicsList>
+        <!-- <physicsList name="G4EmPenelopePhysics"> </physicsList> -->
+        <!-- <physicsList name="G4EmStandardPhysics_option3"> </physicsList> -->
 
-    <!-- Decay physics lists -->
-    <physicsList name="G4DecayPhysics"> </physicsList>
-    <physicsList name="G4RadioactiveDecayPhysics"> </physicsList>
-    <physicsList name="G4RadioactiveDecay"> 
-        <option name="ICM" value="true" />
-        <option name="ARM" value="true" />
-    </physicsList>
+        <!-- Decay physics lists -->
+        <physicsList name="G4DecayPhysics"></physicsList>
+        <physicsList name="G4RadioactiveDecayPhysics"></physicsList>
+        <physicsList name="G4RadioactiveDecay">
+            <option name="ICM" value="true"/>
+            <option name="ARM" value="true"/>
+        </physicsList>
 
-    <!-- Hadron physics lists -->
-    
-        <physicsList name="G4HadronElasticPhysicsHP"> </physicsList>
-        <physicsList name="G4IonBinaryCascadePhysics"> </physicsList>
-        <physicsList name="G4HadronPhysicsQGSP_BIC_HP"> </physicsList>
-        <physicsList name="G4EmExtraPhysics"> </physicsList>
-     
-</TRestGeant4PhysicsLists>
+        <!-- Hadron physics lists -->
+
+        <physicsList name="G4HadronElasticPhysicsHP"></physicsList>
+        <physicsList name="G4IonBinaryCascadePhysics"></physicsList>
+        <physicsList name="G4HadronPhysicsQGSP_BIC_HP"></physicsList>
+        <physicsList name="G4EmExtraPhysics"></physicsList>
+
+    </TRestGeant4PhysicsLists>
 
 </restG4>
