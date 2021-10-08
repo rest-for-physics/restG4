@@ -1,5 +1,5 @@
 
-#include "DetectorConstruction.hh"
+#include "DetectorConstruction.h"
 
 #include <G4FieldManager.hh>
 #include <G4IonTable.hh>

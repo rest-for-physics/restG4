@@ -1,5 +1,5 @@
 
-#include "EventAction.hh"
+#include "EventAction.h"
 
 #include <TRestRun.h>
 

@@ -1,6 +1,7 @@
 
-#include "RunAction.hh"
+#include "RunAction.h"
 
+#include <PrimaryGeneratorAction.h>
 #include <TRestGeant4Metadata.h>
 
 #include <G4PhysicalConstants.hh>
@@ -8,7 +9,6 @@
 #include <G4RunManager.hh>
 #include <G4SystemOfUnits.hh>
 #include <G4UnitsTable.hh>
-#include <PrimaryGeneratorAction.hh>
 #include <iomanip>
 
 extern TRestGeant4Metadata* restG4Metadata;

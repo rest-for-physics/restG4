@@ -39,7 +39,7 @@ build:
     - if [ -d build ]; then rm -rf build; fi
     - mkdir build
     - cd build
-    - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DINSTALL_PREFIX=${CI_PROJECT_DIR}/install
+    - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install
     - make install -j2
   artifacts:
     paths:
@@ -70,7 +70,7 @@ build:
 ##    - if [ -d build2 ]; then rm -rf build2; fi
 ##    - mkdir build2
 ##    - cd build2
-##    - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DINSTALL_PREFIX=${CI_PROJECT_DIR}/install2
+##    - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install2
 ##    - make install -j2
 
 loadRESTLibs:

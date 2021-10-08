@@ -1,5 +1,5 @@
 
-#include "Particles.hh"
+#include "Particles.h"
 
 #include <G4BaryonConstructor.hh>
 #include <G4BosonConstructor.hh>

@@ -1,5 +1,5 @@
 
-#include "PrimaryGeneratorAction.hh"
+#include "PrimaryGeneratorAction.h"
 
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>

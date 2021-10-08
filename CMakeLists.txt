@@ -25,24 +25,28 @@ if (NOT EXISTS "${Geant4_INCLUDE_DIRS}/G4RunManagerFactory.hh")
 endif ()
 
 # Find REST
-IF (NOT DEFINED REST_PATH)
-    IF (DEFINED ENV{REST_PATH})
+if (NOT DEFINED REST_PATH)
+    if (DEFINED ENV{REST_PATH})
         set(REST_PATH $ENV{REST_PATH})
-    ELSE ()
+    else ()
         message(FATAL_ERROR "ERROR ::: REST_PATH must be defined as an environment variable and point to REST install directory")
         return()
-    ENDIF ()
-ENDIF ()
+    endif ()
+endif ()
 
-IF (NOT DEFINED rest_include_dirs)
-    SET(rest_include_dirs ${REST_PATH}/include)
-ENDIF ()
+if (NOT DEFINED rest_include_dirs)
+    set(rest_include_dirs ${REST_PATH}/include)
+endif ()
 
-set(CMAKE_INSTALL_PREFIX ${REST_PATH})
-message(STATUS "Using REST_PATH: ${REST_PATH}, rest_include_dirs=${rest_include_dirs}")
+if (NOT DEFINED CMAKE_INSTALL_PREFIX)
+    set(CMAKE_INSTALL_PREFIX ${REST_PATH})
+endif ()
+message(STATUS "Using REST_PATH: ${REST_PATH}")
+message(STATUS "Using rest_include_dirs: ${rest_include_dirs}")
+message(STATUS "Package ${PROJECT_NAME} will be installed in ${CMAKE_INSTALL_PREFIX}")
 
 if (NOT CMAKE_CXX_FLAGS)
-    SET(CMAKE_CXX_FLAGS "-std=c++1y")
+    set(CMAKE_CXX_FLAGS " -std=c++1y")
 endif ()
 
 # Set include and lib
@@ -51,11 +55,11 @@ set(INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include ${ROOT_INCLUDE_DIRS} ${rest_inclu
 set(LINK_LIBRARIES ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} -lGui -lGeom -lGdml -lMinuit RestGeant4)
 string(STRIP "${LINK_LIBRARIES}" LINK_LIBRARIES)
 
-file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
-file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
+file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cxx)
+file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.h)
 
 # Add the executable, and link it to the Geant4 libraries
-add_executable(${PROJECT_NAME} restG4.cc ${sources} ${headers})
+add_executable(${PROJECT_NAME} restG4.cxx ${sources} ${headers})
 target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARIES})
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${INCLUDE_DIRS})
 
@@ -73,5 +77,5 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/mac
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
-set(package_added "${PROJECT_NAME}")
+set(package_added "${PROJECT_NAME} ")
 set(package_added ${package_added} PARENT_SCOPE)

@@ -1,5 +1,5 @@
 
-#include "SteppingAction.hh"
+#include "SteppingAction.h"
 
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>

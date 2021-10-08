@@ -1,5 +1,5 @@
 
-#include "PhysicsList.hh"
+#include "PhysicsList.h"
 
 #include <CLHEP/Units/PhysicalConstants.h>
 
@@ -36,7 +36,7 @@
 #include <G4UnitsTable.hh>
 #include <G4UniversalFluctuation.hh>
 
-#include "Particles.hh"
+#include "Particles.h"
 
 Int_t emCounter = 0;
 

@@ -13,28 +13,20 @@
 #include <TRestGeant4PhysicsLists.h>
 #include <TRestGeant4Track.h>
 #include <TRestRun.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/wait.h>
 
 #include <G4RunManager.hh>
-#include <G4SystemOfUnits.hh>
 #include <G4UImanager.hh>
-#include <Randomize.hh>
-#include <algorithm>
-#include <chrono>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
-#include <fstream>
-#include <iostream>
 
-#include "DetectorConstruction.hh"
-#include "EventAction.hh"
-#include "PhysicsList.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "RunAction.hh"
-#include "SteppingAction.hh"
-#include "TrackingAction.hh"
+#include "DetectorConstruction.h"
+#include "EventAction.h"
+#include "PhysicsList.h"
+#include "PrimaryGeneratorAction.h"
+#include "RunAction.h"
+#include "SteppingAction.h"
+#include "TrackingAction.h"
 
 #ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
@@ -332,7 +324,7 @@ int main(int argc, char** argv) {
             restG4Metadata->SetGeneratorType(
                 restG4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeType());
             double size = restG4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeSize();
-            restG4Metadata->SetGeneratorSize(TVector3(size,size,size));
+            restG4Metadata->SetGeneratorSize(TVector3(size, size, size));
             // restG4Metadata->GetBiasingVolume( biasing-1 ).PrintBiasingVolume();
 
             // Definning biasing the number of event to be re-launched

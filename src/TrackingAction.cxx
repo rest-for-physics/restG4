@@ -1,5 +1,5 @@
 
-#include "TrackingAction.hh"
+#include "TrackingAction.h"
 
 #include <G4ParticleTypes.hh>
 #include <G4RunManager.hh>
@@ -7,8 +7,8 @@
 #include <G4Track.hh>
 #include <G4UnitsTable.hh>
 
-#include "EventAction.hh"
-#include "RunAction.hh"
+#include "EventAction.h"
+#include "RunAction.h"
 
 extern TRestGeant4Metadata* restG4Metadata;
 extern TRestGeant4Event* restG4Event;
