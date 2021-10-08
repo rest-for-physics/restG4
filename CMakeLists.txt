@@ -21,7 +21,7 @@ endif ()
 
 # Fix to allow compatibility with older Geant4 versions that don't have G4RunManagerFactory
 if (NOT EXISTS "${Geant4_INCLUDE_DIRS}/G4RunManagerFactory.hh")
-    add_definitions(WITHOUT_G4RunManagerFactory)
+    add_definitions(-DWITHOUT_G4RunManagerFactory)
 endif ()
 
 # Find REST
