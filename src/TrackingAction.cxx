@@ -8,24 +8,24 @@
 #include <G4UnitsTable.hh>
 
 #include "EventAction.h"
+#include "GlobalManager.h"
+#include "OutputManager.h"
 #include "RunAction.h"
 
-extern TRestGeant4Metadata* restG4Metadata;
 extern TRestGeant4Event* restG4Event;
 extern TRestGeant4Track* restTrack;
 
-G4double prevTime = 0;
-G4String aux;
-
 TrackingAction::TrackingAction(RunAction* RA, EventAction* EA)
     : G4UserTrackingAction(),
+      fRestGeant4Metadata(GlobalManager::Instance()->GetRestGeant4Metadata()),
+      fOutputManager(OutputManager::Instance()),
       fRun(RA),
       fEvent(EA)
 
 {
     fFullChain = false;
 
-    fFullChain = restG4Metadata->isFullChainActivated();
+    fFullChain = fRestGeant4Metadata->isFullChainActivated();
 
     if (fFullChain)
         G4cout << "Full chain is active" << G4endl;
@@ -36,7 +36,7 @@ TrackingAction::TrackingAction(RunAction* RA, EventAction* EA)
 TrackingAction::~TrackingAction() {}
 
 void TrackingAction::PreUserTrackingAction(const G4Track* track) {
-    if (restG4Metadata->GetVerboseLevel() >= REST_Extreme)
+    if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Extreme)
         if (track->GetTrackID() % 10 == 0) {
             cout << "EXTREME: Processing track " << track->GetTrackID() << endl;
         }
@@ -63,8 +63,8 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track) {
     //   else  G4cout << "Full chain not active" << G4endl;
 
     Int_t ID = track->GetTrackID();
-    if (fFullChain == false && fCharge > 2 && ID > 1 && !name.contains("[")) {
-        G4Track* tr = (G4Track*)track;
+    if (!fFullChain && fCharge > 2 && ID > 1 && !name.contains("[")) {
+        auto tr = (G4Track*)track;
         tr->SetTrackStatus(fStopAndKill);
     }
 
@@ -82,6 +82,6 @@ void TrackingAction::PostUserTrackingAction(const G4Track* track) {
     //   G4cout << "Storing track : Number of hits : " <<
     //   restTrack->GetNumberOfHits() << G4endl;
 
-    // if (restTrack->GetNumberOfHits() > 0 || restG4Metadata->RegisterEmptyTracks())
+    // if (restTrack->GetNumberOfHits() > 0 || fRestGeant4Metadata->RegisterEmptyTracks())
     restG4Event->AddTrack(*restTrack);
 }

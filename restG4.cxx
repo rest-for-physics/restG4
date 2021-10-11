@@ -68,14 +68,7 @@ int main(int argc, char** argv) {
     CommandLineParameters commandLineParameters = CommandLineSetup::ProcessParameters(argc, argv);
     CommandLineSetup::Print(commandLineParameters);
 
-    char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
-
-    auto manager = GlobalManager::Instance();
-    manager->InitializeFromConfigFile(commandLineParameters.rmlFile);
-    auto restGeant4metadata = new TRestGeant4Metadata(inputConfigFile);
-
-    string geant4Version = TRestTools::Execute("geant4-config --version");
-    restGeant4metadata->SetGeant4Version(geant4Version);
+    GlobalManager::Instance()->InitializeFromConfigFile(commandLineParameters.rmlFile);
 
     // We need to process and generate a new GDML for several reasons.
     // 1. ROOT6 has problem loading math expressions in gdml file
@@ -86,29 +79,7 @@ int main(int argc, char** argv) {
     auto gdml = new TRestGDMLParser();
 
     // This call will generate a new single file GDML output
-    gdml->Load((string)restG4Metadata->Get_GDML_Filename());
-
-    // We redefine the value of the GDML file to be used in DetectorConstructor.
-    restG4Metadata->Set_GDML_Filename(gdml->GetOutputGDMLFile());
-    restG4Metadata->SetGeometryPath("");
-
-    restG4Metadata->Set_GDML_Reference(gdml->GetGDMLVersion());
-    restG4Metadata->SetMaterialsReference(gdml->GetEntityVersion("materials"));
-
-    restPhysList = new TRestGeant4PhysicsLists(inputConfigFile);
-
-    restRun = new TRestRun();
-    restRun->LoadConfigFromFile(inputConfigFile);
-    TString runTag = restRun->GetRunTag();
-    if (runTag == "Null" || runTag == "") restRun->SetRunTag(restG4Metadata->GetTitle());
-
-    restRun->SetRunType("restG4");
-
-    restRun->AddMetadata(restG4Metadata);
-    restRun->AddMetadata(restPhysList);
-    restRun->PrintMetadata();
-
-    restRun->FormOutputFile();
+    gdml->Load((string)GlobalManager::Instance()->GetRestGeant4Metadata()->Get_GDML_Filename());
 
     restG4Event = new TRestGeant4Event();
     subRestG4Event = new TRestGeant4Event();

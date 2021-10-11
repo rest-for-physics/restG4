@@ -13,13 +13,17 @@
 #include <G4UnitsTable.hh>
 #include <globals.hh>
 
+#include "GlobalManager.h"
+#include "OutputManager.h"
+
 extern TRestGeant4Event* restG4Event;
-extern TRestGeant4Metadata* restG4Metadata;
 extern TRestGeant4Track* restTrack;
 extern Int_t biasing;
 
-SteppingAction::SteppingAction() {
-    if (biasing > 1) restBiasingVolume = restG4Metadata->GetBiasingVolume(biasing - 1);
+SteppingAction::SteppingAction()
+    : fRestGeant4Metadata(GlobalManager::Instance()->GetRestGeant4Metadata()),
+      fOutputManager(OutputManager::Instance()) {
+    if (biasing > 1) restBiasingVolume = fRestGeant4Metadata->GetBiasingVolume(biasing - 1);
 }
 
 SteppingAction::~SteppingAction() {}
@@ -33,8 +37,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     eKin = aStep->GetTrack()->GetKineticEnergy() / keV;
 
     if (restTrack->GetParticleName() == "geantino" &&
-        (G4String)restG4Metadata->GetSensitiveVolume() == nom_vol) {
-        restG4Metadata->SetSaveAllEvents(true);
+        (G4String)fRestGeant4Metadata->GetSensitiveVolume() == nom_vol) {
+        fRestGeant4Metadata->SetSaveAllEvents(true);
     }
 
     if (!aStep->GetPostStepPoint()->GetProcessDefinedStep()) {
@@ -123,7 +127,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         }
 
     } else {
-        if ((G4String)restG4Metadata->GetSensitiveVolume() == nom_vol) {
+        if ((G4String)fRestGeant4Metadata->GetSensitiveVolume() == nom_vol) {
             restG4Event->AddEnergyToSensitiveVolume(ener_dep / keV);
         }
 
@@ -136,18 +140,20 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         Int_t volume = -1;
         Bool_t alreadyStored = false;
         // We check if the hit must be stored and keep it on restG4Track
-        for (int volID = 0; volID < restG4Metadata->GetNumberOfActiveVolumes(); volID++) {
+        for (int volID = 0; volID < fRestGeant4Metadata->GetNumberOfActiveVolumes(); volID++) {
             if (restG4Event->isVolumeStored(volID)) {
-                if (restG4Metadata->GetVerboseLevel() >= REST_Extreme)
+                if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Extreme)
                     G4cout << "Step volume :" << nom_vol << "::("
-                           << (G4String)restG4Metadata->GetActiveVolumeName(volID) << ")" << G4endl;
+                           << (G4String)fRestGeant4Metadata->GetActiveVolumeName(volID) << ")" << G4endl;
 
                 // We store the hit if we have activated in the config
-                Bool_t isActiveVolume = (nom_vol == (G4String)restG4Metadata->GetActiveVolumeName(volID));
+                Bool_t isActiveVolume =
+                    (nom_vol == (G4String)fRestGeant4Metadata->GetActiveVolumeName(volID));
 
                 if (isActiveVolume) {
                     volume = volID;
-                    if (restG4Metadata->GetVerboseLevel() >= REST_Extreme) G4cout << "Storing hit" << G4endl;
+                    if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Extreme)
+                        G4cout << "Storing hit" << G4endl;
                     restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, pcsID, volID, eKin,
                                         momentumDirection);
                     alreadyStored = true;

@@ -4,6 +4,7 @@
 
 #include "GlobalManager.h"
 
+#include <TRestGDMLParser.h>
 #include <TRestGeant4Metadata.h>
 #include <TRestGeant4PhysicsLists.h>
 #include <TRestRun.h>
@@ -63,6 +64,19 @@ void GlobalManager::InitializeRestGeant4Metadata(const TString& rmlFile) {
 
     string geant4Version = TRestTools::Execute("geant4-config --version");
     fRestGeant4Metadata->SetGeant4Version(geant4Version);
+
+    // GDML geometry parsing
+    auto gdml = TRestGDMLParser();
+
+    // This call will generate a new single file GDML output
+    gdml.Load((string)fRestGeant4Metadata->Get_GDML_Filename());
+
+    // We redefine the value of the GDML file to be used in DetectorConstructor.
+    fRestGeant4Metadata->Set_GDML_Filename(gdml.GetOutputGDMLFile());
+    fRestGeant4Metadata->SetGeometryPath("");
+
+    fRestGeant4Metadata->Set_GDML_Reference(gdml.GetGDMLVersion());
+    fRestGeant4Metadata->SetMaterialsReference(gdml.GetEntityVersion("materials"));
 }
 
 void GlobalManager::InitializeRestRun(const TString& rmlFile) {

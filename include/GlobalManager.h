@@ -32,11 +32,13 @@ class GlobalManager {
 
     size_t InsertEvent(std::unique_ptr<TRestGeant4Event>&);
 
+    inline TRestGeant4Metadata* GetRestGeant4Metadata() const { return fRestGeant4Metadata; }
+
    private:
     GlobalManager();
     static GlobalManager* pinstance_;
 
-     TString fInputConfigFile;
+    TString fInputConfigFile;
 
     TRestGeant4Metadata* fRestGeant4Metadata;
     TRestRun* fRestRun;

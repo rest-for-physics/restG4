@@ -13,6 +13,8 @@
 class RunAction;
 class EventAction;
 
+class OutputManager;
+
 class TrackingAction : public G4UserTrackingAction {
    public:
     TrackingAction(RunAction*, EventAction*);
@@ -22,14 +24,15 @@ class TrackingAction : public G4UserTrackingAction {
     virtual void PostUserTrackingAction(const G4Track*);
 
    private:
+    TRestGeant4Metadata* fRestGeant4Metadata;
+    OutputManager* fOutputManager;
+
     RunAction* fRun;
     EventAction* fEvent;
 
-    G4double fCharge, fMass;
+    G4double fCharge;
 
     G4bool fFullChain;
-
-    Double_t fGlobalTime;
 };
 
 #endif

@@ -14,6 +14,9 @@
 
 using namespace std;
 
+class TRestGeant4Metadata;
+class OutputManager;
+
 class SteppingAction : public G4UserSteppingAction {
    public:
     SteppingAction();
@@ -31,10 +34,14 @@ class SteppingAction : public G4UserSteppingAction {
     TH2D* GetSpatialDistribution() { return fSpatialDistribution; }
 
    private:
+    TRestGeant4Metadata* fRestGeant4Metadata;
+    OutputManager* fOutputManager;
+
     G4String nom_vol, nom_part, nom_proc;
     G4double dif_ener, ener_dep, ener, eKin;
     G4int trackID, parentID;
 
+    G4ThreeVector previousDirection;
     TH1D* fBiasingSpectrum;
     TH1D* fAngularDistribution;
     TH2D* fSpatialDistribution;
@@ -45,16 +52,5 @@ class SteppingAction : public G4UserSteppingAction {
     }
 
     TRestGeant4BiasingVolume restBiasingVolume;
-
-    G4ThreeVector previousDirection;
-
-    /*
-       G4ThreeVector momentum;
-       G4double x, y, z;
-       G4int step;
-
-
-       void WriteDefaultInt();
-       */
 };
 #endif

@@ -3,15 +3,15 @@
 #define RunAction_h 1
 
 #include <G4UserRunAction.hh>
-#include <fstream>
 #include <globals.hh>
 #include <iostream>
-#include <map>
 
 using namespace std;
 
 class G4Run;
 class PrimaryGeneratorAction;
+class TRestGeant4Metadata;
+class OutputManager;
 
 class RunAction : public G4UserRunAction {
    public:
@@ -23,15 +23,8 @@ class RunAction : public G4UserRunAction {
 
    private:
     PrimaryGeneratorAction* fPrimary;
-
-    std::map<G4String, G4int> fParticleCount;
-    std::map<G4String, G4double> fEmean;
-    std::map<G4String, G4double> fEmin;
-    std::map<G4String, G4double> fEmax;
-
-    G4int fDecayCount, fTimeCount;
-    G4double fEkinTot[3];
-    G4double fPbalance[3];
+    TRestGeant4Metadata* fRestGeant4Metadata;
+    OutputManager* fOutputManager;
 };
 
 #endif

@@ -1,6 +1,7 @@
 
 #include "EventAction.h"
 
+#include <OutputManager.h>
 #include <TRestRun.h>
 
 #include <G4Event.hh>
@@ -8,30 +9,40 @@
 #include <fstream>
 #include <iomanip>
 
+#include "GlobalManager.h"
+
 extern TRestRun* restRun;
-extern TRestGeant4Metadata* restG4Metadata;
 extern TRestGeant4Event* restG4Event;
 extern TRestGeant4Event* subRestG4Event;
 extern TRestGeant4Track* restTrack;
 
 using namespace std;
 
-EventAction::EventAction() : G4UserEventAction() { restG4Metadata->isFullChainActivated(); }
+EventAction::EventAction()
+    : G4UserEventAction(),
+      fRestGeant4Metadata(GlobalManager::Instance()->GetRestGeant4Metadata()),
+      fOutputManager(OutputManager::Instance()) {
 
-EventAction::~EventAction() {}
+    fRestGeant4Metadata->isFullChainActivated();
+}
 
-void EventAction::BeginOfEventAction(const G4Event* geant4_event) {
-    G4int event_number = geant4_event->GetEventID();
+EventAction::~EventAction() = default;
 
-    restG4Metadata->GetVerboseLevel();
+void EventAction::BeginOfEventAction(const G4Event* event) {
+    fOutputManager->UpdateEvent();
 
-    if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
+    G4int event_number = event->GetEventID();
+
+    fRestGeant4Metadata->GetVerboseLevel();
+
+    if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug) {
         cout << "DEBUG: Start of event ID " << event_number << " (" << event_number + 1 << " of "
-             << restG4Metadata->GetNumberOfEvents() << ")" << endl;
-    } else if ((restG4Metadata->PrintProgress() || restG4Metadata->GetVerboseLevel() >= REST_Info) &&
-               geant4_event->GetEventID() % 10000 == 0) {
+             << fRestGeant4Metadata->GetNumberOfEvents() << ")" << endl;
+    } else if ((fRestGeant4Metadata->PrintProgress() ||
+                fRestGeant4Metadata->GetVerboseLevel() >= REST_Info) &&
+               event->GetEventID() % 10000 == 0) {
         cout << "INFO: Start of event ID " << event_number << " (" << event_number + 1 << " of "
-             << restG4Metadata->GetNumberOfEvents() << ")" << endl
+             << fRestGeant4Metadata->GetNumberOfEvents() << ")" << endl
              << endl;
     }
 
@@ -44,10 +55,10 @@ void EventAction::BeginOfEventAction(const G4Event* geant4_event) {
     restG4Event->SetTime((Double_t)system_time);
 
     // Defining if the hits in a given volume will be stored
-    for (int i = 0; i < restG4Metadata->GetNumberOfActiveVolumes(); i++) {
+    for (int i = 0; i < fRestGeant4Metadata->GetNumberOfActiveVolumes(); i++) {
         Double_t rndNumber = G4UniformRand();
 
-        if (restG4Metadata->GetStorageChance(i) >= rndNumber)
+        if (fRestGeant4Metadata->GetStorageChance(i) >= rndNumber)
             restG4Event->ActivateVolumeForStorage(i);
         else
             restG4Event->DisableVolumeForStorage(i);
@@ -57,12 +68,12 @@ void EventAction::BeginOfEventAction(const G4Event* geant4_event) {
 void EventAction::EndOfEventAction(const G4Event* geant4_event) {
     G4int event_number = geant4_event->GetEventID();
 
-    if (restG4Metadata->GetVerboseLevel() >= REST_Extreme) {
+    if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Extreme) {
         restG4Event->PrintEvent();
     }
 
-    Double_t minimum_energy_stored = restG4Metadata->GetMinimumEnergyStored();
-    Double_t maximum_energy_stored = restG4Metadata->GetMaximumEnergyStored();
+    Double_t minimum_energy_stored = fRestGeant4Metadata->GetMinimumEnergyStored();
+    Double_t maximum_energy_stored = fRestGeant4Metadata->GetMaximumEnergyStored();
 
     int NSubs = SetTrackSubEventIDs();
 
@@ -80,15 +91,15 @@ void EventAction::EndOfEventAction(const G4Event* geant4_event) {
         is_sensitive =
             (sensitive_volume_deposited_energy > 0 && total_deposited_energy > minimum_energy_stored &&
              total_deposited_energy < maximum_energy_stored) ||
-            restG4Metadata->GetSaveAllEvents();
+            fRestGeant4Metadata->GetSaveAllEvents();
 
-        if (restG4Metadata->GetVerboseLevel() >= REST_Info) {
+        if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Info) {
             string debug_level = "INFO";
-            if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
+            if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug) {
                 debug_level = "DEBUG";
             }
 
-            if (is_sensitive || restG4Metadata->GetVerboseLevel() >= REST_Debug) {
+            if (is_sensitive || fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug) {
                 cout << debug_level
                      << ": Energy deposited in ACTIVE and SENSITIVE volumes: " << total_deposited_energy
                      << " keV" << endl;
@@ -112,7 +123,7 @@ void EventAction::EndOfEventAction(const G4Event* geant4_event) {
                 analysis_tree->Fill();
             } else {
                 // analysis tree is not found (nullptr)
-                if (restG4Metadata->GetVerboseLevel() >= REST_Warning) {
+                if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Warning) {
                     cout << "WARNING: Analysis tree is not found ('nullptr'). Cannot write event info"
                          << endl;
                 }
@@ -123,25 +134,25 @@ void EventAction::EndOfEventAction(const G4Event* geant4_event) {
                 event_tree->Fill();
             } else {
                 // event tree is not found (nullptr)
-                if (restG4Metadata->GetVerboseLevel() >= REST_Warning) {
+                if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Warning) {
                     cout << "WARNING: Event tree is not found ('nullptr'). Cannot write event info" << endl;
                 }
             }
         }
     }
 
-    if (restG4Metadata->GetVerboseLevel() >= REST_Info) {
+    if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Info) {
         string debug_level = "INFO";
-        if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
+        if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug) {
             debug_level = "DEBUG";
         }
 
-        if (is_sensitive || restG4Metadata->GetVerboseLevel() >= REST_Debug) {
+        if (is_sensitive || fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug) {
             cout << debug_level
                  << ": Events depositing energy in sensitive volume: " << sensitive_volume_hits_count << "/"
                  << event_number + 1 << endl;
             cout << debug_level << ": End of event ID " << event_number << " (" << event_number + 1 << " of "
-                 << restG4Metadata->GetNumberOfEvents() << ")" << endl;
+                 << fRestGeant4Metadata->GetNumberOfEvents() << ")" << endl;
             cout << endl;
         }
     }
@@ -173,7 +184,7 @@ void EventAction::FillSubEvent(Int_t subId) {
     }
 
     for (int n = 0; n < restG4Event->GetNumberOfActiveVolumes(); n++) {
-        subRestG4Event->AddActiveVolume((string)restG4Metadata->GetActiveVolumeName(n));
+        subRestG4Event->AddActiveVolume((string)fRestGeant4Metadata->GetActiveVolumeName(n));
         if (restG4Event->isVolumeStored(n))
             subRestG4Event->ActivateVolumeForStorage(n);
         else
@@ -184,13 +195,13 @@ void EventAction::FillSubEvent(Int_t subId) {
         TRestGeant4Track* tck = restG4Event->GetTrack(n);
 
         if (tck->GetSubEventID() == subId)
-            if (tck->GetNumberOfHits() > 0 || restG4Metadata->RegisterEmptyTracks()) {
+            if (tck->GetNumberOfHits() > 0 || fRestGeant4Metadata->RegisterEmptyTracks()) {
                 subRestG4Event->AddTrack(*tck);
             }
     }
 
-    if (restG4Metadata->isVolumeStored(restG4Metadata->GetSensitiveVolume())) {
-        Int_t sensVolID = restG4Metadata->GetActiveVolumeID(restG4Metadata->GetSensitiveVolume());
+    if (fRestGeant4Metadata->isVolumeStored(fRestGeant4Metadata->GetSensitiveVolume())) {
+        Int_t sensVolID = fRestGeant4Metadata->GetActiveVolumeID(fRestGeant4Metadata->GetSensitiveVolume());
 
         subRestG4Event->SetSensitiveVolumeEnergy(subRestG4Event->GetEnergyDepositedInVolume(sensVolID));
     }
@@ -248,7 +259,7 @@ void EventAction::ReOrderTrackIds(Int_t subId) {
 
 int EventAction::SetTrackSubEventIDs() {
     Int_t nTracks = restG4Event->GetNumberOfTracks();
-    Double_t timeDelay = restG4Metadata->GetSubEventTimeDelay();  // in unit us
+    Double_t timeDelay = fRestGeant4Metadata->GetSubEventTimeDelay();  // in unit us
 
     // reorder tracks
     std::map<int, TRestGeant4Track*> tracks;
