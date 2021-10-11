@@ -6,14 +6,14 @@ stages:
   - examples
 
 before_script:
-    - export USER="rest"
-    - pwd
-    - if [ -f "/opt/root/install/bin/thisroot.sh" ]; then source /opt/root/install/bin/thisroot.sh; fi
-    - root-config --version
-    - if [ -f "/opt/geant4/install/bin/geant4.sh" ]; then source /opt/geant4/install/bin/geant4.sh; fi
-    - geant4-config --version
-    - python3 --version
-    - apt update && apt install -y wget
+  - export USER="rest"
+  - pwd
+  - if [ -f "/opt/root/install/bin/thisroot.sh" ]; then source /opt/root/install/bin/thisroot.sh; fi
+  - root-config --version
+  - if [ -f "/opt/geant4/install/bin/geant4.sh" ]; then source /opt/geant4/install/bin/geant4.sh; fi
+  - geant4-config --version
+  - python3 --version
+  - apt update && apt install -y wget
 
 # This is the one we use to run validations tests. We save the installation as an artifact.
 build:
@@ -27,8 +27,8 @@ build:
     - git submodule init source/libraries/geant4
     - git submodule update source/libraries/geant4
     - cd source/libraries/geant4/
-      # We attempt to pull a branch from geant4lib named as the one at restG4. 
-      # If not it will pull master by default
+    # We attempt to pull a branch from geant4lib named as the one at restG4.
+    # If not it will pull master by default
     - ../../../scripts/checkoutRemoteBranch.sh ${CI_COMMIT_BRANCH}
     - cd ../../../
     - git submodule init source/packages/restG4
@@ -39,7 +39,7 @@ build:
     - if [ -d build ]; then rm -rf build; fi
     - mkdir build
     - cd build
-    - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DINSTALL_PREFIX=${CI_PROJECT_DIR}/install
+    - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install
     - make install -j2
   artifacts:
     paths:
@@ -70,7 +70,7 @@ build:
 ##    - if [ -d build2 ]; then rm -rf build2; fi
 ##    - mkdir build2
 ##    - cd build2
-##    - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DINSTALL_PREFIX=${CI_PROJECT_DIR}/install2
+##    - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install2
 ##    - make install -j2
 
 loadRESTLibs:
@@ -138,7 +138,7 @@ loadRESTLibs:
     - restG4 singleDecay.rml
     - restRoot -b -q Validate.C'("Run00002_Be7_SingleChainDecay.root", 1)'
 
-      
+
 09_Pb210_Shielding:
   type: examples
   script:

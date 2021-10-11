@@ -2,20 +2,21 @@
 <!-- ##VERSION TREX-DM Basic geometry Version 1.1 (Ar_ISO - 1 bar - Quencher: 0.01 )## -->
 
 <!DOCTYPE gdml [
-<!ENTITY geometry SYSTEM "geometry.gdml">
-<!ENTITY materials SYSTEM "https://sultan.unizar.es/materials/materials.xml">
-]>
+        <!ENTITY geometry SYSTEM "geometry.gdml">
+        <!ENTITY materials SYSTEM "https://sultan.unizar.es/materials/materials.xml">
+        ]>
 
-<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
 
-<!-- All values should be in mm -->
+    <!-- All values should be in mm -->
 
     <define>
-        <constant name="world_size" value="20000" />
+        <constant name="world_size" value="20000"/>
 
-		<!-- We must define these variables that are hardcoded in materials.xml -->
-		<!-- They have no use in this example since we do not use a gas mixture in our simulation -->
-		<!-- This makes non sense, and it could be solved if we would have a dedicated materials file for gas mixtures -->
+        <!-- We must define these variables that are hardcoded in materials.xml -->
+        <!-- They have no use in this example since we do not use a gas mixture in our simulation -->
+        <!-- This makes non sense, and it could be solved if we would have a dedicated materials file for gas mixtures -->
         <variable name="targetGasDensity" value="1*0.9"/>  <!-- mg/cm3 -->
         <variable name="quencherDensity" value="1*0.05"/> <!-- mg/cm3 -->
         <variable name="quencherFraction" value="0.01"/>

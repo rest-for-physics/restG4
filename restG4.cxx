@@ -1,4 +1,4 @@
-// REST G4 main program. restG4.cc
+// REST G4 main program. restG4.cxx
 //
 // Author : J. Galan
 // Date : Jul-2015
@@ -13,28 +13,21 @@
 #include <TRestGeant4PhysicsLists.h>
 #include <TRestGeant4Track.h>
 #include <TRestRun.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/wait.h>
 
 #include <G4RunManager.hh>
-#include <G4SystemOfUnits.hh>
 #include <G4UImanager.hh>
-#include <Randomize.hh>
-#include <algorithm>
-#include <chrono>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
-#include <fstream>
-#include <iostream>
 
-#include "DetectorConstruction.hh"
-#include "EventAction.hh"
-#include "PhysicsList.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "RunAction.hh"
-#include "SteppingAction.hh"
-#include "TrackingAction.hh"
+#include "CommandLineSetup.h"
+#include "DetectorConstruction.h"
+#include "EventAction.h"
+#include "PhysicsList.h"
+#include "PrimaryGeneratorAction.h"
+#include "RunAction.h"
+#include "SteppingAction.h"
+#include "TrackingAction.h"
 
 #ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
@@ -67,28 +60,19 @@ TH1D initialEnergySpectrum;
 TH1D initialAngularDistribution;
 
 Int_t N_events;
-char inputConfigFile[256];
-char restG4Name[256];
-char physListName[256];
 
 int main(int argc, char** argv) {
     auto start_time = chrono::steady_clock::now();
 
-    // {{{ Getting by argument the simulation config file
-    // sprintf( inputConfigFile, "%s", "myConfig.rml");
-    if (argc < 2) {
-        cout << "no input config file" << endl;
-        cout << "usage : " << argv[0] << " config_file [section_name]" << endl;
-        return -1;
-    }
-    if (argc >= 2) sprintf(inputConfigFile, "%s", argv[1]);
-    if (argc >= 3) sprintf(restG4Name, "%s", argv[2]);
+    CommandLineParameters commandLineParameters = CommandLineSetup::ProcessParameters(argc, argv);
+    CommandLineSetup::Print(commandLineParameters);
 
-    sprintf(physListName, "%s", "default");
-    // }}}
+    char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
 
-    // {{{ Initializing REST classes
-    restG4Metadata = new TRestGeant4Metadata(inputConfigFile, (string)restG4Name);
+    restG4Metadata = new TRestGeant4Metadata(inputConfigFile);
+
+    string geant4Version = TRestTools::Execute("geant4-config --version");
+    restG4Metadata->SetGeant4Version(geant4Version);
 
     // We need to process and generate a new GDML for several reasons.
     // 1. ROOT6 has problem loading math expressions in gdml file
@@ -96,28 +80,25 @@ int main(int argc, char** argv) {
     // 3. We retrieve the GDML and materials versions and associate to the
     // corresponding TRestGeant4Metadata members
     // 4. We support the use of system variables ${}
-    TRestGDMLParser* gdml = new TRestGDMLParser();
+    auto gdml = new TRestGDMLParser();
 
     // This call will generate a new single file GDML output
     gdml->Load((string)restG4Metadata->Get_GDML_Filename());
 
     // We redefine the value of the GDML file to be used in DetectorConstructor.
-    // This value is not anymore registed/written to disk inside TRestGeant4Metadata.
     restG4Metadata->Set_GDML_Filename(gdml->GetOutputGDMLFile());
     restG4Metadata->SetGeometryPath("");
 
     restG4Metadata->Set_GDML_Reference(gdml->GetGDMLVersion());
     restG4Metadata->SetMaterialsReference(gdml->GetEntityVersion("materials"));
 
-    std::string g4Version = TRestTools::Execute("geant4-config --version");
-    restG4Metadata->SetGeant4Version(g4Version);
-
-    restPhysList = new TRestGeant4PhysicsLists(inputConfigFile, (string)physListName);
+    restPhysList = new TRestGeant4PhysicsLists(inputConfigFile);
 
     restRun = new TRestRun();
     restRun->LoadConfigFromFile(inputConfigFile);
-    TString rTag = restRun->GetRunTag();
-    if (rTag == "Null" || rTag == "") restRun->SetRunTag(restG4Metadata->GetTitle());
+    TString runTag = restRun->GetRunTag();
+    if (runTag == "Null" || runTag == "") restRun->SetRunTag(restG4Metadata->GetTitle());
+
     restRun->SetRunType("restG4");
 
     restRun->AddMetadata(restG4Metadata);
@@ -131,9 +112,7 @@ int main(int argc, char** argv) {
     restRun->AddEventBranch(subRestG4Event);
 
     restTrack = new TRestGeant4Track();
-    // }}}
 
-    // {{{ Setting the biasing spectra histograms
     biasing = restG4Metadata->GetNumberOfBiasingVolumes();
     for (int i = 0; i < biasing; i++) {
         TString spctName = "Bias_Spectrum_" + TString(Form("%d", i));
@@ -170,17 +149,14 @@ int main(int argc, char** argv) {
     long seed = restG4Metadata->GetSeed();
     CLHEP::HepRandom::setTheSeed(seed);
 
-    // Construct the default run manager
-    G4RunManager* runManager = new G4RunManager;
+    auto runManager = new G4RunManager;
 
-    // set mandatory initialization classes
-    DetectorConstruction* det = new DetectorConstruction();
+    auto det = new DetectorConstruction();
 
     runManager->SetUserInitialization(det);
     runManager->SetUserInitialization(new PhysicsList(restPhysList));
 
-    // set user action classes
-    PrimaryGeneratorAction* prim = new PrimaryGeneratorAction(det);
+    auto prim = new PrimaryGeneratorAction(det);
 
     if (restG4Metadata->GetParticleSource(0)->GetEnergyDistType() == "TH1D") {
         TString fileFullPath = (TString)restG4Metadata->GetParticleSource(0)->GetSpectrumFilename();
@@ -190,8 +166,8 @@ int main(int argc, char** argv) {
         TString sptName = restG4Metadata->GetParticleSource(0)->GetSpectrumName();
 
         TH1D* h = (TH1D*)fin.Get(sptName);
-        ;
-        if (h == NULL) {
+
+        if (!h) {
             cout << "REST ERROR  when trying to find energy spectrum" << endl;
             cout << "File : " << fileFullPath << endl;
             cout << "Spectrum name : " << sptName << endl;
@@ -217,8 +193,8 @@ int main(int argc, char** argv) {
 
         TString sptName = restG4Metadata->GetParticleSource(0)->GetAngularName();
         TH1D* h = (TH1D*)fin.Get(sptName);
-        ;
-        if (h == NULL) {
+
+        if (!h) {
             cout << "REST ERROR  when trying to find angular spectrum" << endl;
             cout << "File : " << fileFullPath << endl;
             cout << "Spectrum name : " << sptName << endl;
@@ -231,12 +207,12 @@ int main(int argc, char** argv) {
         prim->SetAngularDistribution(&initialAngularDistribution);
     }
 
-    RunAction* run = new RunAction(prim);
+    auto run = new RunAction(prim);
 
-    EventAction* event = new EventAction();
+    auto event = new EventAction();
 
-    TrackingAction* track = new TrackingAction(run, event);
-    SteppingAction* step = new SteppingAction();
+    auto track = new TrackingAction(run, event);
+    auto step = new SteppingAction();
 
     runManager->SetUserAction(run);
     runManager->SetUserAction(prim);
@@ -244,10 +220,8 @@ int main(int argc, char** argv) {
     runManager->SetUserAction(track);
     runManager->SetUserAction(step);
 
-    // Initialize G4 kernel
     runManager->Initialize();
 
-    // get the pointer to the User Interface manager
     G4UImanager* UI = G4UImanager::GetUIpointer();
 
 #ifdef G4VIS_USE
@@ -266,7 +240,7 @@ int main(int argc, char** argv) {
         step->SetSpatialDistribution(spatialDistribution[biasing - 1]);
     }
 
-    time_t systime = time(NULL);
+    time_t systime = time(nullptr);
     restRun->SetStartTimeStamp((Double_t)systime);
 
     cout << "Events : " << N_events << endl;
@@ -283,20 +257,6 @@ int main(int argc, char** argv) {
         command = tmp;
         UI->ApplyCommand(command);
 
-        // TH1D *spt = step->GetBiasingSpectrum();
-        /*
-           for( int i = 1; i <= 1200; i++ )
-           if( biasingSpectrum[biasing-1]->GetBinContent( i ) > 0 )
-           cout << i << " : " << biasingSpectrum[biasing-1]->GetBinContent( i ) <<
-           endl;
-
-           cout << "Integral : " << biasingSpectrum[biasing-1]->Integral() << endl;
-           */
-        //      spt->Draw("same");
-
-        //      biasingSpectrum[biasing-1]->Draw("same");
-        //
-
         restRun->GetOutputFile()->cd();
 
         if (biasing) {
@@ -309,33 +269,27 @@ int main(int argc, char** argv) {
             biasing--;
         }
         while (biasing) {
-            // Definning isotropic gammas using the spectrum and angular distribution
-            // previously obtained
             restG4Metadata->RemoveParticleSources();
 
-            TRestGeant4ParticleSource* src = new TRestGeant4ParticleSource();
+            auto src = new TRestGeant4ParticleSource();
             src->SetParticleName("gamma");
             src->SetEnergyDistType("TH1D");
             src->SetAngularDistType("TH1D");
             restG4Metadata->AddParticleSource(src);
 
-            // We set the spectrum from previous biasing volume inside the primary
-            // generator
+            // We set the spectrum from previous biasing volume inside the primary generator
             prim->SetSpectrum(biasingSpectrum[biasing]);
             // And we set the angular distribution
             prim->SetAngularDistribution(angularDistribution[biasing]);
 
-            // src.SetAngularDistType( "distribution" );
-
-            // We re-define the generator inside restG4Metadata to be launched from
-            // the biasing volume
+            // We re-define the generator inside restG4Metadata to be launched from the biasing volume
             restG4Metadata->SetGeneratorType(
                 restG4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeType());
             double size = restG4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeSize();
-            restG4Metadata->SetGeneratorSize(TVector3(size,size,size));
+            restG4Metadata->SetGeneratorSize(TVector3(size, size, size));
             // restG4Metadata->GetBiasingVolume( biasing-1 ).PrintBiasingVolume();
 
-            // Definning biasing the number of event to be re-launched
+            // Defining biasing the number of event to be re-launched
             Double_t biasingFactor = restG4Metadata->GetBiasingVolume(biasing - 1).GetBiasingFactor();
             cout << "Biasing id: " << biasing - 1 << ", Events to be launched : "
                  << (Int_t)(biasingSpectrum[biasing]->Integral() * biasingFactor) << endl;
@@ -372,7 +326,7 @@ int main(int argc, char** argv) {
     {
         cout << "Entering vis mode.." << endl;
 #ifdef G4UI_USE
-        G4UIExecutive* ui = new G4UIExecutive(argc, argv);
+        auto ui = new G4UIExecutive(argc, argv);
 #ifdef G4VIS_USE
         cout << "Executing G4 macro : /control/execute macros/vis.mac" << endl;
         UI->ApplyCommand("/control/execute macros/vis.mac");
@@ -402,47 +356,14 @@ int main(int argc, char** argv) {
     }
     restRun->GetOutputFile()->cd();
 
-// restRun->WriteWithDataBase();
-/*
-initialEnergySpectrum.SetName("initialEnergySpectrum");
-initialAngularDistribution.SetName("initialAngularDistribution");
-
-initialEnergySpectrum.SetTitle( "Primary source energy spectrum" );
-initialAngularDistribution.SetTitle( "Primary source Theta angular
-distribution" );
-
-initialEnergySpectrum.Write();
-initialAngularDistribution.Write();
-*/
-
-/* We should never remove data files! Even if we get no event in the ROI we
- * need to count the number of primaries we launched!
- * See forum post : http://ezpc10.unizar.es/t/restg4-simulation-producing-0-entries-are-deleted/293
- *
-if (restRun->GetEntries() <= 0) {
-// if no events are registered we exit with error
-cout << "ERROR: No events deposited energy in sensitive volume" << endl;
-// we also delete the file
-string fileToRemove = (string)restRun->GetOutputFileName();
-if (remove(fileToRemove.c_str()) == 0) {
-    cout << "deleted: " << fileToRemove << endl;
-} else {
-    cout << "error deleting: " << fileToRemove << endl;
-}
-throw std::exception();
-}
-*/
 #ifdef G4VIS_USE
     delete visManager;
 #endif
 
     // job termination
-    //
     delete runManager;
 
-    // restRun->CloseOutputFile();
-
-    systime = time(NULL);
+    systime = time(nullptr);
     restRun->SetEndTimeStamp((Double_t)systime);
     TString Filename = restRun->GetOutputFileName();
 
