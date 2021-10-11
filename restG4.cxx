@@ -23,6 +23,7 @@
 #include "CommandLineSetup.h"
 #include "DetectorConstruction.h"
 #include "EventAction.h"
+#include "GlobalManager.h"
 #include "PhysicsList.h"
 #include "PrimaryGeneratorAction.h"
 #include "RunAction.h"
@@ -69,10 +70,12 @@ int main(int argc, char** argv) {
 
     char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
 
-    restG4Metadata = new TRestGeant4Metadata(inputConfigFile);
+    auto manager = GlobalManager::Instance();
+    manager->InitializeFromConfigFile(commandLineParameters.rmlFile);
+    auto restGeant4metadata = new TRestGeant4Metadata(inputConfigFile);
 
     string geant4Version = TRestTools::Execute("geant4-config --version");
-    restG4Metadata->SetGeant4Version(geant4Version);
+    restGeant4metadata->SetGeant4Version(geant4Version);
 
     // We need to process and generate a new GDML for several reasons.
     // 1. ROOT6 has problem loading math expressions in gdml file
@@ -142,12 +145,6 @@ int main(int argc, char** argv) {
             spatialDistribution[i] =
                 new TH2D(spatialDistName, "Biasing spatial distribution", 100, -1, 1, 100, -1, 1);
     }
-    // }}}
-
-    // choose the Random engine
-    CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
-    long seed = restG4Metadata->GetSeed();
-    CLHEP::HepRandom::setTheSeed(seed);
 
     auto runManager = new G4RunManager;
 
