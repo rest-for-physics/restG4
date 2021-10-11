@@ -11,6 +11,8 @@
 
 class DetectorConstruction : public G4VUserDetectorConstruction {
    private:
+    TRestGeant4Metadata* fRestGeant4Metadata;
+
     G4GDMLParser* parser;
     G4VSolid* generatorSolid;
     G4ThreeVector fGeneratorTranslation;

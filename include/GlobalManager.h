@@ -19,6 +19,7 @@
 class TRestGeant4Metadata;
 class TRestRun;
 class TRestGeant4PhysicsLists;
+class TRestGDMLParser;
 
 class GlobalManager {
    public:
@@ -33,6 +34,9 @@ class GlobalManager {
     size_t InsertEvent(std::unique_ptr<TRestGeant4Event>&);
 
     inline TRestGeant4Metadata* GetRestGeant4Metadata() const { return fRestGeant4Metadata; }
+    inline TRestRun* GetRestRun() const { return fRestRun; }
+    inline TRestGeant4PhysicsLists* GetRestGeant4PhysicsLists() const { return fRestGeant4PhysicsLists; }
+    inline TRestGDMLParser* GetRestGDMLParser() const { return fRestGDMLParser; }
 
    private:
     GlobalManager();
@@ -43,6 +47,7 @@ class GlobalManager {
     TRestGeant4Metadata* fRestGeant4Metadata;
     TRestRun* fRestRun;
     TRestGeant4PhysicsLists* fRestGeant4PhysicsLists;
+    TRestGDMLParser* const fRestGDMLParser;
 
     TRestGeant4Event fEvent;
     std::queue<std::unique_ptr<TRestGeant4Event> > fEventContainer;

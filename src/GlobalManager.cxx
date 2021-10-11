@@ -24,7 +24,10 @@ GlobalManager* GlobalManager::Instance() {
 }
 
 GlobalManager::GlobalManager()
-    : fRestGeant4Metadata(nullptr), fRestRun(nullptr), fRestGeant4PhysicsLists(nullptr) {
+    : fRestGeant4Metadata(nullptr),
+      fRestRun(nullptr),
+      fRestGeant4PhysicsLists(nullptr),
+      fRestGDMLParser(new TRestGDMLParser) {
     // Master thread should create the GlobalManager, worker threads should spawn after the manager is created
     // by the master thread
     if (!G4Threading::IsMasterThread()) {
@@ -37,7 +40,10 @@ GlobalManager::GlobalManager()
 
 GlobalManager::~GlobalManager() {
     cout << "GlobalManager::~GlobalManager (Destructor)" << endl;
-    // delete fRun;
+
+    delete fRestGeant4Metadata;
+    delete fRestGeant4PhysicsLists;
+    delete fRestRun;
 }
 
 void GlobalManager::InitializeFromConfigFile(const TString& rmlFile) {
@@ -64,19 +70,16 @@ void GlobalManager::InitializeRestGeant4Metadata(const TString& rmlFile) {
 
     string geant4Version = TRestTools::Execute("geant4-config --version");
     fRestGeant4Metadata->SetGeant4Version(geant4Version);
-
     // GDML geometry parsing
-    auto gdml = TRestGDMLParser();
-
     // This call will generate a new single file GDML output
-    gdml.Load((string)fRestGeant4Metadata->Get_GDML_Filename());
+    fRestGDMLParser->Load((string)fRestGeant4Metadata->Get_GDML_Filename());
 
     // We redefine the value of the GDML file to be used in DetectorConstructor.
-    fRestGeant4Metadata->Set_GDML_Filename(gdml.GetOutputGDMLFile());
+    fRestGeant4Metadata->Set_GDML_Filename(fRestGDMLParser->GetOutputGDMLFile());
     fRestGeant4Metadata->SetGeometryPath("");
 
-    fRestGeant4Metadata->Set_GDML_Reference(gdml.GetGDMLVersion());
-    fRestGeant4Metadata->SetMaterialsReference(gdml.GetEntityVersion("materials"));
+    fRestGeant4Metadata->Set_GDML_Reference(fRestGDMLParser->GetGDMLVersion());
+    fRestGeant4Metadata->SetMaterialsReference(fRestGDMLParser->GetEntityVersion("materials"));
 }
 
 void GlobalManager::InitializeRestRun(const TString& rmlFile) {

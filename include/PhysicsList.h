@@ -8,7 +8,6 @@
 #include <G4VModularPhysicsList.hh>
 #include <globals.hh>
 
-using namespace std;
 class G4VPhysicsConstructor;
 
 class PhysicsList : public G4VModularPhysicsList {
@@ -32,7 +31,7 @@ class PhysicsList : public G4VModularPhysicsList {
     G4VPhysicsConstructor* fRadDecPhysicsList;
     std::vector<G4VPhysicsConstructor*> fHadronPhys;
 
-    TRestGeant4PhysicsLists* restPhysList;
+    TRestGeant4PhysicsLists* fRestGeant4PhysicsLists;
 };
 
 #endif

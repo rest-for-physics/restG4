@@ -41,11 +41,11 @@
 using namespace std;
 
 // We define rest objects that will be used in Geant4
-TRestRun* restRun;
+// TRestRun* restRun;
 TRestGeant4Track* restTrack;
 TRestGeant4Event *restG4Event, *subRestG4Event;
-TRestGeant4Metadata* restG4Metadata;
-TRestGeant4PhysicsLists* restPhysList;
+// TRestGeant4Metadata* restG4Metadata;
+// TRestGeant4PhysicsLists* restPhysList;
 
 Bool_t saveAllEvents;
 
@@ -70,6 +70,8 @@ int main(int argc, char** argv) {
 
     GlobalManager::Instance()->InitializeFromConfigFile(commandLineParameters.rmlFile);
 
+    auto restG4Metadata = GlobalManager::Instance()->GetRestGeant4Metadata();
+    auto restRun = GlobalManager::Instance()->GetRestRun();
     // We need to process and generate a new GDML for several reasons.
     // 1. ROOT6 has problem loading math expressions in gdml file
     // 2. We allow file entities to be http remote files
@@ -122,7 +124,8 @@ int main(int argc, char** argv) {
     auto det = new DetectorConstruction();
 
     runManager->SetUserInitialization(det);
-    runManager->SetUserInitialization(new PhysicsList(restPhysList));
+    runManager->SetUserInitialization(
+        new PhysicsList(GlobalManager::Instance()->GetRestGeant4PhysicsLists()));
 
     auto prim = new PrimaryGeneratorAction(det);
 
@@ -316,7 +319,7 @@ int main(int argc, char** argv) {
         cout << endl;
         cout << "It should be something like : " << endl;
         cout << endl;
-        cout << " <parameter name =\"Nevents\" value=\"100\"/>" << endl;
+        cout << R"( <parameter name ="Nevents" value="100"/>)" << endl;
         cout << "++++++++++ ERRORRRR +++++++++" << endl;
         cout << "++++++++++ ERRORRRR +++++++++" << endl;
         cout << "++++++++++ ERRORRRR +++++++++" << endl;
@@ -364,6 +367,7 @@ int main(int argc, char** argv) {
 
         // Then we just add the geometry
         TFile* f1 = new TFile(Filename, "update");
+        auto gdml = GlobalManager::Instance()->GetRestGDMLParser();
         TGeoManager* geo2 = gdml->CreateGeoM();
 
         f1->cd();

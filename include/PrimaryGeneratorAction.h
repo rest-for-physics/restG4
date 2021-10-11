@@ -36,6 +36,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     void SetAngularDistribution(TH1D* ang) { fAngularDistribution = ang; }
 
    private:
+    TRestGeant4Metadata* fRestGeant4Metadata;
+
     vector<TRestGeant4Particle> fTempParticles;
 
     G4ParticleGun* fParticleGun;

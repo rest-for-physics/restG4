@@ -1,6 +1,8 @@
 
 #include "DetectorConstruction.h"
 
+#include <GlobalManager.h>
+
 #include <G4FieldManager.hh>
 #include <G4IonTable.hh>
 #include <G4Isotope.hh>
@@ -11,9 +13,9 @@
 #include <G4UserLimits.hh>
 
 extern TRestGeant4Event* restG4Event;
-extern TRestGeant4Metadata* restG4Metadata;
 
-DetectorConstruction::DetectorConstruction() {
+DetectorConstruction::DetectorConstruction()
+    : fRestGeant4Metadata(GlobalManager::Instance()->GetRestGeant4Metadata()) {
     G4cout << "Detector Construction" << G4endl;
     parser = new G4GDMLParser();
 }
@@ -27,11 +29,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     G4cout << "Producing geometry" << G4endl;
 
     // Reading the geometry
-    TString geometryFile = restG4Metadata->Get_GDML_Filename();
+    TString geometryFile = fRestGeant4Metadata->Get_GDML_Filename();
 
     char originDirectory[256];
     sprintf(originDirectory, "%s", getenv("PWD"));
-    auto separatePathAndName = TRestTools::SeparatePathAndName((string)restG4Metadata->Get_GDML_Filename());
+    auto separatePathAndName =
+        TRestTools::SeparatePathAndName((string)fRestGeant4Metadata->Get_GDML_Filename());
     chdir(separatePathAndName.first.c_str());
 
     parser->Read(separatePathAndName.second, false);
@@ -42,7 +45,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     // TODO : Take the name of the sensitive volume and use it here to define its
     // StepSize
-    string SensVol = (string)restG4Metadata->GetSensitiveVolume();
+    string SensVol = (string)fRestGeant4Metadata->GetSensitiveVolume();
     G4VPhysicalVolume* _vol = GetPhysicalVolume(SensVol);
     if (!_vol) {
         G4cout << "RESTG4 error. Sensitive volume  " << SensVol << " does not exist in geomtry!!" << G4endl;
@@ -52,9 +55,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         exit(1);
     }
 
-    Double_t mx = restG4Metadata->GetMagneticField().X() * tesla;
-    Double_t my = restG4Metadata->GetMagneticField().Y() * tesla;
-    Double_t mz = restG4Metadata->GetMagneticField().Z() * tesla;
+    Double_t mx = fRestGeant4Metadata->GetMagneticField().X() * tesla;
+    Double_t my = fRestGeant4Metadata->GetMagneticField().Y() * tesla;
+    Double_t mz = fRestGeant4Metadata->GetMagneticField().Z() * tesla;
 
     G4MagneticField* magField = new G4UniformMagField(G4ThreeVector(mx, my, mz));
     G4FieldManager* localFieldMgr = new G4FieldManager(magField);
@@ -78,9 +81,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     }
 
     // Getting generation volume
-    string GenVol = (string)restG4Metadata->GetGeneratedFrom();
+    string GenVol = (string)fRestGeant4Metadata->GetGeneratedFrom();
     cout << "Generated from volume : " << GenVol << endl;
-    string type = (string)restG4Metadata->GetGeneratorType();
+    string type = (string)fRestGeant4Metadata->GetGeneratorType();
     cout << "Generator type : " << type << endl;
 
     // TODO if we do not find the volume given in the config inside the geometry
@@ -99,8 +102,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         // we just want the value from the config file.
         // TODO : make this kind of keyword comparisons case insensitive?
         if (type == "surface" || type == "volume") {
-            restG4Metadata->SetGeneratorPosition(fGeneratorTranslation.x(), fGeneratorTranslation.y(),
-                                                 fGeneratorTranslation.z());
+            fRestGeant4Metadata->SetGeneratorPosition(fGeneratorTranslation.x(), fGeneratorTranslation.y(),
+                                                      fGeneratorTranslation.z());
         }
 
         generatorSolid = pVol->GetLogicalVolume()->GetSolid();
@@ -146,15 +149,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         }
     }
 
-    for (int id = 0; id < restG4Metadata->GetNumberOfActiveVolumes(); id++) {
-        TString actVolName = restG4Metadata->GetActiveVolumeName(id);
+    for (int id = 0; id < fRestGeant4Metadata->GetNumberOfActiveVolumes(); id++) {
+        TString actVolName = fRestGeant4Metadata->GetActiveVolumeName(id);
         G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)actVolName);
         if (pVol != NULL) {
             G4LogicalVolume* lVol = pVol->GetLogicalVolume();
-            if (restG4Metadata->GetMaxStepSize(actVolName) > 0) {
-                G4cout << "Setting maxStepSize = " << restG4Metadata->GetMaxStepSize(actVolName)
+            if (fRestGeant4Metadata->GetMaxStepSize(actVolName) > 0) {
+                G4cout << "Setting maxStepSize = " << fRestGeant4Metadata->GetMaxStepSize(actVolName)
                        << "mm for volume : " << actVolName << G4endl;
-                lVol->SetUserLimits(new G4UserLimits(restG4Metadata->GetMaxStepSize(actVolName) * mm));
+                lVol->SetUserLimits(new G4UserLimits(fRestGeant4Metadata->GetMaxStepSize(actVolName) * mm));
             }
         }
 
