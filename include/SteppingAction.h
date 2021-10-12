@@ -33,6 +33,8 @@ class SteppingAction : public G4UserSteppingAction {
     TH1D* GetAngularDistribution() { return fAngularDistribution; }
     TH2D* GetSpatialDistribution() { return fSpatialDistribution; }
 
+    G4TrackVector* GetfSecondary();
+
    private:
     TRestGeant4Metadata* fRestGeant4Metadata;
     OutputManager* fOutputManager;

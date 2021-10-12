@@ -1,16 +1,20 @@
 
 #include "DetectorConstruction.h"
 
-#include <GlobalManager.h>
-
 #include <G4FieldManager.hh>
 #include <G4IonTable.hh>
 #include <G4Isotope.hh>
 #include <G4MagneticField.hh>
 #include <G4Material.hh>
+#include <G4SDManager.hh>
 #include <G4SystemOfUnits.hh>
 #include <G4UniformMagField.hh>
 #include <G4UserLimits.hh>
+
+#include "GlobalManager.h"
+#include "SensitiveDetector.h"
+
+using namespace std;
 
 extern TRestGeant4Event* restG4Event;
 
@@ -184,5 +188,63 @@ G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(G4String physVolName)
         }
     }
 
-    return NULL;
+    return nullptr;
+}
+
+void DetectorConstruction::ConstructSDandField() {
+    auto restGeant4Metadata = GlobalManager::Instance()->GetRestGeant4Metadata();
+    TString sensitiveVolumeName = restGeant4Metadata->GetSensitiveVolume();
+
+    if (sensitiveVolumeName.IsNull()) {
+        return;
+    }
+
+    G4SDManager* SDManager = G4SDManager::GetSDMpointer();
+
+    /*
+    if (!fSensitiveLogicalVolumeNames.empty()) {
+        for (const auto& fSensitiveLogicalVolumeName : fSensitiveLogicalVolumeNames) {
+            G4LogicalVolume* logicalVolume =
+                G4LogicalVolumeStore::GetInstance()->GetVolume(fSensitiveLogicalVolumeName);
+            if (!logicalVolume) {
+                // PrintGeometryInfo();
+                cout
+                    << "Trying to attach a sensitive detector to logical volume '{}', but this volume is not "
+                       "found in store."
+                    << fSensitiveLogicalVolumeName << endl;
+                exit(1);
+            }
+            G4VSensitiveDetector* sensitiveDetector = new SensitiveDetector(fSensitiveLogicalVolumeName);
+            SDManager->AddNewDetector(sensitiveDetector);
+            logicalVolume->SetSensitiveDetector(sensitiveDetector);
+            spdlog::info("Attaching Sensitive detector '{}' to logical volume '{}'",
+                         sensitiveDetector->GetName(), fSensitiveLogicalVolumeName);
+            for (int i = 0; i < int(fWorld->GetLogicalVolume()->GetNoDaughters()); i++) {
+                auto physicalVolume = fWorld->GetLogicalVolume()->GetDaughter(i);
+                const string name = physicalVolume->GetLogicalVolume()->GetName();
+                if (name == fSensitiveLogicalVolumeName)
+                    spdlog::info("---> Physical volume: {}", physicalVolume->GetName());
+            }
+        }
+    }
+    */
+
+    vector<string> fSensitivePhysicalVolumeNames = {(string)(sensitiveVolumeName)};
+    if (!fSensitivePhysicalVolumeNames.empty()) {
+        for (const auto& fSensitivePhysicalVolumeName : fSensitivePhysicalVolumeNames) {
+            G4VPhysicalVolume* physicalVolume =
+                G4PhysicalVolumeStore::GetInstance()->GetVolume(fSensitivePhysicalVolumeName);
+            if (!physicalVolume) {
+                // PrintGeometryInfo();
+                cout << "Trying to attach a sensitive detector to the logical volume of physical volume '{}'"
+                        ", but this physical volume is not found in store."
+                     << fSensitivePhysicalVolumeName << endl;
+                exit(1);
+            }
+            G4LogicalVolume* logicalVolume = physicalVolume->GetLogicalVolume();
+            G4VSensitiveDetector* sensitiveDetector = new SensitiveDetector(logicalVolume->GetName());
+            SDManager->AddNewDetector(sensitiveDetector);
+            logicalVolume->SetSensitiveDetector(sensitiveDetector);
+        }
+    }
 }

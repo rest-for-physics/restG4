@@ -5,6 +5,7 @@
 #include <TRestRun.h>
 
 #include <G4Event.hh>
+#include <G4Threading.hh>
 #include <Randomize.hh>
 #include <fstream>
 #include <iomanip>
@@ -29,6 +30,8 @@ EventAction::~EventAction() = default;
 
 void EventAction::BeginOfEventAction(const G4Event* event) {
     fOutputManager->UpdateEvent();
+
+    return;
 
     G4int event_number = event->GetEventID();
 
@@ -66,6 +69,15 @@ void EventAction::BeginOfEventAction(const G4Event* event) {
 
 void EventAction::EndOfEventAction(const G4Event* geant4_event) {
     auto restRun = GlobalManager::Instance()->GetRestRun();
+
+    fOutputManager->FinishAndSubmitEvent();
+
+    if (!G4Threading::IsMultithreadedApplication() ||  //
+        (G4Threading::IsMultithreadedApplication() && G4Threading::G4GetThreadId() == 0)) {
+        GlobalManager::Instance()->FillEvents();
+    }
+
+    return;
 
     G4int event_number = geant4_event->GetEventID();
 

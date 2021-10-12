@@ -1,9 +1,6 @@
 
 #include "RunAction.h"
 
-#include <GlobalManager.h>
-#include <OutputManager.h>
-#include <PrimaryGeneratorAction.h>
 #include <TRestGeant4Metadata.h>
 
 #include <G4PhysicalConstants.hh>
@@ -13,11 +10,16 @@
 #include <G4UnitsTable.hh>
 #include <iomanip>
 
-RunAction::RunAction(PrimaryGeneratorAction* gen)
+#include "GlobalManager.h"
+#include "OutputManager.h"
+#include "PrimaryGeneratorAction.h"
+
+RunAction::RunAction()
     : G4UserRunAction(),
-      fPrimary(gen),
       fRestGeant4Metadata(GlobalManager::Instance()->GetRestGeant4Metadata()),
       fOutputManager(nullptr) {
+    fPrimary = (PrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
+
     if (!G4Threading::IsMasterThread() || !G4Threading::IsMultithreadedApplication()) {
         // RunAction is also instanced in the master thread but does not work so no need for output
         fOutputManager = OutputManager::Instance();
@@ -32,6 +34,13 @@ void RunAction::BeginOfRunAction(const G4Run*) {
 }
 
 void RunAction::EndOfRunAction(const G4Run* run) {
+    if (G4Threading::IsMasterThread()) {
+        // spdlog::info("RunAction::EndOfRunAction <--- Writing events to file");
+        GlobalManager::Instance()->WriteEvents();
+    }
+
+    return;
+
     G4int nbEvents = run->GetNumberOfEvent();
     if (nbEvents == 0) {
         return;

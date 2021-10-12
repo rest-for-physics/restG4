@@ -17,7 +17,7 @@ class OutputManager;
 
 class TrackingAction : public G4UserTrackingAction {
    public:
-    TrackingAction(RunAction*, EventAction*);
+    TrackingAction();
     ~TrackingAction();
 
     virtual void PreUserTrackingAction(const G4Track*);

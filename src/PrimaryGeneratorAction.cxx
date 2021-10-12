@@ -1,7 +1,6 @@
 
 #include "PrimaryGeneratorAction.h"
 
-#include <GlobalManager.h>
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
 
@@ -10,9 +9,12 @@
 #include <G4IonTable.hh>
 #include <G4ParticleDefinition.hh>
 #include <G4ParticleTable.hh>
+#include <G4RunManager.hh>
 #include <G4SystemOfUnits.hh>
 #include <G4UnitsTable.hh>
 #include <Randomize.hh>
+
+#include "GlobalManager.h"
 
 extern TRestGeant4Event* restG4Event;
 
@@ -20,11 +22,12 @@ Int_t face = 0;
 
 double GeneratorRndm() { return G4UniformRand(); }
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
+PrimaryGeneratorAction::PrimaryGeneratorAction()
     : G4VUserPrimaryGeneratorAction(),
       fRestGeant4Metadata(GlobalManager::Instance()->GetRestGeant4Metadata()),
-      fParticleGun(nullptr),
-      fDetector(pDetector) {
+      fParticleGun(nullptr) {
+    fDetector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+
     G4int n_particle = 1;
     fParticleGun = new G4ParticleGun(n_particle);
 

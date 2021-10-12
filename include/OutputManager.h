@@ -6,7 +6,7 @@
 #define REST_OUTPUTMANAGER_H
 
 #include <TFile.h>
-#include <TRestGeant4Event.h>
+#include <TRestGeant4DataEvent.h>
 #include <TString.h>
 #include <TTree.h>
 
@@ -34,11 +34,13 @@ class OutputManager {
     void UpdateTrack(const G4Track*);
     void RecordStep(const G4Step*);
 
+    inline void AddSensitiveEnergy(double energy) { fEvent->AddSensitiveVolumeEnergy(energy); }
+
    private:
     inline OutputManager() = default;
     static thread_local OutputManager* pinstance_;
 
-    std::unique_ptr<TRestGeant4Event> fEvent{};
+    std::unique_ptr<TRestGeant4DataEvent> fEvent{};
 
     double fSensitiveEnergyTotal{};
 

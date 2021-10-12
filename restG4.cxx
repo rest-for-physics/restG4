@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "ActionInitialization.h"
 #include "CommandLineSetup.h"
 #include "DetectorConstruction.h"
 #include "EventAction.h"
@@ -85,7 +86,7 @@ int main(int argc, char** argv) {
 
     restG4Event = new TRestGeant4Event();
     subRestG4Event = new TRestGeant4Event();
-    restRun->AddEventBranch(subRestG4Event);
+    // restRun->AddEventBranch(subRestG4Event);
 
     restTrack = new TRestGeant4Track();
 
@@ -121,13 +122,13 @@ int main(int argc, char** argv) {
 
     auto runManager = new G4RunManager;
 
-    auto det = new DetectorConstruction();
-
-    runManager->SetUserInitialization(det);
+    runManager->SetUserInitialization(new DetectorConstruction);
     runManager->SetUserInitialization(
         new PhysicsList(GlobalManager::Instance()->GetRestGeant4PhysicsLists()));
 
-    auto prim = new PrimaryGeneratorAction(det);
+    runManager->SetUserInitialization(new ActionInitialization);
+
+    auto prim = (PrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
 
     if (restG4Metadata->GetParticleSource(0)->GetEnergyDistType() == "TH1D") {
         TString fileFullPath = (TString)restG4Metadata->GetParticleSource(0)->GetSpectrumFilename();
@@ -178,11 +179,12 @@ int main(int argc, char** argv) {
         prim->SetAngularDistribution(&initialAngularDistribution);
     }
 
-    auto run = new RunAction(prim);
+    /*
+    auto run = new RunAction();
 
     auto event = new EventAction();
 
-    auto track = new TrackingAction(run, event);
+    auto track = new TrackingAction();
     auto step = new SteppingAction();
 
     runManager->SetUserAction(run);
@@ -190,6 +192,8 @@ int main(int argc, char** argv) {
     runManager->SetUserAction(event);
     runManager->SetUserAction(track);
     runManager->SetUserAction(step);
+
+     */
 
     runManager->Initialize();
 
@@ -204,13 +208,14 @@ int main(int argc, char** argv) {
     // We pass the volume definition to Stepping action so that it records gammas
     // entering in We pass also the biasing spectrum so that gammas energies
     // entering the volume are recorded
+    /*
     if (biasing) {
         step->SetBiasingVolume(restG4Metadata->GetBiasingVolume(biasing - 1));
         step->SetBiasingSpectrum(biasingSpectrum[biasing - 1]);
         step->SetAngularDistribution(angularDistribution[biasing - 1]);
         step->SetSpatialDistribution(spatialDistribution[biasing - 1]);
     }
-
+*/
     time_t systime = time(nullptr);
     restRun->SetStartTimeStamp((Double_t)systime);
 
@@ -230,6 +235,7 @@ int main(int argc, char** argv) {
 
         restRun->GetOutputFile()->cd();
 
+        /*
         if (biasing) {
             cout << "Biasing id: " << biasing - 1 << endl;
             step->GetBiasingVolume().PrintBiasingVolume();
@@ -291,6 +297,7 @@ int main(int argc, char** argv) {
             cout << endl;
             biasing--;
         }
+        */
     }
 
     else if (N_events == 0)  // define visualization and UI terminal for interactive mode
@@ -337,7 +344,7 @@ int main(int argc, char** argv) {
     systime = time(nullptr);
     restRun->SetEndTimeStamp((Double_t)systime);
     TString Filename = restRun->GetOutputFileName();
-
+    cout << "CLOSING: " << Filename << endl;
     restRun->UpdateOutputFile();
     restRun->CloseFile();
     restRun->PrintMetadata();

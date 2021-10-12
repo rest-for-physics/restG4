@@ -22,6 +22,8 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
     Double_t boundBox_zMin, boundBox_zMax;
 
    public:
+    void ConstructSDandField() override;
+
     G4GDMLParser* GetGeometry() { return parser; }
     G4VPhysicalVolume* GetPhysicalVolume(G4String physVolName);
     G4VSolid* GetGeneratorSolid() { return generatorSolid; }

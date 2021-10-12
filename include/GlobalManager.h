@@ -5,6 +5,7 @@
 #ifndef REST_GLOBALMANAGER_H
 #define REST_GLOBALMANAGER_H
 
+#include <TRestGeant4DataEvent.h>
 #include <TRestGeant4Event.h>
 #include <TString.h>
 
@@ -16,6 +17,7 @@
 #include <string>
 #include <vector>
 
+class TTree;
 class TRestGeant4Metadata;
 class TRestRun;
 class TRestGeant4PhysicsLists;
@@ -30,8 +32,9 @@ class GlobalManager {
     void InitializeRestGeant4Metadata(const TString&);
     void InitializeRestRun(const TString&);
     void InitializeRestGeant4PhysicsLists(const TString&);
+    void InitializeTrees();
 
-    size_t InsertEvent(std::unique_ptr<TRestGeant4Event>&);
+    size_t InsertEvent(std::unique_ptr<TRestGeant4DataEvent>&);
 
     inline TRestGeant4Metadata* GetRestGeant4Metadata() const { return fRestGeant4Metadata; }
     inline TRestRun* GetRestRun() const { return fRestRun; }
@@ -49,8 +52,15 @@ class GlobalManager {
     TRestGeant4PhysicsLists* fRestGeant4PhysicsLists;
     TRestGDMLParser* const fRestGDMLParser;
 
-    TRestGeant4Event fEvent;
-    std::queue<std::unique_ptr<TRestGeant4Event> > fEventContainer;
+    TRestGeant4DataEvent fEvent;
+    std::queue<std::unique_ptr<TRestGeant4DataEvent> > fEventContainer;
     std::mutex fEventContainerMutex;
+
+    TTree* fEventTree;
+    TTree* fAnalysisTree;
+
+   public:
+    void FillEvents();
+    void WriteEvents();
 };
 #endif  // REST_GLOBALMANAGER_H

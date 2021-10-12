@@ -8,6 +8,7 @@
 #include <TRestGeant4Metadata.h>
 #include <TRestGeant4PhysicsLists.h>
 #include <TRestRun.h>
+#include <TTree.h>
 
 #include <G4RunManager.hh>
 #include <G4Threading.hh>
@@ -63,6 +64,8 @@ void GlobalManager::InitializeFromConfigFile(const TString& rmlFile) {
     InitializeRestGeant4PhysicsLists(fInputConfigFile);
 
     InitializeRestRun(fInputConfigFile);
+
+    InitializeTrees();
 }
 
 void GlobalManager::InitializeRestGeant4Metadata(const TString& rmlFile) {
@@ -104,10 +107,54 @@ void GlobalManager::InitializeRestGeant4PhysicsLists(const TString& rmlFile) {
     fRestGeant4PhysicsLists = new TRestGeant4PhysicsLists(const_cast<char*>(rmlFile.Data()));
 }
 
-size_t GlobalManager::InsertEvent(std::unique_ptr<TRestGeant4Event>& event) {
+size_t GlobalManager::InsertEvent(std::unique_ptr<TRestGeant4DataEvent>& event) {
     fEventContainerMutex.lock();
     fEventContainer.push(std::move(event));
     auto size = fEventContainer.size();
     fEventContainerMutex.unlock();
     return size;
 }
+
+void GlobalManager::InitializeTrees() {
+    // Event Tree
+    fEventTree = new TTree("EventTreeNew", "Event Tree");
+    fEventTree->Branch("fEvent", &fEvent);
+
+    fAnalysisTree = fRestRun->GetAnalysisTree();
+}
+
+void GlobalManager::FillEvents() {
+    /*
+    spdlog::debug("GlobalManager::WriteEvents");
+
+    if (!fSaveFlag) {
+        spdlog::debug("GlobalManager::FillEvents() - Saving events is disabled");
+        return;
+    }
+    */
+    if (G4Threading::IsMultithreadedApplication()) {
+        lock_guard<mutex> guard(fEventContainerMutex);
+    }
+
+    if (fEventContainer.empty()) {
+        return;
+    }
+
+    while (!fEventContainer.empty()) {
+        fEvent = *fEventContainer.front();
+        fEventTree->Fill();
+        fAnalysisTree->Fill();
+        fEventContainer.pop();
+    }
+
+    // fEventTree->Write();
+    /*
+    const auto beforeNumberOfEvents = fEventTree->GetEntries();
+
+    spdlog::debug("GlobalManager::FillEvents - Saved {} events into {} (total {} events)",
+                  fEventTree->GetEntries() - beforeNumberOfEvents, fFile->GetName(),
+                  fEventTree->GetEntries());
+                  */
+}
+
+void GlobalManager::WriteEvents() { fEventTree->Write(); }

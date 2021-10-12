@@ -6,6 +6,7 @@
 #include <TRestGeant4Track.h>
 
 #include <G4DynamicParticle.hh>
+#include <G4OpticalPhoton.hh>
 #include <G4ParticleDefinition.hh>
 #include <G4ParticleTable.hh>
 #include <G4SteppingManager.hh>
@@ -28,20 +29,31 @@ SteppingAction::SteppingAction()
 
 SteppingAction::~SteppingAction() {}
 
-void SteppingAction::UserSteppingAction(const G4Step* aStep) {
-    // Variables that describe a step are taken.
-    nom_vol = aStep->GetPreStepPoint()->GetPhysicalVolume()->GetName();
-    nom_part = aStep->GetTrack()->GetDefinition()->GetParticleName();
+void SteppingAction::UserSteppingAction(const G4Step* step) {
+    auto track = step->GetTrack();
 
-    ener_dep = aStep->GetTotalEnergyDeposit();
-    eKin = aStep->GetTrack()->GetKineticEnergy() / keV;
+    // optical photons
+    if (track->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition()) {
+        // TODO: Do something with optical photons
+    }
+
+    fOutputManager->RecordStep(step);
+
+    return;
+
+    // Variables that describe a step are taken.
+    nom_vol = step->GetPreStepPoint()->GetPhysicalVolume()->GetName();
+    nom_part = step->GetTrack()->GetDefinition()->GetParticleName();
+
+    ener_dep = step->GetTotalEnergyDeposit();
+    eKin = step->GetTrack()->GetKineticEnergy() / keV;
 
     if (restTrack->GetParticleName() == "geantino" &&
         (G4String)fRestGeant4Metadata->GetSensitiveVolume() == nom_vol) {
         fRestGeant4Metadata->SetSaveAllEvents(true);
     }
 
-    if (!aStep->GetPostStepPoint()->GetProcessDefinedStep()) {
+    if (!step->GetPostStepPoint()->GetProcessDefinedStep()) {
         G4cout << endl;
         G4cout << endl;
         G4cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
@@ -58,9 +70,9 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         exit(0);
     }
 
-    nom_proc = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+    nom_proc = step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
 
-    G4Track* aTrack = aStep->GetTrack();
+    G4Track* aTrack = step->GetTrack();
     parentID = aTrack->GetParentID();
     trackID = aTrack->GetTrackID();
 
@@ -75,13 +87,13 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         // In biasing mode we do not store hits. Just check if we observe a gamma
         // inside the volume
         if (restBiasingVolume.isInside(x, y, z) && nom_part == "gamma") {
-            Double_t eKinetic = aStep->GetPreStepPoint()->GetKineticEnergy() / keV;
+            Double_t eKinetic = step->GetPreStepPoint()->GetKineticEnergy() / keV;
 
             // we add the gamma energy to the energy spectrum
             if (eKinetic > restBiasingVolume.GetMinEnergy() && eKinetic < restBiasingVolume.GetMaxEnergy()) {
-                G4ThreeVector position = aStep->GetPreStepPoint()->GetPosition();
-                G4ThreeVector positionNorm = -aStep->GetPreStepPoint()->GetPosition().unit();
-                G4ThreeVector momentum = aStep->GetPreStepPoint()->GetMomentumDirection();
+                G4ThreeVector position = step->GetPreStepPoint()->GetPosition();
+                G4ThreeVector positionNorm = -step->GetPreStepPoint()->GetPosition().unit();
+                G4ThreeVector momentum = step->GetPreStepPoint()->GetMomentumDirection();
 
                 Double_t angle;
                 if (restBiasingVolume.GetBiasingVolumeType() == "virtualBox") {
@@ -133,8 +145,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
 
         TVector3 hitPosition(x, y, z);
         Int_t pcsID = restTrack->GetProcessID(nom_proc);
-        Double_t hit_global_time = aStep->GetPreStepPoint()->GetGlobalTime() / second;
-        G4ThreeVector momentum = aStep->GetPreStepPoint()->GetMomentumDirection();
+        Double_t hit_global_time = step->GetPreStepPoint()->GetGlobalTime() / second;
+        G4ThreeVector momentum = step->GetPreStepPoint()->GetMomentumDirection();
         TVector3 momentumDirection = TVector3(momentum.x(), momentum.y(), momentum.z());  //.Unit();
 
         Int_t volume = -1;
@@ -168,4 +180,9 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
             restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, pcsID, volume, eKin,
                                 momentumDirection);
     }
+}
+
+G4TrackVector* SteppingAction::GetfSecondary() {
+    G4SteppingManager* steppingManager = fpSteppingManager;
+    return steppingManager->GetfSecondary();
 }

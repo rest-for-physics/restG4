@@ -23,7 +23,7 @@ class G4Event;
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
    public:
-    PrimaryGeneratorAction(DetectorConstruction* pDetector);
+    PrimaryGeneratorAction();
     ~PrimaryGeneratorAction();
 
    public:
