@@ -253,7 +253,6 @@ void DetectorConstruction::ConstructSDandField() {
     }
 }
 
-/*
 XMLNodePointer_t FindChildByName(TXMLEngine xml, XMLNodePointer_t node, TString name) {
     XMLNodePointer_t child = xml.GetChild(node);
     while (child) {
@@ -388,4 +387,3 @@ void DetectorConstruction::BuildAssemblyLookupTable() {
 
     // spdlog::info("DetectorConstruction::BuildAssemblyLookupTable - End");
 }
-*/
