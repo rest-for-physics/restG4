@@ -8,11 +8,11 @@
 #include <G4RunManager.hh>
 #include <G4SystemOfUnits.hh>
 #include <G4UnitsTable.hh>
-#include <iomanip>
 
 #include "GlobalManager.h"
 #include "OutputManager.h"
 #include "PrimaryGeneratorAction.h"
+#include "SteppingVerbose.h"
 
 RunAction::RunAction()
     : G4UserRunAction(),
@@ -31,6 +31,9 @@ RunAction::~RunAction() = default;
 void RunAction::BeginOfRunAction(const G4Run*) {
     // inform the runManager to save random number seed
     G4RunManager::GetRunManager()->SetRandomNumberStore(false);
+
+    auto steppingVerbose = ((SteppingVerbose*)G4VSteppingVerbose::GetInstance());
+    // steppingVerbose->SetSteppingVerbose(1);
 }
 
 void RunAction::EndOfRunAction(const G4Run* run) {

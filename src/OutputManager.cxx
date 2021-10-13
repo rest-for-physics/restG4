@@ -79,7 +79,7 @@ bool OutputManager::IsEmptyEvent() const { return !fEvent || fEvent->IsEmpty(); 
 
 bool OutputManager::IsValidEvent() const {
     if (IsEmptyEvent()) return false;
-    // if (GlobalManager::Instance()->GetSaveAllEventsFlag()) return true;
+    if (GlobalManager::Instance()->GetSaveAllEventsFlag()) return true;
     if (fEvent->GetSensitiveVolumeEnergy() <= 0) return false;
     return true;
 }

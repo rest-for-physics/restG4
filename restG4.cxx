@@ -29,6 +29,7 @@
 #include "PrimaryGeneratorAction.h"
 #include "RunAction.h"
 #include "SteppingAction.h"
+#include "SteppingVerbose.h"
 #include "TrackingAction.h"
 
 #ifdef G4VIS_USE
@@ -194,6 +195,8 @@ int main(int argc, char** argv) {
     runManager->SetUserAction(step);
 
      */
+
+    // G4VSteppingVerbose::SetInstance(new SteppingVerbose);
 
     runManager->Initialize();
 

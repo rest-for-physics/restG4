@@ -11,11 +11,15 @@
 
 class DetectorConstruction : public G4VUserDetectorConstruction {
    private:
+    G4VPhysicalVolume* fWorld;
+
     TRestGeant4Metadata* fRestGeant4Metadata;
 
     G4GDMLParser* parser;
     G4VSolid* generatorSolid;
     G4ThreeVector fGeneratorTranslation;
+
+    string fGeometryFilename;
 
     Double_t boundBox_xMin, boundBox_xMax;
     Double_t boundBox_yMin, boundBox_yMax;
@@ -23,6 +27,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
 
    public:
     void ConstructSDandField() override;
+    void BuildAssemblyLookupTable();
 
     G4GDMLParser* GetGeometry() { return parser; }
     G4VPhysicalVolume* GetPhysicalVolume(G4String physVolName);

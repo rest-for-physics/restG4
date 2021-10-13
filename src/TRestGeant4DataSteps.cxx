@@ -50,8 +50,8 @@ void TRestGeant4DataSteps::InsertStep(const G4Step* step) {
     G4String processTypeName = "Init";
     G4String targetNucleusName = "";
     G4int processID = -1;
-    if (track->GetCurrentStepNumber() !=
-        0) {  // 0 = Init step (G4SteppingVerbose) process is not defined for this step
+    if (track->GetCurrentStepNumber() != 0) {
+        // 0 = Init step (G4SteppingVerbose) process is not defined for this step
         processName = process->GetProcessName();
         processTypeName = G4VProcess::GetProcessTypeName(process->GetProcessType());
         processID = process->GetProcessType() * 1000 + process->GetProcessSubType();

@@ -83,6 +83,8 @@ void GlobalManager::InitializeRestGeant4Metadata(const TString& rmlFile) {
 
     fRestGeant4Metadata->Set_GDML_Reference(fRestGDMLParser->GetGDMLVersion());
     fRestGeant4Metadata->SetMaterialsReference(fRestGDMLParser->GetEntityVersion("materials"));
+
+    fSaveAllEventsFlag = fRestGeant4Metadata->GetSaveAllEvents();
 }
 
 void GlobalManager::InitializeRestRun(const TString& rmlFile) {
@@ -117,7 +119,8 @@ size_t GlobalManager::InsertEvent(std::unique_ptr<TRestGeant4DataEvent>& event) 
 
 void GlobalManager::InitializeTrees() {
     // Event Tree
-    fEventTree = new TTree("EventTreeNew", "Event Tree");
+    // fEventTree = new TTree("EventTree", "Event Tree");
+    fEventTree = fRestRun->GetEventTree();
     fEventTree->Branch("fEvent", &fEvent);
 
     fAnalysisTree = fRestRun->GetAnalysisTree();

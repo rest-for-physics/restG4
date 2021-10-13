@@ -1,6 +1,8 @@
 
 #include "DetectorConstruction.h"
 
+// #include <TXMLEngine.h>
+
 #include <G4FieldManager.hh>
 #include <G4IonTable.hh>
 #include <G4Isotope.hh>
@@ -22,6 +24,7 @@ DetectorConstruction::DetectorConstruction()
     : fRestGeant4Metadata(GlobalManager::Instance()->GetRestGeant4Metadata()) {
     G4cout << "Detector Construction" << G4endl;
     parser = new G4GDMLParser();
+    fGeometryFilename = fRestGeant4Metadata->Get_GDML_Filename();
 }
 
 DetectorConstruction::~DetectorConstruction() { delete parser; }
@@ -176,6 +179,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     cout << "Detector constructed : " << W << endl;
 
+    fWorld = W;
     return W;
 }
 
@@ -248,3 +252,140 @@ void DetectorConstruction::ConstructSDandField() {
         }
     }
 }
+
+/*
+XMLNodePointer_t FindChildByName(TXMLEngine xml, XMLNodePointer_t node, TString name) {
+    XMLNodePointer_t child = xml.GetChild(node);
+    while (child) {
+        TString childName = xml.GetNodeName(child);
+        if (childName.EqualTo(name)) {
+            return child;
+        }
+        child = xml.GetNext(child);
+    }
+    return nullptr;
+}
+
+XMLNodePointer_t FindVolumeOrAssemblyByName(TXMLEngine xml, XMLNodePointer_t node, TString name) {
+    XMLNodePointer_t child = xml.GetChild(node);
+    while (child) {
+        TString childName = xml.GetNodeName(child);
+        if (childName.EqualTo("volume") || childName.EqualTo("assembly")) {
+            XMLAttrPointer_t attr = xml.GetFirstAttr(child);
+            while (attr) {
+                if (TString(xml.GetAttrName(attr)).EqualTo("name")) {
+                    TString volumeName = xml.GetAttrValue(attr);
+                    cout << volumeName << endl;
+                }
+                attr = xml.GetNextAttr(attr);
+            }
+        }
+        child = xml.GetNext(child);
+    }
+
+    return nullptr;
+}
+
+TString GetNodeAttribute(TXMLEngine xml, XMLNodePointer_t node, TString attributeName) {
+    XMLAttrPointer_t attr = xml.GetFirstAttr(node);
+    while (attr) {
+        if (TString(xml.GetAttrName(attr)).EqualTo(attributeName)) {
+            TString refName = xml.GetAttrValue(attr);
+            return refName;
+        }
+        attr = xml.GetNextAttr(attr);
+    }
+    return TString();
+}
+
+void AddVolumesRecursively(vector<TString>* container, vector<TString> children,
+                           map<TString, TString>& nameTable, map<TString, vector<TString>>& childrenTable,
+                           const TString& name = "") {
+    cout << "called AddVolumesRecursively with name: " << name << endl;
+    for (const auto& child : children) {
+        cout << "\t" << child << endl;
+    }
+
+    if (children.size() == 0) {
+        container->push_back(name);
+        cout << "ADDED: " << name << endl;
+        return;
+    }
+    for (const auto& childName : children) {
+        AddVolumesRecursively(container, childrenTable[nameTable[childName]], nameTable, childrenTable,
+                              name + "_" + childName);
+    }
+}
+
+void DetectorConstruction::BuildAssemblyLookupTable() {
+    // spdlog::info("DetectorConstruction::BuildAssemblyLookupTable - Begin");
+    // Only if geometry is in gdml
+
+    if (fGeometryFilename.substr(fGeometryFilename.length() - 5) != ".gdml") {
+        // spdlog::debug("DetectorConstruction::BuildAssemblyLookupTable - Geometry not GDML, doing nothing");
+        return;
+    }
+
+    TXMLEngine xml;
+    XMLDocPointer_t xmldoc = xml.ParseFile(fGeometryFilename.c_str());
+    if (!xmldoc) {
+        // spdlog::warn("DetectorConstruction::BuildAssemblyLookupTable - Problems reading GDML file '{}'",
+        //              fGeometryFilename);
+        return;
+    }
+
+    map<TString, TString> nameTable;
+    map<TString, vector<TString>> childrenTable;
+
+    XMLNodePointer_t mainNode = xml.DocGetRootElement(xmldoc);
+    XMLNodePointer_t structure = FindChildByName(xml, mainNode, "structure");
+    XMLNodePointer_t world = FindVolumeOrAssemblyByName(xml, structure, "world");
+
+    XMLNodePointer_t child = xml.GetChild(structure);
+    while (child) {
+        TString name = xml.GetNodeName(child);
+        TString volumeName = GetNodeAttribute(xml, child, "name");
+        auto physicalVolumeNode = xml.GetChild(child);
+        childrenTable[volumeName] = {};
+
+        while (physicalVolumeNode) {
+            auto physicalVolumeName = GetNodeAttribute(xml, physicalVolumeNode, "name");
+            auto volumeRefNode = xml.GetChild(physicalVolumeNode);
+            while (volumeRefNode) {
+                TString volumeRefNodeName = xml.GetNodeName(volumeRefNode);
+                if (volumeRefNodeName.EqualTo("volumeref")) {
+                    TString refName = GetNodeAttribute(xml, volumeRefNode, "ref");
+                    nameTable[physicalVolumeName] = refName;
+                    childrenTable[volumeName].push_back(physicalVolumeName);
+                }
+                volumeRefNode = xml.GetNext(volumeRefNode);
+            }
+            physicalVolumeNode = xml.GetNext(physicalVolumeNode);
+        }
+
+        child = xml.GetNext(child);
+    }
+
+    auto names = new vector<TString>();
+    for (const auto& topName : childrenTable["world"]) {
+        auto children = childrenTable[nameTable[topName]];
+        AddVolumesRecursively(names, children, nameTable, childrenTable, topName);
+    }
+
+    map<string, string> lookupTable;
+
+    const int n = int(fWorld->GetLogicalVolume()->GetNoDaughters());
+    for (int i = 0; i < n; i++) {
+        G4VPhysicalVolume* volume = fWorld->GetLogicalVolume()->GetDaughter(i);
+        auto namePhysical = volume->GetName();
+        lookupTable[namePhysical] = (*names)[i];
+    }
+
+    GlobalManager::Instance()->SetVolumeLookupTable(lookupTable);
+
+    delete names;
+    xml.FreeDoc(xmldoc);
+
+    // spdlog::info("DetectorConstruction::BuildAssemblyLookupTable - End");
+}
+*/

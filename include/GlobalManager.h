@@ -34,6 +34,14 @@ class GlobalManager {
     void InitializeRestGeant4PhysicsLists(const TString&);
     void InitializeTrees();
 
+    inline void SetVolumeLookupTable(std::map<std::string, std::string> table) { fVolumeLookupTable = table; }
+    inline std::string GetVolumeFromLookupTable(std::string key) const {
+        if (fVolumeLookupTable.count(key) > 0) {
+            return fVolumeLookupTable.at(key);
+        }
+        return "";
+    }
+
     size_t InsertEvent(std::unique_ptr<TRestGeant4DataEvent>&);
 
     inline TRestGeant4Metadata* GetRestGeant4Metadata() const { return fRestGeant4Metadata; }
@@ -59,8 +67,19 @@ class GlobalManager {
     TTree* fEventTree;
     TTree* fAnalysisTree;
 
+    std::map<std::string, std::string> fVolumeLookupTable;
+
    public:
     void FillEvents();
     void WriteEvents();
+
+    /*
+     * User settings
+     */
+   private:
+    Bool_t fSaveAllEventsFlag = false;
+
+   public:
+    inline bool GetSaveAllEventsFlag() const { return fSaveAllEventsFlag; }
 };
 #endif  // REST_GLOBALMANAGER_H
