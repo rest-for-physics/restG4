@@ -1,7 +1,7 @@
 
 #include "DetectorConstruction.h"
 
-// #include <TXMLEngine.h>
+#include <TXMLEngine.h>
 
 #include <G4FieldManager.hh>
 #include <G4IonTable.hh>
