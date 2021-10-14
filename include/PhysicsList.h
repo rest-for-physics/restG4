@@ -12,23 +12,24 @@ class G4VPhysicsConstructor;
 
 class PhysicsList : public G4VModularPhysicsList {
    public:
-    PhysicsList();
-    PhysicsList(TRestGeant4PhysicsLists* restPhysicsLists);
-    ~PhysicsList();
+    PhysicsList(G4int verbosity = 0);
+    explicit PhysicsList(TRestGeant4PhysicsLists* restPhysicsLists);
+    ~PhysicsList() override;
 
    protected:
     // Construct particle and physics
     virtual void InitializePhysicsLists();
-    virtual void ConstructParticle();
-    virtual void ConstructProcess();
-    virtual void SetCuts();
+    void ConstructParticle() override;
+    void ConstructProcess() override;
+    void SetCuts() override;
+    void SetCutValue(G4double, const G4String&);
 
    private:
-    G4EmConfigurator em_config;
+    G4EmConfigurator emConfigurator;
 
     G4VPhysicsConstructor* fEmPhysicsList;
-    G4VPhysicsConstructor* fDecPhysicsList;
-    G4VPhysicsConstructor* fRadDecPhysicsList;
+    G4VPhysicsConstructor* fDecayPhysicsList;
+    G4VPhysicsConstructor* fRadioactiveDecayPhysicsList;
     std::vector<G4VPhysicsConstructor*> fHadronPhys;
 
     TRestGeant4PhysicsLists* fRestGeant4PhysicsLists;

@@ -40,9 +40,15 @@ void OutputManager::UpdateEvent() {
 }
 
 void OutputManager::FinishAndSubmitEvent() {
-    if (IsEmptyEvent()) return;
+    spdlog::debug("OutputManager::FinishAndSubmitEvent");
 
-    // spdlog::debug("OutputManager::FinishAndSubmitEvent");
+    spdlog::info("OutputManager::FinishAndSubmitEvent ---> Finished event ID {} with {} tracks and {} steps",
+                 fEvent->GetEventID(), fEvent->GetNumberOfTracks(), fEvent->GetNumberOfSteps());
+
+    if (IsEmptyEvent()) {
+        return;
+    }
+
     //  print useful end of event info
     /*
     spdlog::debug(

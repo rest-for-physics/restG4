@@ -7,6 +7,7 @@
 #include <TRestGeant4DataSteps.h>
 #include <TRestGeant4DataTrack.h>
 #include <TRestRun.h>
+#include <spdlog/spdlog.h>
 
 #include <G4Event.hh>
 #include <G4HadronicProcess.hh>
@@ -94,8 +95,8 @@ void TRestGeant4DataEvent::InsertTrack(const G4Track* track) {
     }
     fTracks.emplace_back(track);
     if (fInitialStep.GetNumberOfSteps() != 1) {
-        // spdlog::error("fInitialStep does not have exactly one step!");
-        // exit(1);
+        spdlog::error("fInitialStep does not have exactly one step!");
+        exit(1);
     }
     fTracks.back().UpdateSteps(fInitialStep);
 }

@@ -36,7 +36,7 @@ void RunAction::BeginOfRunAction(const G4Run* run) {
     G4RunManager::GetRunManager()->SetRandomNumberStore(false);
 
     auto steppingVerbose = ((SteppingVerbose*)G4VSteppingVerbose::GetInstance());
-    // steppingVerbose->SetSteppingVerbose(1);
+    steppingVerbose->SetSteppingVerbose(1);
 }
 
 void RunAction::EndOfRunAction(const G4Run* run) {

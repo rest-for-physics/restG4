@@ -72,7 +72,6 @@ int main(int argc, char** argv) {
     // This call will generate a new single file GDML output
     gdml->Load((string)GlobalManager::Instance()->GetRestGeant4Metadata()->Get_GDML_Filename());
 
-
     restTrack = new TRestGeant4Track();
 
     biasing = restG4Metadata->GetNumberOfBiasingVolumes();
@@ -104,6 +103,8 @@ int main(int argc, char** argv) {
             spatialDistribution[i] =
                 new TH2D(spatialDistName, "Biasing spatial distribution", 100, -1, 1, 100, -1, 1);
     }
+
+    G4VSteppingVerbose::SetInstance(new SteppingVerbose);
 
     auto runManager = new G4RunManager();
 

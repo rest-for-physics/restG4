@@ -34,12 +34,11 @@ G4String GetVolumeName(G4VPhysicalVolume* volume) {
     }
     auto defaultName = volume->GetName();
 
-    /*
     auto lookupName = GlobalManager::Instance()->GetVolumeFromLookupTable(defaultName);
     if (lookupName != "") {
         return lookupName;
     }
-    */
+
     return defaultName;
 }
 

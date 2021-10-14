@@ -2,6 +2,7 @@
 #include "PhysicsList.h"
 
 #include <CLHEP/Units/PhysicalConstants.h>
+#include <spdlog/spdlog.h>
 
 #include <G4BetheBlochIonGasModel.hh>
 #include <G4BraggIonGasModel.hh>
@@ -43,8 +44,9 @@ using namespace std;
 
 Int_t emCounter = 0;
 
-PhysicsList::PhysicsList() : G4VModularPhysicsList() {
-    SetDefaultCutValue(1 * mm);
+PhysicsList::PhysicsList(G4int verbosity) : G4VModularPhysicsList() {
+    spdlog::debug("PhysicsList::PhysicsList");
+    SetVerboseLevel(verbosity);
     // add new units for radioActive decays
     //
     const G4double minute = 60 * second;
@@ -60,14 +62,10 @@ PhysicsList::PhysicsList() : G4VModularPhysicsList() {
 PhysicsList::PhysicsList(TRestGeant4PhysicsLists* physicsLists) : PhysicsList() {
     fRestGeant4PhysicsLists = physicsLists;
     G4LossTableManager::Instance();
-    // fix lower limit for cut
-    G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(
-        fRestGeant4PhysicsLists->GetMinimumEnergyProductionCuts() * keV,
-        fRestGeant4PhysicsLists->GetMaximumEnergyProductionCuts() * keV);
 
     fEmPhysicsList = nullptr;
-    fDecPhysicsList = nullptr;
-    fRadDecPhysicsList = nullptr;
+    fDecayPhysicsList = nullptr;
+    fRadioactiveDecayPhysicsList = nullptr;
 
     InitializePhysicsLists();
 }
@@ -75,8 +73,8 @@ PhysicsList::PhysicsList(TRestGeant4PhysicsLists* physicsLists) : PhysicsList() 
 PhysicsList::~PhysicsList() {
     delete fEmPhysicsList;
 
-    delete fDecPhysicsList;
-    delete fRadDecPhysicsList;
+    delete fDecayPhysicsList;
+    delete fRadioactiveDecayPhysicsList;
     for (size_t i = 0; i < fHadronPhys.size(); i++) {
         delete fHadronPhys[i];
     }
@@ -85,90 +83,96 @@ PhysicsList::~PhysicsList() {
 void PhysicsList::InitializePhysicsLists() {
     // Decay physics and all particles
     if (fRestGeant4PhysicsLists->FindPhysicsList("G4DecayPhysics") >= 0)
-        fDecPhysicsList = new G4DecayPhysics();
+        fDecayPhysicsList = new G4DecayPhysics();
     else if (fRestGeant4PhysicsLists->GetVerboseLevel() >= REST_Debug) {
         G4cout << "restG4. PhysicsList. G4DecayPhysics is not enabled!!" << G4endl;
     }
 
     // RadioactiveDecay physicsList
     if (fRestGeant4PhysicsLists->FindPhysicsList("G4RadioactiveDecayPhysics") >= 0)
-        fRadDecPhysicsList = new G4RadioactiveDecayPhysics();
+        fRadioactiveDecayPhysicsList = new G4RadioactiveDecayPhysics();
     else if (fRestGeant4PhysicsLists->GetVerboseLevel() >= REST_Debug) {
         G4cout << "restG4. PhysicsList. G4RadioactiveDecayPhysics is not enabled!!" << G4endl;
     }
 
     // Electromagnetic physicsList
     if (fRestGeant4PhysicsLists->FindPhysicsList("G4EmLivermorePhysics") >= 0) {
-        if (fEmPhysicsList == nullptr) fEmPhysicsList = new G4EmLivermorePhysics();
+        if (!fEmPhysicsList) fEmPhysicsList = new G4EmLivermorePhysics(verboseLevel);
         emCounter++;
     }
 
     if (fRestGeant4PhysicsLists->FindPhysicsList("G4EmPenelopePhysics") >= 0) {
-        if (fEmPhysicsList == nullptr) fEmPhysicsList = new G4EmPenelopePhysics();
+        if (!fEmPhysicsList) fEmPhysicsList = new G4EmPenelopePhysics(verboseLevel);
         emCounter++;
     }
 
     if (fRestGeant4PhysicsLists->FindPhysicsList("G4EmStandardPhysics_option3") >= 0) {
-        if (fEmPhysicsList == nullptr) fEmPhysicsList = new G4EmStandardPhysics_option3();
+        if (!fEmPhysicsList) fEmPhysicsList = new G4EmStandardPhysics_option3(verboseLevel);
         emCounter++;
     }
 
     if (fRestGeant4PhysicsLists->FindPhysicsList("G4EmStandardPhysics_option4") >= 0) {
-        if (fEmPhysicsList == nullptr) fEmPhysicsList = new G4EmStandardPhysics_option4();
+        if (!fEmPhysicsList) fEmPhysicsList = new G4EmStandardPhysics_option4(verboseLevel);
         emCounter++;
     }
 
-    if (fRestGeant4PhysicsLists->GetVerboseLevel() >= REST_Essential && emCounter == 0) {
-        G4cout << "REST WARNING : No electromagenetic physics list has been enabled!!" << G4endl;
-    }
-
-    if (emCounter > 1) {
-        G4cout << "REST ERROR: restG4. PhysicsList. More than 1 EM PhysicsList "
-                  "enabled."
-               << G4endl;
+    if (emCounter != 1) {
+        if (emCounter == 0) {
+            spdlog::warn(
+                "PhysicsList::InitializePhysicsLists ---> no electromagnetic physics list has been "
+                "selected!");
+        } else {
+            spdlog::warn(
+                "PhysicsList::InitializePhysicsLists ---> more than one electromagnetic physics list has "
+                "been selected, only one can be selected");
+        }
         exit(1);
     }
 
     // Hadronic PhysicsList
-    if (fRestGeant4PhysicsLists->FindPhysicsList("G4HadronPhysicsQGSP_BIC_HP") >= 0)
+    if (fRestGeant4PhysicsLists->FindPhysicsList("G4HadronPhysicsQGSP_BIC_HP") >= 0) {
         fHadronPhys.push_back(new G4HadronPhysicsQGSP_BIC_HP());
+    }
 
-    if (fRestGeant4PhysicsLists->FindPhysicsList("G4IonBinaryCascadePhysics") >= 0)
+    if (fRestGeant4PhysicsLists->FindPhysicsList("G4IonBinaryCascadePhysics") >= 0) {
         fHadronPhys.push_back(new G4IonBinaryCascadePhysics());
+    }
 
-    if (fRestGeant4PhysicsLists->FindPhysicsList("G4HadronElasticPhysicsHP") >= 0)
+    if (fRestGeant4PhysicsLists->FindPhysicsList("G4HadronElasticPhysicsHP") >= 0) {
         fHadronPhys.push_back(new G4HadronElasticPhysicsHP());
+    }
 
-    if (fRestGeant4PhysicsLists->FindPhysicsList("G4NeutronTrackingCut") >= 0)
+    if (fRestGeant4PhysicsLists->FindPhysicsList("G4NeutronTrackingCut") >= 0) {
         fHadronPhys.push_back(new G4NeutronTrackingCut());
+    }
 
-    if (fRestGeant4PhysicsLists->FindPhysicsList("G4EmExtraPhysics") >= 0)
+    if (fRestGeant4PhysicsLists->FindPhysicsList("G4EmExtraPhysics") >= 0) {
         fHadronPhys.push_back(new G4EmExtraPhysics());
+    }
 
-    G4cout << "Number of hadronic physics lists added " << fHadronPhys.size() << G4endl;
+    spdlog::info("PhysicsList::InitializePhysicsLists ---> Number of hadronic physics lists added: {}",
+                 fHadronPhys.size());
+
+    RegisterPhysics(fEmPhysicsList);
+    RegisterPhysics(fDecayPhysicsList);
+    RegisterPhysics(fRadioactiveDecayPhysicsList);
+
+    for (auto& fHadronPhy : fHadronPhys) {
+        RegisterPhysics(fHadronPhy);
+    }
 }
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%
-void PhysicsList::ConstructParticle() {
-    // pseudo-particles
-    G4Geantino::GeantinoDefinition();
 
-    // particles defined in PhysicsLists
-    if (fDecPhysicsList != nullptr) fDecPhysicsList->ConstructParticle();
-
-    if (fEmPhysicsList != nullptr) fEmPhysicsList->ConstructParticle();
-
-    if (fRadDecPhysicsList != nullptr) fRadDecPhysicsList->ConstructParticle();
-
-    for (size_t i = 0; i < fHadronPhys.size(); i++) fHadronPhys[i]->ConstructParticle();
-}
+void PhysicsList::ConstructParticle() { G4VModularPhysicsList::ConstructParticle(); }
 
 void PhysicsList::ConstructProcess() {
+    G4VModularPhysicsList::ConstructProcess();
+    return;
+    // TODO: we need to do some refactoring here, most of these lines are redundant (maybe all?)
     AddTransportation();
-
     // Electromagnetic physics list
-    if (fEmPhysicsList != nullptr) {
+    if (fEmPhysicsList) {
         fEmPhysicsList->ConstructProcess();
-        em_config.AddModels();
+        emConfigurator.AddModels();
         G4EmProcessOptions emOptions;
         emOptions.SetFluo(true);   // To activate deexcitation processes and fluorescence
         emOptions.SetAuger(true);  // To activate Auger effect if deexcitation is activated
@@ -176,10 +180,10 @@ void PhysicsList::ConstructProcess() {
     }
 
     // Decay physics list
-    if (fDecPhysicsList != nullptr) fDecPhysicsList->ConstructProcess();
+    if (fDecayPhysicsList) fDecayPhysicsList->ConstructProcess();
 
     // Radioactive decay
-    if (fRadDecPhysicsList != nullptr) fRadDecPhysicsList->ConstructProcess();
+    if (fRadioactiveDecayPhysicsList) fRadioactiveDecayPhysicsList->ConstructProcess();
 
     // hadronic physics lists
     for (size_t i = 0; i < fHadronPhys.size(); i++) fHadronPhys[i]->ConstructProcess();
@@ -210,49 +214,23 @@ void PhysicsList::ConstructProcess() {
                    << G4endl;
     }
 
-/*
-   G4ScreenedNuclearRecoil* nucr = new G4ScreenedNuclearRecoil();
-   G4double energyLimit = 100.*MeV;
-   nucr->SetMaxEnergyForScattering(energyLimit);
-   ph->RegisterProcess( nucr, G4GenericIon::GenericIon());
-   */
-
-/* theParticleIterator->reset();
-while ((*theParticleIterator)())
-{
-    G4ParticleDefinition* particle = theParticleIterator->value();
-    G4String partname = particle->GetParticleName();
-    if(partname == "alpha" || partname == "He3" || partname == "GenericIon") {
-        G4BraggIonGasModel* mod1 = new G4BraggIonGasModel();
-        G4BetheBlochIonGasModel* mod2 = new G4BetheBlochIonGasModel();
-        G4double eth = 2.*MeV*particle->GetPDGMass()/CLHEP::proton_mass_c2;
-        em_config.SetExtraEmModel(partname,"braggIoni",mod1,"",0.0,eth,
-                new G4IonFluctuations());
-        em_config.SetExtraEmModel(partname,"betheIoni",mod2,"",eth,100*TeV,
-                new G4UniversalFluctuation());
-
-    }
-} */
-
-// Requires Geant4 version higher than 10.2.9. Defined at CMakeLists.
-#ifdef G4104
     auto theParticleIterator = GetParticleIterator();
 
     // to implement UserLimits to StepSize inside the gas
     theParticleIterator->reset();
     while ((*theParticleIterator)()) {
         G4ParticleDefinition* particle = theParticleIterator->value();
-        G4String partname = particle->GetParticleName();
+        G4String particleName = particle->GetParticleName();
         G4ProcessManager* processManager = particle->GetProcessManager();
 
-        if (partname == "e-")
+        if (particleName == "e-")
             processManager->AddDiscreteProcess(new G4StepLimiter("e-Step"));
-        else if (partname == "e+")
+        else if (particleName == "e+")
             processManager->AddDiscreteProcess(new G4StepLimiter("e+Step"));
 
-        if (partname == "mu-")
+        if (particleName == "mu-")
             processManager->AddDiscreteProcess(new G4StepLimiter("mu-Step"));
-        else if (partname == "mu+")
+        else if (particleName == "mu+")
             processManager->AddDiscreteProcess(new G4StepLimiter("mu+Step"));
     }
 
@@ -270,16 +248,30 @@ while ((*theParticleIterator)())
                 }
             }
         }
-#endif  // G4104
 }
 
 void PhysicsList::SetCuts() {
+    SetDefaultCutValue(1 * mm);
     SetCutsWithDefault();
 
+    spdlog::info("PhysicsList::SetCuts ---> Setting global production cuts from {} to {} keV",
+                 fRestGeant4PhysicsLists->GetMinimumEnergyProductionCuts(),
+                 fRestGeant4PhysicsLists->GetMaximumEnergyProductionCuts());
+
+    G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(
+        fRestGeant4PhysicsLists->GetMinimumEnergyProductionCuts() * keV,
+        fRestGeant4PhysicsLists->GetMaximumEnergyProductionCuts() * keV);
+
     SetCutValue(fRestGeant4PhysicsLists->GetCutForGamma() * mm, "gamma");
-    SetCutValue(fRestGeant4PhysicsLists->GetCutForElectron() * mm, "e-");
+    SetCutValue(fRestGeant4PhysicsLists->GetCutForElectron() * mm * 100, "e-");
     SetCutValue(fRestGeant4PhysicsLists->GetCutForPositron() * mm, "e+");
     SetCutValue(fRestGeant4PhysicsLists->GetCutForMuon() * mm, "mu+");
     SetCutValue(fRestGeant4PhysicsLists->GetCutForMuon() * mm, "mu-");
     SetCutValue(fRestGeant4PhysicsLists->GetCutForNeutron() * mm, "neutron");
+}
+
+void PhysicsList::SetCutValue(G4double cutLengthValue, const G4String& particleName) {
+    spdlog::info("PhysicsList::SetCutValue ---> Setting production cut of {:0.2f} mm for particle '{}'",
+                 cutLengthValue / mm, particleName);
+    G4VUserPhysicsList::SetCutValue(cutLengthValue, particleName);
 }
