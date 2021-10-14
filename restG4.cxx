@@ -31,6 +31,7 @@
 #include "SteppingAction.h"
 #include "SteppingVerbose.h"
 #include "TrackingAction.h"
+#include "spdlog/spdlog.h"
 
 #ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
@@ -65,6 +66,9 @@ TH1D initialAngularDistribution;
 Int_t N_events;
 
 int main(int argc, char** argv) {
+    spdlog::set_level(spdlog::level::info);
+    spdlog::set_pattern("[%T][%^%l%$][thread %t]: %v");
+
     auto start_time = chrono::steady_clock::now();
 
     CommandLineParameters commandLineParameters = CommandLineSetup::ProcessParameters(argc, argv);
