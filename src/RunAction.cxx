@@ -2,6 +2,7 @@
 #include "RunAction.h"
 
 #include <TRestGeant4Metadata.h>
+#include <spdlog/spdlog.h>
 
 #include <G4PhysicalConstants.hh>
 #include <G4Run.hh>
@@ -28,7 +29,9 @@ RunAction::RunAction()
 
 RunAction::~RunAction() = default;
 
-void RunAction::BeginOfRunAction(const G4Run*) {
+void RunAction::BeginOfRunAction(const G4Run* run) {
+    spdlog::info("RunAction::BeginOfRunAction ---> Begin of run {}", run->GetRunID());
+
     // inform the runManager to save random number seed
     G4RunManager::GetRunManager()->SetRandomNumberStore(false);
 
@@ -37,8 +40,11 @@ void RunAction::BeginOfRunAction(const G4Run*) {
 }
 
 void RunAction::EndOfRunAction(const G4Run* run) {
+    spdlog::info("RunAction::EndOfRunAction <--- End of run {} (thread {})", run->GetRunID(),
+                 G4Threading::G4GetThreadId());
+
     if (G4Threading::IsMasterThread()) {
-        // spdlog::info("RunAction::EndOfRunAction <--- Writing events to file");
+        spdlog::info("RunAction::EndOfRunAction <--- Writing events to file");
         GlobalManager::Instance()->WriteEvents();
     }
 

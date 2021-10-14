@@ -6,6 +6,7 @@
 #include <TRestGeant4DataEvent.h>
 #include <TRestGeant4DataSteps.h>
 #include <TRestGeant4DataTrack.h>
+#include <spdlog/spdlog.h>
 
 #include <G4Event.hh>
 #include <G4HadronicProcess.hh>
@@ -47,20 +48,19 @@ TRestGeant4DataTrack::TRestGeant4DataTrack(const G4Track* track) {
 
     //
     G4String energyWithUnits = G4BestUnit(fInitialKineticEnergy * CLHEP::keV, "Energy");
-    /*
+
     spdlog::debug(
         "DataModelTrack::DataModelTrack - Track ID {} - Parent ID {} - Particle {} ({}) created by {} - "
         "Energy {}",
         fTrackID, fParentID, fParticleName, fParticleID,
         (fCreatorProcess.IsNull() ? "IS-PRIMARY-PARTICLE" : fCreatorProcess), energyWithUnits);
-    */
 }
 
 void TRestGeant4DataTrack::InsertStep(const G4Step* step) { fSteps.InsertStep(step); }
 
 void TRestGeant4DataTrack::UpdateTrack(const G4Track* track) {
     if (track->GetTrackID() != fTrackID) {
-        // spdlog::error("DataModelTrack::UpdateTrack - mismatch of trackID!");
+        spdlog::error("DataModelTrack::UpdateTrack - mismatch of trackID!");
         exit(1);
     }
 

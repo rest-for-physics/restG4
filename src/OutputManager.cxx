@@ -7,6 +7,7 @@
 #include <TRestGeant4DataEvent.h>
 #include <TRestGeant4DataSteps.h>
 #include <TRestGeant4DataTrack.h>
+#include <spdlog/spdlog.h>
 
 #include <G4RunManager.hh>
 #include <G4Step.hh>
@@ -50,9 +51,11 @@ void OutputManager::FinishAndSubmitEvent() {
         fEvent->fEventID, fEvent->fSubEventID, fEvent->fSensitiveVolumeEnergy);
     */
     if (IsValidEvent()) {
+        spdlog::info(
+            "OutputManager::FinishAndSubmitEvent - Added valid event with ID {} and sensitive volume energy "
+            "{}",
+            fEvent->GetEventID(), fEvent->GetSensitiveVolumeEnergy());
         GlobalManager::Instance()->InsertEvent(fEvent);
-        // optical information
-        // spdlog::info("OutputManager::FinishAndSubmitEvent - Added valid event");
     }
     UpdateEvent();
 }

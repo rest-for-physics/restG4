@@ -6,6 +6,7 @@
 #include <TRestGeant4DataEvent.h>
 #include <TRestGeant4DataSteps.h>
 #include <TRestGeant4DataTrack.h>
+#include <spdlog/spdlog.h>
 
 #include <G4Event.hh>
 #include <G4HadronicProcess.hh>
@@ -98,14 +99,12 @@ void TRestGeant4DataSteps::InsertStep(const G4Step* step) {
     fTargetNucleus.emplace_back(targetNucleusName);
     //
     G4String energyWithUnits = G4BestUnit(fEnergy.back() * CLHEP::keV, "Energy");
-    /*
+
     spdlog::debug(
-        "DataModelSteps::InsertStep - Step ID {} - process {} - energy deposited {} - volume {}{} -
-    position "
+        "DataModelSteps::InsertStep - Step ID {} - process {} - energy deposited {} - volume {}{} -position "
         "(mm) ({:03.2f}, {:03.2f}, {:03.2f})",                                     //
         fStepID.back(), fProcessName.back(), energyWithUnits, fVolumeName.back(),  //
         (fVolumeNamePost.back().IsNull() ? "" : "->" + fVolumeNamePost.back()),    //
         fPosition.back().x(), fPosition.back().y(), fPosition.back().z()           //
     );
-     */
 }

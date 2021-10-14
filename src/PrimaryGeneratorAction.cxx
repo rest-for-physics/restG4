@@ -3,6 +3,7 @@
 
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
+#include <spdlog/spdlog.h>
 
 #include <G4Event.hh>
 #include <G4Geantino.hh>
@@ -90,7 +91,7 @@ void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
     fGeneratorSpatialDensityFunction = new TF3("GeneratorDistFunc", str);
 }
 
-void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
+void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug) {
         cout << "DEBUG: Primary generation" << endl;
     }
@@ -112,19 +113,33 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
     SetParticlePosition();
 
     for (int i = 0; i < fRestGeant4Metadata->GetNumberOfSources(); i++) {
-        vector<TRestGeant4Particle> particles = fRestGeant4Metadata->GetParticleSource(i)->GetParticles();
-        for (auto p : particles) {
+        for (auto particle : fRestGeant4Metadata->GetParticleSource(i)->GetParticles()) {
             // ParticleDefinition should be always declared first (after position).
-            SetParticleDefinition(i, p);
+            SetParticleDefinition(i, particle);
 
             // Particle Direction must be always set before energy
-            SetParticleEnergy(i, p);
+            SetParticleEnergy(i, particle);
 
-            SetParticleDirection(i, p);
+            SetParticleDirection(i, particle);
 
-            fParticleGun->GeneratePrimaryVertex(geant4_event);
+            fParticleGun->GeneratePrimaryVertex(event);
         }
     }
+
+    auto primary = event->GetPrimaryVertex()->GetPrimary();
+    const auto primaryEnergy = primary->GetKineticEnergy();
+    const auto& primaryPosition = event->GetPrimaryVertex()->GetPosition();
+    const auto& primaryDirection = primary->GetMomentumDirection();
+
+    spdlog::debug(
+        "PrimaryGeneratorAction::GeneratePrimaries - Particle: {} - Position (mm): [{:03.2f}, {:03.2f}, "
+        "{:03.2f}] - Energy: {:03.2f} keV"
+        " - Direction: [{:03.4f}, {:03.4f}, {:03.4f}] ",                               //
+        primary->GetParticleDefinition()->GetParticleName(),                           //
+        primaryPosition.x() / mm, primaryPosition.y() / mm, primaryPosition.z() / mm,  //
+        primaryEnergy / keV,                                                           //
+        primaryDirection.x(), primaryDirection.y(), primaryDirection.z()               //
+    );
 }
 
 //_____________________________________________________________________________
@@ -466,7 +481,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
         g4_metadata_parameters::generator_shapes_map[g4_metadata_parameters::CleanString(
             generator_shape_name)];
 
-    while (1) {
+    while (true) {
         if (generator_type == g4_metadata_parameters::generator_types::POINT) {
             GenPositionOnPoint(x, y, z);
         } else if (generator_type == g4_metadata_parameters::generator_types::SURFACE) {
@@ -502,7 +517,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
 
         // use the density funciton. If the density is small, then val2 is small, we are more
         // likely to regenerate the particle position
-        if (fGeneratorSpatialDensityFunction != NULL) {
+        if (fGeneratorSpatialDensityFunction) {
             double val1 = G4UniformRand();
             double val2 = fGeneratorSpatialDensityFunction->Eval(x, y, z);
             if (val2 > 1) {

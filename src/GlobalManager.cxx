@@ -119,11 +119,18 @@ size_t GlobalManager::InsertEvent(std::unique_ptr<TRestGeant4DataEvent>& event) 
 
 void GlobalManager::InitializeTrees() {
     // Event Tree
-    // fEventTree = new TTree("EventTree", "Event Tree");
     fEventTree = fRestRun->GetEventTree();
     fEventTree->Branch("fEvent", &fEvent);
 
     fAnalysisTree = fRestRun->GetAnalysisTree();
+}
+
+Long64_t GlobalManager::GetEntries() {
+    if (!fEventTree) return 0;
+    if (G4Threading::IsMultithreadedApplication()) {
+        lock_guard<mutex> guard(fEventContainerMutex);
+    }
+    return fEventTree->GetEntries();
 }
 
 void GlobalManager::FillEvents() {

@@ -48,5 +48,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
 
    public:
     G4VPhysicalVolume* Construct();
+    void PrintGeometryInfo();
 };
 #endif

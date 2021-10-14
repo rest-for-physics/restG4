@@ -34,6 +34,7 @@ class OutputManager {
     void UpdateTrack(const G4Track*);
     void RecordStep(const G4Step*);
 
+    inline Float_t GetSensitiveVolumeEnergy() const { return fSensitiveEnergyTotal; }
     inline void AddSensitiveEnergy(double energy) { fEvent->AddSensitiveVolumeEnergy(energy); }
 
    private:

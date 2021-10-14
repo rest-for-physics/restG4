@@ -49,6 +49,8 @@ class GlobalManager {
     inline TRestGeant4PhysicsLists* GetRestGeant4PhysicsLists() const { return fRestGeant4PhysicsLists; }
     inline TRestGDMLParser* GetRestGDMLParser() const { return fRestGDMLParser; }
 
+    Long64_t GetEntries();
+
    private:
     GlobalManager();
     static GlobalManager* pinstance_;

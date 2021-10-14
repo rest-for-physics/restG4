@@ -2,6 +2,7 @@
 #include "DetectorConstruction.h"
 
 #include <TXMLEngine.h>
+#include <spdlog/spdlog.h>
 
 #include <G4FieldManager.hh>
 #include <G4IonTable.hh>
@@ -48,14 +49,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     chdir(originDirectory);
 
-    G4VPhysicalVolume* W = parser->GetWorldVolume();
+    fWorld = parser->GetWorldVolume();
 
     // TODO : Take the name of the sensitive volume and use it here to define its
     // StepSize
     string SensVol = (string)fRestGeant4Metadata->GetSensitiveVolume();
     G4VPhysicalVolume* _vol = GetPhysicalVolume(SensVol);
     if (!_vol) {
-        G4cout << "RESTG4 error. Sensitive volume  " << SensVol << " does not exist in geomtry!!" << G4endl;
+        G4cout << "RESTG4 error. Sensitive volume " << SensVol << " does not exist in geometry!!" << G4endl;
+        PrintGeometryInfo();
         G4cout << "RESTG4 error. Please, review geometry! Presh a key to crash!!" << G4endl;
         getchar();
         // We need to produce a clean exit at this point
@@ -78,20 +80,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         // In future Geant4 versions it seems possible to define field at particular volumes
         // vol->setFieldManager(localFieldMgr, true);
         G4Material* mat = vol->GetMaterial();
-        G4cout << "Sensitivity volume properties" << G4endl;
+        G4cout << "Sensitive volume properties" << G4endl;
         G4cout << "==============" << G4endl;
-        G4cout << "Sensitivity volume name : " << mat->GetName() << G4endl;
-        G4cout << "Sensitivity volume temperature : " << mat->GetTemperature() << G4endl;
-        G4cout << "Sensitivity volume density : " << mat->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
+        G4cout << "Sensitive volume name: " << mat->GetName() << G4endl;
+        G4cout << "Sensitive volume temperature: " << mat->GetTemperature() << G4endl;
+        G4cout << "Sensitive volume density: " << mat->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
     } else {
         cout << "ERROR : Logical volume for sensitive \"" << SensVol << "\" not found!" << endl;
     }
 
     // Getting generation volume
     string GenVol = (string)fRestGeant4Metadata->GetGeneratedFrom();
-    cout << "Generated from volume : " << GenVol << endl;
+    cout << "Generated from volume: " << GenVol << endl;
     string type = (string)fRestGeant4Metadata->GetGeneratorType();
-    cout << "Generator type : " << type << endl;
+    cout << "Generator type: " << type << endl;
 
     // TODO if we do not find the volume given in the config inside the geometry
     // we should RETURN error
@@ -100,7 +102,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         if (pVol == nullptr) {
             cout << "ERROR : The generator volume was not found in the geometry" << endl;
             exit(1);
-            return W;
+            return fWorld;
         }
 
         fGeneratorTranslation = pVol->GetTranslation();
@@ -159,7 +161,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     for (int id = 0; id < fRestGeant4Metadata->GetNumberOfActiveVolumes(); id++) {
         TString actVolName = fRestGeant4Metadata->GetActiveVolumeName(id);
         G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)actVolName);
-        if (pVol != NULL) {
+
+        cout << "Activating volume : " << actVolName << endl;
+        restG4Event->AddActiveVolume((string)actVolName);
+
+        if (!pVol) {
+            cout << "DetectorConstruction. Volume " << actVolName << " is not defined in the geometry"
+                 << endl;
+            // exit(1); TODO FIX THIS FOR ASSEMBLY
+        } else {
             G4LogicalVolume* lVol = pVol->GetLogicalVolume();
             if (fRestGeant4Metadata->GetMaxStepSize(actVolName) > 0) {
                 G4cout << "Setting maxStepSize = " << fRestGeant4Metadata->GetMaxStepSize(actVolName)
@@ -167,20 +177,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
                 lVol->SetUserLimits(new G4UserLimits(fRestGeant4Metadata->GetMaxStepSize(actVolName) * mm));
             }
         }
-
-        cout << "Activating volume : " << actVolName << endl;
-        restG4Event->AddActiveVolume((string)actVolName);
-        if (pVol == NULL) {
-            cout << "DetectorConstruction. Volume " << actVolName << " is not defined in the geometry"
-                 << endl;
-            exit(1);
-        }
     }
 
-    cout << "Detector constructed : " << W << endl;
+    cout << "Detector constructed : " << fWorld << endl;
 
-    fWorld = W;
-    return W;
+    return fWorld;
 }
 
 G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(G4String physVolName) {
@@ -253,7 +254,27 @@ void DetectorConstruction::ConstructSDandField() {
     }
 }
 
-XMLNodePointer_t FindChildByName(TXMLEngine xml, XMLNodePointer_t node, TString name) {
+void DetectorConstruction::PrintGeometryInfo() {
+    spdlog::info("DetectorConstruction::PrintGeometryInfo - Begin");
+    const int n = int(fWorld->GetLogicalVolume()->GetNoDaughters());
+    for (int i = 0; i < n; i++) {
+        G4VPhysicalVolume* volume = fWorld->GetLogicalVolume()->GetDaughter(i);
+        auto namePhysical = volume->GetName();
+        auto nameLogical = volume->GetLogicalVolume()->GetName();
+        auto nameMaterial = volume->GetLogicalVolume()->GetMaterial()->GetName();
+        auto position = volume->GetTranslation();
+        auto physicalLookupAlias = GlobalManager::Instance()->GetVolumeFromLookupTable(namePhysical);
+        spdlog::info(
+            "---> {} - physical: {} ({})- logical: {} - material: {} - position: ({:03.2f}, {:03.2f}, "
+            "{:03.2f})",
+            i, namePhysical, physicalLookupAlias, nameLogical, nameMaterial, position.x(), position.y(),
+            position.z());
+    }
+    spdlog::info("DetectorConstruction::PrintGeometryInfo - End");
+}
+
+/*
+XMLNodePointer_t FindChildByName(TXMLEngine xml, XMLNodePointer_t node, const TString& name) {
     XMLNodePointer_t child = xml.GetChild(node);
     while (child) {
         TString childName = xml.GetNodeName(child);
@@ -265,7 +286,7 @@ XMLNodePointer_t FindChildByName(TXMLEngine xml, XMLNodePointer_t node, TString 
     return nullptr;
 }
 
-XMLNodePointer_t FindVolumeOrAssemblyByName(TXMLEngine xml, XMLNodePointer_t node, TString name) {
+XMLNodePointer_t FindVolumeOrAssemblyByName(TXMLEngine xml, XMLNodePointer_t node, const TString& name) {
     XMLNodePointer_t child = xml.GetChild(node);
     while (child) {
         TString childName = xml.GetNodeName(child);
@@ -387,3 +408,4 @@ void DetectorConstruction::BuildAssemblyLookupTable() {
 
     // spdlog::info("DetectorConstruction::BuildAssemblyLookupTable - End");
 }
+*/

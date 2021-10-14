@@ -29,7 +29,7 @@ using namespace std;
 
 // Constructors
 
-TRestGeant4DataEvent::TRestGeant4DataEvent(const G4Event* event) {
+TRestGeant4DataEvent::TRestGeant4DataEvent(const G4Event* event) : TRestGeant4DataEvent() {
     fRunOrigin = GlobalManager::Instance()->GetRestRun()->GetRunNumber();
 
     fRunID = G4RunManager::GetRunManager()->GetCurrentRun()->GetRunID();
