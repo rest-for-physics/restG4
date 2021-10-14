@@ -1,8 +1,3 @@
-// REST G4 main program. restG4.cxx
-//
-// Author : J. Galan
-// Date : Jul-2015
-//
 
 #include <TGeoVolume.h>
 #include <TH1D.h>
@@ -15,10 +10,9 @@
 #include <TRestRun.h>
 
 #include <G4RunManager.hh>
+#include <G4UIExecutive.hh>
 #include <G4UImanager.hh>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include <G4VisExecutive.hh>
 
 #include "ActionInitialization.h"
 #include "CommandLineSetup.h"
@@ -32,14 +26,6 @@
 #include "SteppingVerbose.h"
 #include "TrackingAction.h"
 #include "spdlog/spdlog.h"
-
-#ifdef G4VIS_USE
-#include "G4VisExecutive.hh"
-#endif
-
-#ifdef G4UI_USE
-#include "G4UIExecutive.hh"
-#endif
 
 using namespace std;
 
@@ -55,7 +41,7 @@ Bool_t saveAllEvents;
 const Int_t maxBiasingVolumes = 50;
 Int_t biasing = 0;
 
-// This histograms would be better placed inside TRestGeant4BiasingVolume
+// these histograms would be better placed inside TRestGeant4BiasingVolume
 TH1D* biasingSpectrum[maxBiasingVolumes];
 TH1D* angularDistribution[maxBiasingVolumes];
 TH2D* spatialDistribution[maxBiasingVolumes];
@@ -63,12 +49,9 @@ TH2D* spatialDistribution[maxBiasingVolumes];
 TH1D initialEnergySpectrum;
 TH1D initialAngularDistribution;
 
-Int_t N_events;
+Int_t numberOfEvents;
 
 int main(int argc, char** argv) {
-    spdlog::set_level(spdlog::level::info);
-    spdlog::set_pattern("[%T][%^%l%$][thread %t]: %v");
-
     auto start_time = chrono::steady_clock::now();
 
     CommandLineParameters commandLineParameters = CommandLineSetup::ProcessParameters(argc, argv);
@@ -89,9 +72,6 @@ int main(int argc, char** argv) {
     // This call will generate a new single file GDML output
     gdml->Load((string)GlobalManager::Instance()->GetRestGeant4Metadata()->Get_GDML_Filename());
 
-    restG4Event = new TRestGeant4Event();
-    subRestG4Event = new TRestGeant4Event();
-    // restRun->AddEventBranch(subRestG4Event);
 
     restTrack = new TRestGeant4Track();
 
@@ -125,7 +105,7 @@ int main(int argc, char** argv) {
                 new TH2D(spatialDistName, "Biasing spatial distribution", 100, -1, 1, 100, -1, 1);
     }
 
-    auto runManager = new G4RunManager;
+    auto runManager = new G4RunManager();
 
     runManager->SetUserInitialization(new DetectorConstruction);
     runManager->SetUserInitialization(
@@ -133,7 +113,8 @@ int main(int argc, char** argv) {
 
     runManager->SetUserInitialization(new ActionInitialization);
 
-    auto prim = (PrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
+    auto primaryGeneratorAction =
+        (PrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
 
     if (restG4Metadata->GetParticleSource(0)->GetEnergyDistType() == "TH1D") {
         TString fileFullPath = (TString)restG4Metadata->GetParticleSource(0)->GetSpectrumFilename();
@@ -160,7 +141,7 @@ int main(int argc, char** argv) {
         if (maxEnergy < 0) maxEnergy = 0;
 
         // We set the initial spectrum energy provided from TH1D
-        prim->SetSpectrum(&initialEnergySpectrum, minEnergy, maxEnergy);
+        primaryGeneratorAction->SetSpectrum(&initialEnergySpectrum, minEnergy, maxEnergy);
     }
 
     if (restG4Metadata->GetParticleSource(0)->GetAngularDistType() == "TH1D") {
@@ -181,37 +162,38 @@ int main(int argc, char** argv) {
         initialAngularDistribution = *h;
 
         // We set the initial angular distribution provided from TH1D
-        prim->SetAngularDistribution(&initialAngularDistribution);
+        primaryGeneratorAction->SetAngularDistribution(&initialAngularDistribution);
     }
 
-    /*
-    auto run = new RunAction();
+    G4UImanager* UIManager = G4UImanager::GetUIpointer();
+    G4VisManager* visManager = nullptr;
+    G4UIExecutive* ui = nullptr;
 
-    auto event = new EventAction();
+    spdlog::info("Initializing run");
+    UIManager->ApplyCommand("/run/initialize");
 
-    auto track = new TrackingAction();
-    auto step = new SteppingAction();
+    if (commandLineParameters.interactive) {
+        GlobalManager::Instance()->SetSaveFlag(false);
+        GlobalManager::Instance()->SetInteractiveFlag(true);
+        spdlog::info("Initializing G4VisExecutive");
+        visManager = new G4VisExecutive();
+        visManager->Initialize();
 
-    runManager->SetUserAction(run);
-    runManager->SetUserAction(prim);
-    runManager->SetUserAction(event);
-    runManager->SetUserAction(track);
-    runManager->SetUserAction(step);
-
-     */
+        ui = new G4UIExecutive(argc, argv);
+    }
+    if (visManager) {
+        spdlog::info("Running visualization macros");
+        CommandLineSetup::RunVisMacro();
+        if (ui->IsGUI()) CommandLineSetup::RunGUIMacro();
+        ui->SessionStart();
+        delete ui;
+    }
 
     // G4VSteppingVerbose::SetInstance(new SteppingVerbose);
 
-    runManager->Initialize();
+    // runManager->Initialize();
 
-    G4UImanager* UI = G4UImanager::GetUIpointer();
-
-#ifdef G4VIS_USE
-    G4VisManager* visManager = new G4VisExecutive;
-    visManager->Initialize();
-#endif
-
-    N_events = restG4Metadata->GetNumberOfEvents();
+    numberOfEvents = restG4Metadata->GetNumberOfEvents();
     // We pass the volume definition to Stepping action so that it records gammas
     // entering in We pass also the biasing spectrum so that gammas energies
     // entering the volume are recorded
@@ -226,19 +208,11 @@ int main(int argc, char** argv) {
     time_t systime = time(nullptr);
     restRun->SetStartTimeStamp((Double_t)systime);
 
-    cout << "Events : " << N_events << endl;
-    if (N_events > 0)  // batch mode
-    {
-        G4String command = "/tracking/verbose 0";
-        UI->ApplyCommand(command);
-        command = "/run/initialize";
-        UI->ApplyCommand(command);
+    if (!commandLineParameters.interactive) {
+        spdlog::info("Starting batch mode with {} events to be processed", numberOfEvents);
 
-        char tmp[256];
-        sprintf(tmp, "/run/beamOn %d", N_events);
-
-        command = tmp;
-        UI->ApplyCommand(command);
+        UIManager->ApplyCommand("/tracking/verbose 0");
+        UIManager->ApplyCommand("/run/beamOn " + std::to_string(numberOfEvents));
 
         restRun->GetOutputFile()->cd();
 
@@ -262,9 +236,9 @@ int main(int argc, char** argv) {
             restG4Metadata->AddParticleSource(src);
 
             // We set the spectrum from previous biasing volume inside the primary generator
-            prim->SetSpectrum(biasingSpectrum[biasing]);
+            primaryGeneratorAction->SetSpectrum(biasingSpectrum[biasing]);
             // And we set the angular distribution
-            prim->SetAngularDistribution(angularDistribution[biasing]);
+            primaryGeneratorAction->SetAngularDistribution(angularDistribution[biasing]);
 
             // We re-define the generator inside restG4Metadata to be launched from the biasing volume
             restG4Metadata->SetGeneratorType(
@@ -296,7 +270,7 @@ int main(int argc, char** argv) {
                 step->SetAngularDistribution(angularDistribution[biasing - 1]);
                 step->SetSpatialDistribution(spatialDistribution[biasing - 1]);
             }
-            UI->ApplyCommand(command);
+            ui->ApplyCommand(command);
             step->GetBiasingVolume().PrintBiasingVolume();
             cout << "Number of events that reached the biasing volume : "
                  << (Int_t)(biasingSpectrum[biasing - 1]->Integral()) << endl;
@@ -307,45 +281,9 @@ int main(int argc, char** argv) {
         */
     }
 
-    else if (N_events == 0)  // define visualization and UI terminal for interactive mode
-    {
-        cout << "Entering vis mode.." << endl;
-#ifdef G4UI_USE
-        auto ui = new G4UIExecutive(argc, argv);
-#ifdef G4VIS_USE
-        cout << "Executing G4 macro : /control/execute macros/vis.mac" << endl;
-        UI->ApplyCommand("/control/execute macros/vis.mac");
-#endif
-        ui->SessionStart();
-        delete ui;
-#endif
-    }
-
-    else  // N_events == -1
-    {
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "The number of events to be simulated was not recongnized properly!" << endl;
-        cout << "Make sure you did not forget the number of events entry in TRestGeant4Metadata." << endl;
-        cout << endl;
-        cout << " ... or the parameter is properly constructed/interpreted." << endl;
-        cout << endl;
-        cout << "It should be something like : " << endl;
-        cout << endl;
-        cout << R"( <parameter name ="Nevents" value="100"/>)" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << endl;
-    }
     restRun->GetOutputFile()->cd();
 
-#ifdef G4VIS_USE
     delete visManager;
-#endif
-
-    // job termination
     delete runManager;
 
     systime = time(nullptr);
@@ -356,10 +294,6 @@ int main(int argc, char** argv) {
     restRun->CloseFile();
     restRun->PrintMetadata();
     delete restRun;
-
-    delete restG4Event;
-    delete subRestG4Event;
-    delete restTrack;
 
     ////////// Writing the geometry in TGeoManager format to the ROOT file
     ////////// Need to fork and do it in child process, to prevent occasional seg.fault

@@ -79,9 +79,17 @@ class GlobalManager {
      * User settings
      */
    private:
+    Bool_t fSaveFlag = true;
     Bool_t fSaveAllEventsFlag = false;
+    Bool_t fInteractiveFlag = false;
 
    public:
+    inline bool GetSaveFlag() const { return fSaveFlag; }
     inline bool GetSaveAllEventsFlag() const { return fSaveAllEventsFlag; }
+    inline bool GetInteractiveFlag() const { return fInteractiveFlag; }
+
+    inline void SetSaveFlag(Bool_t newValue) { fSaveFlag = newValue; }
+    inline void SetSaveAllEventsFlag(Bool_t newValue) { fSaveAllEventsFlag = newValue; }
+    inline void SetInteractiveFlag(Bool_t newValue) { fInteractiveFlag = newValue; }
 };
 #endif  // REST_GLOBALMANAGER_H

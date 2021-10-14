@@ -17,8 +17,6 @@
 
 #include "GlobalManager.h"
 
-extern TRestGeant4Event* restG4Event;
-
 Int_t face = 0;
 
 double GeneratorRndm() { return G4UniformRand(); }
@@ -41,10 +39,8 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
-    TString xLabel = (TString)spt->GetXaxis()->GetTitle();
+    auto xLabel = (TString)spt->GetXaxis()->GetTitle();
 
     if (xLabel.Contains("MeV")) {
         energyFactor = 1.e3;
@@ -83,9 +79,9 @@ void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
 
 void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
     string expression = (string)str;
-    if (fGeneratorSpatialDensityFunction != NULL) delete fGeneratorSpatialDensityFunction;
+    delete fGeneratorSpatialDensityFunction;
     if (expression.find_first_of("xyz") == -1) {
-        fGeneratorSpatialDensityFunction = NULL;
+        fGeneratorSpatialDensityFunction = nullptr;
         return;
     }
     fGeneratorSpatialDensityFunction = new TF3("GeneratorDistFunc", str);
@@ -95,12 +91,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug) {
         cout << "DEBUG: Primary generation" << endl;
     }
-    // We have to initialize here and not in start of the event because
-    // GeneratePrimaries is called first, and we want to store event origin and
-    // position inside
-    // we should have already written the information from previous event to disk
-    // (in endOfEventAction)
-    restG4Event->Initialize();
 
     for (int i = 0; i < fRestGeant4Metadata->GetNumberOfSources(); i++) {
         fRestGeant4Metadata->GetParticleSource(i)->Update();
@@ -179,8 +169,6 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
     }
 
     fParticleGun->SetParticleDefinition(fParticle);
-
-    restG4Event->SetPrimaryEventParticleName(particle_name);
 
     return fParticle;
 }
@@ -365,7 +353,7 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
     } else if (angular_dist_type == g4_metadata_parameters::angular_dist_types::BACK_TO_BACK) {
         // This should never crash. In TRestG4Metadata we have defined that if the
         // first source is backtoback we set it to isotropic
-        TVector3 v = restG4Event->GetPrimaryEventDirection(n - 1);
+        TVector3 v = p.GetMomentumDirection();
         v = v.Unit();
 
         direction.set(-v.X(), -v.Y(), -v.Z());
@@ -375,22 +363,10 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
                << G4endl;
     }
 
-    // storing the direction in TRestG4Event class
-    TVector3 eventDirection(direction.x(), direction.y(), direction.z());
-    restG4Event->SetPrimaryEventDirection(eventDirection);
-
-    if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug) {
-        cout << "DEBUG: Event direction (normalized): "
-             << "(" << restG4Event->GetPrimaryEventDirection(n).X() << ", "
-             << restG4Event->GetPrimaryEventDirection(n).Y() << ", "
-             << restG4Event->GetPrimaryEventDirection(n).Z() << ")" << endl;
-    }
-
     // setting particle direction
     fParticleGun->SetParticleMomentumDirection(direction);
 }
 
-//_____________________________________________________________________________
 void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
     Double_t energy = 0;
 
@@ -464,8 +440,6 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
     if (n == 0) lastEnergy = energy;
     fParticleGun->SetParticleEnergy(energy);
 
-    restG4Event->SetPrimaryEventEnergy(energy / keV);
-
     if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug)
         cout << "DEBUG: Particle energy: " << energy / keV << " keV" << endl;
 }
@@ -534,15 +508,8 @@ void PrimaryGeneratorAction::SetParticlePosition() {
 
     // storing the direction in TRestG4Event class
     TVector3 eventPosition(x, y, z);
-    restG4Event->SetPrimaryEventOrigin(eventPosition);
+    //restG4Event->SetPrimaryEventOrigin(eventPosition);
 
-    if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug) {
-        cout << "DEBUG: Event origin: "
-             << "(" << restG4Event->GetPrimaryEventOrigin().X() << ", "
-             << restG4Event->GetPrimaryEventOrigin().Y() << ", " << restG4Event->GetPrimaryEventOrigin().Z()
-             << ")"
-             << " mm" << endl;
-    }
 
     // setting particle position
     fParticleGun->SetParticlePosition(G4ThreeVector(x, y, z));

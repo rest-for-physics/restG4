@@ -27,6 +27,9 @@ class CommandLineSetup {
 
     static void ShowUsage();
     static void Print(const CommandLineParameters&);
+
+    static void RunVisMacro();
+    static void RunGUIMacro();
 };
 
 #endif  // REST_COMMANDLINESETUP_H

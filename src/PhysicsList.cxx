@@ -44,10 +44,7 @@ using namespace std;
 Int_t emCounter = 0;
 
 PhysicsList::PhysicsList() : G4VModularPhysicsList() {
-    cout << "restG4. PhysicsList. Wrong constructor!!" << endl;
-}
-
-PhysicsList::PhysicsList(TRestGeant4PhysicsLists* physicsLists) : G4VModularPhysicsList() {
+    SetDefaultCutValue(1 * mm);
     // add new units for radioActive decays
     //
     const G4double minute = 60 * second;
@@ -58,16 +55,15 @@ PhysicsList::PhysicsList(TRestGeant4PhysicsLists* physicsLists) : G4VModularPhys
     new G4UnitDefinition("hour", "h", "Time", hour);
     new G4UnitDefinition("day", "d", "Time", day);
     new G4UnitDefinition("year", "y", "Time", year);
+}
 
-    defaultCutValue = 0.1 * mm;
-
+PhysicsList::PhysicsList(TRestGeant4PhysicsLists* physicsLists) : PhysicsList() {
     fRestGeant4PhysicsLists = physicsLists;
     G4LossTableManager::Instance();
     // fix lower limit for cut
     G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(
         fRestGeant4PhysicsLists->GetMinimumEnergyProductionCuts() * keV,
         fRestGeant4PhysicsLists->GetMaximumEnergyProductionCuts() * keV);
-    defaultCutValue = 0.1 * mm;
 
     fEmPhysicsList = nullptr;
     fDecPhysicsList = nullptr;

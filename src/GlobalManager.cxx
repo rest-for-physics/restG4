@@ -13,6 +13,8 @@
 #include <G4RunManager.hh>
 #include <G4Threading.hh>
 
+#include "spdlog/spdlog.h"
+
 using namespace std;
 
 GlobalManager* GlobalManager::pinstance_ = nullptr;
@@ -71,6 +73,19 @@ void GlobalManager::InitializeFromConfigFile(const TString& rmlFile) {
 void GlobalManager::InitializeRestGeant4Metadata(const TString& rmlFile) {
     fRestGeant4Metadata = new TRestGeant4Metadata(const_cast<char*>(rmlFile.Data()));
 
+    REST_Verbose_Level verboseLevel = fRestGeant4Metadata->GetVerboseLevel();
+    if (verboseLevel == REST_Verbose_Level::REST_Debug) {
+        spdlog::set_level(spdlog::level::debug);
+    } else if (verboseLevel == REST_Verbose_Level::REST_Info) {
+        spdlog::set_level(spdlog::level::info);
+    } else if (verboseLevel == REST_Verbose_Level::REST_Essential) {
+        spdlog::set_level(spdlog::level::warn);
+    } else if (verboseLevel == REST_Verbose_Level::REST_Silent) {
+        spdlog::set_level(spdlog::level::err);
+    }
+
+    spdlog::set_pattern("[%T][%^%l%$][thread %t]: %v");
+
     string geant4Version = TRestTools::Execute("geant4-config --version");
     fRestGeant4Metadata->SetGeant4Version(geant4Version);
     // GDML geometry parsing
@@ -84,7 +99,7 @@ void GlobalManager::InitializeRestGeant4Metadata(const TString& rmlFile) {
     fRestGeant4Metadata->Set_GDML_Reference(fRestGDMLParser->GetGDMLVersion());
     fRestGeant4Metadata->SetMaterialsReference(fRestGDMLParser->GetEntityVersion("materials"));
 
-    fSaveAllEventsFlag = fRestGeant4Metadata->GetSaveAllEvents();
+    fRestGeant4Metadata->SetSaveAllEvents(fRestGeant4Metadata->GetSaveAllEvents());
 }
 
 void GlobalManager::InitializeRestRun(const TString& rmlFile) {

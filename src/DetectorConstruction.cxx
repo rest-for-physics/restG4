@@ -19,8 +19,6 @@
 
 using namespace std;
 
-extern TRestGeant4Event* restG4Event;
-
 DetectorConstruction::DetectorConstruction()
     : fRestGeant4Metadata(GlobalManager::Instance()->GetRestGeant4Metadata()) {
     G4cout << "Detector Construction" << G4endl;
@@ -163,7 +161,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)actVolName);
 
         cout << "Activating volume : " << actVolName << endl;
-        restG4Event->AddActiveVolume((string)actVolName);
+        // restG4Event->AddActiveVolume((string)actVolName);
 
         if (!pVol) {
             cout << "DetectorConstruction. Volume " << actVolName << " is not defined in the geometry"

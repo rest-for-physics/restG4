@@ -47,20 +47,4 @@ void RunAction::EndOfRunAction(const G4Run* run) {
         spdlog::info("RunAction::EndOfRunAction <--- Writing events to file");
         GlobalManager::Instance()->WriteEvents();
     }
-
-    return;
-
-    G4int nbEvents = run->GetNumberOfEvent();
-    if (nbEvents == 0) {
-        return;
-    }
-
-    G4ParticleDefinition* particle = fPrimary->GetParticleGun()->GetParticleDefinition();
-    G4String partName = particle->GetParticleName();
-    // G4double eprimary = fPrimary->GetParticleGun()->GetParticleEnergy();
-
-    G4cout << "======================== run summary ======================";
-    G4cout << "\n" << nbEvents << " Events simulated\n";
-    G4cout << "===========================================================";
-    G4cout << G4endl;
 }
