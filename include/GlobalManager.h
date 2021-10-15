@@ -91,5 +91,18 @@ class GlobalManager {
     inline void SetSaveFlag(Bool_t newValue) { fSaveFlag = newValue; }
     inline void SetSaveAllEventsFlag(Bool_t newValue) { fSaveAllEventsFlag = newValue; }
     inline void SetInteractiveFlag(Bool_t newValue) { fInteractiveFlag = newValue; }
+
+    // other
+   private:
+    TH1D* fPrimaryEnergyDistribution = nullptr;
+    TH1D* fPrimaryAngularDistribution = nullptr;
+    Double_t fPrimaryEnergyDistributionMin;
+    Double_t fPrimaryEnergyDistributionMax;
+
+   public:
+    inline TH1D* GetPrimaryEnergyDistribution() const { return fPrimaryEnergyDistribution; }
+    inline TH1D* GetPrimaryAngularDistribution() const { return fPrimaryAngularDistribution; }
+    inline Double_t GetPrimaryEnergyDistributionMin() const { return fPrimaryEnergyDistributionMin; }
+    inline Double_t GetPrimaryEnergyDistributionMax() const { return fPrimaryEnergyDistributionMax; }
 };
 #endif  // REST_GLOBALMANAGER_H

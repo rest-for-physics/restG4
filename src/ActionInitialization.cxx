@@ -15,19 +15,18 @@
 #include "spdlog/spdlog.h"
 
 ActionInitialization::ActionInitialization() : G4VUserActionInitialization() {
-    //
-    // spdlog::debug("ActionInitialization::ActionInitialization");
+    spdlog::debug("ActionInitialization::ActionInitialization");
 }
 
 ActionInitialization::~ActionInitialization() = default;
 
 void ActionInitialization::BuildForMaster() const {
-    // spdlog::info("ActionInitialization::BuildForMaster");
+    spdlog::info("ActionInitialization::BuildForMaster");
     SetUserAction(new RunAction);
 }
 
 void ActionInitialization::Build() const {
-    // spdlog::info("ActionInitialization::Build");
+    spdlog::info("ActionInitialization::Build");
 
     SetUserAction(new PrimaryGeneratorAction);
     SetUserAction(new RunAction);

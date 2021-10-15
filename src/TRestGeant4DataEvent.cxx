@@ -39,9 +39,11 @@ TRestGeant4DataEvent::TRestGeant4DataEvent(const G4Event* event) : TRestGeant4Da
 
     // this only words when there is a single particle primary vertex!
     auto primaryVertex = event->GetPrimaryVertex();
+
     if (primaryVertex->GetNumberOfParticle() > 1) {
         cout << "multiple primary particles detected, but only recording first particle!" << endl;
     }
+
     const auto& position = primaryVertex->GetPosition();
     fPrimaryPosition = TVector3(position.x() / CLHEP::mm, position.y() / CLHEP::mm, position.z() / CLHEP::mm);
     auto primaryParticle = primaryVertex->GetPrimary();

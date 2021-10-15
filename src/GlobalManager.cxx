@@ -99,7 +99,51 @@ void GlobalManager::InitializeRestGeant4Metadata(const TString& rmlFile) {
     fRestGeant4Metadata->Set_GDML_Reference(fRestGDMLParser->GetGDMLVersion());
     fRestGeant4Metadata->SetMaterialsReference(fRestGDMLParser->GetEntityVersion("materials"));
 
-    fRestGeant4Metadata->SetSaveAllEvents(fRestGeant4Metadata->GetSaveAllEvents());
+    SetSaveAllEventsFlag(fRestGeant4Metadata->GetSaveAllEvents());
+
+    // Primary
+
+    if (fRestGeant4Metadata->GetParticleSource(0)->GetEnergyDistType() == "TH1D") {
+        TString fileFullPath = (TString)fRestGeant4Metadata->GetParticleSource(0)->GetSpectrumFilename();
+        TFile fileIn(fileFullPath);
+        TString spectrumName = fRestGeant4Metadata->GetParticleSource(0)->GetSpectrumName();
+
+        fPrimaryEnergyDistribution = (TH1D*)fileIn.Get(spectrumName);
+
+        if (!fPrimaryEnergyDistribution) {
+            spdlog::error(
+                "GlobalManager::InitializeRestGeant4Metadata - Error initializing energy distribution "
+                "spectrum ({}) from file {}",
+                spectrumName, fileFullPath);
+            exit(1);
+        }
+
+        fPrimaryEnergyDistributionMin = fRestGeant4Metadata->GetParticleSource(0)->GetMinEnergy();
+        if (fPrimaryEnergyDistributionMin < 0) {
+            fPrimaryEnergyDistributionMin = 0;
+        }
+        fPrimaryEnergyDistributionMax = fRestGeant4Metadata->GetParticleSource(0)->GetMaxEnergy();
+        if (fPrimaryEnergyDistributionMax < 0) {
+            fPrimaryEnergyDistributionMax = 0;
+        }
+    }
+
+    if (fRestGeant4Metadata->GetParticleSource(0)->GetAngularDistType() == "TH1D") {
+        TString fileFullPath = (TString)fRestGeant4Metadata->GetParticleSource(0)->GetAngularFilename();
+
+        TFile fileIn(fileFullPath);
+
+        TString spectrumName = fRestGeant4Metadata->GetParticleSource(0)->GetAngularName();
+        fPrimaryAngularDistribution = (TH1D*)fileIn.Get(spectrumName);
+
+        if (!fPrimaryAngularDistribution) {
+            spdlog::error(
+                "GlobalManager::InitializeRestGeant4Metadata - Error initializing angular distribution "
+                "spectrum ({}) from file {}",
+                spectrumName, fileFullPath);
+            exit(1);
+        }
+    }
 }
 
 void GlobalManager::InitializeRestRun(const TString& rmlFile) {

@@ -42,8 +42,8 @@ void OutputManager::UpdateEvent() {
 void OutputManager::FinishAndSubmitEvent() {
     spdlog::debug("OutputManager::FinishAndSubmitEvent");
 
-    spdlog::info("OutputManager::FinishAndSubmitEvent ---> Finished event ID {} with {} tracks and {} steps",
-                 fEvent->GetEventID(), fEvent->GetNumberOfTracks(), fEvent->GetNumberOfSteps());
+    spdlog::debug("OutputManager::FinishAndSubmitEvent ---> Finished event ID {} with {} tracks and {} steps",
+                  fEvent->GetEventID(), fEvent->GetNumberOfTracks(), fEvent->GetNumberOfSteps());
 
     if (IsEmptyEvent()) {
         return;
@@ -56,11 +56,13 @@ void OutputManager::FinishAndSubmitEvent() {
         "{:03.2f}",
         fEvent->fEventID, fEvent->fSubEventID, fEvent->fSensitiveVolumeEnergy);
     */
+
     if (IsValidEvent()) {
         spdlog::info(
             "OutputManager::FinishAndSubmitEvent - Added valid event with ID {} and sensitive volume energy "
             "{}",
             fEvent->GetEventID(), fEvent->GetSensitiveVolumeEnergy());
+        fEvent->Print();
         GlobalManager::Instance()->InsertEvent(fEvent);
     }
     UpdateEvent();

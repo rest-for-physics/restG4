@@ -177,8 +177,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         }
     }
 
-    cout << "Detector constructed : " << fWorld << endl;
-
     return fWorld;
 }
 

@@ -10,6 +10,7 @@
 #include <TRestRun.h>
 
 #include <G4RunManager.hh>
+#include <G4RunManagerFactory.hh>
 #include <G4UIExecutive.hh>
 #include <G4UImanager.hh>
 #include <G4VisExecutive.hh>
@@ -20,7 +21,6 @@
 #include "EventAction.h"
 #include "GlobalManager.h"
 #include "PhysicsList.h"
-#include "PrimaryGeneratorAction.h"
 #include "RunAction.h"
 #include "SteppingAction.h"
 #include "SteppingVerbose.h"
@@ -45,9 +45,6 @@ Int_t biasing = 0;
 TH1D* biasingSpectrum[maxBiasingVolumes];
 TH1D* angularDistribution[maxBiasingVolumes];
 TH2D* spatialDistribution[maxBiasingVolumes];
-
-TH1D initialEnergySpectrum;
-TH1D initialAngularDistribution;
 
 Int_t numberOfEvents;
 
@@ -106,65 +103,26 @@ int main(int argc, char** argv) {
 
     G4VSteppingVerbose::SetInstance(new SteppingVerbose);
 
-    auto runManager = new G4RunManager();
+#ifdef WITHOUT_G4RunManagerFactory
+    auto runManager = (commandLineParameters.serialMode ? new G4RunManager() : new G4MTRunManager());
+#else
+    auto runManagerType =
+        (commandLineParameters.serialMode ? G4RunManagerType::SerialOnly : G4RunManagerType::MTOnly);
+    auto runManager = G4RunManagerFactory::CreateRunManager(runManagerType);
+#endif
+    if (!commandLineParameters.serialMode) {
+        spdlog::info("Initializing Geant4 MT Run Manager with {} threads", commandLineParameters.nThreads);
+        runManager->SetNumberOfThreads(commandLineParameters.nThreads);
+    } else {
+        spdlog::info("Initializing Geant4 serial (single-threaded) Run Manager");
+    }
+    // auto runManager = new G4RunManager();
 
     runManager->SetUserInitialization(new DetectorConstruction);
-    runManager->SetUserInitialization(
-        new PhysicsList(GlobalManager::Instance()->GetRestGeant4PhysicsLists()));
+    auto physicsList = new PhysicsList(GlobalManager::Instance()->GetRestGeant4PhysicsLists());
+    runManager->SetUserInitialization(physicsList);
 
     runManager->SetUserInitialization(new ActionInitialization);
-
-    auto primaryGeneratorAction =
-        (PrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
-
-    if (restG4Metadata->GetParticleSource(0)->GetEnergyDistType() == "TH1D") {
-        TString fileFullPath = (TString)restG4Metadata->GetParticleSource(0)->GetSpectrumFilename();
-
-        TFile fin(fileFullPath);
-
-        TString sptName = restG4Metadata->GetParticleSource(0)->GetSpectrumName();
-
-        TH1D* h = (TH1D*)fin.Get(sptName);
-
-        if (!h) {
-            cout << "REST ERROR  when trying to find energy spectrum" << endl;
-            cout << "File : " << fileFullPath << endl;
-            cout << "Spectrum name : " << sptName << endl;
-            exit(1);
-        }
-
-        initialEnergySpectrum = *h;
-
-        Double_t minEnergy = restG4Metadata->GetParticleSource(0)->GetMinEnergy();
-        if (minEnergy < 0) minEnergy = 0;
-
-        Double_t maxEnergy = restG4Metadata->GetParticleSource(0)->GetMaxEnergy();
-        if (maxEnergy < 0) maxEnergy = 0;
-
-        // We set the initial spectrum energy provided from TH1D
-        primaryGeneratorAction->SetSpectrum(&initialEnergySpectrum, minEnergy, maxEnergy);
-    }
-
-    if (restG4Metadata->GetParticleSource(0)->GetAngularDistType() == "TH1D") {
-        TString fileFullPath = (TString)restG4Metadata->GetParticleSource(0)->GetAngularFilename();
-
-        TFile fin(fileFullPath);
-
-        TString sptName = restG4Metadata->GetParticleSource(0)->GetAngularName();
-        TH1D* h = (TH1D*)fin.Get(sptName);
-
-        if (!h) {
-            cout << "REST ERROR  when trying to find angular spectrum" << endl;
-            cout << "File : " << fileFullPath << endl;
-            cout << "Spectrum name : " << sptName << endl;
-            exit(1);
-        }
-
-        initialAngularDistribution = *h;
-
-        // We set the initial angular distribution provided from TH1D
-        primaryGeneratorAction->SetAngularDistribution(&initialAngularDistribution);
-    }
 
     G4UImanager* UIManager = G4UImanager::GetUIpointer();
     G4VisManager* visManager = nullptr;
@@ -181,13 +139,14 @@ int main(int argc, char** argv) {
         visManager->Initialize();
 
         ui = new G4UIExecutive(argc, argv);
-    }
-    if (visManager) {
-        spdlog::info("Running visualization macros");
-        CommandLineSetup::RunVisMacro();
-        if (ui->IsGUI()) CommandLineSetup::RunGUIMacro();
-        ui->SessionStart();
-        delete ui;
+
+        if (visManager) {
+            spdlog::info("Running visualization macros");
+            CommandLineSetup::RunVisMacro();
+            if (ui->IsGUI()) CommandLineSetup::RunGUIMacro();
+            ui->SessionStart();
+            delete ui;
+        }
     }
 
     // G4VSteppingVerbose::SetInstance(new SteppingVerbose);
@@ -315,7 +274,7 @@ int main(int argc, char** argv) {
         sleep(5);
 
         // Then we just add the geometry
-        TFile* f1 = new TFile(Filename, "update");
+        auto* f1 = new TFile(Filename, "update");
         auto gdml = GlobalManager::Instance()->GetRestGDMLParser();
         TGeoManager* geo2 = gdml->CreateGeoM();
 

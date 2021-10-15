@@ -25,6 +25,22 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
     : G4VUserPrimaryGeneratorAction(),
       fRestGeant4Metadata(GlobalManager::Instance()->GetRestGeant4Metadata()),
       fParticleGun(nullptr) {
+    spdlog::info("PrimaryGeneratorAction::PrimaryGeneratorAction");
+    // return;
+    // lock_guard<mutex> guard(fMutex);
+
+    auto primaryEnergyDistributionTH1D = GlobalManager::Instance()->GetPrimaryEnergyDistribution();
+
+    TH1D h = *primaryEnergyDistributionTH1D;
+
+    if (primaryEnergyDistributionTH1D) {
+        SetEnergySpectrum(h, 0, 0);
+    }
+    auto primaryAngularDistributionTH1D = GlobalManager::Instance()->GetPrimaryAngularDistribution();
+    if (primaryEnergyDistributionTH1D) {
+        SetAngularDistribution(*primaryEnergyDistributionTH1D);
+    }
+
     fDetector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
     G4int n_particle = 1;
@@ -39,8 +55,8 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
 
-void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
-    auto xLabel = (TString)spt->GetXaxis()->GetTitle();
+void PrimaryGeneratorAction::SetEnergySpectrum(const TH1D& spt, double eMin, double eMax) {
+    auto xLabel = (TString)spt.GetXaxis()->GetTitle();
 
     if (xLabel.Contains("MeV")) {
         energyFactor = 1.e3;
@@ -50,15 +66,15 @@ void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
         energyFactor = 1.;
     }
 
-    fSpectrum = spt;
-    fSpectrumIntegral = fSpectrum->Integral();
+    fPrimaryEnergySpectrum = spt;
+    fSpectrumIntegral = fPrimaryEnergySpectrum.Integral();
 
     startEnergyBin = 1;
-    endEnergyBin = fSpectrum->GetNbinsX();
+    endEnergyBin = fPrimaryEnergySpectrum.GetNbinsX();
 
     if (eMin > 0) {
         for (int i = startEnergyBin; i <= endEnergyBin; i++) {
-            if (fSpectrum->GetBinCenter(i) > eMin) {
+            if (fPrimaryEnergySpectrum.GetBinCenter(i) > eMin) {
                 startEnergyBin = i;
                 break;
             }
@@ -67,14 +83,14 @@ void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
 
     if (eMax > 0) {
         for (int i = startEnergyBin; i <= endEnergyBin; i++) {
-            if (fSpectrum->GetBinCenter(i) > eMax) {
+            if (fPrimaryEnergySpectrum.GetBinCenter(i) > eMax) {
                 endEnergyBin = i;
                 break;
             }
         }
     }
 
-    fSpectrumIntegral = fSpectrum->Integral(startEnergyBin, endEnergyBin);
+    fSpectrumIntegral = fPrimaryEnergySpectrum.Integral(startEnergyBin, endEnergyBin);
 }
 
 void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
@@ -88,6 +104,7 @@ void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
+    // return;
     if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug) {
         cout << "DEBUG: Primary generation" << endl;
     }
@@ -103,13 +120,10 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     SetParticlePosition();
 
     for (int i = 0; i < fRestGeant4Metadata->GetNumberOfSources(); i++) {
-        for (auto particle : fRestGeant4Metadata->GetParticleSource(i)->GetParticles()) {
+        for (const auto& particle : fRestGeant4Metadata->GetParticleSource(i)->GetParticles()) {
             // ParticleDefinition should be always declared first (after position).
             SetParticleDefinition(i, particle);
-
-            // Particle Direction must be always set before energy
             SetParticleEnergy(i, particle);
-
             SetParticleDirection(i, particle);
 
             fParticleGun->GeneratePrimaryVertex(event);
@@ -255,18 +269,19 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
         //}
     } else if (angular_dist_type == g4_metadata_parameters::angular_dist_types::TH1D) {
         Double_t angle = 0;
-        Double_t value = G4UniformRand() * (fAngularDistribution->Integral());
+        Double_t value = G4UniformRand() * (fPrimaryAngularSpectrum.Integral());
         Double_t sum = 0;
         // deltaAngle is the constant x distance between bins
-        Double_t deltaAngle = fAngularDistribution->GetBinCenter(2) - fAngularDistribution->GetBinCenter(1);
+        Double_t deltaAngle =
+            fPrimaryAngularSpectrum.GetBinCenter(2) - fPrimaryAngularSpectrum.GetBinCenter(1);
         // we sample the CDF (uniform between 0 and the distribution integral which should be equal to 1)
         // the inverse of CDF of the uniformly sampled value will follow a distribution given by the PDF, we
         // compute this inverse
-        for (int bin = 1; bin <= fAngularDistribution->GetNbinsX(); bin++) {
-            sum += fAngularDistribution->GetBinContent(bin);
+        for (int bin = 1; bin <= fPrimaryAngularSpectrum.GetNbinsX(); bin++) {
+            sum += fPrimaryAngularSpectrum.GetBinContent(bin);
 
             if (sum >= value) {
-                angle = fAngularDistribution->GetBinCenter(bin) + deltaAngle * (0.5 - G4UniformRand());
+                angle = fPrimaryAngularSpectrum.GetBinCenter(bin) + deltaAngle * (0.5 - G4UniformRand());
                 break;
             }
         }
@@ -410,13 +425,15 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
     } else if (energy_dist_type == g4_metadata_parameters::energy_dist_types::TH1D) {
         Double_t value = G4UniformRand() * fSpectrumIntegral;
         Double_t sum = 0;
-        Double_t deltaEnergy = fSpectrum->GetBinCenter(2) - fSpectrum->GetBinCenter(1);
+        Double_t deltaEnergy =
+            fPrimaryEnergySpectrum.GetBinCenter(2) - fPrimaryEnergySpectrum.GetBinCenter(1);
         for (int bin = startEnergyBin; bin <= endEnergyBin; bin++) {
-            sum += fSpectrum->GetBinContent(bin);
+            sum += fPrimaryEnergySpectrum.GetBinContent(bin);
 
             if (sum > value) {
                 energy = energyFactor *
-                         (Double_t)(fSpectrum->GetBinCenter(bin) + deltaEnergy * (0.5 - G4UniformRand())) *
+                         (Double_t)(fPrimaryEnergySpectrum.GetBinCenter(bin) +
+                                    deltaEnergy * (0.5 - G4UniformRand())) *
                          keV;
                 break;
             }
@@ -508,8 +525,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
 
     // storing the direction in TRestG4Event class
     TVector3 eventPosition(x, y, z);
-    //restG4Event->SetPrimaryEventOrigin(eventPosition);
-
+    // restG4Event->SetPrimaryEventOrigin(eventPosition);
 
     // setting particle position
     fParticleGun->SetParticlePosition(G4ThreeVector(x, y, z));

@@ -71,12 +71,13 @@ PhysicsList::PhysicsList(TRestGeant4PhysicsLists* physicsLists) : PhysicsList() 
 }
 
 PhysicsList::~PhysicsList() {
+    return;
     delete fEmPhysicsList;
 
     delete fDecayPhysicsList;
     delete fRadioactiveDecayPhysicsList;
-    for (size_t i = 0; i < fHadronPhys.size(); i++) {
-        delete fHadronPhys[i];
+    for (auto& fHadronPhy : fHadronPhys) {
+        delete fHadronPhy;
     }
 }
 
