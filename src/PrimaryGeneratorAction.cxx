@@ -26,19 +26,21 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
       fRestGeant4Metadata(GlobalManager::Instance()->GetRestGeant4Metadata()),
       fParticleGun(nullptr) {
     spdlog::info("PrimaryGeneratorAction::PrimaryGeneratorAction");
-    // return;
-    // lock_guard<mutex> guard(fMutex);
 
-    auto primaryEnergyDistributionTH1D = GlobalManager::Instance()->GetPrimaryEnergyDistribution();
-
-    TH1D h = *primaryEnergyDistributionTH1D;
-
-    if (primaryEnergyDistributionTH1D) {
-        SetEnergySpectrum(h, 0, 0);
+    TH1D* primaryEnergyDistribution = GlobalManager::Instance()->GetPrimaryEnergyDistribution();
+    if (primaryEnergyDistribution) {
+        SetEnergySpectrum(*primaryEnergyDistribution, 0, 0);
+        spdlog::info(
+            "PrimaryGeneratorAction:PrimaryGeneratorAction - Setting primary energy distribution to {}",
+            fPrimaryEnergySpectrum.GetName());
     }
-    auto primaryAngularDistributionTH1D = GlobalManager::Instance()->GetPrimaryAngularDistribution();
-    if (primaryEnergyDistributionTH1D) {
-        SetAngularDistribution(*primaryEnergyDistributionTH1D);
+
+    auto primaryAngularDistribution = GlobalManager::Instance()->GetPrimaryAngularDistribution();
+    if (primaryAngularDistribution) {
+        SetAngularDistribution(*primaryAngularDistribution);
+        spdlog::info(
+            "PrimaryGeneratorAction:PrimaryGeneratorAction - Setting primary angular distribution to {}",
+            fPrimaryAngularSpectrum.GetName());
     }
 
     fDetector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
@@ -55,8 +57,8 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
 
-void PrimaryGeneratorAction::SetEnergySpectrum(const TH1D& spt, double eMin, double eMax) {
-    auto xLabel = (TString)spt.GetXaxis()->GetTitle();
+void PrimaryGeneratorAction::SetEnergySpectrum(const TH1D& h, double eMin, double eMax) {
+    TString xLabel = h.GetXaxis()->GetTitle();
 
     if (xLabel.Contains("MeV")) {
         energyFactor = 1.e3;
@@ -66,7 +68,7 @@ void PrimaryGeneratorAction::SetEnergySpectrum(const TH1D& spt, double eMin, dou
         energyFactor = 1.;
     }
 
-    fPrimaryEnergySpectrum = spt;
+    fPrimaryEnergySpectrum = h;
     fSpectrumIntegral = fPrimaryEnergySpectrum.Integral();
 
     startEnergyBin = 1;
@@ -92,6 +94,8 @@ void PrimaryGeneratorAction::SetEnergySpectrum(const TH1D& spt, double eMin, dou
 
     fSpectrumIntegral = fPrimaryEnergySpectrum.Integral(startEnergyBin, endEnergyBin);
 }
+
+void PrimaryGeneratorAction::SetAngularDistribution(const TH1D& h) { fPrimaryAngularSpectrum = h; }
 
 void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
     string expression = (string)str;
@@ -146,11 +150,10 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     );
 }
 
-//_____________________________________________________________________________
 G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRestGeant4Particle p) {
     string particle_name = (string)p.GetParticleName();
 
-    Double_t excited_energy = (double)p.GetExcitationLevel();  // in keV
+    auto excited_energy = (double)p.GetExcitationLevel();  // in keV
 
     Int_t charge = p.GetParticleCharge();
 

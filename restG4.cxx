@@ -10,7 +10,11 @@
 #include <TRestRun.h>
 
 #include <G4RunManager.hh>
+#ifdef WITHOUT_G4RunManagerFactory
+#include "G4MTRunManager.hh"
+#else
 #include <G4RunManagerFactory.hh>
+#endif
 #include <G4UIExecutive.hh>
 #include <G4UImanager.hh>
 #include <G4VisExecutive.hh>
@@ -109,14 +113,13 @@ int main(int argc, char** argv) {
     auto runManagerType =
         (commandLineParameters.serialMode ? G4RunManagerType::SerialOnly : G4RunManagerType::MTOnly);
     auto runManager = G4RunManagerFactory::CreateRunManager(runManagerType);
-#endif
     if (!commandLineParameters.serialMode) {
         spdlog::info("Initializing Geant4 MT Run Manager with {} threads", commandLineParameters.nThreads);
         runManager->SetNumberOfThreads(commandLineParameters.nThreads);
     } else {
         spdlog::info("Initializing Geant4 serial (single-threaded) Run Manager");
     }
-    // auto runManager = new G4RunManager();
+#endif
 
     runManager->SetUserInitialization(new DetectorConstruction);
     auto physicsList = new PhysicsList(GlobalManager::Instance()->GetRestGeant4PhysicsLists());
@@ -140,13 +143,11 @@ int main(int argc, char** argv) {
 
         ui = new G4UIExecutive(argc, argv);
 
-        if (visManager) {
-            spdlog::info("Running visualization macros");
-            CommandLineSetup::RunVisMacro();
-            if (ui->IsGUI()) CommandLineSetup::RunGUIMacro();
-            ui->SessionStart();
-            delete ui;
-        }
+        spdlog::info("Running visualization macros");
+        CommandLineSetup::RunVisMacro();
+        if (ui->IsGUI()) CommandLineSetup::RunGUIMacro();
+        ui->SessionStart();
+        delete ui;
     }
 
     // G4VSteppingVerbose::SetInstance(new SteppingVerbose);

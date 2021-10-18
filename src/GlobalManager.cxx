@@ -47,6 +47,10 @@ GlobalManager::~GlobalManager() {
     delete fRestGeant4Metadata;
     delete fRestGeant4PhysicsLists;
     delete fRestRun;
+
+    //
+    delete fPrimaryEnergyDistribution;
+    delete fPrimaryAngularDistribution;
 }
 
 void GlobalManager::InitializeFromConfigFile(const TString& rmlFile) {
@@ -102,13 +106,15 @@ void GlobalManager::InitializeRestGeant4Metadata(const TString& rmlFile) {
     SetSaveAllEventsFlag(fRestGeant4Metadata->GetSaveAllEvents());
 
     // Primary
-
     if (fRestGeant4Metadata->GetParticleSource(0)->GetEnergyDistType() == "TH1D") {
         TString fileFullPath = (TString)fRestGeant4Metadata->GetParticleSource(0)->GetSpectrumFilename();
-        TFile fileIn(fileFullPath);
+        TFile file(fileFullPath);
         TString spectrumName = fRestGeant4Metadata->GetParticleSource(0)->GetSpectrumName();
 
-        fPrimaryEnergyDistribution = (TH1D*)fileIn.Get(spectrumName);
+        auto primaryEnergyDistribution = (TH1D*)file.Get(spectrumName);
+        fPrimaryEnergyDistribution =
+            (TH1D*)
+                primaryEnergyDistribution->Clone();  // This MUST be static cast! not dynamic! (not sure why)
 
         if (!fPrimaryEnergyDistribution) {
             spdlog::error(
@@ -116,25 +122,34 @@ void GlobalManager::InitializeRestGeant4Metadata(const TString& rmlFile) {
                 "spectrum ({}) from file {}",
                 spectrumName, fileFullPath);
             exit(1);
-        }
+        } else {
+            fPrimaryEnergyDistribution->SetDirectory(nullptr);
 
-        fPrimaryEnergyDistributionMin = fRestGeant4Metadata->GetParticleSource(0)->GetMinEnergy();
-        if (fPrimaryEnergyDistributionMin < 0) {
-            fPrimaryEnergyDistributionMin = 0;
-        }
-        fPrimaryEnergyDistributionMax = fRestGeant4Metadata->GetParticleSource(0)->GetMaxEnergy();
-        if (fPrimaryEnergyDistributionMax < 0) {
-            fPrimaryEnergyDistributionMax = 0;
+            cout << "ENERGY DISTRIBUTION: " << fPrimaryEnergyDistribution->GetName() << " "
+                 << fPrimaryEnergyDistribution << endl;
+
+            fPrimaryEnergyDistributionMin = fRestGeant4Metadata->GetParticleSource(0)->GetMinEnergy();
+            if (fPrimaryEnergyDistributionMin < 0) {
+                fPrimaryEnergyDistributionMin = 0;
+            }
+            fPrimaryEnergyDistributionMax = fRestGeant4Metadata->GetParticleSource(0)->GetMaxEnergy();
+            if (fPrimaryEnergyDistributionMax < 0) {
+                fPrimaryEnergyDistributionMax = 0;
+            }
         }
     }
 
     if (fRestGeant4Metadata->GetParticleSource(0)->GetAngularDistType() == "TH1D") {
         TString fileFullPath = (TString)fRestGeant4Metadata->GetParticleSource(0)->GetAngularFilename();
 
-        TFile fileIn(fileFullPath);
+        TFile file(fileFullPath);
 
         TString spectrumName = fRestGeant4Metadata->GetParticleSource(0)->GetAngularName();
-        fPrimaryAngularDistribution = (TH1D*)fileIn.Get(spectrumName);
+
+        auto primaryAngularDistribution = (TH1D*)file.Get(spectrumName);
+        fPrimaryAngularDistribution =
+            (TH1D*)
+                primaryAngularDistribution->Clone();  // This MUST be static cast! not dynamic! (not sure why)
 
         if (!fPrimaryAngularDistribution) {
             spdlog::error(
@@ -142,6 +157,11 @@ void GlobalManager::InitializeRestGeant4Metadata(const TString& rmlFile) {
                 "spectrum ({}) from file {}",
                 spectrumName, fileFullPath);
             exit(1);
+        } else {
+            fPrimaryAngularDistribution->SetDirectory(nullptr);
+
+            cout << "ANGULAR DISTRIBUTION: " << fPrimaryAngularDistribution->GetName() << " "
+                 << fPrimaryAngularDistribution << endl;
         }
     }
 }

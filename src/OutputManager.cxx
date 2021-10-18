@@ -62,9 +62,10 @@ void OutputManager::FinishAndSubmitEvent() {
             "OutputManager::FinishAndSubmitEvent - Added valid event with ID {} and sensitive volume energy "
             "{}",
             fEvent->GetEventID(), fEvent->GetSensitiveVolumeEnergy());
-        fEvent->Print();
+        // fEvent->Print();
         GlobalManager::Instance()->InsertEvent(fEvent);
     }
+
     UpdateEvent();
 }
 

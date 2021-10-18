@@ -15,6 +15,7 @@
 #include <mutex>
 #include <queue>
 #include <string>
+#include <utility>
 #include <vector>
 
 class TTree;
@@ -34,8 +35,10 @@ class GlobalManager {
     void InitializeRestGeant4PhysicsLists(const TString&);
     void InitializeTrees();
 
-    inline void SetVolumeLookupTable(std::map<std::string, std::string> table) { fVolumeLookupTable = table; }
-    inline std::string GetVolumeFromLookupTable(std::string key) const {
+    inline void SetVolumeLookupTable(std::map<std::string, std::string> table) {
+        fVolumeLookupTable = std::move(table);
+    }
+    inline std::string GetVolumeFromLookupTable(const std::string& key) const {
         if (fVolumeLookupTable.count(key) > 0) {
             return fVolumeLookupTable.at(key);
         }

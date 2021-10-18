@@ -32,7 +32,7 @@ void ActionInitialization::Build() const {
     SetUserAction(new RunAction);
     SetUserAction(new EventAction);
     SetUserAction(new SteppingAction);
-    // SetUserAction(new StackingAction);
+    SetUserAction(new StackingAction);
     SetUserAction(new TrackingAction);
 
     // G4EventManager::GetEventManager()->SetNumberOfAdditionalWaitingStacks(1);  // optical stack

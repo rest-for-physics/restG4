@@ -37,6 +37,9 @@ class OutputManager {
     inline Float_t GetSensitiveVolumeEnergy() const { return fSensitiveEnergyTotal; }
     inline void AddSensitiveEnergy(double energy) { fEvent->AddSensitiveVolumeEnergy(energy); }
 
+    Int_t GetSubEventID() const { return fEvent->GetSubEventID(); }
+    void SetSubEventID(Int_t subEventID) { fEvent->SetSubEventID(subEventID); }
+
    private:
     inline OutputManager() = default;
     static thread_local OutputManager* pinstance_;
