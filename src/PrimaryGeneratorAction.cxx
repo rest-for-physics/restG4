@@ -264,8 +264,9 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
             }
         }
 
-        // A vector pointing to the origin (virtualSphere )
-        direction = -fParticleGun->GetParticlePosition().unit();
+        // Recovering the direction provided at angularDist
+        TVector3 dirROOT = restG4Metadata->GetParticleSource(n)->GetDirection();
+        direction.set(dirROOT.X(), dirROOT.Y(), dirROOT.Z());
 
         if (direction.x() == 0 && direction.y() == 0 && direction.z() == 0) {
             cout << "----------------------------------------------------------------"
@@ -325,16 +326,13 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
 
         G4ThreeVector referenceOrigin = direction;
 
-        // We rotate the origin direction by the angular distribution angle
+        // We generate the distribution angle (theta) using a rotation around the orthogonal vector
         G4ThreeVector orthoVector = direction.orthogonal();
         direction.rotate(angle, orthoVector);
 
-        // We rotate a random angle along the radial direction
+        // We rotate a full-2PI random angle along the original direction to generate a cone
         Double_t randomAngle = G4UniformRand() * 2 * M_PI;
         direction.rotate(randomAngle, referenceOrigin);
-
-        //       G4cout << "Angle  " << direction.angle( referenceOrigin ) << "
-        //       should be = to " << angle << G4endl;
 
     } else if (angular_dist_type == g4_metadata_parameters::angular_dist_types::FLUX) {
         TVector3 v = p.GetMomentumDirection();
