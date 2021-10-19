@@ -28,7 +28,6 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
 
    public:
     virtual void GeneratePrimaries(G4Event*);
-    G4ParticleGun* GetParticleGun() { return fParticleGun; };
 
     void SetEnergySpectrum(const TH1D& h, double eMin = 0, double eMax = 0);
     void SetGeneratorSpatialDensity(TString str);
@@ -36,13 +35,12 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     void SetAngularDistribution(const TH1D& h);
 
    private:
-    std::mutex fMutex;
+    std::unique_ptr<G4ParticleGun> fParticleGun;
 
     TRestGeant4Metadata* fRestGeant4Metadata;
 
     vector<TRestGeant4Particle> fTempParticles;
 
-    G4ParticleGun* fParticleGun;
     DetectorConstruction* fDetector;
     G4ParticleDefinition* fParticle = nullptr;
 

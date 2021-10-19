@@ -23,8 +23,8 @@ double GeneratorRndm() { return G4UniformRand(); }
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
     : G4VUserPrimaryGeneratorAction(),
-      fRestGeant4Metadata(GlobalManager::Instance()->GetRestGeant4Metadata()),
-      fParticleGun(nullptr) {
+      fParticleGun(make_unique<G4ParticleGun>()),
+      fRestGeant4Metadata(GlobalManager::Instance()->GetRestGeant4Metadata()) {
     spdlog::info("PrimaryGeneratorAction::PrimaryGeneratorAction");
 
     TH1D* primaryEnergyDistribution = GlobalManager::Instance()->GetPrimaryEnergyDistribution();
@@ -46,7 +46,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
     fDetector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
     G4int n_particle = 1;
-    fParticleGun = new G4ParticleGun(n_particle);
+    fParticleGun->SetNumberOfParticles(n_particle);
 
     fGeneratorSpatialDensityFunction = nullptr;
 
@@ -55,7 +55,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
     }
 }
 
-PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
+PrimaryGeneratorAction::~PrimaryGeneratorAction() = default;
 
 void PrimaryGeneratorAction::SetEnergySpectrum(const TH1D& h, double eMin, double eMax) {
     TString xLabel = h.GetXaxis()->GetTitle();
