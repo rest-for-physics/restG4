@@ -199,7 +199,8 @@ size_t GlobalManager::InsertEvent(std::unique_ptr<TRestGeant4DataEvent>& event) 
 void GlobalManager::InitializeTrees() {
     // Event Tree
     fEventTree = fRestRun->GetEventTree();
-    fEventTree->Branch("EventBranch", &fEvent);
+    // fEventTree->Branch("EventBranch", &fEvent);
+    fRestRun->AddEventBranch(&fEvent);
 
     fAnalysisTree = fRestRun->GetAnalysisTree();
 }

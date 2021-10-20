@@ -76,15 +76,14 @@ void TRestGeant4DataSteps::InsertStep(const G4Step* step) {
     const auto volumeID = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
     const auto& volumeName = volumeNamePre;
 
-    fNHits += 1;
-
     fStepID.emplace_back(track->GetCurrentStepNumber());
-    fPosition.emplace_back(track->GetPosition().x() / CLHEP::mm, track->GetPosition().y() / CLHEP::mm,
-                           track->GetPosition().z() / CLHEP::mm);
+
+    fNHits = fStepID.size();
+
     // Compatibility with TRestHits
-    fX.emplace_back(fPosition.back().x());
-    fY.emplace_back(fPosition.back().y());
-    fZ.emplace_back(fPosition.back().z());
+    fX.emplace_back(track->GetPosition().x() / CLHEP::mm);
+    fY.emplace_back(track->GetPosition().y() / CLHEP::mm);
+    fZ.emplace_back(track->GetPosition().z() / CLHEP::mm);
 
     fMomentumDirection.emplace_back(track->GetMomentum().x() / CLHEP::keV,
                                     track->GetMomentum().y() / CLHEP::keV,
@@ -113,6 +112,6 @@ void TRestGeant4DataSteps::InsertStep(const G4Step* step) {
         "(mm) ({:03.2f}, {:03.2f}, {:03.2f})",                                     //
         fStepID.back(), fProcessName.back(), energyWithUnits, fVolumeName.back(),  //
         (fVolumeNamePost.back().IsNull() ? "" : "->" + fVolumeNamePost.back()),    //
-        fPosition.back().x(), fPosition.back().y(), fPosition.back().z()           //
+        fX.back(), fY.back(), fZ.back()                                            //
     );
 }
