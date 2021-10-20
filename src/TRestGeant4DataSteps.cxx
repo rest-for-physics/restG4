@@ -76,16 +76,25 @@ void TRestGeant4DataSteps::InsertStep(const G4Step* step) {
     const auto volumeID = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
     const auto& volumeName = volumeNamePre;
 
-    fN += 1;
+    fNHits += 1;
 
     fStepID.emplace_back(track->GetCurrentStepNumber());
     fPosition.emplace_back(track->GetPosition().x() / CLHEP::mm, track->GetPosition().y() / CLHEP::mm,
                            track->GetPosition().z() / CLHEP::mm);
+    // Compatibility with TRestHits
+    fX.emplace_back(fPosition.back().x());
+    fY.emplace_back(fPosition.back().y());
+    fZ.emplace_back(fPosition.back().z());
+
     fMomentumDirection.emplace_back(track->GetMomentum().x() / CLHEP::keV,
                                     track->GetMomentum().y() / CLHEP::keV,
                                     track->GetMomentum().z() / CLHEP::keV);
-    fTimeGlobal.emplace_back(track->GetGlobalTime() / CLHEP::ns);
+    fTimeGlobal.emplace_back(track->GetGlobalTime() / CLHEP::us);
+    fT.emplace_back(fTimeGlobal.back());
+
     fEnergy.emplace_back(step->GetTotalEnergyDeposit() / CLHEP::keV);
+    fTotalEnergy += fEnergy.back();
+
     fKineticEnergy.emplace_back(step->GetPreStepPoint()->GetKineticEnergy() / CLHEP::keV);
     fKineticEnergy.emplace_back(step->GetPostStepPoint()->GetKineticEnergy() / CLHEP::keV);
     fLength.emplace_back(step->GetStepLength() / CLHEP::mm);

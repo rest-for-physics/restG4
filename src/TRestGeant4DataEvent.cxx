@@ -37,20 +37,24 @@ TRestGeant4DataEvent::TRestGeant4DataEvent(const G4Event* event) : TRestGeant4Da
     fEventID = event->GetEventID();
     fSubEventID = 0;
 
-    // this only words when there is a single particle primary vertex!
-    auto primaryVertex = event->GetPrimaryVertex();
+    for (int i = 0; i < event->GetNumberOfPrimaryVertex(); i++) {
+        auto primaryVertex = event->GetPrimaryVertex();
 
-    if (primaryVertex->GetNumberOfParticle() > 1) {
-        cout << "multiple primary particles detected, but only recording first particle!" << endl;
+        if (primaryVertex->GetNumberOfParticle() > 1) {
+            cout << "multiple primary particles detected, but only recording first particle!" << endl;
+            exit(1);
+        }
+
+        const auto& position = primaryVertex->GetPosition();
+        fPrimaryPosition.emplace_back(position.x() / CLHEP::mm, position.y() / CLHEP::mm,
+                                      position.z() / CLHEP::mm);
+        auto primaryParticle = primaryVertex->GetPrimary();
+        fPrimaryParticleName.emplace_back(primaryParticle->GetParticleDefinition()->GetParticleName());
+        fPrimaryEnergy.emplace_back(primaryParticle->GetKineticEnergy() / CLHEP::keV);
+        const auto& momentum = primaryParticle->GetMomentumDirection();
+        fPrimaryDirection.emplace_back(momentum.x() / CLHEP::mm, momentum.y() / CLHEP::mm,
+                                       momentum.z() / CLHEP::mm);
     }
-
-    const auto& position = primaryVertex->GetPosition();
-    fPrimaryPosition = TVector3(position.x() / CLHEP::mm, position.y() / CLHEP::mm, position.z() / CLHEP::mm);
-    auto primaryParticle = primaryVertex->GetPrimary();
-    fPrimaryParticleName = primaryParticle->GetParticleDefinition()->GetParticleName();
-    fPrimaryEnergy = primaryParticle->GetKineticEnergy() / CLHEP::keV;
-    const auto& momentum = primaryParticle->GetMomentumDirection();
-    fPrimaryMomentum = TVector3(momentum.x() / CLHEP::mm, momentum.y() / CLHEP::mm, momentum.z() / CLHEP::mm);
 }
 
 bool IsValid(const G4Track* track) {
@@ -92,7 +96,7 @@ void TRestGeant4DataEvent::InsertTrack(const G4Track* track) {
         fSubEventPrimaryPosition =
             TVector3(position.x() / CLHEP::mm, position.y() / CLHEP::mm, position.z() / CLHEP::mm);
         const auto& momentum = track->GetMomentumDirection();
-        fSubEventPrimaryMomentum =
+        fSubEventPrimaryDirection =
             TVector3(momentum.x() / CLHEP::mm, momentum.y() / CLHEP::mm, momentum.z() / CLHEP::mm);
     }
     fTracks.emplace_back(track);

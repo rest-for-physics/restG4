@@ -56,7 +56,7 @@ TRestGeant4DataTrack::TRestGeant4DataTrack(const G4Track* track) {
         (fCreatorProcess.IsNull() ? "IS-PRIMARY-PARTICLE" : fCreatorProcess), energyWithUnits);
 }
 
-void TRestGeant4DataTrack::InsertStep(const G4Step* step) { fSteps.InsertStep(step); }
+void TRestGeant4DataTrack::InsertStep(const G4Step* step) { fHits.InsertStep(step); }
 
 void TRestGeant4DataTrack::UpdateTrack(const G4Track* track) {
     if (track->GetTrackID() != fTrackID) {
