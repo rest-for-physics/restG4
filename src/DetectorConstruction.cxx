@@ -177,6 +177,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         }
     }
 
+    // Fill metadata geometry info
+    fRestGeant4Metadata->SetGeometricalInformation(fWorld);
+
     return fWorld;
 }
 
@@ -248,6 +251,30 @@ void DetectorConstruction::ConstructSDandField() {
             logicalVolume->SetSensitiveDetector(sensitiveDetector);
         }
     }
+}
+
+void TRestGeant4Metadata::SetGeometricalInformation(G4VPhysicalVolume* world) {
+    spdlog::info("DetectorConstruction::PrintGeometryInfo - Begin");
+    const int n = int(world->GetLogicalVolume()->GetNoDaughters());
+    for (int i = 0; i < n; i++) {
+        G4VPhysicalVolume* volume = world->GetLogicalVolume()->GetDaughter(i);
+        auto namePhysical = volume->GetName();
+        auto nameLogical = volume->GetLogicalVolume()->GetName();
+        auto nameMaterial = volume->GetLogicalVolume()->GetMaterial()->GetName();
+        auto position = volume->GetTranslation();
+        auto physicalLookupAlias = GlobalManager::Instance()->GetVolumeFromLookupTable(namePhysical);
+        spdlog::info(
+            "---> {} - physical: {} ({})- logical: {} - material: {} - position: ({:03.2f}, {:03.2f}, "
+            "{:03.2f})",
+            i, namePhysical, physicalLookupAlias, nameLogical, nameMaterial, position.x(), position.y(),
+            position.z());
+
+        fGeometryVolumes.push_back(namePhysical);
+        fLogicalVolumesMap[namePhysical] = nameLogical;
+        fLogicalVolumesMaterialMap[nameLogical] = nameMaterial;
+        fPhysicalVolumesPosition[namePhysical] = {position.x(), position.y(), position.z()};
+    }
+    spdlog::info("DetectorConstruction::PrintGeometryInfo - End");
 }
 
 void DetectorConstruction::PrintGeometryInfo() {

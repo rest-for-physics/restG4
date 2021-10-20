@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
 
         Double_t maxEnergy = restG4Metadata->GetBiasingVolume(i).GetMaxEnergy();
         Double_t minEnergy = restG4Metadata->GetBiasingVolume(i).GetMinEnergy();
-        Int_t nbins = (Int_t)(maxEnergy - minEnergy);
+        auto nbins = (Int_t)(maxEnergy - minEnergy);
 
         Double_t biasSize = restG4Metadata->GetBiasingVolume(i).GetBiasingVolumeSize();
         TString biasType = restG4Metadata->GetBiasingVolume(i).GetBiasingVolumeType();
