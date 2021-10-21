@@ -33,15 +33,6 @@
 
 using namespace std;
 
-// We define rest objects that will be used in Geant4
-// TRestRun* restRun;
-TRestGeant4Track* restTrack;
-TRestGeant4Event *restG4Event, *subRestG4Event;
-// TRestGeant4Metadata* restG4Metadata;
-// TRestGeant4PhysicsLists* restPhysList;
-
-Bool_t saveAllEvents;
-
 const Int_t maxBiasingVolumes = 50;
 Int_t biasing = 0;
 
@@ -73,8 +64,6 @@ int main(int argc, char** argv) {
     // This call will generate a new single file GDML output
     gdml->Load((string)GlobalManager::Instance()->GetRestGeant4Metadata()->Get_GDML_Filename());
 
-    restTrack = new TRestGeant4Track();
-
     biasing = restG4Metadata->GetNumberOfBiasingVolumes();
     for (int i = 0; i < biasing; i++) {
         TString spctName = "Bias_Spectrum_" + TString(Form("%d", i));
@@ -88,7 +77,7 @@ int main(int argc, char** argv) {
         Double_t biasSize = restG4Metadata->GetBiasingVolume(i).GetBiasingVolumeSize();
         TString biasType = restG4Metadata->GetBiasingVolume(i).GetBiasingVolumeType();
 
-        cout << "Initializing biasing histogram : " << spctName << endl;
+        G4cout << "Initializing biasing histogram : " << spctName << endl;
         biasingSpectrum[i] = new TH1D(spctName, "Biasing gamma spectrum", nbins, minEnergy, maxEnergy);
         angularDistribution[i] = new TH1D(angDistName, "Biasing angular distribution", 150, 0, M_PI / 2);
 
@@ -179,12 +168,12 @@ int main(int argc, char** argv) {
 
         /*
         if (biasing) {
-            cout << "Biasing id: " << biasing - 1 << endl;
+            G4cout << "Biasing id: " << biasing - 1 << endl;
             step->GetBiasingVolume().PrintBiasingVolume();
-            cout << "Number of events that reached the biasing volume : "
+            G4cout << "Number of events that reached the biasing volume : "
                  << (Int_t)(biasingSpectrum[biasing - 1]->Integral()) << endl;
-            cout << endl;
-            cout << endl;
+            G4cout << endl;
+            G4cout << endl;
             biasing--;
         }
         while (biasing) {
@@ -210,7 +199,7 @@ int main(int argc, char** argv) {
 
             // Defining biasing the number of event to be re-launched
             Double_t biasingFactor = restG4Metadata->GetBiasingVolume(biasing - 1).GetBiasingFactor();
-            cout << "Biasing id: " << biasing - 1 << ", Events to be launched : "
+            G4cout << "Biasing id: " << biasing - 1 << ", Events to be launched : "
                  << (Int_t)(biasingSpectrum[biasing]->Integral() * biasingFactor) << endl;
 
             sprintf(tmp, "/run/beamOn %d", (Int_t)(biasingSpectrum[biasing]->Integral() * biasingFactor));
@@ -233,10 +222,10 @@ int main(int argc, char** argv) {
             }
             ui->ApplyCommand(command);
             step->GetBiasingVolume().PrintBiasingVolume();
-            cout << "Number of events that reached the biasing volume : "
+            G4cout << "Number of events that reached the biasing volume : "
                  << (Int_t)(biasingSpectrum[biasing - 1]->Integral()) << endl;
-            cout << endl;
-            cout << endl;
+            G4cout << endl;
+            G4cout << endl;
             biasing--;
         }
         */
@@ -250,7 +239,7 @@ int main(int argc, char** argv) {
     systime = time(nullptr);
     restRun->SetEndTimeStamp((Double_t)systime);
     TString Filename = restRun->GetOutputFileName();
-    cout << "CLOSING: " << Filename << endl;
+    G4cout << "CLOSING: " << Filename << endl;
     restRun->UpdateOutputFile();
     restRun->CloseFile();
     restRun->PrintMetadata();
@@ -293,10 +282,10 @@ int main(int argc, char** argv) {
         printf("Writing geometry ... \n");
     }
 
-    cout << "============== Generated file: " << Filename << " ==============" << endl;
+    G4cout << "============== Generated file: " << Filename << " ==============" << endl;
     auto end_time = chrono::steady_clock::now();
-    cout << "Elapsed time: " << chrono::duration_cast<chrono::seconds>(end_time - start_time).count()
-         << " seconds" << endl;
+    G4cout << "Elapsed time: " << chrono::duration_cast<chrono::seconds>(end_time - start_time).count()
+           << " seconds" << endl;
 
     return 0;
 }
