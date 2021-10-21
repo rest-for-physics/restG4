@@ -188,7 +188,7 @@ void GlobalManager::InitializeRestGeant4PhysicsLists(const TString& rmlFile) {
     fRestGeant4PhysicsLists = new TRestGeant4PhysicsLists(const_cast<char*>(rmlFile.Data()));
 }
 
-size_t GlobalManager::InsertEvent(std::unique_ptr<TRestGeant4DataEvent>& event) {
+size_t GlobalManager::InsertEvent(std::unique_ptr<TRestGeant4Event>& event) {
     fEventContainerMutex.lock();
     fEventContainer.push(std::move(event));
     auto size = fEventContainer.size();

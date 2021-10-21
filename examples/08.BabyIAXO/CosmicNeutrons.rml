@@ -23,10 +23,10 @@
         <parameter name="gdml_file" value="/home/lobis/rest/examples/08.BabyIAXO/geometry/BabyIAXO-NoVetos.gdml"/>
         <parameter name="subEventTimeDelay" value="100" units="us"/>
 
-        <parameter name="seed" value="13217"/>
+        <parameter name="seed" value="111"/>
 
         <!-- The number of events to be simulated is now defined in TRestGeant4Metadata -->
-        <parameter name="Nevents" value="10000"/>
+        <parameter name="Nevents" value="3000"/>
         <parameter name="saveAllEvents" value="false"/>
 
         <generator type="surface" shape="wall" position="(0,0.5,0)m" size="(2.5,2.5,0)m" rotationAxis="(1,0,0)"

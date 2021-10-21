@@ -3,9 +3,9 @@
 //
 
 #include <SteppingAction.h>
-#include <TRestGeant4DataEvent.h>
-#include <TRestGeant4DataSteps.h>
-#include <TRestGeant4DataTrack.h>
+#include <TRestGeant4Event.h>
+#include <TRestGeant4Hits.h>
+#include <TRestGeant4Track.h>
 #include <TRestRun.h>
 #include <spdlog/spdlog.h>
 
@@ -30,7 +30,7 @@ using namespace std;
 
 // Constructors
 
-TRestGeant4DataEvent::TRestGeant4DataEvent(const G4Event* event) : TRestGeant4DataEvent() {
+TRestGeant4Event::TRestGeant4Event(const G4Event* event) : TRestGeant4Event() {
     fRunOrigin = GlobalManager::Instance()->GetRestRun()->GetRunNumber();
 
     fRunID = G4RunManager::GetRunManager()->GetCurrentRun()->GetRunID();
@@ -70,20 +70,20 @@ bool IsValid(const G4Track* track) {
 
 bool IsValid(const G4Step* step) { return IsValid(step->GetTrack()); }
 
-void TRestGeant4DataEvent::InsertStep(const G4Step* step) {
+void TRestGeant4Event::InsertStep(const G4Step* step) {
     if (!IsValid(step)) {
         return;
     }
     if (step->GetTrack()->GetCurrentStepNumber() == 0) {
         // initial step (from SteppingVerbose) is generated before TrackingAction can insert the first track
-        fInitialStep = TRestGeant4DataSteps();
+        fInitialStep = TRestGeant4Hits();
         fInitialStep.InsertStep(step);
     } else {
         fTracks.back().InsertStep(step);
     }
 }
 
-void TRestGeant4DataEvent::InsertTrack(const G4Track* track) {
+void TRestGeant4Event::InsertTrack(const G4Track* track) {
     if (!IsValid(track)) {
         return;
     }
@@ -100,14 +100,14 @@ void TRestGeant4DataEvent::InsertTrack(const G4Track* track) {
             TVector3(momentum.x() / CLHEP::mm, momentum.y() / CLHEP::mm, momentum.z() / CLHEP::mm);
     }
     fTracks.emplace_back(track);
-    if (fInitialStep.GetNumberOfSteps() != 1) {
+    if (fInitialStep.GetNumberOfHits() != 1) {
         spdlog::error("fInitialStep does not have exactly one step!");
         exit(1);
     }
-    fTracks.back().UpdateSteps(fInitialStep);
+    fTracks.back().UpdateHits(fInitialStep);
 }
 
-void TRestGeant4DataEvent::UpdateTrack(const G4Track* track) {
+void TRestGeant4Event::UpdateTrack(const G4Track* track) {
     if (!IsValid(track)) {
         return;
     }

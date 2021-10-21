@@ -4,9 +4,9 @@
 
 #include "OutputManager.h"
 
-#include <TRestGeant4DataEvent.h>
-#include <TRestGeant4DataSteps.h>
-#include <TRestGeant4DataTrack.h>
+#include <TRestGeant4Event.h>
+#include <TRestGeant4Hits.h>
+#include <TRestGeant4Track.h>
 #include <spdlog/spdlog.h>
 
 #include <G4RunManager.hh>
@@ -36,14 +36,14 @@ OutputManager* OutputManager::Instance() {
 
 void OutputManager::UpdateEvent() {
     auto event = G4EventManager::GetEventManager()->GetConstCurrentEvent();
-    fEvent = make_unique<TRestGeant4DataEvent>(event);
+    fEvent = make_unique<TRestGeant4Event>(event);
 }
 
 void OutputManager::FinishAndSubmitEvent() {
     spdlog::debug("OutputManager::FinishAndSubmitEvent");
 
     spdlog::debug("OutputManager::FinishAndSubmitEvent ---> Finished event ID {} with {} tracks and {} steps",
-                  fEvent->GetEventID(), fEvent->GetNumberOfTracks(), fEvent->GetNumberOfSteps());
+                  fEvent->GetEventID(), fEvent->GetNumberOfTracks(), fEvent->GetNumberOfHits());
 
     if (IsEmptyEvent()) {
         return;

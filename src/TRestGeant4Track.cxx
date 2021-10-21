@@ -3,9 +3,9 @@
 //
 
 #include <SteppingAction.h>
-#include <TRestGeant4DataEvent.h>
-#include <TRestGeant4DataSteps.h>
-#include <TRestGeant4DataTrack.h>
+#include <TRestGeant4Event.h>
+#include <TRestGeant4Hits.h>
+#include <TRestGeant4Track.h>
 #include <spdlog/spdlog.h>
 
 #include <G4Event.hh>
@@ -27,7 +27,7 @@
 
 using namespace std;
 
-TRestGeant4DataTrack::TRestGeant4DataTrack(const G4Track* track) {
+TRestGeant4Track::TRestGeant4Track(const G4Track* track) {
     fTrackID = track->GetTrackID();
     fParentID = track->GetParentID();
 
@@ -40,13 +40,14 @@ TRestGeant4DataTrack::TRestGeant4DataTrack(const G4Track* track) {
     auto creatorProcess = track->GetCreatorProcess();
     if (creatorProcess) {
         fCreatorProcess = creatorProcess->GetProcessName();
+    } else {
+        fCreatorProcess = "IS-PRIMARY-PARTICLE";
     }
 
     fInitialKineticEnergy = track->GetKineticEnergy() / CLHEP::keV;
 
     fWeight = track->GetWeight();
 
-    //
     G4String energyWithUnits = G4BestUnit(fInitialKineticEnergy * CLHEP::keV, "Energy");
 
     spdlog::debug(
@@ -56,9 +57,9 @@ TRestGeant4DataTrack::TRestGeant4DataTrack(const G4Track* track) {
         (fCreatorProcess.IsNull() ? "IS-PRIMARY-PARTICLE" : fCreatorProcess), energyWithUnits);
 }
 
-void TRestGeant4DataTrack::InsertStep(const G4Step* step) { fHits.InsertStep(step); }
+void TRestGeant4Track::InsertStep(const G4Step* step) { fHits.InsertStep(step); }
 
-void TRestGeant4DataTrack::UpdateTrack(const G4Track* track) {
+void TRestGeant4Track::UpdateTrack(const G4Track* track) {
     if (track->GetTrackID() != fTrackID) {
         spdlog::error("DataModelTrack::UpdateTrack - mismatch of trackID!");
         exit(1);
@@ -68,5 +69,9 @@ void TRestGeant4DataTrack::UpdateTrack(const G4Track* track) {
 
     auto steppingAction = (SteppingAction*)G4EventManager::GetEventManager()->GetUserSteppingAction();
     auto secondaries = steppingAction->GetfSecondary();
-    fNumberOfSecondaries = (int)secondaries->size();
+
+    fSecondaryTrackIDs = {};
+    for (const auto& secondaryTrack : *secondaries) {
+        fSecondaryTrackIDs.push_back(secondaryTrack->GetTrackID());
+    }
 }

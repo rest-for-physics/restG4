@@ -6,7 +6,7 @@
 #define REST_OUTPUTMANAGER_H
 
 #include <TFile.h>
-#include <TRestGeant4DataEvent.h>
+#include <TRestGeant4Event.h>
 #include <TString.h>
 #include <TTree.h>
 
@@ -44,7 +44,7 @@ class OutputManager {
     inline OutputManager() = default;
     static thread_local OutputManager* pinstance_;
 
-    std::unique_ptr<TRestGeant4DataEvent> fEvent{};
+    std::unique_ptr<TRestGeant4Event> fEvent{};
 
     double fSensitiveEnergyTotal{};
 

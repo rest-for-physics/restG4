@@ -3,9 +3,9 @@
 //
 
 #include <SteppingAction.h>
-#include <TRestGeant4DataEvent.h>
-#include <TRestGeant4DataSteps.h>
-#include <TRestGeant4DataTrack.h>
+#include <TRestGeant4Event.h>
+#include <TRestGeant4Hits.h>
+#include <TRestGeant4Track.h>
 #include <spdlog/spdlog.h>
 
 #include <G4Event.hh>
@@ -27,7 +27,7 @@
 
 using namespace std;
 
-G4String GetVolumeName(G4VPhysicalVolume* volume) {
+G4String GetFinalVolumeName(G4VPhysicalVolume* volume) {
     if (!volume) {
         const G4String invalidVolumeName = "?";
         return invalidVolumeName;
@@ -42,7 +42,7 @@ G4String GetVolumeName(G4VPhysicalVolume* volume) {
     return defaultName;
 }
 
-void TRestGeant4DataSteps::InsertStep(const G4Step* step) {
+void TRestGeant4Hits::InsertStep(const G4Step* step) {
     const G4Track* track = step->GetTrack();
 
     const auto process = step->GetPostStepPoint()->GetProcessDefinedStep();
@@ -66,9 +66,9 @@ void TRestGeant4DataSteps::InsertStep(const G4Step* step) {
         }
     }
 
-    const auto volumeNamePre = GetVolumeName(step->GetPreStepPoint()->GetPhysicalVolume());
+    const auto volumeNamePre = GetFinalVolumeName(step->GetPreStepPoint()->GetPhysicalVolume());
     auto volumeNamePost = (step->GetPostStepPoint()->GetPhysicalVolume()
-                               ? GetVolumeName(step->GetPostStepPoint()->GetPhysicalVolume())
+                               ? GetFinalVolumeName(step->GetPostStepPoint()->GetPhysicalVolume())
                                : "?");
     if (volumeNamePre == volumeNamePost) {
         volumeNamePost = "";
@@ -76,9 +76,9 @@ void TRestGeant4DataSteps::InsertStep(const G4Step* step) {
     const auto volumeID = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
     const auto& volumeName = volumeNamePre;
 
-    fStepID.emplace_back(track->GetCurrentStepNumber());
+    fID.emplace_back(track->GetCurrentStepNumber());
 
-    fNHits = fStepID.size();
+    fNHits = fID.size();
 
     // Compatibility with TRestHits
     fX.emplace_back(track->GetPosition().x() / CLHEP::mm);
@@ -88,8 +88,8 @@ void TRestGeant4DataSteps::InsertStep(const G4Step* step) {
     fMomentumDirection.emplace_back(track->GetMomentum().x() / CLHEP::keV,
                                     track->GetMomentum().y() / CLHEP::keV,
                                     track->GetMomentum().z() / CLHEP::keV);
-    fTimeGlobal.emplace_back(track->GetGlobalTime() / CLHEP::us);
-    fT.emplace_back(fTimeGlobal.back());
+
+    fT.emplace_back(track->GetGlobalTime() / CLHEP::us);
 
     fEnergy.emplace_back(step->GetTotalEnergyDeposit() / CLHEP::keV);
     fTotalEnergy += fEnergy.back();
@@ -109,9 +109,9 @@ void TRestGeant4DataSteps::InsertStep(const G4Step* step) {
 
     spdlog::debug(
         "DataModelSteps::InsertStep - Step ID {} - process {} - energy deposited {} - volume {}{} -position "
-        "(mm) ({:03.2f}, {:03.2f}, {:03.2f})",                                     //
-        fStepID.back(), fProcessName.back(), energyWithUnits, fVolumeName.back(),  //
-        (fVolumeNamePost.back().IsNull() ? "" : "->" + fVolumeNamePost.back()),    //
-        fX.back(), fY.back(), fZ.back()                                            //
+        "(mm) ({:03.2f}, {:03.2f}, {:03.2f})",                                   //
+        fID.back(), fProcessName.back(), energyWithUnits, fVolumeName.back(),    //
+        (fVolumeNamePost.back().IsNull() ? "" : "->" + fVolumeNamePost.back()),  //
+        fX.back(), fY.back(), fZ.back()                                          //
     );
 }
