@@ -29,8 +29,8 @@ DetectorConstruction::DetectorConstruction()
 DetectorConstruction::~DetectorConstruction() { delete parser; }
 
 G4VPhysicalVolume* DetectorConstruction::Construct() {
-    cout << "Isotope table " << endl;
-    cout << *(G4Isotope::GetIsotopeTable()) << endl;
+    G4cout << "Isotope table " << endl;
+    G4cout << *(G4Isotope::GetIsotopeTable()) << endl;
 
     G4cout << "Producing geometry" << G4endl;
 
@@ -84,21 +84,21 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         G4cout << "Sensitive volume temperature: " << mat->GetTemperature() << G4endl;
         G4cout << "Sensitive volume density: " << mat->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
     } else {
-        cout << "ERROR : Logical volume for sensitive \"" << SensVol << "\" not found!" << endl;
+        G4cout << "ERROR : Logical volume for sensitive \"" << SensVol << "\" not found!" << endl;
     }
 
     // Getting generation volume
     string GenVol = (string)fRestGeant4Metadata->GetGeneratedFrom();
-    cout << "Generated from volume: " << GenVol << endl;
+    G4cout << "Generated from volume: " << GenVol << endl;
     string type = (string)fRestGeant4Metadata->GetGeneratorType();
-    cout << "Generator type: " << type << endl;
+    G4cout << "Generator type: " << type << endl;
 
     // TODO if we do not find the volume given in the config inside the geometry
     // we should RETURN error
     if (type == "volume" && GenVol != "Not defined") {
         G4VPhysicalVolume* pVol = GetPhysicalVolume(GenVol);
         if (pVol == nullptr) {
-            cout << "ERROR : The generator volume was not found in the geometry" << endl;
+            G4cout << "ERROR : The generator volume was not found in the geometry" << endl;
             exit(1);
             return fWorld;
         }
@@ -129,7 +129,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         boundBox_yMin = 1.e30;
         boundBox_zMin = 1.e30;
         if (type == "volume") {
-            cout << "Optimizing REST volume generation (Please wait. This might take "
+            G4cout << "Optimizing REST volume generation (Please wait. This might take "
                     "few minutes depending on geometry complexity) "
                  << flush;
 
@@ -160,11 +160,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         TString actVolName = fRestGeant4Metadata->GetActiveVolumeName(id);
         G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)actVolName);
 
-        cout << "Activating volume : " << actVolName << endl;
+        G4cout << "Activating volume : " << actVolName << endl;
         // restG4Event->AddActiveVolume((string)actVolName);
 
         if (!pVol) {
-            cout << "DetectorConstruction. Volume " << actVolName << " is not defined in the geometry"
+            G4cout << "DetectorConstruction. Volume " << actVolName << " is not defined in the geometry"
                  << endl;
             // exit(1); TODO FIX THIS FOR ASSEMBLY
         } else {
@@ -212,7 +212,7 @@ void DetectorConstruction::ConstructSDandField() {
                 G4LogicalVolumeStore::GetInstance()->GetVolume(fSensitiveLogicalVolumeName);
             if (!logicalVolume) {
                 // PrintGeometryInfo();
-                cout
+                G4cout
                     << "Trying to attach a sensitive detector to logical volume '{}', but this volume is not "
                        "found in store."
                     << fSensitiveLogicalVolumeName << endl;
@@ -240,7 +240,7 @@ void DetectorConstruction::ConstructSDandField() {
                 G4PhysicalVolumeStore::GetInstance()->GetVolume(fSensitivePhysicalVolumeName);
             if (!physicalVolume) {
                 // PrintGeometryInfo();
-                cout << "Trying to attach a sensitive detector to the logical volume of physical volume '{}'"
+                G4cout << "Trying to attach a sensitive detector to the logical volume of physical volume '{}'"
                         ", but this physical volume is not found in store."
                      << fSensitivePhysicalVolumeName << endl;
                 exit(1);
@@ -318,7 +318,7 @@ XMLNodePointer_t FindVolumeOrAssemblyByName(TXMLEngine xml, XMLNodePointer_t nod
             while (attr) {
                 if (TString(xml.GetAttrName(attr)).EqualTo("name")) {
                     TString volumeName = xml.GetAttrValue(attr);
-                    cout << volumeName << endl;
+                    G4cout << volumeName << endl;
                 }
                 attr = xml.GetNextAttr(attr);
             }
@@ -344,14 +344,14 @@ TString GetNodeAttribute(TXMLEngine xml, XMLNodePointer_t node, TString attribut
 void AddVolumesRecursively(vector<TString>* container, vector<TString> children,
                            map<TString, TString>& nameTable, map<TString, vector<TString>>& childrenTable,
                            const TString& name = "") {
-    cout << "called AddVolumesRecursively with name: " << name << endl;
+    G4cout << "called AddVolumesRecursively with name: " << name << endl;
     for (const auto& child : children) {
-        cout << "\t" << child << endl;
+        G4cout << "\t" << child << endl;
     }
 
     if (children.size() == 0) {
         container->push_back(name);
-        cout << "ADDED: " << name << endl;
+        G4cout << "ADDED: " << name << endl;
         return;
     }
     for (const auto& childName : children) {

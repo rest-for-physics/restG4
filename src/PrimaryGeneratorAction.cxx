@@ -110,7 +110,7 @@ void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     // return;
     if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug) {
-        cout << "DEBUG: Primary generation" << endl;
+        G4cout << "DEBUG: Primary generation" << endl;
     }
 
     for (int i = 0; i < fRestGeant4Metadata->GetNumberOfSources(); i++) {
@@ -158,9 +158,9 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
     Int_t charge = p.GetParticleCharge();
 
     if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug) {
-        cout << "DEBUG: Particle name: " << particle_name << endl;
-        // cout << "DEBUG: Particle charge: " << charge << endl;
-        cout << "DEBUG: Particle excited energy: " << excited_energy << " keV" << endl;
+        G4cout << "DEBUG: Particle name: " << particle_name << endl;
+        // G4cout << "DEBUG: Particle charge: " << charge << endl;
+        G4cout << "DEBUG: Particle excited energy: " << excited_energy << " keV" << endl;
     }
 
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
@@ -180,7 +180,7 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
         // }
 
         if (!fParticle) {
-            cout << "Particle definition : " << particle_name << " not found!" << endl;
+            G4cout << "Particle definition : " << particle_name << " not found!" << endl;
             exit(1);
         }
     }
@@ -200,7 +200,7 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
     g4_metadata_parameters::angular_dist_types angular_dist_type;
 
     if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug) {
-        cout << "DEBUG: Angular distribution: " << angular_dist_type_name << endl;
+        G4cout << "DEBUG: Angular distribution: " << angular_dist_type_name << endl;
     }
     // we first check if it is a valid parameter
     if (g4_metadata_parameters::angular_dist_types_map.count(angular_dist_type_name)) {
@@ -208,11 +208,11 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
     } else {
         // if we get here it means the parameter is not valid, we can either assign a default value or stop
         // execution default value
-        cout << "Invalid angular distribution (" + angular_dist_type_name + ") valid values are: ";
+        G4cout << "Invalid angular distribution (" + angular_dist_type_name + ") valid values are: ";
         for (const auto& pair : g4_metadata_parameters::angular_dist_types_map) {
-            cout << pair.first << ", ";
+            G4cout << pair.first << ", ";
         }
-        cout << std::endl;
+        G4cout << std::endl;
         throw "Invalid angular distribution";
     }
     // generator type
@@ -224,11 +224,11 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
     } else {
         // if we get here it means the parameter is not valid, we can either assign a default value or stop
         // execution default value
-        cout << "Invalid generator type (" + generator_type_name + ") valid values are: ";
+        G4cout << "Invalid generator type (" + generator_type_name + ") valid values are: ";
         for (const auto& pair : g4_metadata_parameters::generator_types_map) {
-            cout << pair.first << ", ";
+            G4cout << pair.first << ", ";
         }
-        cout << std::endl;
+        G4cout << std::endl;
         throw "Invalid generator type";
     }
 
@@ -293,21 +293,21 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
         direction = -fParticleGun->GetParticlePosition().unit();
 
         if (direction.x() == 0 && direction.y() == 0 && direction.z() == 0) {
-            cout << "----------------------------------------------------------------"
+            G4cout << "----------------------------------------------------------------"
                     "-----"
                  << endl;
-            cout << "REST WARNNING : Particle being launched from the ORIGIN!! Wrong "
+            G4cout << "REST WARNNING : Particle being launched from the ORIGIN!! Wrong "
                     "momentum direction!"
                  << endl;
-            cout << "Setting direction to (1,0,0)" << endl;
-            cout << "REST angular distribution is just implemented for virtualBox "
+            G4cout << "Setting direction to (1,0,0)" << endl;
+            G4cout << "REST angular distribution is just implemented for virtualBox "
                     "and virtualSphere"
                  << endl;
-            cout << "Other spatial distributions can be set but it will launch the "
+            G4cout << "Other spatial distributions can be set but it will launch the "
                     "event\n with a distribution direction to the origin of "
                     "coordinates"
                  << endl;
-            cout << "----------------------------------------------------------------"
+            G4cout << "----------------------------------------------------------------"
                     "-----"
                  << endl;
             direction.set(1, 0, 0);
@@ -392,7 +392,7 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
     energy_dist_type_name = g4_metadata_parameters::CleanString(energy_dist_type_name);
 
     if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug) {
-        cout << "DEBUG: Energy distribution: " << energy_dist_type_name << endl;
+        G4cout << "DEBUG: Energy distribution: " << energy_dist_type_name << endl;
     }
 
     g4_metadata_parameters::energy_dist_types energy_dist_type;
@@ -401,11 +401,11 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
     } else {
         // if we get here it means the parameter is not valid, we can either assign a default value or stop
         // execution default value in this case is 1 keV
-        cout << "Invalid energy distribution (" + energy_dist_type_name + ") valid values are: ";
+        G4cout << "Invalid energy distribution (" + energy_dist_type_name + ") valid values are: ";
         for (const auto& pair : g4_metadata_parameters::energy_dist_types_map) {
-            cout << pair.first << ", ";
+            G4cout << pair.first << ", ";
         }
-        cout << std::endl;
+        G4cout << std::endl;
         G4cout << "WARNING! Energy distribution type was not recognized. Setting "
                   "energy to 1keV"
                << G4endl;
@@ -461,7 +461,7 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
     fParticleGun->SetParticleEnergy(energy);
 
     if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug)
-        cout << "DEBUG: Particle energy: " << energy / keV << " keV" << endl;
+        G4cout << "DEBUG: Particle energy: " << energy / keV << " keV" << endl;
 }
 
 void PrimaryGeneratorAction::SetParticlePosition() {
@@ -515,7 +515,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
             double val1 = G4UniformRand();
             double val2 = fGeneratorSpatialDensityFunction->Eval(x, y, z);
             if (val2 > 1) {
-                cout << "error! Generator density function > 1 at position (" << x << ", " << y << ", " << z
+                G4cout << "error! Generator density function > 1 at position (" << x << ", " << y << ", " << z
                      << "), check your definition!" << endl;
                 abort();
             }
@@ -541,7 +541,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
 //    restG4Event->SetPrimaryEventOrigin(pos);
 //
 //    if (fRestGeant4Metadata->GetVerboseLevel() >= REST_Debug) {
-//        cout << "DEBUG: Event origin: "
+//        G4cout << "DEBUG: Event origin: "
 //             << "(" << restG4Event->GetPrimaryEventOrigin().X() << ", "
 //             << restG4Event->GetPrimaryEventOrigin().Y() << ", " << restG4Event->GetPrimaryEventOrigin().Z()
 //             << ")"
@@ -647,11 +647,11 @@ void PrimaryGeneratorAction::GenPositionOnBoxVolume(double& x, double& y, double
     z = rndPos.z() + center.Z();
 }
 void PrimaryGeneratorAction::GenPositionOnBoxSurface(double& x, double& y, double& z) {
-    cout << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
+    G4cout << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
     abort();
 }
 void PrimaryGeneratorAction::GenPositionOnSphereVolume(double& x, double& y, double& z) {
-    cout << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
+    G4cout << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
     abort();
 }
 void PrimaryGeneratorAction::GenPositionOnSphereSurface(double& x, double& y, double& z) {
@@ -666,7 +666,7 @@ void PrimaryGeneratorAction::GenPositionOnSphereSurface(double& x, double& y, do
     z = radius * rndPos.z() + center.Z();
 }
 void PrimaryGeneratorAction::GenPositionOnCylinderVolume(double& x, double& y, double& z) {
-    cout << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
+    G4cout << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
     abort();
 }
 void PrimaryGeneratorAction::GenPositionOnCylinderSurface(double& x, double& y, double& z) {
@@ -724,7 +724,7 @@ void PrimaryGeneratorAction::GenPositionOnPlate(double& x, double& y, double& z)
     do {
         x = 2 * radius * (G4UniformRand() - 0.5);
         y = 2 * radius * (G4UniformRand() - 0.5);
-        //       cout << "x : " << x << " y : " << y << endl;
+        //       G4cout << "x : " << x << " y : " << y << endl;
     } while (x * x + y * y > radius * radius);
 
     G4ThreeVector rndPos = G4ThreeVector(x, y, 0);

@@ -23,7 +23,7 @@ thread_local OutputManager* OutputManager::pinstance_ = nullptr;
 
 OutputManager* OutputManager::Instance() {
     if (G4Threading::IsMasterThread() && G4Threading::IsMultithreadedApplication()) {
-        cout << "OutputManager::Instance() - Thread local instance should never be invoked from master "
+        G4cout << "OutputManager::Instance() - Thread local instance should never be invoked from master "
                 "thread in "
                 "a MT application"
              << endl;

@@ -12,7 +12,7 @@
 using namespace std;
 
 void CommandLineSetup::ShowUsage() {
-    cout << "restG4 requires at least one parameter, the rml configuration file (-c is optional)" << endl
+    G4cout << "restG4 requires at least one parameter, the rml configuration file (-c is optional)" << endl
          << endl
          << "example: restG4 example.rml" << endl
          << endl
@@ -45,7 +45,7 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
         switch (option) {
             case 'c':
                 if (!parameters.rmlFile.IsNull()) {
-                    cout << "CommandLineParameters::ProcessParameters - Cannot specify multiple rml files "
+                    G4cout << "CommandLineParameters::ProcessParameters - Cannot specify multiple rml files "
                             " Please use at most one"
                          << endl;
                     exit(1);
@@ -62,13 +62,13 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
                 parameters.serialMode = false;
                 parameters.nThreads = std::stoi(optarg);
                 if (parameters.nThreads < 1) {
-                    cout << "CommandLineParameters::ProcessParameters - Number of threads must be > 0"
+                    G4cout << "CommandLineParameters::ProcessParameters - Number of threads must be > 0"
                          << endl;
                 }
                 break;
             case 'o':
                 if (!parameters.outputFile.IsNull()) {
-                    cout << "CommandLineParameters::ProcessParameters - Cannot specify multiple output files "
+                    G4cout << "CommandLineParameters::ProcessParameters - Cannot specify multiple output files "
                             "via the -o flag."
                             " Please use at most one"
                          << endl;
@@ -81,7 +81,7 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
                 break;
             case 'g':
                 if (!parameters.geometryFile.IsNull()) {
-                    cout << "CommandLineParameters::ProcessParameters - Cannot specify multiple geometry "
+                    G4cout << "CommandLineParameters::ProcessParameters - Cannot specify multiple geometry "
                             "files "
                             "via the -g flag. "
                             "Please use at most one"
@@ -92,14 +92,14 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
                 break;
             default:
                 // invalid option
-                cout << "Error processing command line arguments" << endl;
+                G4cout << "Error processing command line arguments" << endl;
                 exit(1);
         }
     }
 
     // validation
     if (parameters.rmlFile.IsNull()) {
-        cout << "CommandLineParameters::ProcessParameters - Need to define an RML config file (-c)" << endl;
+        G4cout << "CommandLineParameters::ProcessParameters - Need to define an RML config file (-c)" << endl;
         ShowUsage();
         exit(1);
     }
@@ -107,7 +107,7 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
     return parameters;
 }
 void CommandLineSetup::Print(const CommandLineParameters& parameters) {
-    cout << "Command line parameters configuration:" << endl
+    G4cout << "Command line parameters configuration:" << endl
          << "\t- RML file: " << parameters.rmlFile << endl
          << "\t- Execution mode: "
          << (parameters.serialMode ? "serial"

@@ -34,7 +34,7 @@ GlobalManager::GlobalManager()
     // Master thread should create the GlobalManager, worker threads should spawn after the manager is created
     // by the master thread
     if (!G4Threading::IsMasterThread()) {
-        cout
+        G4cout
             << "GlobalManager::GlobalManager - ERROR GlobalManager should never be created by a worker thread"
             << endl;
         exit(1);
@@ -42,7 +42,7 @@ GlobalManager::GlobalManager()
 }
 
 GlobalManager::~GlobalManager() {
-    cout << "GlobalManager::~GlobalManager (Destructor)" << endl;
+    G4cout << "GlobalManager::~GlobalManager (Destructor)" << endl;
 
     delete fRestGeant4Metadata;
     delete fRestGeant4PhysicsLists;
@@ -55,7 +55,7 @@ GlobalManager::~GlobalManager() {
 
 void GlobalManager::InitializeFromConfigFile(const TString& rmlFile) {
     if (fRestGeant4Metadata || fRestRun || fRestGeant4PhysicsLists) {
-        cout << "GlobalManager::InitializeRestGeant4Metadata - ERROR rest classes should not be initialized "
+        G4cout << "GlobalManager::InitializeRestGeant4Metadata - ERROR rest classes should not be initialized "
                 "twice"
              << endl;
         exit(1);
@@ -125,7 +125,7 @@ void GlobalManager::InitializeRestGeant4Metadata(const TString& rmlFile) {
         } else {
             fPrimaryEnergyDistribution->SetDirectory(nullptr);
 
-            cout << "ENERGY DISTRIBUTION: " << fPrimaryEnergyDistribution->GetName() << " "
+            G4cout << "ENERGY DISTRIBUTION: " << fPrimaryEnergyDistribution->GetName() << " "
                  << fPrimaryEnergyDistribution << endl;
 
             fPrimaryEnergyDistributionMin = fRestGeant4Metadata->GetParticleSource(0)->GetMinEnergy();
@@ -160,7 +160,7 @@ void GlobalManager::InitializeRestGeant4Metadata(const TString& rmlFile) {
         } else {
             fPrimaryAngularDistribution->SetDirectory(nullptr);
 
-            cout << "ANGULAR DISTRIBUTION: " << fPrimaryAngularDistribution->GetName() << " "
+            G4cout << "ANGULAR DISTRIBUTION: " << fPrimaryAngularDistribution->GetName() << " "
                  << fPrimaryAngularDistribution << endl;
         }
     }

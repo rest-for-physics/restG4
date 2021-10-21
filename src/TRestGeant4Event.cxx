@@ -41,7 +41,7 @@ TRestGeant4Event::TRestGeant4Event(const G4Event* event) : TRestGeant4Event() {
         auto primaryVertex = event->GetPrimaryVertex();
 
         if (primaryVertex->GetNumberOfParticle() > 1) {
-            cout << "multiple primary particles detected, but only recording first particle!" << endl;
+            G4cout << "multiple primary particles detected, but only recording first particle!" << endl;
             exit(1);
         }
 
