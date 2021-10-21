@@ -70,16 +70,7 @@ PhysicsList::PhysicsList(TRestGeant4PhysicsLists* physicsLists) : PhysicsList() 
     InitializePhysicsLists();
 }
 
-PhysicsList::~PhysicsList() {
-    return;
-    delete fEmPhysicsList;
-
-    delete fDecayPhysicsList;
-    delete fRadioactiveDecayPhysicsList;
-    for (auto& fHadronPhy : fHadronPhys) {
-        delete fHadronPhy;
-    }
-}
+PhysicsList::~PhysicsList() { return; }
 
 void PhysicsList::InitializePhysicsLists() {
     // Decay physics and all particles

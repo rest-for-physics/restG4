@@ -80,7 +80,6 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
 
     fNHits = fID.size();
 
-    // Compatibility with TRestHits
     fX.emplace_back(track->GetPosition().x() / CLHEP::mm);
     fY.emplace_back(track->GetPosition().y() / CLHEP::mm);
     fZ.emplace_back(track->GetPosition().z() / CLHEP::mm);
@@ -92,7 +91,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     fT.emplace_back(track->GetGlobalTime() / CLHEP::us);
 
     fEnergy.emplace_back(step->GetTotalEnergyDeposit() / CLHEP::keV);
-    fTotalEnergy += fEnergy.back();
+    fTotEnergy += fEnergy.back();
 
     fKineticEnergy.emplace_back(step->GetPreStepPoint()->GetKineticEnergy() / CLHEP::keV);
     fKineticEnergyPost.emplace_back(step->GetPostStepPoint()->GetKineticEnergy() / CLHEP::keV);

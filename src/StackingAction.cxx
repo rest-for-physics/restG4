@@ -72,15 +72,15 @@ G4ClassificationOfNewTrack StackingAction::ClassifyNewTrack(const G4Track* track
             G4String energy = G4BestUnit(track->GetKineticEnergy(), "Energy");
             G4String lifeTime = G4BestUnit(particle->GetPDGLifeTime(), "Time");
 
-            spdlog::debug(
+            spdlog::info(
                 "StackingAction::ClassifyNewTrack ---> Splitting unstable '{}' track (KE: {}, lifetime of {} "
                 "> {})",
                 particle->GetParticleName(), energy, lifeTime, fMaxAllowedLifetimeWithUnit);
 
             if (track->GetKineticEnergy() > 0) {
                 spdlog::debug(
-                    "StackingAction::ClassifyNewTrack ---> Killing unstable '{}' track (KE: {}). It's energy "
-                    "is not zero.",
+                    "StackingAction::ClassifyNewTrack ---> Killing unstable '{}' track (KE: {})."
+                    " It's energy is not zero.",
                     particle->GetParticleName(), energy);
             }
 
