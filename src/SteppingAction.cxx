@@ -37,10 +37,10 @@ void SteppingAction::UserSteppingAction(const G4Step* step) {
 
     fOutputManager->RecordStep(step);
 
-    return;
+    fOutputManager->AddTotalEnergy(step->GetTotalEnergyDeposit() / CLHEP::keV);
 }
 
-G4TrackVector* SteppingAction::GetfSecondary() {
+const vector<G4Track*>* SteppingAction::GetSecondary() {
     G4SteppingManager* steppingManager = fpSteppingManager;
-    return steppingManager->GetfSecondary();
+    return steppingManager->GetSecondary();
 }

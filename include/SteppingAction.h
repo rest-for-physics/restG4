@@ -33,7 +33,7 @@ class SteppingAction : public G4UserSteppingAction {
     TH1D* GetAngularDistribution() { return fAngularDistribution; }
     TH2D* GetSpatialDistribution() { return fSpatialDistribution; }
 
-    G4TrackVector* GetfSecondary();
+    const vector<G4Track*>* GetSecondary();
 
    private:
     TRestGeant4Metadata* fRestGeant4Metadata;
@@ -47,11 +47,6 @@ class SteppingAction : public G4UserSteppingAction {
     TH1D* fBiasingSpectrum;
     TH1D* fAngularDistribution;
     TH2D* fSpatialDistribution;
-
-    Double_t absDouble(Double_t x) {
-        if (x < 0) return -x;
-        return x;
-    }
 
     TRestGeant4BiasingVolume restBiasingVolume;
 };

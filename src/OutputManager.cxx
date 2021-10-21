@@ -36,6 +36,7 @@ OutputManager* OutputManager::Instance() {
 
 void OutputManager::UpdateEvent() {
     auto event = G4EventManager::GetEventManager()->GetConstCurrentEvent();
+
     fEvent = make_unique<TRestGeant4Event>(event);
 }
 
@@ -58,6 +59,16 @@ void OutputManager::FinishAndSubmitEvent() {
     */
 
     if (IsValidEvent()) {
+        // Fill secondary information
+        for (size_t i = 0; i < fEvent->GetNumberOfTracks(); i++) {
+            auto track = fEvent->GetTrack(i);
+            auto parentTrack = fEvent->GetTrackByID(track->GetParentID());
+            if (parentTrack) {
+                // parent track has been found! we can add track to secondaries
+                parentTrack->AddSecondary(track->GetTrackID());
+            }
+        }
+
         spdlog::info(
             "OutputManager::FinishAndSubmitEvent - "
             "Added valid event with ID {} and sensitive volume energy: {:0.2f} keV",

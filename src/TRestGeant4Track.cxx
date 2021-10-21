@@ -24,6 +24,7 @@
 #include <G4VUserPrimaryVertexInformation.hh>
 
 #include "GlobalManager.h"
+#include "OutputManager.h"
 
 using namespace std;
 
@@ -48,6 +49,8 @@ TRestGeant4Track::TRestGeant4Track(const G4Track* track) {
 
     fWeight = track->GetWeight();
 
+    fSecondaryTrackIDs = {};  // To be filled at TRestGeant4Track::UpdateTrack
+
     G4String energyWithUnits = G4BestUnit(fInitialKineticEnergy * CLHEP::keV, "Energy");
 
     spdlog::debug(
@@ -67,11 +70,18 @@ void TRestGeant4Track::UpdateTrack(const G4Track* track) {
 
     fTrackLength = track->GetTrackLength() / CLHEP::mm;
 
-    auto steppingAction = (SteppingAction*)G4EventManager::GetEventManager()->GetUserSteppingAction();
-    auto secondaries = steppingAction->GetfSecondary();
+    // auto steppingAction = (SteppingAction*)G4EventManager::GetEventManager()->GetUserSteppingAction();
+    // auto secondaries = steppingAction->GetSecondary();
+}
 
-    fSecondaryTrackIDs = {};
-    for (const auto& secondaryTrack : *secondaries) {
-        fSecondaryTrackIDs.push_back(secondaryTrack->GetTrackID());
+void TRestGeant4Track::AddSecondary(Int_t trackID) {
+    // This method is called only for recorded events, at the end of event action
+    for (const auto& existingTrackID : fSecondaryTrackIDs) {
+        if (existingTrackID == trackID) {
+            spdlog::error("TRestGeant4Track::AddSecondary - Adding the same secondary twice, please check!");
+            exit(1);
+        }
     }
+
+    fSecondaryTrackIDs.push_back(trackID);
 }

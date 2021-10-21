@@ -55,6 +55,8 @@ TRestGeant4Event::TRestGeant4Event(const G4Event* event) : TRestGeant4Event() {
         fPrimaryDirection.emplace_back(momentum.x() / CLHEP::mm, momentum.y() / CLHEP::mm,
                                        momentum.z() / CLHEP::mm);
     }
+
+    fPrimaryEventOrigin = fPrimaryPosition.front();
 }
 
 bool IsValid(const G4Track* track) {
@@ -100,6 +102,8 @@ void TRestGeant4Event::InsertTrack(const G4Track* track) {
             TVector3(momentum.x() / CLHEP::mm, momentum.y() / CLHEP::mm, momentum.z() / CLHEP::mm);
     }
     fTracks.emplace_back(track);
+    fTrackIDToIndex[track->GetTrackID()] = fTracks.size() - 1;
+
     if (fInitialStep.GetNumberOfHits() != 1) {
         spdlog::error("fInitialStep does not have exactly one step!");
         exit(1);

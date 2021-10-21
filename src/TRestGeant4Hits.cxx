@@ -95,7 +95,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     fTotalEnergy += fEnergy.back();
 
     fKineticEnergy.emplace_back(step->GetPreStepPoint()->GetKineticEnergy() / CLHEP::keV);
-    fKineticEnergy.emplace_back(step->GetPostStepPoint()->GetKineticEnergy() / CLHEP::keV);
+    fKineticEnergyPost.emplace_back(step->GetPostStepPoint()->GetKineticEnergy() / CLHEP::keV);
     fLength.emplace_back(step->GetStepLength() / CLHEP::mm);
     fVolumeName.emplace_back(volumeName);
     fVolumeNamePost.emplace_back(volumeNamePost);

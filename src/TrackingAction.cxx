@@ -32,22 +32,22 @@ void TrackingAction::PostUserTrackingAction(const G4Track* track) {
     auto particle = track->GetParticleDefinition();
 
     auto steppingAction = (SteppingAction*)G4EventManager::GetEventManager()->GetUserSteppingAction();
-    auto fSecondary = steppingAction->GetfSecondary();
+    auto secondaries = steppingAction->GetSecondary();
 
     spdlog::debug(
         "TrackingAction::PostUserTrackingAction ---> TrackID: {:4d}, ParentID: {:4d}, Particle: {:>10}, "
         "Secondaries: {:2d}",
-        track->GetTrackID(), track->GetParentID(), particle->GetParticleName(), fSecondary->size());
+        track->GetTrackID(), track->GetParentID(), particle->GetParticleName(), secondaries->size());
 
-    for (const auto& secondary : *fSecondary) {
+    for (const auto& secondary : *secondaries) {
         G4String energyWithUnits = G4BestUnit(secondary->GetKineticEnergy(), "Energy");
         auto creatorProcess = secondary->GetCreatorProcess();
 
         spdlog::debug(
-            "TrackingAction::PostUserTrackingAction ---> ---> Secondary: {:>10}, KE:  {:>15}, Creator "
-            "Process: {:>20} ({})",
-            secondary->GetDynamicParticle()->GetDefinition()->GetParticleName(), energyWithUnits,
-            creatorProcess->GetProcessName(),
+            "TrackingAction::PostUserTrackingAction ---> ---> Secondary ID: {:>5} Particle:{:>10}, KE: "
+            "{:>15}, Creator Process: {:>20} ({})",
+            secondary->GetTrackID(), secondary->GetDynamicParticle()->GetDefinition()->GetParticleName(),
+            energyWithUnits, creatorProcess->GetProcessName(),
             G4VProcess::GetProcessTypeName(creatorProcess->GetProcessType()));
     }
 

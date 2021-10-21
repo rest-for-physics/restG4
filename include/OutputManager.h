@@ -34,19 +34,19 @@ class OutputManager {
     void UpdateTrack(const G4Track*);
     void RecordStep(const G4Step*);
 
-    inline Float_t GetSensitiveVolumeEnergy() const { return fSensitiveEnergyTotal; }
     inline void AddSensitiveEnergy(double energy) { fEvent->AddSensitiveVolumeEnergy(energy); }
+    inline void AddTotalEnergy(double energy) { fEvent->AddTotalEnergy(energy); }
 
     Int_t GetSubEventID() const { return fEvent->GetSubEventID(); }
     void SetSubEventID(Int_t subEventID) { fEvent->SetSubEventID(subEventID); }
+
+    inline const TRestGeant4Event GetEventCopy() const { return *fEvent; }
 
    private:
     inline OutputManager() = default;
     static thread_local OutputManager* pinstance_;
 
     std::unique_ptr<TRestGeant4Event> fEvent{};
-
-    double fSensitiveEnergyTotal{};
 
     bool IsEmptyEvent() const;
     bool IsValidEvent() const;
