@@ -6,7 +6,6 @@
 #define REST_GLOBALMANAGER_H
 
 #include <TRestGeant4Event.h>
-#include <TRestGeant4Event.h>
 #include <TString.h>
 
 #include <globals.hh>
@@ -44,6 +43,8 @@ class GlobalManager {
         }
         return "";
     }
+
+    void WriteGeometry();
 
     size_t InsertEvent(std::unique_ptr<TRestGeant4Event>&);
 

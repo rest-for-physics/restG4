@@ -19,8 +19,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
     G4VSolid* generatorSolid;
     G4ThreeVector fGeneratorTranslation;
 
-    string fGeometryFilename;
-
     Double_t boundBox_xMin, boundBox_xMax;
     Double_t boundBox_yMin, boundBox_yMax;
     Double_t boundBox_zMin, boundBox_zMax;
@@ -29,7 +27,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
     void ConstructSDandField() override;
     void BuildAssemblyLookupTable();
 
-    G4GDMLParser* GetGeometry() { return parser; }
     G4VPhysicalVolume* GetPhysicalVolume(G4String physVolName);
     G4VSolid* GetGeneratorSolid() { return generatorSolid; }
     G4ThreeVector GetGeneratorTranslation() { return fGeneratorTranslation; }

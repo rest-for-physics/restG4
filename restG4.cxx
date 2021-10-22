@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     auto gdml = new TRestGDMLParser();
 
     // This call will generate a new single file GDML output
-    gdml->Load((string)GlobalManager::Instance()->GetRestGeant4Metadata()->Get_GDML_Filename());
+    gdml->Load((string)GlobalManager::Instance()->GetRestGeant4Metadata()->GetGdmlFilename());
 
     biasing = restG4Metadata->GetNumberOfBiasingVolumes();
     for (int i = 0; i < biasing; i++) {
@@ -241,48 +241,15 @@ int main(int argc, char** argv) {
     systime = time(nullptr);
     restRun->SetEndTimeStamp((Double_t)systime);
     TString Filename = restRun->GetOutputFileName();
-    G4cout << "CLOSING: " << Filename << endl;
+
     restRun->UpdateOutputFile();
+
+    restRun->GetOutputFile()->ls();
+
     restRun->CloseFile();
     restRun->PrintMetadata();
+
     delete restRun;
-
-    ////////// Writing the geometry in TGeoManager format to the ROOT file
-    ////////// Need to fork and do it in child process, to prevent occasional seg.fault
-    pid_t pid;
-    pid = fork();
-    if (pid < 0) {
-        perror("fork error:");
-        exit(1);
-    }
-    // child process
-    if (pid == 0) {
-        // writing the geometry object
-        freopen("/dev/null", "w", stdout);
-        freopen("/dev/null", "w", stderr);
-        Console::CompatibilityMode = true;
-
-        // We wait the father process ends properly
-        sleep(5);
-
-        // Then we just add the geometry
-        auto* f1 = new TFile(Filename, "update");
-        auto gdml = GlobalManager::Instance()->GetRestGDMLParser();
-        TGeoManager* geo2 = gdml->CreateGeoM();
-
-        f1->cd();
-        geo2->SetName("Geometry");
-        geo2->Write();
-        f1->Close();
-        exit(0);
-    }
-    // father process
-    else {
-        int stat_val = 0;
-        pid_t child_pid;
-
-        printf("Writing geometry ... \n");
-    }
 
     G4cout << "============== Generated file: " << Filename << " ==============" << endl;
     auto end_time = chrono::steady_clock::now();

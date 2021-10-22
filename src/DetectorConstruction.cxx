@@ -23,7 +23,6 @@ DetectorConstruction::DetectorConstruction()
     : fRestGeant4Metadata(GlobalManager::Instance()->GetRestGeant4Metadata()) {
     G4cout << "Detector Construction" << G4endl;
     parser = new G4GDMLParser();
-    fGeometryFilename = fRestGeant4Metadata->Get_GDML_Filename();
 }
 
 DetectorConstruction::~DetectorConstruction() { delete parser; }
@@ -35,28 +34,26 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     G4cout << "Producing geometry" << G4endl;
 
     // Reading the geometry
-    TString geometryFile = fRestGeant4Metadata->Get_GDML_Filename();
+    TString geometryFile = fRestGeant4Metadata->GetGdmlFilename();
 
     char originDirectory[256];
     sprintf(originDirectory, "%s", getenv("PWD"));
     auto separatePathAndName =
-        TRestTools::SeparatePathAndName((string)fRestGeant4Metadata->Get_GDML_Filename());
+        TRestTools::SeparatePathAndName((string)fRestGeant4Metadata->GetGdmlFilename());
     chdir(separatePathAndName.first.c_str());
 
-    parser->Read(separatePathAndName.second, false);
-
-    chdir(originDirectory);
+    parser->Read(string(geometryFile.Data()), false);
 
     fWorld = parser->GetWorldVolume();
 
-    // TODO : Take the name of the sensitive volume and use it here to define its
-    // StepSize
-    string SensVol = (string)fRestGeant4Metadata->GetSensitiveVolume();
-    G4VPhysicalVolume* _vol = GetPhysicalVolume(SensVol);
-    if (!_vol) {
-        G4cout << "RESTG4 error. Sensitive volume " << SensVol << " does not exist in geometry!!" << G4endl;
-        PrintGeometryInfo();
-        G4cout << "RESTG4 error. Please, review geometry! Presh a key to crash!!" << G4endl;
+    PrintGeometryInfo();
+
+    string sensitiveVolumeName = (string)fRestGeant4Metadata->GetSensitiveVolume();
+    G4VPhysicalVolume* sensitiveVolume = GetPhysicalVolume(sensitiveVolumeName);
+    if (!sensitiveVolume) {
+        G4cout << "RESTG4 error. Sensitive volume " << sensitiveVolumeName << " does not exist in geometry!!"
+               << G4endl;
+        G4cout << "RESTG4 error. Please, review geometry! Press a key to crash!!" << G4endl;
         getchar();
         // We need to produce a clean exit at this point
         exit(1);
@@ -72,24 +69,21 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     fieldMgr->SetDetectorField(magField);
     fieldMgr->CreateChordFinder(magField);
 
-    if (_vol != nullptr) {
-        G4LogicalVolume* vol = _vol->GetLogicalVolume();
-        // This method seems not available in my Geant4 version 10.4.2
-        // In future Geant4 versions it seems possible to define field at particular volumes
-        // vol->setFieldManager(localFieldMgr, true);
-        G4Material* mat = vol->GetMaterial();
-        G4cout << "Sensitive volume properties" << G4endl;
-        G4cout << "==============" << G4endl;
-        G4cout << "Sensitive volume name: " << mat->GetName() << G4endl;
-        G4cout << "Sensitive volume temperature: " << mat->GetTemperature() << G4endl;
-        G4cout << "Sensitive volume density: " << mat->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
-    } else {
-        G4cout << "ERROR : Logical volume for sensitive \"" << SensVol << "\" not found!" << endl;
-    }
+    G4LogicalVolume* vol =
+        sensitiveVolume->GetLogicalVolume();  // This method seems not available in my Geant4 version 10.4.2
 
     // Getting generation volume
-    string GenVol = (string)fRestGeant4Metadata->GetGeneratedFrom();
-    G4cout << "Generated from volume: " << GenVol << endl;
+    string GenVol =
+        (string)fRestGeant4Metadata->GetGeneratedFrom();  // In future Geant4 versions it seems possible to
+                                                          // define field at particular volumes
+    G4cout                                                // vol->setFieldManager(localFieldMgr, true);
+        << "Generated from volume: " << GenVol << endl;
+    G4Material* mat = vol->GetMaterial();
+    G4cout << "Sensitive volume density: " << mat->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
+    G4cout << "Sensitive volume temperature: " << mat->GetTemperature() << G4endl;
+    G4cout << "Sensitive volume name: " << mat->GetName() << G4endl;
+    G4cout << "==============" << G4endl;
+    G4cout << "Sensitive volume properties" << G4endl;
     string type = (string)fRestGeant4Metadata->GetGeneratorType();
     G4cout << "Generator type: " << type << endl;
 
@@ -130,8 +124,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         boundBox_zMin = 1.e30;
         if (type == "volume") {
             G4cout << "Optimizing REST volume generation (Please wait. This might take "
-                    "few minutes depending on geometry complexity) "
-                 << flush;
+                      "few minutes depending on geometry complexity) "
+                   << flush;
 
             for (int n = 0; n < 100000; n++) {
                 G4ThreeVector point = generatorSolid->GetPointOnSurface();
@@ -165,7 +159,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
         if (!pVol) {
             G4cout << "DetectorConstruction. Volume " << actVolName << " is not defined in the geometry"
-                 << endl;
+                   << endl;
             // exit(1); TODO FIX THIS FOR ASSEMBLY
         } else {
             G4LogicalVolume* lVol = pVol->GetLogicalVolume();
@@ -240,9 +234,10 @@ void DetectorConstruction::ConstructSDandField() {
                 G4PhysicalVolumeStore::GetInstance()->GetVolume(fSensitivePhysicalVolumeName);
             if (!physicalVolume) {
                 // PrintGeometryInfo();
-                G4cout << "Trying to attach a sensitive detector to the logical volume of physical volume '{}'"
-                        ", but this physical volume is not found in store."
-                     << fSensitivePhysicalVolumeName << endl;
+                G4cout
+                    << "Trying to attach a sensitive detector to the logical volume of physical volume '{}'"
+                       ", but this physical volume is not found in store."
+                    << fSensitivePhysicalVolumeName << endl;
                 exit(1);
             }
             G4LogicalVolume* logicalVolume = physicalVolume->GetLogicalVolume();

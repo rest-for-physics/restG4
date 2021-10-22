@@ -35,6 +35,11 @@ void RunAction::BeginOfRunAction(const G4Run* run) {
     // inform the runManager to save random number seed
     G4RunManager::GetRunManager()->SetRandomNumberStore(false);
 
+    // Save geometry
+    if (G4Threading::IsMasterThread()) {
+        GlobalManager::Instance()->WriteGeometry();
+    }
+
     auto steppingVerbose = ((SteppingVerbose*)G4VSteppingVerbose::GetInstance());
     steppingVerbose->SetSteppingVerbose(1);
 }

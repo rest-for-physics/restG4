@@ -55,9 +55,10 @@ GlobalManager::~GlobalManager() {
 
 void GlobalManager::InitializeFromConfigFile(const TString& rmlFile) {
     if (fRestGeant4Metadata || fRestRun || fRestGeant4PhysicsLists) {
-        G4cout << "GlobalManager::InitializeRestGeant4Metadata - ERROR rest classes should not be initialized "
-                "twice"
-             << endl;
+        G4cout
+            << "GlobalManager::InitializeRestGeant4Metadata - ERROR rest classes should not be initialized "
+               "twice"
+            << endl;
         exit(1);
     }
 
@@ -94,7 +95,7 @@ void GlobalManager::InitializeRestGeant4Metadata(const TString& rmlFile) {
     fRestGeant4Metadata->SetGeant4Version(geant4Version);
     // GDML geometry parsing
     // This call will generate a new single file GDML output
-    fRestGDMLParser->Load((string)fRestGeant4Metadata->Get_GDML_Filename());
+    fRestGDMLParser->Load((string)fRestGeant4Metadata->GetGdmlFilename());
 
     // We redefine the value of the GDML file to be used in DetectorConstructor.
     fRestGeant4Metadata->Set_GDML_Filename(fRestGDMLParser->GetOutputGDMLFile());
@@ -126,7 +127,7 @@ void GlobalManager::InitializeRestGeant4Metadata(const TString& rmlFile) {
             fPrimaryEnergyDistribution->SetDirectory(nullptr);
 
             G4cout << "ENERGY DISTRIBUTION: " << fPrimaryEnergyDistribution->GetName() << " "
-                 << fPrimaryEnergyDistribution << endl;
+                   << fPrimaryEnergyDistribution << endl;
 
             fPrimaryEnergyDistributionMin = fRestGeant4Metadata->GetParticleSource(0)->GetMinEnergy();
             if (fPrimaryEnergyDistributionMin < 0) {
@@ -161,7 +162,7 @@ void GlobalManager::InitializeRestGeant4Metadata(const TString& rmlFile) {
             fPrimaryAngularDistribution->SetDirectory(nullptr);
 
             G4cout << "ANGULAR DISTRIBUTION: " << fPrimaryAngularDistribution->GetName() << " "
-                 << fPrimaryAngularDistribution << endl;
+                   << fPrimaryAngularDistribution << endl;
         }
     }
 }
@@ -248,3 +249,35 @@ void GlobalManager::FillEvents() {
 }
 
 void GlobalManager::WriteEvents() { fEventTree->Write(); }
+
+void GlobalManager::WriteGeometry() {
+    spdlog::info("GlobalManager::WriteGeometry");
+    // master thread will always run first
+    if (!G4Threading::IsMasterThread()) {
+        spdlog::error("GlobalManager::WriteGeometry - Called outside main thread, error");
+        exit(1);
+    }
+
+    spdlog::info("GlobalManager::SetupFile - Initializing GlobalManager for {} thread {}",
+                 (G4Threading::IsMasterThread() ? "master" : "worker"), G4Threading::G4GetThreadId());
+
+    spdlog::info("GlobalManager::SetupFile - Not initialized yet, saving geometry...");
+
+    auto geometryGdmlFilename = fRestGeant4Metadata->GetGdmlFilename();
+
+    TGeoManager* geoManager;
+    geoManager = TGeoManager::Import(geometryGdmlFilename);
+
+    if (!geoManager || !geoManager->GetTopVolume()) {
+        spdlog::error("GlobalManager::WriteGeometry - Error loading the geometry from '{}'",
+                      geometryGdmlFilename);
+        exit(1);
+    }
+
+    const TString geometryKeyName = "Geometry";
+
+    spdlog::info("Writing geometry from '{}' with name '{}'", geometryGdmlFilename, geometryKeyName.Data());
+    geoManager->Write(geometryKeyName);
+
+    delete geoManager;
+}
