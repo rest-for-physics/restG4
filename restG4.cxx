@@ -104,6 +104,8 @@ int main(int argc, char** argv) {
     auto runManager = G4RunManagerFactory::CreateRunManager(runManagerType);
     if (!commandLineParameters.serialMode) {
         spdlog::info("Initializing Geant4 MT Run Manager with {} threads", commandLineParameters.nThreads);
+        spdlog::error("ERROR: Multithreading Support is not working yet, sorry!");
+        exit(1);
         runManager->SetNumberOfThreads(commandLineParameters.nThreads);
     } else {
         spdlog::info("Initializing Geant4 serial (single-threaded) Run Manager");
