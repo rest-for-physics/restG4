@@ -38,7 +38,7 @@ By default REST units are mm, keV and degrees
 
         <!-- The number of events to be simulated is now defined in TRestGeant4Metadata -->
         <parameter name="Nevents" value="100"/>
-        <parameter name="registerEmptyTracks" value="false"/>
+
         <parameter name="saveAllEvents" value="false"/>
 
         <generator type="point" position="(0,0,0)" units="mm">
