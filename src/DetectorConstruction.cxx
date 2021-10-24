@@ -69,16 +69,18 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     fieldMgr->SetDetectorField(magField);
     fieldMgr->CreateChordFinder(magField);
 
-    G4LogicalVolume* vol =
-        sensitiveVolume->GetLogicalVolume();  // This method seems not available in my Geant4 version 10.4.2
+    G4LogicalVolume* sensitiveVolumeLogical = sensitiveVolume->GetLogicalVolume();
+
+    G4double maxStep = 0.1 * CLHEP::mm;
+    sensitiveVolumeLogical->SetUserLimits(new G4UserLimits(maxStep));
 
     // Getting generation volume
     string GenVol =
         (string)fRestGeant4Metadata->GetGeneratedFrom();  // In future Geant4 versions it seems possible to
                                                           // define field at particular volumes
-    G4cout                                                // vol->setFieldManager(localFieldMgr, true);
+    G4cout  // sensitiveVolumeLogical->setFieldManager(localFieldMgr, true);
         << "Generated from volume: " << GenVol << endl;
-    G4Material* mat = vol->GetMaterial();
+    G4Material* mat = sensitiveVolumeLogical->GetMaterial();
     G4cout << "Sensitive volume density: " << mat->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
     G4cout << "Sensitive volume temperature: " << mat->GetTemperature() << G4endl;
     G4cout << "Sensitive volume name: " << mat->GetName() << G4endl;

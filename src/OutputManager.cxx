@@ -6,6 +6,7 @@
 
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Hits.h>
+#include <TRestGeant4Metadata.h>
 #include <TRestGeant4Track.h>
 #include <spdlog/spdlog.h>
 
@@ -24,9 +25,9 @@ thread_local OutputManager* OutputManager::pinstance_ = nullptr;
 OutputManager* OutputManager::Instance() {
     if (G4Threading::IsMasterThread() && G4Threading::IsMultithreadedApplication()) {
         G4cout << "OutputManager::Instance() - Thread local instance should never be invoked from master "
-                "thread in "
-                "a MT application"
-             << endl;
+                  "thread in "
+                  "a MT application"
+               << endl;
     }
     if (pinstance_ == nullptr) {
         pinstance_ = new OutputManager();
@@ -69,11 +70,15 @@ void OutputManager::FinishAndSubmitEvent() {
             }
         }
 
+        auto sensitiveVolumeName = GlobalManager::Instance()->GetRestGeant4Metadata()->GetSensitiveVolume();
+
         spdlog::info(
             "OutputManager::FinishAndSubmitEvent - "
-            "Added valid event with ID {} and sensitive volume energy: {:0.2f} keV",
-            fEvent->GetEventID(), fEvent->GetSensitiveVolumeEnergy());
-        fEvent->Print(1, 1);
+            "Added valid event with ID {} and sensitive volume energy: {:0.2f} keV - {} tracks with {} hits "
+            "({} hits in sensitive)",
+            fEvent->GetEventID(), fEvent->GetSensitiveVolumeEnergy(), fEvent->GetNumberOfTracks(),
+            fEvent->GetNumberOfHits(), fEvent->GetNumberOfHitsInVolume(sensitiveVolumeName));
+        // fEvent->Print();
         GlobalManager::Instance()->InsertEvent(fEvent);
     }
 

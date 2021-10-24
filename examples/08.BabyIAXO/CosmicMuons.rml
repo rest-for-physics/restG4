@@ -10,7 +10,7 @@
         <parameter name="experimentName" value="BabyIAXO"/>
         <parameter name="runType" value="background"/>
         <parameter name="runNumber" value="1"/>
-        <parameter name="runTag" value="CosmicNeutrons"/>
+        <parameter name="runTag" value="CosmicMuons"/>
         <parameter name="outputFileName" value="Run[fRunNumber]_[fRunTag]_[fExperimentName].root"/>
         <parameter name="runDescription" value=""/>
         <parameter name="user" value="${USER}"/>
@@ -18,7 +18,7 @@
         <parameter name="readOnly" value="false"/>
     </TRestRun>
 
-    <TRestGeant4Metadata name="CosmicNeutrons" title="">
+    <TRestGeant4Metadata name="CosmicMuons" title="">
 
         <parameter name="gdml_file" value="/home/lobis/rest/examples/08.BabyIAXO/geometry/IAXO-D1-Default.gdml"/>
         <parameter name="subEventTimeDelay" value="100" units="us"/>
@@ -26,7 +26,7 @@
         <parameter name="seed" value="111"/>
 
         <!-- The number of events to be simulated is now defined in TRestGeant4Metadata -->
-        <parameter name="Nevents" value="3000"/>
+        <parameter name="Nevents" value="2000"/>
         <parameter name="saveAllEvents" value="false"/>
 
         <generator type="surface" shape="wall" position="(0,0.5,0)m" size="(2.5,2.5,0)m" rotationAxis="(1,0,0)"
@@ -39,7 +39,7 @@
         </generator>
 
         <storage sensitiveVolume="av_1_impr_1_gasVolume_pv_0">
-            <parameter name="energyRange" value="(0,1)" units="GeV"/>
+            <parameter name="energyRange" value="(0,100)" units="GeV"/>
         </storage>
 
     </TRestGeant4Metadata>
@@ -50,16 +50,14 @@
         <parameter name="cutForElectron" value="2" units="mm"/>
         <parameter name="cutForPositron" value="1" units="mm"/>
 
-        <parameter name="cutForMuon" value="1" units="mm"/>
-        <parameter name="cutForNeutron" value="1" units="mm"/>
         <parameter name="minEnergyRangeProductionCuts" value="1" units="keV"/>
-        <parameter name="maxEnergyRangeProductionCuts" value="1" units="GeV"/>
+        <parameter name="maxEnergyRangeProductionCuts" value="1000" units="GeV"/>
 
         // Use only one EM physics list
         <!-- EM Physics lists -->
-        <!--<physicsList name="G4EmLivermorePhysics"> </physicsList>-->
+        <physicsList name="G4EmLivermorePhysics"></physicsList>-->
         <!-- <physicsList name="G4EmPenelopePhysics"> </physicsList> -->
-        <physicsList name="G4EmStandardPhysics_option4"/>
+        <!-- <physicsList name="G4EmStandardPhysics_option4"/> -->
 
         <!-- Decay physics lists -->
         <physicsList name="G4DecayPhysics"/>
@@ -69,12 +67,13 @@
             <option name="ARM" value="true"/>
         </physicsList>
 
-        <!-- Hadron physics lists
+        <!-- Hadron physics lists -->
         <physicsList name="G4HadronElasticPhysicsHP"/>
         <physicsList name="G4IonBinaryCascadePhysics"/>
         <physicsList name="G4HadronPhysicsQGSP_BIC_HP"/>
-         -->
+
         <!-- <physicsList name="G4NeutronTrackingCut"/> -->
+        <physicsList name="G4EmExtraPhysics"/>
 
     </TRestGeant4PhysicsLists>
 

@@ -158,7 +158,7 @@ void PhysicsList::ConstructParticle() { G4VModularPhysicsList::ConstructParticle
 
 void PhysicsList::ConstructProcess() {
     G4VModularPhysicsList::ConstructProcess();
-    return;
+
     // TODO: we need to do some refactoring here, most of these lines are redundant (maybe all?)
     AddTransportation();
     // Electromagnetic physics list
@@ -255,7 +255,7 @@ void PhysicsList::SetCuts() {
         fRestGeant4PhysicsLists->GetMaximumEnergyProductionCuts() * keV);
 
     SetCutValue(fRestGeant4PhysicsLists->GetCutForGamma() * mm, "gamma");
-    SetCutValue(fRestGeant4PhysicsLists->GetCutForElectron() * mm * 100, "e-");
+    SetCutValue(fRestGeant4PhysicsLists->GetCutForElectron() * mm, "e-");
     SetCutValue(fRestGeant4PhysicsLists->GetCutForPositron() * mm, "e+");
     SetCutValue(fRestGeant4PhysicsLists->GetCutForMuon() * mm, "mu+");
     SetCutValue(fRestGeant4PhysicsLists->GetCutForMuon() * mm, "mu-");
