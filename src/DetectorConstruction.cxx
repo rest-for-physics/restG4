@@ -1,6 +1,9 @@
 
 #include "DetectorConstruction.h"
 
+#include <TRestGeant4Geometry.h>
+#include <TXMLEngine.h>
+
 #include <G4FieldManager.hh>
 #include <G4IonTable.hh>
 #include <G4Isotope.hh>
@@ -9,6 +12,8 @@
 #include <G4SystemOfUnits.hh>
 #include <G4UniformMagField.hh>
 #include <G4UserLimits.hh>
+
+using namespace std;
 
 extern TRestGeant4Event* restG4Event;
 extern TRestGeant4Metadata* restG4Metadata;
@@ -38,7 +43,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     chdir(originDirectory);
 
-    G4VPhysicalVolume* W = parser->GetWorldVolume();
+    G4VPhysicalVolume* worldVolume = parser->GetWorldVolume();
 
     // TODO : Take the name of the sensitive volume and use it here to define its
     // StepSize
@@ -90,7 +95,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         if (pVol == nullptr) {
             cout << "ERROR : The generator volume was not found in the geometry" << endl;
             exit(1);
-            return W;
+            return worldVolume;
         }
 
         fGeneratorTranslation = pVol->GetTranslation();
@@ -146,30 +151,36 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         }
     }
 
-    for (int id = 0; id < restG4Metadata->GetNumberOfActiveVolumes(); id++) {
-        TString actVolName = restG4Metadata->GetActiveVolumeName(id);
-        G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)actVolName);
-        if (pVol != NULL) {
-            G4LogicalVolume* lVol = pVol->GetLogicalVolume();
-            if (restG4Metadata->GetMaxStepSize(actVolName) > 0) {
-                G4cout << "Setting maxStepSize = " << restG4Metadata->GetMaxStepSize(actVolName)
-                       << "mm for volume : " << actVolName << G4endl;
-                lVol->SetUserLimits(new G4UserLimits(restG4Metadata->GetMaxStepSize(actVolName) * mm));
-            }
-        }
+    auto geometry = restG4Metadata->GetGeometry();
+    geometry->LoadGdml(restG4Metadata->Get_GDML_Filename());
+    geometry->BuildAssemblyLookupTable(worldVolume);
+    geometry->InitializeFromGeant4World(worldVolume);
 
-        cout << "Activating volume : " << actVolName << endl;
-        restG4Event->AddActiveVolume((string)actVolName);
-        if (pVol == NULL) {
-            cout << "DetectorConstruction. Volume " << actVolName << " is not defined in the geometry"
-                 << endl;
+    for (const auto& activeVolume : geometry->GetActiveVolumes()) {
+        cout << " - " << activeVolume << geometry->GetMaxStepSize(activeVolume) << endl;
+    }
+    for (const auto& activeVolume : geometry->GetActiveVolumes()) {
+        G4cout << activeVolume << endl;
+        auto physicalVolume = GetPhysicalVolume(activeVolume.Data());
+
+        if (!physicalVolume) {
+            G4cout << "DetectorConstruction. Volume " << activeVolume << " is not defined in the geometry"
+                   << endl;
             exit(1);
         }
+
+        auto logicalVolume = physicalVolume->GetLogicalVolume();
+        if (geometry->GetMaxStepSize(activeVolume) > 0) {
+            cout << "step size: " << endl;
+            G4cout << "Setting maxStepSize = " << geometry->GetMaxStepSize(activeVolume)
+                   << "mm for volume : " << activeVolume << endl;
+            logicalVolume->SetUserLimits(new G4UserLimits(geometry->GetMaxStepSize(activeVolume) * mm));
+        }
+        G4cout << "Activating volume : " << activeVolume << endl;
+        restG4Event->AddActiveVolume(activeVolume.Data());
     }
 
-    cout << "Detector constructed : " << W << endl;
-
-    return W;
+    return worldVolume;
 }
 
 G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(G4String physVolName) {
@@ -182,4 +193,144 @@ G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(G4String physVolName)
     }
 
     return NULL;
+}
+
+XMLNodePointer_t FindChildByName(TXMLEngine xml, XMLNodePointer_t node, const TString& name) {
+    XMLNodePointer_t child = xml.GetChild(node);
+    while (child) {
+        TString childName = xml.GetNodeName(child);
+        if (childName.EqualTo(name)) {
+            return child;
+        }
+        child = xml.GetNext(child);
+    }
+    return nullptr;
+}
+XMLNodePointer_t FindVolumeOrAssemblyByName(TXMLEngine xml, XMLNodePointer_t node, const TString& name) {
+    XMLNodePointer_t child = xml.GetChild(node);
+    while (child) {
+        TString childName = xml.GetNodeName(child);
+        if (childName.EqualTo("volume") || childName.EqualTo("assembly")) {
+            XMLAttrPointer_t attr = xml.GetFirstAttr(child);
+            while (attr) {
+                if (TString(xml.GetAttrName(attr)).EqualTo("name")) {
+                    TString volumeName = xml.GetAttrValue(attr);
+                    G4cout << volumeName << endl;
+                }
+                attr = xml.GetNextAttr(attr);
+            }
+        }
+        child = xml.GetNext(child);
+    }
+    return nullptr;
+}
+TString GetNodeAttribute(TXMLEngine xml, XMLNodePointer_t node, const TString& attributeName) {
+    XMLAttrPointer_t attr = xml.GetFirstAttr(node);
+    while (attr) {
+        if (TString(xml.GetAttrName(attr)).EqualTo(attributeName)) {
+            TString refName = xml.GetAttrValue(attr);
+            return refName;
+        }
+        attr = xml.GetNextAttr(attr);
+    }
+    return TString();
+}
+void AddVolumesRecursively(vector<TString>* container, const vector<TString>& children,
+                           map<TString, TString>& nameTable, map<TString, vector<TString>>& childrenTable,
+                           const TString& name = "") {
+    // G4cout << "called AddVolumesRecursively with name: " << name << endl;
+    for (const auto& child : children) {
+        // G4cout << "\t" << child << endl;
+    }
+    if (children.empty()) {
+        container->push_back(name);
+        // G4cout << "ADDED: " << name << endl;
+        return;
+    }
+    for (const auto& childName : children) {
+        AddVolumesRecursively(container, childrenTable[nameTable[childName]], nameTable, childrenTable,
+                              name + "_" + childName);
+    }
+}
+
+void TRestGeant4Geometry::BuildAssemblyLookupTable(const G4VPhysicalVolume* fWorld) {
+    // Geometry must be in GDML
+    TXMLEngine xml;
+    XMLDocPointer_t xmldoc = xml.ParseFile(fGdmlAbsolutePath);
+    if (!xmldoc) {
+        cout << "TRestGeant4Geometry::BuildAssemblyLookupTable - Failed to open '" << fGdmlAbsolutePath << "'"
+             << endl;
+        exit(1);
+    }
+    map<TString, TString> nameTable;
+    map<TString, vector<TString>> childrenTable;
+    XMLNodePointer_t mainNode = xml.DocGetRootElement(xmldoc);
+    XMLNodePointer_t structure = FindChildByName(xml, mainNode, "structure");
+    XMLNodePointer_t world = FindVolumeOrAssemblyByName(xml, structure, "world");
+    XMLNodePointer_t child = xml.GetChild(structure);
+    while (child) {
+        TString name = xml.GetNodeName(child);
+        TString volumeName = GetNodeAttribute(xml, child, "name");
+        auto physicalVolumeNode = xml.GetChild(child);
+        childrenTable[volumeName] = {};
+        while (physicalVolumeNode) {
+            auto physicalVolumeName = GetNodeAttribute(xml, physicalVolumeNode, "name");
+            auto volumeRefNode = xml.GetChild(physicalVolumeNode);
+            while (volumeRefNode) {
+                TString volumeRefNodeName = xml.GetNodeName(volumeRefNode);
+                if (volumeRefNodeName.EqualTo("volumeref")) {
+                    TString refName = GetNodeAttribute(xml, volumeRefNode, "ref");
+                    nameTable[physicalVolumeName] = refName;
+                    childrenTable[volumeName].push_back(physicalVolumeName);
+                }
+                volumeRefNode = xml.GetNext(volumeRefNode);
+            }
+            physicalVolumeNode = xml.GetNext(physicalVolumeNode);
+        }
+        child = xml.GetNext(child);
+    }
+    auto names = new vector<TString>();
+    for (const auto& topName : childrenTable["world"]) {
+        auto children = childrenTable[nameTable[topName]];
+        AddVolumesRecursively(names, children, nameTable, childrenTable, topName);
+    }
+    map<TString, TString> lookupTable;
+    const int n = int(fWorld->GetLogicalVolume()->GetNoDaughters());
+    for (int i = 0; i < n; i++) {
+        G4VPhysicalVolume* volume = fWorld->GetLogicalVolume()->GetDaughter(i);
+        auto namePhysical = volume->GetName();
+        lookupTable[namePhysical] = (*names)[i];
+    }
+    fGeant4PhysicalToPhysicalMap = lookupTable;
+    delete names;
+    xml.FreeDoc(xmldoc);
+}
+
+void TRestGeant4Geometry::InitializeFromGeant4World(const G4VPhysicalVolume* world) {
+    const int n = int(world->GetLogicalVolume()->GetNoDaughters());
+    for (int i = 0; i < n; i++) {
+        G4VPhysicalVolume* volume = world->GetLogicalVolume()->GetDaughter(i);
+        TString namePhysical = (TString)volume->GetName();
+        TString physicalLookupAlias = GetPhysicalFromGeant4Physical(TString(namePhysical));
+        TString nameLogical = (TString)volume->GetLogicalVolume()->GetName();
+        TString nameMaterial = (TString)volume->GetLogicalVolume()->GetMaterial()->GetName();
+        auto position = volume->GetTranslation();
+
+        cout << TString::Format(
+                    "---> %d - physical: %s (%s)- logical: %s - material: %s - position: (%f, %f, "
+                    "%f)",
+                    i, namePhysical.Data(), physicalLookupAlias.Data(), nameLogical.Data(),
+                    nameMaterial.Data(), position.x(), position.y(), position.z())
+             << endl;
+
+        fPhysicalVolumes.emplace_back(namePhysical);
+        fPhysicalToLogicalVolumeMap[namePhysical] = nameLogical;
+        fLogicalToMaterialMap[nameLogical] = nameMaterial;
+        fPhysicalToPositionInWorldMap[namePhysical] = {position.x(), position.y(), position.z()};
+    }
+    if (fAllVolumesActive || fActiveVolumes.empty()) {
+        for (const auto& physicalVolume : fPhysicalVolumes) {
+            InsertActiveVolume(physicalVolume, fDefaultStorageChance, fDefaultMaxStepSize);
+        }
+    }
 }

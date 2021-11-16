@@ -52,7 +52,7 @@ endif ()
 # Set include and lib
 set(INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include ${ROOT_INCLUDE_DIRS} ${rest_include_dirs} ${Geant4_INCLUDE_DIR})
 
-set(LINK_LIBRARIES ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} -lGui -lGeom -lGdml -lMinuit RestGeant4)
+set(LINK_LIBRARIES ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} -lGui -lGeom -lGdml -lMinuit -lXMLIO RestGeant4)
 string(STRIP "${LINK_LIBRARIES}" LINK_LIBRARIES)
 
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cxx)

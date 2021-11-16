@@ -27,11 +27,13 @@ void EventAction::BeginOfEventAction(const G4Event* geant4_event) {
 
     if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
         cout << "DEBUG: Start of event ID " << event_number << " (" << event_number + 1 << " of "
-             << restG4Metadata->GetNumberOfEvents() << "). " << restRun->GetEntries() << " Events stored." << endl;
+             << restG4Metadata->GetNumberOfEvents() << "). " << restRun->GetEntries() << " Events stored."
+             << endl;
     } else if ((restG4Metadata->PrintProgress() || restG4Metadata->GetVerboseLevel() >= REST_Info) &&
                geant4_event->GetEventID() % 10000 == 0) {
         cout << "INFO: Start of event ID " << event_number << " (" << event_number + 1 << " of "
-             << restG4Metadata->GetNumberOfEvents() << "). " << restRun->GetEntries() << " Events stored." << endl
+             << restG4Metadata->GetNumberOfEvents() << "). " << restRun->GetEntries() << " Events stored."
+             << endl
              << endl;
     }
 
@@ -47,7 +49,8 @@ void EventAction::BeginOfEventAction(const G4Event* geant4_event) {
     for (int i = 0; i < restG4Metadata->GetNumberOfActiveVolumes(); i++) {
         Double_t rndNumber = G4UniformRand();
 
-        if (restG4Metadata->GetStorageChance(i) >= rndNumber)
+        if (restG4Metadata->GetStorageChance(restG4Metadata->GetGeometry()->GetActiveVolumeFromIndex(i)) >=
+            rndNumber)
             restG4Event->ActivateVolumeForStorage(i);
         else
             restG4Event->DisableVolumeForStorage(i);
