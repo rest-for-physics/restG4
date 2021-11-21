@@ -28,19 +28,23 @@
         <!-- The number of events to be simulated is now defined in TRestGeant4Metadata -->
         <parameter name="Nevents" value="3000"/>
         <parameter name="saveAllEvents" value="false"/>
-
+        <!--
         <generator type="surface" shape="wall" position="(0,0.5,0)m" size="(2.5,2.5,0)m" rotationAxis="(1,0,0)"
                    rotationDeg="1.5708">
-
+        -->
+        <generator type="point" position="(0,500,0)m">
             <source particle="neutron">
                 <energyDist type="TH1D" file="CosmicNeutrons.root" spctName="CosmicNeutrons"/>
-                <angularDist type="TH1D" file="CosmicAngles.root" spctName="Theta2" direction="(0,0,-1)"/>
+                <angularDist type="flux" direction="(0,-1,0)"/>
             </source>
         </generator>
 
-        <storage sensitiveVolume="av_1_impr_1_gasVolume_pv_0">
-            <parameter name="energyRange" value="(0,1)" units="GeV"/>
-        </storage>
+        <TRestGeant4Geometry>
+            <parameter name="allVolumesActive" value="true"/>
+            <parameter name="energyRange" value="(0,10)" units="GeV"/>
+            <volume name="gasVolume" chance="1" maxStepSize="1mm" sensitive="true"/>
+            <volume name="badVolume" chance="1" maxStepSize="1mm"/>
+        </TRestGeant4Geometry>
 
     </TRestGeant4Metadata>
 
