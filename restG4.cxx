@@ -67,9 +67,14 @@ int main(int argc, char** argv) {
     CommandLineParameters commandLineParameters = CommandLineSetup::ProcessParameters(argc, argv);
     CommandLineSetup::Print(commandLineParameters);
 
+    /// Separating relative path and pure RML filename
     char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
+    std::pair<string, string> pathAndRml = TRestTools::SeparatePathAndName(inputConfigFile);
+    char* inputRMLClean = (char*)pathAndRml.second.data();
 
-    restG4Metadata = new TRestGeant4Metadata(inputConfigFile);
+    TRestTools::ChangeDirectory(pathAndRml.first);
+
+    restG4Metadata = new TRestGeant4Metadata(inputRMLClean);
 
     string geant4Version = TRestTools::Execute("geant4-config --version");
     restG4Metadata->SetGeant4Version(geant4Version);
@@ -92,10 +97,13 @@ int main(int argc, char** argv) {
     restG4Metadata->Set_GDML_Reference(gdml->GetGDMLVersion());
     restG4Metadata->SetMaterialsReference(gdml->GetEntityVersion("materials"));
 
-    restPhysList = new TRestGeant4PhysicsLists(inputConfigFile);
+    restPhysList = new TRestGeant4PhysicsLists(inputRMLClean);
 
     restRun = new TRestRun();
-    restRun->LoadConfigFromFile(inputConfigFile);
+    restRun->LoadConfigFromFile(inputRMLClean);
+
+    TRestTools::ReturnToPreviousDirectory();
+
     TString runTag = restRun->GetRunTag();
     if (runTag == "Null" || runTag == "") restRun->SetRunTag(restG4Metadata->GetTitle());
 
