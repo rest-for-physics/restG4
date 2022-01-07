@@ -4,6 +4,8 @@
 
 #include "CommandLineSetup.h"
 
+#include <getopt.h>
+
 #include <iostream>
 
 using namespace std;
