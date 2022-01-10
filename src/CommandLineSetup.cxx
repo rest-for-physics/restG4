@@ -5,7 +5,7 @@
 #include "CommandLineSetup.h"
 
 #include <getopt.h>
-
+#include <unistd.h>
 #include <iostream>
 
 using namespace std;
