@@ -1,15 +1,22 @@
 <solids>
     <box name="WorldSolid" x="world_size" y="world_size" z="world_size" lunit="mm"/>
-    <box name="gasSolid" x="100" y="100" z="30" lunit="mm"/>
-    <box name="cathodeSolid" x="100" y="100" z="0.1" lunit="mm"/>
-    <box name="readoutSolid" x="100" y="100" z="0.1" lunit="mm"/>
+    <box name="gasSolid" x="100" y="100" z="100" lunit="mm"/>
+    <box name="cathodeSolid" x="100" y="100" z="foilThickness" lunit="mm"/>
+    <box name="readoutSolid" x="100" y="100" z="foilThickness" lunit="mm"/>
+    <box name="sourceSolid" x="10" y="10" z="foilThickness" lunit="mm"/>
+
+	<subtraction name="gasFinalSolid">
+		<first ref="gasSolid"/>
+		<second ref="sourceSolid"/>
+	</subtraction>
+
 </solids>
 
 <structure>
 
 <volume name="gasVolume">
-    <materialref ref="Argon_ISO"/>
-    <solidref ref="gasSolid"/>
+    <materialref ref="Ar_ISO"/>
+    <solidref ref="gasFinalSolid"/>
 </volume>
 
 <volume name="readoutVolume">
@@ -20,6 +27,11 @@
 <volume name="cathodeVolume">
     <materialref ref="Copper"/>
     <solidref ref="cathodeSolid"/>
+</volume>
+
+<volume name="sourceVolume">
+    <materialref ref="Copper"/>
+    <solidref ref="sourceSolid"/>
 </volume>
 
 <!-- {{{ Physical volume definition (volume and position assignment) -->
@@ -34,12 +46,17 @@
 
     <physvol name="cathode">
         <volumeref ref="cathodeVolume"/>
-        <position name="cathodePos" unit="mm" x="0" y="0" z="15.05"/>
+        <position name="cathodePos" unit="mm" x="0" y="0" z="50+foilThickness"/>
     </physvol>
 
     <physvol name="readout">
         <volumeref ref="cathodeVolume"/>
-        <position name="cathodePos" unit="mm" x="0" y="0" z="-15.05"/>
+        <position name="cathodePos" unit="mm" x="0" y="0" z="-50-foilThickness"/>
+    </physvol>
+
+    <physvol name="source">
+        <volumeref ref="sourceVolume"/>
+        <position name="sourcePos" unit="mm" x="0" y="0" z="0"/>
     </physvol>
 </volume>
 <!-- }}} -->
