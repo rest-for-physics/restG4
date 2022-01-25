@@ -50,8 +50,8 @@
     </physvol>
 
     <physvol name="readout">
-        <volumeref ref="cathodeVolume"/>
-        <position name="cathodePos" unit="mm" x="0" y="0" z="-50-foilThickness"/>
+        <volumeref ref="readoutVolume"/>
+        <position name="readoutPos" unit="mm" x="0" y="0" z="-50-foilThickness"/>
     </physvol>
 
     <physvol name="source">

@@ -31,10 +31,10 @@ Execute the following to launch the processing of the generated events and produ
 restG4 --c analysis.rml --f data/FileGenerated.root
 ```
 
-See also `../../.gitlab-ci.yml` and `Validation.C` for validation routines executed in the pipeline. The following plot is generated using the pipeline.
+See also `../../.gitlab-ci.yml` and `Validation.C` for validation routines executed in the pipeline. The following plot showing the energy spectrum is generated using the pipeline.
 
 
-![plot](plots.png | width=400)
+![plot](plots.png)
 
 Commands to reproduce the figure shown follow:
 
