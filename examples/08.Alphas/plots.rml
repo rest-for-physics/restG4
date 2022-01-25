@@ -6,7 +6,7 @@
 
     <parameter name="previewPlot" value="True"/>
 
-	<canvas size="(1000,800)" divide="(1,1)" save="data/plots.root"/>
+	<canvas size="(1000,800)" divide="(1,1)" save="plots.root"/>
 
     <plot name="Energy" title="Energy spectrum" xlabel="Energy [keV]" ylabel="Counts" value="ON" stats="OFF" legend="on" xticks="6" >
 
