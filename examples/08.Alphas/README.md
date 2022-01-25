@@ -4,7 +4,7 @@
 
 <style type="text/css">
 	img[alt="plot"] {
-	width: 400px;
+	width: 200px;
 	}
 </style>
 
@@ -84,4 +84,4 @@ root [1] TGeoManager *geo = g->GetGeoManager("geometry/setup.gdml")
 root [2] geo->GetTopVolume()->Draw("ogl")
 ```
 
-![geometry](event.png)
+![event](event.png)
