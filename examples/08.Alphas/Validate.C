@@ -27,13 +27,35 @@ Int_t Validate() {
     TRestAnalysisTree* aT = run->GetAnalysisTree();
 
     // Testing an arbitrary entry
+    cout << 98 << endl;
+    run->GetEntry(98);
+    cout << (int)(1000 * aT->GetObservableValue<Double_t>("g4Ana_thetaPrimary")) << endl;
+
+    cout << 99 << endl;
+    run->GetEntry(99);
+    cout << (int)(1000 * aT->GetObservableValue<Double_t>("g4Ana_thetaPrimary")) << endl;
+
+    cout << 100 << endl;
     run->GetEntry(100);
+    cout << (int)(1000 * aT->GetObservableValue<Double_t>("g4Ana_thetaPrimary")) << endl;
+
+    cout << 101 << endl;
+    run->GetEntry(101);
+    cout << (int)(1000 * aT->GetObservableValue<Double_t>("g4Ana_thetaPrimary")) << endl;
+
+    cout << 102 << endl;
+    run->GetEntry(102);
+    cout << (int)(1000 * aT->GetObservableValue<Double_t>("g4Ana_thetaPrimary")) << endl;
 
     Int_t thetaInt = (int)(1000 * aT->GetObservableValue<Double_t>("g4Ana_thetaPrimary"));
     if (thetaInt != 515) {
         cout << "Wrong theta angle value for entry 100!" << endl;
+        cout << "Theta value is : " << thetaInt << endl;
         return 60;
     }
+
+    run->GetEntry(101);
+    cout << (int)(1000 * aT->GetObservableValue<Double_t>("g4Ana_thetaPrimary")) << endl;
 
     Int_t phiInt = (int)(1000 * aT->GetObservableValue<Double_t>("g4Ana_phiPrimary"));
     if (phiInt != 1539) {
