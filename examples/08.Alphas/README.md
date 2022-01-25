@@ -2,6 +2,12 @@
 
 **Author:** Javier Galan (javier.galan@unizar.es)
 
+<style type="text/css">
+	img[alt="plot"] {
+	width: 400px;
+	}
+</style>
+
 This example tests the generation of alphas with a well defined energy from a thin foil immersed in a gas volume.
 
 #### Detector geometry
@@ -34,7 +40,7 @@ restG4 --c analysis.rml --f data/FileGenerated.root
 See also `../../.gitlab-ci.yml` and `Validation.C` for validation routines executed in the pipeline. The following plot is generated using the pipeline.
 
 
-![alphaPlots](plots.png)
+![plot](plots.png)
 
 Commands to reproduce the figure shown follow:
 
