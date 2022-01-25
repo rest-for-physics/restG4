@@ -35,12 +35,10 @@ Int_t Validate() {
         return 60;
     }
 
-    run->GetEntry(101);
-    cout << (int)(1000 * aT->GetObservableValue<Double_t>("g4Ana_thetaPrimary")) << endl;
-
     Int_t phiInt = (int)(1000 * aT->GetObservableValue<Double_t>("g4Ana_phiPrimary"));
     if (phiInt != 1539) {
-        cout << "Wrong theta angle value for entry 100!" << endl;
+        cout << "Wrong phi angle value for entry 100!" << endl;
+        cout << "Phi value is : " << phiInt << endl;
         return 60;
     }
 
