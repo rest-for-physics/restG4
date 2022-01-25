@@ -138,6 +138,28 @@ loadRESTLibs:
     - restG4 singleDecay.rml
     - restRoot -b -q Validate.C'("Run00002_Be7_SingleChainDecay.root", 1)'
 
+08_Alphas:
+  type: examples
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cd ${CI_PROJECT_DIR}/install/examples/08.Alphas/
+    - mkdir data
+    - export REST_ENERGY=5
+    - export REST_FOIL=1
+    - restG4 alphas.rml
+    - export REST_ENERGY=5
+    - export REST_FOIL=5
+    - restG4 alphas.rml
+    - export REST_ENERGY=1
+    - export REST_FOIL=5
+    - restG4 alphas.rml
+    - restManager 
+    - restManager --c analysis.rml --f Run_1MeV_5um.root
+    - restManager --c analysis.rml --f Run_5MeV_1um.root
+    - restManager --c analysis.rml --f Run_5MeV_5um.root
+    - restManager --c plots.rml --f "data/*g4Ana*root"
+    - restRoot -b -q Validate.C
+
 
 09_Pb210_Shielding:
   type: examples
