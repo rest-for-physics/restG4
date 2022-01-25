@@ -26,26 +26,7 @@ Int_t Validate() {
     TRestRun* run = new TRestRun("data/Run_g4Analysis_1MeV_5um.root");
     TRestAnalysisTree* aT = run->GetAnalysisTree();
 
-    // Testing an arbitrary entry
-    cout << 98 << endl;
-    run->GetEntry(98);
-    cout << (int)(1000 * aT->GetObservableValue<Double_t>("g4Ana_thetaPrimary")) << endl;
-
-    cout << 99 << endl;
-    run->GetEntry(99);
-    cout << (int)(1000 * aT->GetObservableValue<Double_t>("g4Ana_thetaPrimary")) << endl;
-
-    cout << 100 << endl;
     run->GetEntry(100);
-    cout << (int)(1000 * aT->GetObservableValue<Double_t>("g4Ana_thetaPrimary")) << endl;
-
-    cout << 101 << endl;
-    run->GetEntry(101);
-    cout << (int)(1000 * aT->GetObservableValue<Double_t>("g4Ana_thetaPrimary")) << endl;
-
-    cout << 102 << endl;
-    run->GetEntry(102);
-    cout << (int)(1000 * aT->GetObservableValue<Double_t>("g4Ana_thetaPrimary")) << endl;
 
     Int_t thetaInt = (int)(1000 * aT->GetObservableValue<Double_t>("g4Ana_thetaPrimary"));
     if (thetaInt != 515) {
