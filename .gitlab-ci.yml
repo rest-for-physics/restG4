@@ -153,7 +153,6 @@ loadRESTLibs:
     - export REST_ENERGY=1
     - export REST_FOIL=5
     - restG4 alphas.rml
-    - restManager 
     - restManager --c analysis.rml --f Run_1MeV_5um.root
     - restManager --c analysis.rml --f Run_5MeV_1um.root
     - restManager --c analysis.rml --f Run_5MeV_5um.root
