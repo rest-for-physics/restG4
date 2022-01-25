@@ -156,7 +156,7 @@ loadRESTLibs:
     - restManager --c analysis.rml --f data/Run_1MeV_5um.root
     - restManager --c analysis.rml --f data/Run_5MeV_1um.root
     - restManager --c analysis.rml --f data/Run_5MeV_5um.root
-    - restManager --c plots.rml --f "data/*g4Ana*root"
+    - restManager --c plots.rml --f "data/*g4Ana*root" --batch
     - restRoot -b -q Validate.C
 
 

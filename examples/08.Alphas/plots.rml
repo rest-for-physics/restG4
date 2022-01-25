@@ -4,7 +4,7 @@
 
   <TRestAnalysisPlot name="restplot" title="Basic Plots">
 
-    <parameter name="previewPlot" value="True"/>
+    <parameter name="previewPlot" value="False"/>
 
 	<canvas size="(1000,800)" divide="(1,1)" save="plots.root"/>
 
