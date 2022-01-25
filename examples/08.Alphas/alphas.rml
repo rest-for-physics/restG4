@@ -21,7 +21,7 @@ By default REST units are mm, keV and degrees
         <parameter name="runType" value="simulation"/>
         <parameter name="runNumber" value="1"/>
 		<parameter name="runTag" value="${REST_ENERGY}MeV_${REST_FOIL}um"/>
-        <parameter name="outputFileName" value="Run_[fRunTag].root"/>
+		<parameter name="outputFileName" value="data/Run_[fRunTag].root"/>
         <parameter name="runDescription" value=""/>
         <parameter name="user" value="${USER}"/>
         <parameter name="overwrite" value="off"/>

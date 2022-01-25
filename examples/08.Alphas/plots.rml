@@ -2,53 +2,30 @@
 
 <TRestManager name="SpecPlot" title="Example" verboseLevel="info" >
 
-  <TRestRun name="SJTU_Proto" >
-    <parameter name="runNumber" value="-1"/>//change this value to "auto" to enable database
-    <parameter name="outputFileName" value="null"/>//change this value to "auto" to enable database
-  </TRestRun>
-
   <TRestAnalysisPlot name="restplot" title="Basic Plots">
 
     <parameter name="previewPlot" value="True"/>
 
-    <canvas size="(1000,800)" divide="(1,1)" save="plots.root"/>
+	<canvas size="(1000,800)" divide="(1,1)" save="data/plots.root"/>
 
-    <plot name="Energy" title="Energy spectrum" xlabel="Energy [keV]" ylabel="Counts" value="ON" stats="ON" >
+    <plot name="Energy" title="Energy spectrum" xlabel="Energy [keV]" ylabel="Counts" value="ON" stats="OFF" legend="on" xticks="6" >
 
-      <histo name="1MeV_5um" fillColor="gray" lineColor="red">
-        <variable name="g4Ana_totalEdep" range="(0,10000)" nbins="100"/>
+      <histo name="1MeV_5um" fillColor="46" lineColor="red">
+        <variable name="g4Ana_totalEdep" range="(0,6000)" nbins="100"/>
         <classify runTag="1MeV_5um"/>
       </histo>
 
-      <histo name="5MeV_5um" fillColor="gray" lineColor="blue">
-        <variable name="g4Ana_totalEdep" range="(0,10000)" nbins="100"/>
+      <histo name="5MeV_5um" fillColor="38" lineColor="blue">
+        <variable name="g4Ana_totalEdep" range="(0,6000)" nbins="100"/>
         <classify runTag="5MeV_5um"/>
       </histo>
 
       <histo name="5MeV_1um" fillColor="gray" lineColor="black">
-        <variable name="g4Ana_totalEdep" range="(0,10000)" nbins="100"/>
+        <variable name="g4Ana_totalEdep" range="(0,6000)" nbins="100"/>
         <classify runTag="5MeV_1um"/>
       </histo>
 
     </plot>
-
-
-    <!--<plot name="ABC" title="" xlabel="Track energy ratio" legend="on" logy="on">
-      <histo name="0vbb" fillColor="xxx" lineColor="xxx">
-        <variable name="TrackEnergyRatio"/>
-        <classify runTag="NLDBD"/>
-      </histo>
-
-      <histo name="micromegas Th232" fillColor="xxx" lineColor="xxx">
-        <variable name="TrackEnergyRatio"/>
-        <classify runTag="Th232"/>
-      </histo>
-
-      <histo name="micromegas U238" fillColor="xxx" lineColor="xxx">
-        <variable name="TrackEnergyRatio"/>
-        <classify runTag="U238"/>
-      </histo>
-    </plot>-->
 
   </TRestAnalysisPlot>
 

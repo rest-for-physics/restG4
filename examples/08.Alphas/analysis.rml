@@ -12,7 +12,6 @@ internal values are saved.
         <variable name="EXPERIMENT" value="TREXDM" overwrite="false"/>
         <parameter name="mainDataPath" value="."/>
         <parameter name="verboseLevel" value="warning"/>
-        %options are : essential silent, warning, info, debug
     </globals>
 
     <TRestRun name="Process" title="${EXPERIMENT} Simulations. Version ${VERSION}.">
@@ -25,7 +24,7 @@ internal values are saved.
         <parameter name="user" value="${USER}"/>
         <parameter name="verboseLevel" value="1"/>
         <parameter name="overwrite" value="off"/>
-        <parameter name="outputFileName" value="Run_[fRunType]_[fRunTag].root"/>
+		<parameter name="outputFileName" value="data/Run_[fRunType]_[fRunTag].root"/>
     </TRestRun>
 
     <TRestProcessRunner name="TemplateEventProcess" verboseLevel="info">
