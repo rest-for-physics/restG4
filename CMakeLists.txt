@@ -64,8 +64,8 @@ target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARIES})
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${INCLUDE_DIRS})
 
 # Copy scripts to the build directory
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples
-        DESTINATION .
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/
+        DESTINATION ./examples/restG4/
         COMPONENT install
         )
 
