@@ -83,7 +83,7 @@ loadRESTLibs:
   type: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
-    - cd ${CI_PROJECT_DIR}/install/examples/01.NLDBD/
+    - cd ${CI_PROJECT_DIR}/install/examples/restG4/01.NLDBD/
     - restG4 NLDBD.rml
     - geant4-config --version
     - restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
@@ -92,7 +92,7 @@ loadRESTLibs:
   type: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
-    - cd ${CI_PROJECT_DIR}/install/examples/03.Fluorescence/
+    - cd ${CI_PROJECT_DIR}/install/examples/restG4/03.Fluorescence/
     - restG4 gamma.rml
     - restManager --c g4Analysis.rml --f Run00111_Gamma_Fluorescence.root
     - geant4-config --version
@@ -102,7 +102,7 @@ loadRESTLibs:
   type: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
-    - cd ${CI_PROJECT_DIR}/install/examples/04.MuonScan/
+    - cd ${CI_PROJECT_DIR}/install/examples/restG4/04.MuonScan/
     - restG4 Muon.rml
     - geant4-config --version
     - restRoot -b -q Validate.C'("Run00111_restG4_MuonsFromPoint_rest.root")'
@@ -113,7 +113,7 @@ loadRESTLibs:
   type: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
-    - cd ${CI_PROJECT_DIR}/install/examples/05.PandaXIII/
+    - cd ${CI_PROJECT_DIR}/install/examples/restG4/05.PandaXIII/
     - restG4 Xe136bb0n.rml
     - restRoot -b -q ValidateG4.C'("Xe136bb0n_n2E06.root")'
 
@@ -121,7 +121,7 @@ loadRESTLibs:
   type: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
-    - cd ${CI_PROJECT_DIR}/install/examples/06.IonRecoils/
+    - cd ${CI_PROJECT_DIR}/install/examples/restG4/06.IonRecoils/
     - restG4 recoils.rml
     - restRoot -b -q Validate.C'("Run00001_F20_Recoils.root")'
 
@@ -129,7 +129,7 @@ loadRESTLibs:
   type: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
-    - cd ${CI_PROJECT_DIR}/install/examples/07.FullChainDecay/
+    - cd ${CI_PROJECT_DIR}/install/examples/restG4/07.FullChainDecay/
     - restG4 fullChain.rml
     - restG4 singleDecay.rml
     - restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 14)'
@@ -142,7 +142,7 @@ loadRESTLibs:
   type: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
-    - cd ${CI_PROJECT_DIR}/install/examples/08.Alphas/
+    - cd ${CI_PROJECT_DIR}/install/examples/restG4/08.Alphas/
     - mkdir data
     - export REST_ENERGY=5
     - export REST_FOIL=1
@@ -164,6 +164,6 @@ loadRESTLibs:
   type: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
-    - cd ${CI_PROJECT_DIR}/install/examples/09.Pb210_Shield/
+    - cd ${CI_PROJECT_DIR}/install/examples/restG4/09.Pb210_Shield/
     - restG4 Pb210.rml
     - restRoot -b -q Validate.C'("Run00001_Pb210_Shielding.root")'
