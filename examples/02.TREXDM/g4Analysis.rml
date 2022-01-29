@@ -33,9 +33,9 @@ internal values are saved.
         <parameter name="eventsToProcess" value="100"/>
         <parameter name="threadNumber" value="2"/>
 
-        <parameter name="inputAnalysis" value="on"/>
-        <parameter name="inputEvent" value="off"/>
-        <parameter name="outputEvent" value="on"/>
+        <parameter name="inputAnalysisStorage" value="on"/>
+        <parameter name="inputEventStorage" value="off"/>
+        <parameter name="outputEventStorage" value="on"/>
 
         // observable = all will add all NON `custom` observables
         <addProcess type="TRestGeant4AnalysisProcess" name="g4Ana" value="ON">
