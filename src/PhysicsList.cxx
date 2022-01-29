@@ -19,6 +19,7 @@
 #include <G4IonBinaryCascadePhysics.hh>
 #include <G4IonFluctuations.hh>
 #include <G4IonParametrisedLossModel.hh>
+#include <G4IonTable.hh>
 #include <G4LossTableManager.hh>
 #include <G4NeutronTrackingCut.hh>
 #include <G4ParticleTable.hh>

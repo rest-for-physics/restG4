@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+			<!-- ##VERSION REST Example 08.Alphas Foil thickness : ${REST_FOIL} um Version 1.0## -->
+
+<!DOCTYPE gdml [
+        <!ENTITY geometry SYSTEM "geometry.gdml">
+        <!ENTITY materials SYSTEM "https://sultan.unizar.es/materials/materials.xml">
+        ]>
+
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+
+    <!-- All values should be in mm -->
+
+    <define>
+        <constant name="world_size" value="20000"/>
+		<constant name="foilThickness" value="0.001*${REST_FOIL}"/>
+
+		<!-- Aproximate density values for 1-atm -->
+		<variable name="targetGasDensity" value="1.664"/> <!-- g/cm3 -->
+        <variable name="quencherDensity" value="2.51"/>
+        <variable name="quencherFraction" value="0.01"/>
+        <variable name="gasTemperature" value="300"/>
+        <variable name="gasPressure" value="1"/>
+    </define>
+
+    &materials;
+
+    &geometry;
+
+
+    <setup name="Default" version="1.0">
+        <world ref="World"/>
+    </setup>
+
+</gdml>
