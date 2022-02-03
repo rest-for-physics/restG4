@@ -1,4 +1,5 @@
-image: nkx1231/root6-geant4-garfield:0.8
+# image: nkx1231/root6-geant4-garfield:0.8
+image: ghcr.io/lobis/root-geant4-garfield:cxx17_ROOTv6-25-01_Geant4v10.4.3
 
 stages:
   - build
