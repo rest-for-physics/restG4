@@ -5,7 +5,9 @@ message("===============  ${PROJECT_NAME}  ==============")
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake ${CMAKE_MODULE_PATH})
 
 # Find ROOT
-find_package(ROOT REQUIRED COMPONENTS RIO Geom)
+set(ROOT_REQUIRED_LIBRARIES ${ROOT_REQUIRED_LIBRARIES} Gui Geom Gdml)
+find_package(ROOT REQUIRED COMPONENTS ${ROOT_REQUIRED_LIBRARIES})
+
 execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS)
 string(STRIP ${ROOT_CFLAGS} ROOT_CFLAGS)
 message(STATUS "-- Found ROOT version: ${ROOT_VERSION} with compilation flags: ${ROOT_CFLAGS} and libraries: ${ROOT_LIBRARIES}")
@@ -52,7 +54,7 @@ endif ()
 # Set include and lib
 set(INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include ${ROOT_INCLUDE_DIRS} ${rest_include_dirs} ${Geant4_INCLUDE_DIR})
 
-set(LINK_LIBRARIES ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} -lGui -lGeom -lGdml -lMinuit RestGeant4)
+set(LINK_LIBRARIES ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} RestGeant4)
 string(STRIP "${LINK_LIBRARIES}" LINK_LIBRARIES)
 
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cxx)
