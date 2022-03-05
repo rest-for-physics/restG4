@@ -21,7 +21,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
 
    public:
     G4GDMLParser* GetGeometry() { return parser; }
-    G4VPhysicalVolume* GetPhysicalVolume(G4String physVolName);
+    G4VPhysicalVolume* GetPhysicalVolume(const G4String& physVolName);
     G4VSolid* GetGeneratorSolid() { return generatorSolid; }
     G4ThreeVector GetGeneratorTranslation() { return fGeneratorTranslation; }
 
