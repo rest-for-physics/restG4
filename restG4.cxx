@@ -88,13 +88,13 @@ int main(int argc, char** argv) {
     auto gdml = new TRestGDMLParser();
 
     // This call will generate a new single file GDML output
-    gdml->Load((string)restG4Metadata->Get_GDML_Filename());
+    gdml->Load((string)restG4Metadata->GetGdmlFilename());
 
     // We redefine the value of the GDML file to be used in DetectorConstructor.
-    restG4Metadata->Set_GDML_Filename(gdml->GetOutputGDMLFile());
+    restG4Metadata->SetGdmlFilename(gdml->GetOutputGDMLFile());
     restG4Metadata->SetGeometryPath("");
 
-    restG4Metadata->Set_GDML_Reference(gdml->GetGDMLVersion());
+    restG4Metadata->SetGdmlReference(gdml->GetGDMLVersion());
     restG4Metadata->SetMaterialsReference(gdml->GetEntityVersion("materials"));
 
     restPhysList = new TRestGeant4PhysicsLists(inputRMLClean);
