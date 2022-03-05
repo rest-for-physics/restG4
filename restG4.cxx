@@ -64,6 +64,9 @@ Int_t N_events;
 int main(int argc, char** argv) {
     auto start_time = chrono::steady_clock::now();
 
+    char cwd[kMAXPATHLEN];
+    cout << "Current working directory: " << getcwd(cwd, sizeof(cwd)) << endl;
+
     CommandLineParameters commandLineParameters = CommandLineSetup::ProcessParameters(argc, argv);
     CommandLineSetup::Print(commandLineParameters);
 
@@ -75,6 +78,10 @@ int main(int argc, char** argv) {
     TRestTools::ChangeDirectory(pathAndRml.first);
 
     restG4Metadata = new TRestGeant4Metadata(inputRMLClean);
+
+    if (!commandLineParameters.geometryFile.IsNull()) {
+        restG4Metadata->Set_GDML_Filename(commandLineParameters.geometryFile.Data());
+    }
 
     string geant4Version = TRestTools::Execute("geant4-config --version");
     restG4Metadata->SetGeant4Version(geant4Version);
@@ -88,6 +95,8 @@ int main(int argc, char** argv) {
     auto gdml = new TRestGDMLParser();
 
     // This call will generate a new single file GDML output
+    auto geometryFilename = restG4Metadata->Get_GDML_Filename();
+    cout << "Geometry Filename: " << geometryFilename << endl;
     gdml->Load((string)restG4Metadata->Get_GDML_Filename());
 
     // We redefine the value of the GDML file to be used in DetectorConstructor.
@@ -101,6 +110,10 @@ int main(int argc, char** argv) {
 
     restRun = new TRestRun();
     restRun->LoadConfigFromFile(inputRMLClean);
+
+    if (!commandLineParameters.outputFile.IsNull()) {
+        restRun->SetOutputFileName(commandLineParameters.outputFile.Data());
+    }
 
     TRestTools::ReturnToPreviousDirectory();
 

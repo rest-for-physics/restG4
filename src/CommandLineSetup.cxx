@@ -6,18 +6,20 @@
 
 #include <getopt.h>
 #include <unistd.h>
+
 #include <iostream>
 
 using namespace std;
 
 void CommandLineSetup::ShowUsage() {
-    cout << "restG4 requires at least one parameter, the rml configuration file (-c is optional)" << endl
+    cout << "restG4 requires at least one parameter, the rml configuration file" << endl
          << endl
          << "example: restG4 example.rml" << endl
          << endl
          << "there are other convenient optional parameters that override the ones in the rml file:" << endl
          << "\t-h or --help | show usage (this text)" << endl
          << "\t-c example.rml | specify RML file (same as calling restG4 example.rml)" << endl
+         << "\t-o output.root | specify output file" << endl
          << "\t-g geometry.gdml | specify geometry file" << endl
          << "\t-i | set interactive mode (default=false)" << endl
          << "\t-s | set serial mode (no multithreading) (default=true)" << endl
@@ -30,7 +32,7 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
     if (argc >= 2) {
         // presumably invoked as `restG4 example.rml` or `restG4 --help`
         TString argument = argv[1];
-        if (argument.EqualTo("--help") | argument.EqualTo("-h")) {
+        if (argument.EqualTo("--help") || argument.EqualTo("-h")) {
             ShowUsage();
             exit(0);
         } else {
@@ -81,9 +83,7 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
             case 'g':
                 if (!parameters.geometryFile.IsNull()) {
                     cout << "CommandLineParameters::ProcessParameters - Cannot specify multiple geometry "
-                            "files "
-                            "via the -g flag. "
-                            "Please use at most one"
+                            "files via the -g flag. Please use at most one"
                          << endl;
                     exit(1);
                 }
@@ -105,9 +105,13 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
 
     return parameters;
 }
+
 void CommandLineSetup::Print(const CommandLineParameters& parameters) {
     cout << "Command line parameters configuration:" << endl
          << "\t- RML file: " << parameters.rmlFile << endl
+         << (!parameters.outputFile.IsNull() ? "\t- Output file: " + parameters.outputFile + "\n" : "")
+         << (!parameters.geometryFile.IsNull() ? "\t- Geometry file: " + parameters.geometryFile + "\n" : "")
+         << (parameters.interactive ? "\t- Interactive: True\n" : "")  //
          << "\t- Execution mode: "
          << (parameters.serialMode ? "serial"
                                    : "multithreading (N = " + std::to_string(parameters.nThreads) + ")")
