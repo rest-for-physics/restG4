@@ -95,8 +95,6 @@ int main(int argc, char** argv) {
     auto gdml = new TRestGDMLParser();
 
     // This call will generate a new single file GDML output
-    auto geometryFilename = restG4Metadata->Get_GDML_Filename();
-    cout << "Geometry Filename: " << geometryFilename << endl;
     gdml->Load((string)restG4Metadata->Get_GDML_Filename());
 
     // We redefine the value of the GDML file to be used in DetectorConstructor.
