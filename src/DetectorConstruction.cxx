@@ -56,7 +56,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         // sensitive volume was not found, perhaps the user specified a logical volume
         auto physicalVolumes =
             restG4Metadata->GetGeant4GeometryInfo()->GetAllPhysicalVolumesFromLogical(sensitiveVolume);
-        if (physicalVolumes.size == 1) {
+        if (physicalVolumes.size() == 1) {
             restG4Metadata->SetSensitiveVolume(physicalVolumes[0]);
             sensitiveVolume = (string)restG4Metadata->GetSensitiveVolume();
             physicalVolume = GetPhysicalVolume(sensitiveVolume);
