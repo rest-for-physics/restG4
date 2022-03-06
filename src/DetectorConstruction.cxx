@@ -228,5 +228,9 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
         fLogicalToMaterialMap[nameLogical] = nameMaterial;
         fLogicalToPhysicalMap[nameLogical].emplace_back(namePhysical);
         fPhysicalToPositionInWorldMap[namePhysical] = {position.x(), position.y(), position.z()};
+
+        if (!fIsAssembly && GetAlternativeNameFromGeant4PhysicalName(namePhysical) != namePhysical) {
+            fIsAssembly = true;
+        }
     }
 }
