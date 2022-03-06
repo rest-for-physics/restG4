@@ -242,6 +242,14 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
 
         if (!fIsAssembly && GetAlternativeNameFromGeant4PhysicalName(namePhysical) != namePhysical) {
             fIsAssembly = true;
+
+            const auto geant4MajorVersionNumber = restG4Metadata->GetGeant4VersionMajor();
+            if (geant4MajorVersionNumber < 11) {
+                cout << "User geometry consists of assembly which is not supported for this rest / Geant4 "
+                        "version combination. Please upgrade to Geant4 11.0.0 or more to use this feature"
+                     << endl;
+                // exit(1);
+            }
         }
     }
 }
