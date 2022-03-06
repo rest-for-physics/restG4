@@ -14,7 +14,7 @@ Int_t Validate(string filename) {
 
     auto metadata = (TRestGeant4Metadata*)run->GetMetadataClass("TRestGeant4Metadata");
 
-    const auto geometryInfo = metadata->GetGeometryInfo();
+    const auto geometryInfo = metadata->GetGeant4GeometryInfo();
 
     geometryInfo->Print();
 
