@@ -1,0 +1,178 @@
+<materials>
+    <isotope Z="29.0" N="63" name="Cu63">
+        <atom value="62.9296" unit="g/mole" type="A"/>
+    </isotope>
+    <isotope Z="29.0" N="65" name="Cu65">
+        <atom value="64.9278" unit="g/mole" type="A"/>
+    </isotope>
+    <isotope Z="6.0" N="12" name="C12">
+        <atom value="12.0" unit="g/mole" type="A"/>
+    </isotope>
+    <isotope Z="6.0" N="13" name="C13">
+        <atom value="13.0034" unit="g/mole" type="A"/>
+    </isotope>
+    <isotope Z="1.0" N="1" name="H1">
+        <atom value="1.007825" unit="g/mole" type="A"/>
+    </isotope>
+    <isotope Z="1.0" N="2" name="H2">
+        <atom value="2.014102" unit="g/mole" type="A"/>
+    </isotope>
+    <isotope Z="18.0" N="36" name="Ar36">
+        <atom value="35.9675" unit="g/mole" type="A"/>
+    </isotope>
+    <isotope Z="18.0" N="38" name="Ar38">
+        <atom value="37.9627" unit="g/mole" type="A"/>
+    </isotope>
+    <isotope Z="18.0" N="40" name="Ar40">
+        <atom value="39.9624" unit="g/mole" type="A"/>
+    </isotope>
+    <isotope Z="82.0" N="204" name="Pb204">
+        <atom value="203.973" unit="g/mole" type="A"/>
+    </isotope>
+    <isotope Z="82.0" N="206" name="Pb206">
+        <atom value="205.974" unit="g/mole" type="A"/>
+    </isotope>
+    <isotope Z="82.0" N="207" name="Pb207">
+        <atom value="206.976" unit="g/mole" type="A"/>
+    </isotope>
+    <isotope Z="82.0" N="208" name="Pb208">
+        <atom value="207.977" unit="g/mole" type="A"/>
+    </isotope>
+    <element name="Cu">
+        <fraction n="0.6917" ref="Cu63"/>
+        <fraction n="0.3083" ref="Cu65"/>
+    </element>
+    <element name="C">
+        <fraction n="0.9893" ref="C12"/>
+        <fraction n="0.0107" ref="C13"/>
+    </element>
+    <element name="H">
+        <fraction n="0.999885" ref="H1"/>
+        <fraction n="1.15E-4" ref="H2"/>
+    </element>
+    <element name="Ar">
+        <fraction n="0.003365" ref="Ar36"/>
+        <fraction n="6.32E-4" ref="Ar38"/>
+        <fraction n="0.996003" ref="Ar40"/>
+    </element>
+    <element name="Pb">
+        <fraction n="0.014" ref="Pb204"/>
+        <fraction n="0.241" ref="Pb206"/>
+        <fraction n="0.221" ref="Pb207"/>
+        <fraction n="0.524" ref="Pb208"/>
+    </element>
+    <material state="solid" name="G4_Cu">
+        <D value="8.96" unit="g/cm3"/>
+        <fraction n="1.0" ref="Cu"/>
+    </material>
+    <material state="solid" name="G4_POLYETHYLENE">
+        <D unit="g/cm3" value="0.94"/>
+        <fraction n="0.856282" ref="C"/>
+        <fraction n="0.143718" ref="H"/>
+    </material>
+    <material state="gas" name="G4_Galactic">
+        <D value="1.0E-22" unit="kg/m3"/>
+        <fraction n="1.0" ref="H"/>
+    </material>
+    <material state="gas" name="G4_Ar">
+        <D unit="kg/m3" value="1.66201"/>
+        <P unit="bar" value="1.01325"/>
+        <fraction n="1.000000" ref="Ar"/>
+    </material>
+    <material state="solid" name="G4_Pb">
+        <D value="11.35" unit="g/cm3"/>
+        <fraction n="1.0" ref="Pb"/>
+    </material>
+    <material state="gas" name="G4_AIR">
+        <D value="1.20479" unit="kg/m3"/>
+        <fraction n="1.24E-4" ref="C"/>
+        <fraction n="0.755268" ref="N"/>
+        <fraction n="0.231781" ref="O"/>
+        <fraction n="0.012827" ref="Ar"/>
+    </material>
+</materials>
+<solids>
+<tube name="sensitiveSolid" lunit="mm"
+      rmin="0" rmax="detectorSizeDiameter * 0.5" z="detectorSizeZ"
+      startphi="0.0" deltaphi="6.283185307179586"
+/>
+
+<tube name="layer1SolidAux" lunit="mm"
+      rmin="0" rmax="detectorSizeDiameter * 0.5 + layer1Thickness"
+      z="detectorSizeZ + layer1Thickness"
+      startphi="0.0" deltaphi="6.283185307179586"
+/>
+
+<subtraction name="layer1Solid">
+    <first ref="layer1SolidAux"/>
+    <second ref="sensitiveSolid"/>
+</subtraction>
+
+<tube name="layer2SolidAux" lunit="mm"
+      rmin="0" rmax="detectorSizeDiameter * 0.5 + layer1Thickness + layer2Thickness"
+      z="detectorSizeZ + layer1Thickness + layer2Thickness"
+      startphi="0.0" deltaphi="6.283185307179586"
+/>
+
+<subtraction name="layer2Solid">
+    <first ref="layer2SolidAux"/>
+    <second ref="layer1SolidAux"/>
+</subtraction>
+
+<tube name="layer3SolidAux" lunit="mm"
+      rmin="0" rmax="detectorSizeDiameter * 0.5 + layer1Thickness + layer2Thickness + layer3Thickness"
+      z="detectorSizeZ + layer1Thickness + layer2Thickness + layer3Thickness"
+      startphi="0.0" deltaphi="6.283185307179586"
+/>
+
+<subtraction name="layer3Solid">
+    <first ref="layer3SolidAux"/>
+    <second ref="layer2SolidAux"/>
+</subtraction>
+
+<box name="worldBox" x="2000.0" y="2000.0" z="2000.0"/>
+</solids>
+
+<structure>
+<volume name="detectorVolume">
+    <materialref ref="G4_Ar"/>
+    <solidref ref="sensitiveSolid"/>
+</volume>
+
+<volume name="layer1Volume">
+    <materialref ref="G4_Cu"/>
+    <solidref ref="layer1Solid"/>
+</volume>
+
+<volume name="layer2Volume">
+    <materialref ref="G4_POLYETHYLENE"/>
+    <solidref ref="layer2Solid"/>
+</volume>
+
+<volume name="layer3Volume">
+    <materialref ref="G4_Pb"/>
+    <solidref ref="layer3Solid"/>
+</volume>
+
+<volume name="World">
+    <physvol name="detector">
+        <volumeref ref="detectorVolume"/>
+    </physvol>
+
+    <physvol name="layer1">
+        <volumeref ref="layer1Volume"/>
+    </physvol>
+
+    <physvol name="layer2">
+        <volumeref ref="layer2Volume"/>
+    </physvol>
+
+    <physvol name="layer3">
+        <volumeref ref="layer3Volume"/>
+    </physvol>
+
+    <materialref ref="G4_Galactic"/>
+
+    <solidref ref="worldBox"/>
+</volume>
+</structure>

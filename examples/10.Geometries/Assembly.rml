@@ -1,0 +1,89 @@
+<?xml version="4.0" encoding="UTF-8" standalone="no" ?>
+
+<!-- Work with GDML assembly geometry
+     File : config.rml
+     Author: Luis Obis (lobis@unizar.es) 2022/03/06
+ -->
+
+<!-- 
+By default REST units are mm, keV and degrees
+-->
+
+<restG4>
+
+    <globals>
+        <parameter name="mainDataPath" value=""/>
+        <parameter name="verboseLevel" value="essential"/>
+    </globals>
+
+    <TRestRun name="Run metadata" title="REST Metadata run info (template)">
+        <parameter name="experimentName" value="Assembly"/>
+        <parameter name="runType" value="simulation"/>
+        <parameter name="runNumber" value="1"/>
+        <parameter name="runTag" value="Assembly"/>
+        <parameter name="outputFileName" value="Run[fRunNumber]_[fRunTag]_[fExperimentName].root"/>
+        <parameter name="runDescription" value=""/>
+        <parameter name="user" value="${USER}"/>
+        <parameter name="overwrite" value="off"/>
+        <parameter name="readOnly" value="false"/>
+    </TRestRun>
+
+    <TRestGeant4Metadata name="AssemblyGeantino" title="AssemblyGeantino">
+
+        <parameter name="gdml_file" value="geometry/setup.gdml"/>
+        <parameter name="subEventTimeDelay" value="100" units="us"/>
+
+        <parameter name="seed" value="17021981"/>
+
+        <parameter name="Nevents" value="1000"/>
+        <parameter name="registerEmptyTracks" value="false"/>
+        <parameter name="saveAllEvents" value="true"/>
+
+        <generator type="point" position="(0,0,0)">
+            <source particle="geantino">
+                <angularDist type="isotropic"/>
+                <energyDist type="mono" energy="1keV"/>
+            </source>
+        </generator>
+
+        <storage sensitiveVolume="detectorVolume">
+            <parameter name="energyRange" value="(0,10)" units="GeV"/>
+        </storage>
+
+    </TRestGeant4Metadata>
+
+    <TRestGeant4PhysicsLists name="default" title="First physics list implementation.">
+
+        <parameter name="cutForGamma" value="0.01" units="mm"/>
+        <parameter name="cutForElectron" value="2" units="mm"/>
+        <parameter name="cutForPositron" value="1" units="mm"/>
+
+        <parameter name="cutForMuon" value="1" units="mm"/>
+        <parameter name="cutForNeutron" value="1" units="mm"/>
+        <parameter name="minEnergyRangeProductionCuts" value="1" units="keV"/>
+        <parameter name="maxEnergyRangeProductionCuts" value="1" units="GeV"/>
+
+        // Use only one EM physics list
+        <!-- EM Physics lists -->
+        <!--<physicsList name="G4EmLivermorePhysics"> </physicsList>-->
+        <!-- <physicsList name="G4EmPenelopePhysics"> </physicsList> -->
+        <physicsList name="G4EmStandardPhysics_option4"></physicsList>
+
+        <!-- Decay physics lists -->
+        <physicsList name="G4DecayPhysics"></physicsList>
+        <physicsList name="G4RadioactiveDecayPhysics"></physicsList>
+        <physicsList name="G4RadioactiveDecay">
+            <option name="ICM" value="true"/>
+            <option name="ARM" value="true"/>
+        </physicsList>
+
+        <!-- Hadron physics lists -->
+        <physicsList name="G4HadronElasticPhysicsHP"></physicsList>
+        <physicsList name="G4IonBinaryCascadePhysics"></physicsList>
+        <physicsList name="G4HadronPhysicsQGSP_BIC_HP"></physicsList>
+        <physicsList name="G4NeutronTrackingCut"></physicsList>
+        <physicsList name="G4EmExtraPhysics"></physicsList>
+
+    </TRestGeant4PhysicsLists>
+
+</restG4>
