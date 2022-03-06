@@ -37,14 +37,19 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     chdir(separatePathAndName.first.c_str());
 
     string gdmlToRead = separatePathAndName.second;
+    G4cout << "gdmlToRead: " << gdmlToRead << G4endl;
+
     parser->Read(gdmlToRead, false);
 
     auto geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
+
     geometryInfo->PopulateFromGdml(gdmlToRead);
 
     G4VPhysicalVolume* worldVolume = parser->GetWorldVolume();
 
     geometryInfo->PopulateFromGeant4World(worldVolume);
+
+    geometryInfo->Print();
 
     chdir(originDirectory);
 
@@ -81,7 +86,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     fieldMgr->SetDetectorField(magField);
     fieldMgr->CreateChordFinder(magField);
 
-    if (physicalVolume != nullptr) {
+    if (physicalVolume) {
         G4LogicalVolume* vol = physicalVolume->GetLogicalVolume();
         // This method seems not available in my Geant4 version 10.4.2
         // In future Geant4 versions it seems possible to define field at particular volumes
@@ -188,16 +193,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     cout << "Detector constructed : " << worldVolume << endl;
 
-    geometryInfo->Print();
-
     return worldVolume;
 }
 
 G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physVolName) {
     G4PhysicalVolumeStore* physVolStore = G4PhysicalVolumeStore::GetInstance();
+
     std::vector<G4VPhysicalVolume*>::const_iterator physVol;
     for (physVol = physVolStore->begin(); physVol != physVolStore->end(); physVol++) {
-        if ((*physVol)->GetName() == physVolName) {
+        auto geant4Name =
+            (G4String)restG4Metadata->GetGeant4GeometryInfo()->GetAlternativeNameFromGeant4PhysicalName(
+                physVolName);
+        auto name = (*physVol)->GetName();
+
+        if (name == physVolName || geant4Name == physVolName) {
             return *physVol;
         }
     }
