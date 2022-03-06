@@ -201,12 +201,11 @@ G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physV
 
     std::vector<G4VPhysicalVolume*>::const_iterator physVol;
     for (physVol = physVolStore->begin(); physVol != physVolStore->end(); physVol++) {
-        auto geant4Name =
-            (G4String)restG4Metadata->GetGeant4GeometryInfo()->GetAlternativeNameFromGeant4PhysicalName(
-                physVolName);
         auto name = (*physVol)->GetName();
+        auto alternativeName =
+            (G4String)restG4Metadata->GetGeant4GeometryInfo()->GetAlternativeNameFromGeant4PhysicalName(name);
 
-        if (name == physVolName || geant4Name == physVolName) {
+        if (name == physVolName || alternativeName == physVolName) {
             return *physVol;
         }
     }

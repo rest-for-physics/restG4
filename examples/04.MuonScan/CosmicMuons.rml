@@ -34,7 +34,7 @@ First concept author G. Luzón (16-11-2020) -->
             </source>
         </generator>
 
-        <storage sensitiveVolume="EsferaVolume">
+        <storage sensitiveVolume="det_dw_01">
             <parameter name="energyRange" value="(0,10)" units="GeV"/>
             <activeVolume name="det_dw_01" chance="1" maxStepSize="1mm"/>
             <activeVolume name="det_up_01" chance="1" maxStepSize="1mm"/>
