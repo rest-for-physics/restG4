@@ -134,6 +134,7 @@
 </solids>
 
 <structure>
+
 <volume name="detectorVolume">
     <materialref ref="G4_Ar"/>
     <solidref ref="sensitiveSolid"/>
@@ -154,7 +155,8 @@
     <solidref ref="layer3Solid"/>
 </volume>
 
-<volume name="World">
+
+<assembly name="DetectorAssembly">
     <physvol name="detector">
         <volumeref ref="detectorVolume"/>
     </physvol>
@@ -169,6 +171,13 @@
 
     <physvol name="layer3">
         <volumeref ref="layer3Volume"/>
+    </physvol>
+</assembly>
+
+<volume name="World">
+
+    <physvol name="Detector">
+        <volumeref ref="DetectorAssembly"/>
     </physvol>
 
     <materialref ref="G4_Galactic"/>

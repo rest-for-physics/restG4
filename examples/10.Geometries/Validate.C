@@ -9,7 +9,7 @@ Int_t Validate(string filename) {
 
     if (run->GetEntries() != 1000) {
         cout << "Bad number of entries: " << run->GetEntries() << endl;
-        return -1;
+        return 1;
     }
 
     auto metadata = (TRestGeant4Metadata*)run->GetMetadataClass("TRestGeant4Metadata");
@@ -18,6 +18,17 @@ Int_t Validate(string filename) {
 
     geometryInfo->Print();
 
+    if (geometryInfo->GetAllPhysicalVolumes().size() != 374) {
+        cout << "Incorrect number of physical volumes " << geometryInfo->GetAllPhysicalVolumes().size()
+             << endl;
+        // assembly do not work on older geant4 versions...
+        // return 1;
+    }
+    if (geometryInfo->GetAllLogicalVolumes().size() != 22) {
+        cout << "Incorrect number of logical volumes " << geometryInfo->GetAllLogicalVolumes().size() << endl;
+        // assembly do not work on older geant4 versions...
+        // return 1;
+    }
     cout << "All tests passed! [\033[32mOK\033[0m]\n";
     return 0;
 }

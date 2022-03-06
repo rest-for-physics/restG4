@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!-- ##VERSION REST Example 10.Geometries Version 1.0## -->
+
+<!DOCTYPE gdml [
+        <!ENTITY geometry SYSTEM "geometry.gdml">
+        <!ENTITY materials SYSTEM "https://sultan.unizar.es/materials/materials.xml">
+        ]>
+
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+
+    <!-- All values should be in mm -->
+
+    <define>
+        <constant name="world_size" value="20000"/>
+
+        <!-- We must define these variables that are hardcoded in materials.xml -->
+        <!-- They have no use in this example since we do not use a gas mixture in our simulation -->
+        <!-- This makes non sense, and it could be solved if we would have a dedicated materials file for gas mixtures -->
+        <variable name="targetGasDensity" value="5.7"/>
+        <variable name="quencherDensity" value="0.254"/>
+        <variable name="quencherFraction" value="0.01"/>
+        <variable name="gasTemperature" value="300"/>
+        <variable name="gasPressure" value="10"/>
+
+        <constant name="detectorSizeDiameter" value="100"/>
+        <constant name="detectorSizeZ" value="50"/>
+
+        <constant name="layer1Thickness" value="20"/>
+        <constant name="layer2Thickness" value="100"/>
+        <constant name="layer3Thickness" value="100"/>
+
+        <constant name="2PI" value="6.283185307179586"/>
+    </define>
+
+    &materials;
+
+    &geometry;
+
+
+    <setup name="Default" version="1.0">
+        <world ref="World"/>
+    </setup>
+
+</gdml>
