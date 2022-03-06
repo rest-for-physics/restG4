@@ -56,17 +56,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // TODO : Take the name of the sensitive volume and use it here to define its
     // StepSize
     auto sensitiveVolume = (string)restG4Metadata->GetSensitiveVolume();
+
     G4VPhysicalVolume* physicalVolume = GetPhysicalVolume(sensitiveVolume);
     if (!physicalVolume) {
         // sensitive volume was not found, perhaps the user specified a logical volume
         auto physicalVolumes =
             restG4Metadata->GetGeant4GeometryInfo()->GetAllPhysicalVolumesFromLogical(sensitiveVolume);
+
         if (physicalVolumes.size() == 1) {
             restG4Metadata->SetSensitiveVolume(physicalVolumes[0]);
             sensitiveVolume = (string)restG4Metadata->GetSensitiveVolume();
             physicalVolume = GetPhysicalVolume(sensitiveVolume);
         }
     }
+
     if (!physicalVolume) {
         G4cout << "RESTG4 error. Sensitive volume  " << sensitiveVolume << " does not exist in geometry!!"
                << G4endl;

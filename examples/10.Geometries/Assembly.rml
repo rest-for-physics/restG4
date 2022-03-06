@@ -46,8 +46,9 @@ By default REST units are mm, keV and degrees
             </source>
         </generator>
 
-        <storage sensitiveVolume="detectorVolume">
+        <storage sensitiveVolume="gasVolume">
             <parameter name="energyRange" value="(0,10)" units="GeV"/>
+            <activeVolume name="Chamber_gas" chance="1" maxStepSize="1mm"/>
         </storage>
 
     </TRestGeant4Metadata>
