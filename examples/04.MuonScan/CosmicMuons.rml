@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 
-			<!--         
-			First concept author G. Luzón (16-11-2020) -->
+<!--
+First concept author G. Luzón (16-11-2020) -->
 
 <restG4>
 
@@ -26,14 +26,15 @@
         <parameter name="saveAllEvents" value="false"/>
         <parameter name="printProgress" value="true"/>
 
-		<generator type="surface" shape="wall" position="(0,0,50)cm" size="(30,30,0)cm" rotationAngle="0" rotationAxis="(1,0,0)">
+        <generator type="surface" shape="wall" position="(0,0,50)cm" size="(30,30,0)cm" rotationAngle="0"
+                   rotationAxis="(1,0,0)">
             <source particle="mu-" excitedLevel="0.0" fullChain="on">
                 <energyDist type="TH1D" file="Muons.root" spctName="cosmicmuon"/>
                 <angularDist type="TH1D" file="CosmicAngles.root" spctName="Theta2" direction="(0,0,-1)"/>
             </source>
         </generator>
 
-        <storage sensitiveVolume="det_dw_01">
+        <storage sensitiveVolume="EsferaVolume">
             <parameter name="energyRange" value="(0,10)" units="GeV"/>
             <activeVolume name="det_dw_01" chance="1" maxStepSize="1mm"/>
             <activeVolume name="det_up_01" chance="1" maxStepSize="1mm"/>

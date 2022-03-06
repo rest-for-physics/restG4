@@ -1,4 +1,5 @@
-image: nkx1231/root6-geant4-garfield:0.8
+image: ghcr.io/lobis/root-geant4-garfield:cpp17_ROOT-v6-26-00_Geant4-v10.4.3_Garfield-af4a1451
+#image: nkx1231/root6-geant4-garfield:0.8
 
 stages:
   - build
@@ -167,3 +168,12 @@ loadRESTLibs:
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/09.Pb210_Shield/
     - restG4 Pb210.rml
     - restRoot -b -q Validate.C'("Run00001_Pb210_Shielding.root")'
+
+
+10_Geometries:
+  type: examples
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cd ${CI_PROJECT_DIR}/install/examples/restG4/10.Geometries/
+    - restG4 Assembly.rml
+    - restRoot -b -q Validate.C'("Run00001_Assembly_Assembly.root")'
