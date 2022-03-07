@@ -3,9 +3,14 @@ name: Validation
 on:
   workflow_dispatch:
 
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
 env:
-  BUILD_TYPE: Debug
-  FRAMEWORK_PATH: /__w/restG4/restG4/framework
+  BUILD_TYPE: Release
+  REST_PATH: /rest/install
 
 defaults:
   run:
@@ -19,41 +24,55 @@ jobs:
 
     strategy:
       matrix:
-        framework-branch: [ master, development ]
+        framework-branch: [ master ]
 
     steps:
-      - name: Source ROOT and Geant4
-        run: |
-          source /root/.bashrc
-          printenv
 
       - name: Checkout REST Framework
         uses: actions/checkout@v2
         with:
           repository: rest-for-physics/framework
           ref: ${{ matrix.framework-branch }}
-          path: framework
+          path: ${{env.REST_PATH}}../source
 
       - name: Pull submodules
         run: |
-          cd ${{env.FRAMEWORK_PATH}}
-          python3 pull-submodules.py
+          cd ${{env.REST_PATH}}../source
+          # python3 pull-submodules.py --force --dontask --latest:${GITHUB_SHA}
+          ./scripts/checkoutRemoteBranch.sh ${GITHUB_SHA}
+          git submodule init source/libraries/geant4
+          git submodule update source/libraries/geant4
+          cd source/libraries/geant4/          
+          ../../../scripts/checkoutRemoteBranch.sh ${CI_COMMIT_BRANCH}
+          cd ../../../
+          git submodule init source/packages/restG4
+          git submodule update source/packages/restG4
+          cd source/packages/restG4/
+          git checkout ${CI_COMMIT_BRANCH}
+          cd ../../../
+          if [ -d build ]; then rm -rf build; fi
+          mkdir build
+          cd build
+          cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{env.REST_PATH}}
+          make install -j2
+          
+          python3 pull-submodules.py --force --dontask --latest:${GITHUB_SHA}
 
       - name: Checkout RestG4 (this repository)
         uses: actions/checkout@v2
         with:
-          path: framework/source/packages/restG4
+          path: ${{env.REST_PATH}}../source/packages/restG4
 
       - name: Debug - Print latest commit info in Framework souce
         run: |
-          cd ${{env.FRAMEWORK_PATH}}/source/packages/restG4
+          cd ${{env.REST_PATH}}../source/packages/restG4
           git branch
           git show -s --format=%H
 
       - name: Configure CMake (REST Framework)
         run: |
-          source /root/.bashrc
-          cmake -B ${{env.FRAMEWORK_PATH}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DREST_G4=ON -DREST_EVE=OFF ${{env.FRAMEWORK_PATH}}
+          mkdir cd ${{env.REST_PATH}}../source/build
+          cd ${{env.REST_PATH}}../source/build
+          cmake .. -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DREST_G4=ON -DREST_EVE=OFF
+          make -j2 install
 
-      - name: Make
-        run: make --directory=${{env.FRAMEWORK_PATH}}/build
