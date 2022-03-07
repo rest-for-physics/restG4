@@ -10,6 +10,8 @@
 #include <G4UniformMagField.hh>
 #include <G4UserLimits.hh>
 
+#include "TRestGeant4GeometryInfo.h"
+
 extern TRestGeant4Event* restG4Event;
 extern TRestGeant4Metadata* restG4Metadata;
 
@@ -27,26 +29,51 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     G4cout << "Producing geometry" << G4endl;
 
     // Reading the geometry
-    TString geometryFile = restG4Metadata->Get_GDML_Filename();
+    TString geometryFile = restG4Metadata->GetGdmlFilename();
 
     char originDirectory[256];
     sprintf(originDirectory, "%s", getenv("PWD"));
-    auto separatePathAndName = TRestTools::SeparatePathAndName((string)restG4Metadata->Get_GDML_Filename());
+    auto separatePathAndName = TRestTools::SeparatePathAndName((string)restG4Metadata->GetGdmlFilename());
     chdir(separatePathAndName.first.c_str());
 
-    parser->Read(separatePathAndName.second, false);
+    string gdmlToRead = separatePathAndName.second;
+    G4cout << "gdmlToRead: " << gdmlToRead << G4endl;
+
+    parser->Read(gdmlToRead, false);
+
+    auto geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
+
+    geometryInfo->PopulateFromGdml(gdmlToRead);
+
+    G4VPhysicalVolume* worldVolume = parser->GetWorldVolume();
+
+    geometryInfo->PopulateFromGeant4World(worldVolume);
+
+    geometryInfo->Print();
 
     chdir(originDirectory);
 
-    G4VPhysicalVolume* W = parser->GetWorldVolume();
-
     // TODO : Take the name of the sensitive volume and use it here to define its
     // StepSize
-    string SensVol = (string)restG4Metadata->GetSensitiveVolume();
-    G4VPhysicalVolume* _vol = GetPhysicalVolume(SensVol);
-    if (!_vol) {
-        G4cout << "RESTG4 error. Sensitive volume  " << SensVol << " does not exist in geomtry!!" << G4endl;
-        G4cout << "RESTG4 error. Please, review geometry! Presh a key to crash!!" << G4endl;
+    auto sensitiveVolume = (string)restG4Metadata->GetSensitiveVolume();
+
+    G4VPhysicalVolume* physicalVolume = GetPhysicalVolume(sensitiveVolume);
+    if (!physicalVolume) {
+        // sensitive volume was not found, perhaps the user specified a logical volume
+        auto physicalVolumes =
+            restG4Metadata->GetGeant4GeometryInfo()->GetAllPhysicalVolumesFromLogical(sensitiveVolume);
+
+        if (physicalVolumes.size() == 1) {
+            restG4Metadata->SetSensitiveVolume(physicalVolumes[0]);
+            sensitiveVolume = (string)restG4Metadata->GetSensitiveVolume();
+            physicalVolume = GetPhysicalVolume(sensitiveVolume);
+        }
+    }
+
+    if (!physicalVolume) {
+        G4cout << "RESTG4 error. Sensitive volume  " << sensitiveVolume << " does not exist in geometry!!"
+               << G4endl;
+        G4cout << "RESTG4 error. Please, review geometry! Press a key to crash!!" << G4endl;
         getchar();
         // We need to produce a clean exit at this point
         exit(1);
@@ -62,8 +89,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     fieldMgr->SetDetectorField(magField);
     fieldMgr->CreateChordFinder(magField);
 
-    if (_vol != nullptr) {
-        G4LogicalVolume* vol = _vol->GetLogicalVolume();
+    if (physicalVolume) {
+        G4LogicalVolume* vol = physicalVolume->GetLogicalVolume();
         // This method seems not available in my Geant4 version 10.4.2
         // In future Geant4 versions it seems possible to define field at particular volumes
         // vol->setFieldManager(localFieldMgr, true);
@@ -74,7 +101,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         G4cout << "Sensitivity volume temperature : " << mat->GetTemperature() << G4endl;
         G4cout << "Sensitivity volume density : " << mat->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
     } else {
-        cout << "ERROR : Logical volume for sensitive \"" << SensVol << "\" not found!" << endl;
+        cout << "ERROR : Logical volume for sensitive \"" << sensitiveVolume << "\" not found!" << endl;
     }
 
     // Getting generation volume
@@ -90,7 +117,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         if (pVol == nullptr) {
             cout << "ERROR : The generator volume was not found in the geometry" << endl;
             exit(1);
-            return W;
+            return worldVolume;
         }
 
         fGeneratorTranslation = pVol->GetTranslation();
@@ -149,7 +176,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     for (int id = 0; id < restG4Metadata->GetNumberOfActiveVolumes(); id++) {
         TString actVolName = restG4Metadata->GetActiveVolumeName(id);
         G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)actVolName);
-        if (pVol != NULL) {
+        if (pVol) {
             G4LogicalVolume* lVol = pVol->GetLogicalVolume();
             if (restG4Metadata->GetMaxStepSize(actVolName) > 0) {
                 G4cout << "Setting maxStepSize = " << restG4Metadata->GetMaxStepSize(actVolName)
@@ -160,26 +187,69 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
         cout << "Activating volume : " << actVolName << endl;
         restG4Event->AddActiveVolume((string)actVolName);
-        if (pVol == NULL) {
+        if (!pVol) {
             cout << "DetectorConstruction. Volume " << actVolName << " is not defined in the geometry"
                  << endl;
             exit(1);
         }
     }
 
-    cout << "Detector constructed : " << W << endl;
+    cout << "Detector constructed : " << worldVolume << endl;
 
-    return W;
+    return worldVolume;
 }
 
-G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(G4String physVolName) {
+G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physVolName) {
     G4PhysicalVolumeStore* physVolStore = G4PhysicalVolumeStore::GetInstance();
+
     std::vector<G4VPhysicalVolume*>::const_iterator physVol;
     for (physVol = physVolStore->begin(); physVol != physVolStore->end(); physVol++) {
-        if ((*physVol)->GetName() == physVolName) {
+        auto name = (*physVol)->GetName();
+        auto alternativeName =
+            (G4String)restG4Metadata->GetGeant4GeometryInfo()->GetAlternativeNameFromGeant4PhysicalName(name);
+
+        if (name == physVolName || alternativeName == physVolName) {
             return *physVol;
         }
     }
 
-    return NULL;
+    return nullptr;
+}
+
+void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* world) {
+    const int n = int(world->GetLogicalVolume()->GetNoDaughters());
+    for (int i = 0; i < n + 1; i++) {  // world is the + 1
+        G4VPhysicalVolume* volume;
+        if (i == n) {
+            volume = const_cast<G4VPhysicalVolume*>(world);
+        } else {
+            volume = world->GetLogicalVolume()->GetDaughter(i);
+        }
+        TString namePhysical = (TString)volume->GetName();
+        if (fGdmlNewPhysicalNames.size() > i) {
+            // it has been filled
+            fGeant4PhysicalNameToNewPhysicalNameMap[namePhysical] = fGdmlNewPhysicalNames[i];
+        }
+        TString physicalNewName = GetAlternativeNameFromGeant4PhysicalName(namePhysical);
+        TString nameLogical = (TString)volume->GetLogicalVolume()->GetName();
+        TString nameMaterial = (TString)volume->GetLogicalVolume()->GetMaterial()->GetName();
+        auto position = volume->GetTranslation();
+
+        fPhysicalToLogicalVolumeMap[namePhysical] = nameLogical;
+        fLogicalToMaterialMap[nameLogical] = nameMaterial;
+        fLogicalToPhysicalMap[nameLogical].emplace_back(namePhysical);
+        fPhysicalToPositionInWorldMap[namePhysical] = {position.x(), position.y(), position.z()};
+
+        if (!fIsAssembly && GetAlternativeNameFromGeant4PhysicalName(namePhysical) != namePhysical) {
+            fIsAssembly = true;
+
+            const auto geant4MajorVersionNumber = restG4Metadata->GetGeant4VersionMajor();
+            if (geant4MajorVersionNumber < 11) {
+                cout << "User geometry consists of assembly which is not supported for this rest / Geant4 "
+                        "version combination. Please upgrade to Geant4 11.0.0 or more to use this feature"
+                     << endl;
+                // exit(1);
+            }
+        }
+    }
 }

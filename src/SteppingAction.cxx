@@ -26,14 +26,18 @@ SteppingAction::~SteppingAction() {}
 
 void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     // Variables that describe a step are taken.
-    nom_vol = aStep->GetPreStepPoint()->GetPhysicalVolume()->GetName();
+    nom_vol = restG4Metadata->GetGeant4GeometryInfo()->GetAlternativeNameFromGeant4PhysicalName(
+        (TString &&) aStep->GetPreStepPoint()->GetPhysicalVolume()->GetName());
     nom_part = aStep->GetTrack()->GetDefinition()->GetParticleName();
 
     ener_dep = aStep->GetTotalEnergyDeposit();
     eKin = aStep->GetTrack()->GetKineticEnergy() / keV;
 
-    if (restTrack->GetParticleName() == "geantino" &&
-        (G4String)restG4Metadata->GetSensitiveVolume() == nom_vol) {
+    auto sensitiveVolumeName =
+        restG4Metadata->GetGeant4GeometryInfo()->GetAlternativeNameFromGeant4PhysicalName(
+            restG4Metadata->GetSensitiveVolume());
+
+    if (restTrack->GetParticleName() == "geantino" && sensitiveVolumeName.Data() == nom_vol) {
         restG4Metadata->SetSaveAllEvents(true);
     }
 
@@ -156,7 +160,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         }
 
         // See issue #65.
-        // If the radiactive decay occurs in a non active volume then the id will be -1
+        // If the radioactive decay occurs in a non-active volume then the id will be -1
         Bool_t isDecay = (nom_proc == (G4String) "RadioactiveDecay");
         if (!alreadyStored && isDecay)
             restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, pcsID, volume, eKin,
