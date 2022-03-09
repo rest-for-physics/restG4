@@ -34,21 +34,10 @@ if (NOT EXISTS "${Geant4_INCLUDE_DIRS}/G4RunManagerFactory.hh")
     add_definitions(-DWITHOUT_G4RunManagerFactory)
 endif ()
 
-# Find REST
-if (NOT DEFINED REST_PATH)
-    if (DEFINED ENV{REST_PATH})
-        set(REST_PATH $ENV{REST_PATH})
-    else ()
-        message(FATAL_ERROR "ERROR ::: REST_PATH must be defined as an environment variable and point to REST install directory")
-        return()
-    endif ()
-endif ()
-
 if (NOT DEFINED CMAKE_INSTALL_PREFIX)
     set(CMAKE_INSTALL_PREFIX ${REST_PATH})
 endif ()
-message(STATUS "Using REST_PATH: ${REST_PATH}")
-message(STATUS "Using REST_INCLUDE_DIRS: ${REST_INCLUDE_DIRS}")
+
 message(STATUS "Package ${PROJECT_NAME} will be installed in ${CMAKE_INSTALL_PREFIX}")
 
 if (NOT CMAKE_CXX_FLAGS)
