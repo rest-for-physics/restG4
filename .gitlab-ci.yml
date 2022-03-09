@@ -54,14 +54,7 @@ build-standalone:
   type: build-standalone
   script:
     - echo "**${CI_PROJECT_DIR}**"
-    - git clone https://github.com/rest-for-physics/framework.git framework
-    - cd framework
-    - ./scripts/checkoutRemoteBranch.sh ${CI_COMMIT_BRANCH}
-    - git submodule init source/packages/restG4
-    - git submodule update source/packages/restG4
-    - cd source/packages/restG4/
-    - ../../../scripts/checkoutRemoteBranch.sh ${CI_COMMIT_BRANCH}
-    - git checkout ${CI_COMMIT_BRANCH}
+    - cd ${CI_PROJECT_DIR}/
     - if [ -d build ]; then rm -rf build; fi
     - mkdir build
     - cd build
