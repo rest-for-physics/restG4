@@ -62,7 +62,7 @@ if (NOT ${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
     set(INCLUDE_DIRS ${INCLUDE_DIRS} ${rest_include_dirs})
 endif ()
 
-set(LINK_LIBRARIES ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} RestGeant4)
+set(LINK_LIBRARIES ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} RestFramework RestGeant4)
 string(STRIP "${LINK_LIBRARIES}" LINK_LIBRARIES)
 
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cxx)
