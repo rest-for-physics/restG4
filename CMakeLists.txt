@@ -4,6 +4,16 @@ project(restG4)
 message("===============  ${PROJECT_NAME}  ==============")
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake ${CMAKE_MODULE_PATH})
 
+if (${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+    # this will only be accessed when build restG4 as a standalone package, not when building the framework
+    CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+    find_package(REST REQUIRED)
+    string(FIND ${REST_LIBRARIES} "RestGeant4" REST_GEANT4_FOUND)
+    If (${REST_GEANT4_FOUND} EQUAL -1)
+        message(SEND_ERROR "REST found but 'RestGeant4' library is not present. Please install REST with Geant4Lib")
+    endif ()
+endif ()
+
 # Find ROOT
 find_package(ROOT REQUIRED COMPONENTS RIO Geom)
 execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS)
@@ -34,15 +44,15 @@ if (NOT DEFINED REST_PATH)
     endif ()
 endif ()
 
-if (NOT DEFINED rest_include_dirs)
-    set(rest_include_dirs ${REST_PATH}/include)
+if (NOT DEFINED REST_INCLUDE_DIRS)
+    set(REST_INCLUDE_DIRS ${REST_PATH}/include)
 endif ()
 
 if (NOT DEFINED CMAKE_INSTALL_PREFIX)
     set(CMAKE_INSTALL_PREFIX ${REST_PATH})
 endif ()
 message(STATUS "Using REST_PATH: ${REST_PATH}")
-message(STATUS "Using rest_include_dirs: ${rest_include_dirs}")
+message(STATUS "Using REST_INCLUDE_DIRS: ${REST_INCLUDE_DIRS}")
 message(STATUS "Package ${PROJECT_NAME} will be installed in ${CMAKE_INSTALL_PREFIX}")
 
 if (NOT CMAKE_CXX_FLAGS)
@@ -50,7 +60,7 @@ if (NOT CMAKE_CXX_FLAGS)
 endif ()
 
 # Set include and lib
-set(INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include ${ROOT_INCLUDE_DIRS} ${rest_include_dirs} ${Geant4_INCLUDE_DIR})
+set(INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include ${ROOT_INCLUDE_DIRS} ${Geant4_INCLUDE_DIR} ${REST_INCLUDE_DIRS})
 
 set(LINK_LIBRARIES ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} RestGeant4)
 string(STRIP "${LINK_LIBRARIES}" LINK_LIBRARIES)
@@ -77,5 +87,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/mac
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
-set(package_added "${PROJECT_NAME} ")
-set(package_added ${package_added} PARENT_SCOPE)
+if (NOT ${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+    set(package_added "${PROJECT_NAME} ")
+    set(package_added ${package_added} PARENT_SCOPE)
+endif ()
