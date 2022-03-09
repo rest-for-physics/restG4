@@ -42,7 +42,7 @@ build:
     - mkdir build
     - cd build
     - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install
-    - make install -j2
+    - make -j2 install
   artifacts:
     paths:
       - ${CI_PROJECT_DIR}/install
@@ -59,8 +59,9 @@ build-standalone:
     - mkdir build
     - cd build
     - source ${CI_PROJECT_DIR}/install/thisREST.sh
-    - cmake ../
-    - make -j2
+    - cmake ../ -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install
+    - make -j2 install
+    - ${CI_PROJECT_DIR}/install/bin/restG4 --help
 
 ### We make sure the build and install directories are different
 ##build_root_6.25_Geant4_10.7.1:
