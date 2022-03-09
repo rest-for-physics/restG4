@@ -3,6 +3,7 @@ image: ghcr.io/lobis/root-geant4-garfield:cpp17_ROOT-v6-26-00_Geant4-v10.4.3_Gar
 
 stages:
   - build
+  - build-standalone
   - loadRESTLibs
   - examples
 
@@ -50,7 +51,7 @@ build:
     expire_in: 1 day
 
 build-standalone:
-  type: build
+  type: build-standalone
   script:
     - echo "**${CI_PROJECT_DIR}**"
     - git clone https://github.com/rest-for-physics/framework.git framework
