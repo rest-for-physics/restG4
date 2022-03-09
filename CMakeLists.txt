@@ -44,10 +44,6 @@ if (NOT DEFINED REST_PATH)
     endif ()
 endif ()
 
-if (NOT DEFINED REST_INCLUDE_DIRS)
-    set(REST_INCLUDE_DIRS ${REST_PATH}/include)
-endif ()
-
 if (NOT DEFINED CMAKE_INSTALL_PREFIX)
     set(CMAKE_INSTALL_PREFIX ${REST_PATH})
 endif ()
@@ -61,6 +57,10 @@ endif ()
 
 # Set include and lib
 set(INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include ${ROOT_INCLUDE_DIRS} ${Geant4_INCLUDE_DIR} ${REST_INCLUDE_DIRS})
+
+if (NOT ${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+    set(INCLUDE_DIRS ${INCLUDE_DIRS} ${rest_include_dirs})
+endif ()
 
 set(LINK_LIBRARIES ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} RestGeant4)
 string(STRIP "${LINK_LIBRARIES}" LINK_LIBRARIES)
