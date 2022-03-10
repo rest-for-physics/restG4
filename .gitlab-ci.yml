@@ -3,6 +3,7 @@ image: ghcr.io/lobis/root-geant4-garfield:cpp17_ROOT-v6-26-00_Geant4-v10.4.3_Gar
 
 stages:
   - build
+  - build-standalone
   - loadRESTLibs
   - examples
 
@@ -41,13 +42,26 @@ build:
     - mkdir build
     - cd build
     - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install
-    - make install -j2
+    - make -j2 install
   artifacts:
     paths:
       - ${CI_PROJECT_DIR}/install
       - ${CI_PROJECT_DIR}/framework
       - ${CI_PROJECT_DIR}/framework/build
     expire_in: 1 day
+
+build-standalone:
+  type: build-standalone
+  script:
+    - echo "**${CI_PROJECT_DIR}**"
+    - cd ${CI_PROJECT_DIR}/
+    - if [ -d build ]; then rm -rf build; fi
+    - mkdir build
+    - cd build
+    - source ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cmake ../ -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install
+    - make -j2 install
+    - ${CI_PROJECT_DIR}/install/bin/restG4 --help
 
 ### We make sure the build and install directories are different
 ##build_root_6.25_Geant4_10.7.1:
