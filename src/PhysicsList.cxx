@@ -152,11 +152,11 @@ void PhysicsList::ConstructParticle() {
     G4Geantino::GeantinoDefinition();
 
     // particles defined in PhysicsLists
-    if (fDecPhysicsList != nullptr) fDecPhysicsList->ConstructParticle();
+    if (fDecPhysicsList) fDecPhysicsList->ConstructParticle();
 
-    if (fEmPhysicsList != nullptr) fEmPhysicsList->ConstructParticle();
+    if (fEmPhysicsList) fEmPhysicsList->ConstructParticle();
 
-    if (fRadDecPhysicsList != nullptr) fRadDecPhysicsList->ConstructParticle();
+    if (fRadDecPhysicsList) fRadDecPhysicsList->ConstructParticle();
 
     for (size_t i = 0; i < fHadronPhys.size(); i++) fHadronPhys[i]->ConstructParticle();
 }
@@ -165,16 +165,16 @@ void PhysicsList::ConstructProcess() {
     AddTransportation();
 
     // Electromagnetic physics list
-    if (fEmPhysicsList != nullptr) {
+    if (fEmPhysicsList) {
         fEmPhysicsList->ConstructProcess();
         em_config.AddModels();
     }
 
     // Decay physics list
-    if (fDecPhysicsList != nullptr) fDecPhysicsList->ConstructProcess();
+    if (fDecPhysicsList) fDecPhysicsList->ConstructProcess();
 
     // Radioactive decay
-    if (fRadDecPhysicsList != nullptr) fRadDecPhysicsList->ConstructProcess();
+    if (fRadDecPhysicsList) fRadDecPhysicsList->ConstructProcess();
 
     // hadronic physics lists
     for (size_t i = 0; i < fHadronPhys.size(); i++) fHadronPhys[i]->ConstructProcess();

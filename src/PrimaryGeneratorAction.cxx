@@ -78,7 +78,7 @@ void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
 
 void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
     string expression = (string)str;
-    if (fGeneratorSpatialDensityFunction != nullptr) delete fGeneratorSpatialDensityFunction;
+    if (fGeneratorSpatialDensityFunction) delete fGeneratorSpatialDensityFunction;
     if (expression.find_first_of("xyz") == -1) {
         fGeneratorSpatialDensityFunction = nullptr;
         return;
@@ -496,7 +496,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
 
         // use the density funciton. If the density is small, then val2 is small, we are more
         // likely to regenerate the particle position
-        if (fGeneratorSpatialDensityFunction != nullptr) {
+        if (fGeneratorSpatialDensityFunction) {
             double val1 = G4UniformRand();
             double val2 = fGeneratorSpatialDensityFunction->Eval(x, y, z);
             if (val2 > 1) {

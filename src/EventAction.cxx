@@ -109,7 +109,7 @@ void EventAction::EndOfEventAction(const G4Event* geant4_event) {
 
             // fill analysis tree
             TRestAnalysisTree* analysis_tree = restRun->GetAnalysisTree();
-            if (analysis_tree != nullptr) {
+            if (analysis_tree) {
                 analysis_tree->SetEventInfo(subRestG4Event);
                 analysis_tree->Fill();
             } else {
@@ -121,7 +121,7 @@ void EventAction::EndOfEventAction(const G4Event* geant4_event) {
             }
             // fill event tree
             TTree* event_tree = restRun->GetEventTree();
-            if (event_tree != nullptr) {
+            if (event_tree) {
                 event_tree->Fill();
             } else {
                 // event tree is not found (nullptr)
@@ -271,7 +271,7 @@ int EventAction::SetTrackSubEventIDs() {
             int parentid = track->GetParentID();
             TRestGeant4Track* ptrack = tracks[parentid];
             while (1) {
-                if (ptrack != nullptr) {
+                if (ptrack) {
                     tadd += ptrack->GetTrackTimeLength();
                     if (tadd > timeDelay) {
                         int subid = ptrack->GetSubEventID() + 1;
