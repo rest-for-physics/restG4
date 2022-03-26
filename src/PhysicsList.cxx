@@ -10,7 +10,6 @@
 #include <G4EmLivermorePhysics.hh>
 #include <G4EmParameters.hh>
 #include <G4EmPenelopePhysics.hh>
-#include <G4EmProcessOptions.hh>
 #include <G4EmStandardPhysics_option3.hh>
 #include <G4EmStandardPhysics_option4.hh>
 #include <G4HadronElasticPhysics.hh>
@@ -169,10 +168,6 @@ void PhysicsList::ConstructProcess() {
     if (fEmPhysicsList != nullptr) {
         fEmPhysicsList->ConstructProcess();
         em_config.AddModels();
-        G4EmProcessOptions emOptions;
-        emOptions.SetFluo(true);   // To activate deexcitation processes and fluorescence
-        emOptions.SetAuger(true);  // To activate Auger effect if deexcitation is activated
-        emOptions.SetPIXE(true);   // To activate Particle Induced X-Ray Emission (PIXE)
     }
 
     // Decay physics list
