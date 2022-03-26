@@ -63,7 +63,13 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track) {
     // TRestGeant4Metadata to store a given number of decays
 
     Int_t ID = track->GetTrackID();
-    if (!fFullChain && fCharge > 2 && ID > 1 && G4StrUtil::contains(name, "[")) {
+    if (!fFullChain && fCharge > 2 && ID > 1 &&
+#ifdef GEANT4_VERSION_LESS_11_0_0
+        !name.contains("[")
+#else
+        !G4StrUtil::contains(name, "[")
+#endif
+    ) {
         auto tr = (G4Track*)track;
         tr->SetTrackStatus(fStopAndKill);
     }
