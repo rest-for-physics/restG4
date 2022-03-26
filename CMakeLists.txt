@@ -27,7 +27,7 @@ message("-- Found Geant4 version: ${Geant4_VERSION}")
 
 # Fix to allow compatibility with older Geant4 versions that don't have G4RunManagerFactory
 if (NOT EXISTS "${Geant4_INCLUDE_DIRS}/G4RunManagerFactory.hh")
-    add_definitions(-DWITHOUT_G4RunManagerFactory)
+    add_compile_definitions(GEANT4_WITHOUT_G4RunManagerFactory)
 endif ()
 
 if (NOT DEFINED CMAKE_INSTALL_PREFIX)
