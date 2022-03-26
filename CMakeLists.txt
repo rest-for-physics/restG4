@@ -25,10 +25,6 @@ find_package(Geant4 REQUIRED ui_all vis_all)
 include(${Geant4_USE_FILE})
 message("-- Found Geant4 version: ${Geant4_VERSION}")
 
-if (${Geant4_VERSION} VERSION_GREATER "10.2.9")
-    add_definitions(-DG4104)
-endif ()
-
 # Fix to allow compatibility with older Geant4 versions that don't have G4RunManagerFactory
 if (NOT EXISTS "${Geant4_INCLUDE_DIRS}/G4RunManagerFactory.hh")
     add_definitions(-DWITHOUT_G4RunManagerFactory)

@@ -206,35 +206,9 @@ void PhysicsList::ConstructProcess() {
                    << G4endl;
     }
 
-/*
-   G4ScreenedNuclearRecoil* nucr = new G4ScreenedNuclearRecoil();
-   G4double energyLimit = 100.*MeV;
-   nucr->SetMaxEnergyForScattering(energyLimit);
-   ph->RegisterProcess( nucr, G4GenericIon::GenericIon());
-   */
-
-/* theParticleIterator->reset();
-while ((*theParticleIterator)())
-{
-    G4ParticleDefinition* particle = theParticleIterator->value();
-    G4String partname = particle->GetParticleName();
-    if(partname == "alpha" || partname == "He3" || partname == "GenericIon") {
-        G4BraggIonGasModel* mod1 = new G4BraggIonGasModel();
-        G4BetheBlochIonGasModel* mod2 = new G4BetheBlochIonGasModel();
-        G4double eth = 2.*MeV*particle->GetPDGMass()/CLHEP::proton_mass_c2;
-        em_config.SetExtraEmModel(partname,"braggIoni",mod1,"",0.0,eth,
-                new G4IonFluctuations());
-        em_config.SetExtraEmModel(partname,"betheIoni",mod2,"",eth,100*TeV,
-                new G4UniversalFluctuation());
-
-    }
-} */
-
-// Requires Geant4 version higher than 10.2.9. Defined at CMakeLists.
-#ifdef G4104
     auto theParticleIterator = GetParticleIterator();
 
-    // to implement UserLimits to StepSize inside the gas
+    // To implement UserLimits to StepSize inside the gas
     theParticleIterator->reset();
     while ((*theParticleIterator)()) {
         G4ParticleDefinition* particle = theParticleIterator->value();
@@ -265,7 +239,6 @@ while ((*theParticleIterator)())
                 }
             }
         }
-#endif  // G4104
 }
 
 void PhysicsList::SetCuts() {
