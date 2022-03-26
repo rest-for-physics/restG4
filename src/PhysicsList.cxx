@@ -180,9 +180,9 @@ void PhysicsList::ConstructProcess() {
     for (size_t i = 0; i < fHadronPhys.size(); i++) fHadronPhys[i]->ConstructProcess();
 
     if (restPhysList->FindPhysicsList("G4RadioactiveDecay")) {
-        G4RadioactiveDecay* radioactiveDecay = new G4RadioactiveDecay();
+        auto radioactiveDecay = new G4RadioactiveDecay();
 
-        radioactiveDecay->SetHLThreshold(nanosecond);
+        radioactiveDecay->SetThresholdForVeryLongDecayTime(nanosecond);
 
         // Setting Internal Conversion (ICM) option.
         if (restPhysList->GetPhysicsListOptionValue("G4RadioactiveDecay", "ICM") == "true")
