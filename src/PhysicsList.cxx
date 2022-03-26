@@ -185,8 +185,12 @@ void PhysicsList::ConstructProcess() {
     if (restPhysList->FindPhysicsList("G4RadioactiveDecay")) {
         auto radioactiveDecay = new G4RadioactiveDecay();
 
-        radioactiveDecay->SetThresholdForVeryLongDecayTime(nanosecond);
-
+        const auto decayTimeThreshold = nanosecond;
+#ifdef GEANT4_VERSION_LESS_11_0_0
+        radioactiveDecay->SetHLThreshold(decayTimeThreshold);
+#else
+        radioactiveDecay->SetThresholdForVeryLongDecayTime(decayTimeThreshold);
+#endif
         // Setting Internal Conversion (ICM) option.
         if (restPhysList->GetPhysicsListOptionValue("G4RadioactiveDecay", "ICM") == "true")
             radioactiveDecay->SetICM(true);  // Internal Conversion
