@@ -27,7 +27,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
     G4int n_particle = 1;
     fParticleGun = new G4ParticleGun(n_particle);
 
-    fGeneratorSpatialDensityFunction = NULL;
+    fGeneratorSpatialDensityFunction = nullptr;
 
     for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
         restG4Metadata->GetParticleSource(i)->SetRndmMethod(GeneratorRndm);
@@ -78,9 +78,9 @@ void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
 
 void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
     string expression = (string)str;
-    if (fGeneratorSpatialDensityFunction != NULL) delete fGeneratorSpatialDensityFunction;
+    if (fGeneratorSpatialDensityFunction != nullptr) delete fGeneratorSpatialDensityFunction;
     if (expression.find_first_of("xyz") == -1) {
-        fGeneratorSpatialDensityFunction = NULL;
+        fGeneratorSpatialDensityFunction = nullptr;
         return;
     }
     fGeneratorSpatialDensityFunction = new TF3("GeneratorDistFunc", str);
@@ -496,7 +496,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
 
         // use the density funciton. If the density is small, then val2 is small, we are more
         // likely to regenerate the particle position
-        if (fGeneratorSpatialDensityFunction != NULL) {
+        if (fGeneratorSpatialDensityFunction != nullptr) {
             double val1 = G4UniformRand();
             double val2 = fGeneratorSpatialDensityFunction->Eval(x, y, z);
             if (val2 > 1) {

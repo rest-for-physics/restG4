@@ -36,7 +36,6 @@
 #include <G4UAtomicDeexcitation.hh>
 #include <G4UnitsTable.hh>
 #include <G4UniversalFluctuation.hh>
-#include <G4IonTable.hh>
 
 #include "Particles.h"
 
@@ -48,7 +47,6 @@ PhysicsList::PhysicsList() : G4VModularPhysicsList() {
 
 PhysicsList::PhysicsList(TRestGeant4PhysicsLists* physicsLists) : G4VModularPhysicsList() {
     // add new units for radioActive decays
-    //
     const G4double minute = 60 * second;
     const G4double hour = 60 * minute;
     const G4double day = 24 * hour;
@@ -68,9 +66,9 @@ PhysicsList::PhysicsList(TRestGeant4PhysicsLists* physicsLists) : G4VModularPhys
         restPhysList->GetMaximumEnergyProductionCuts() * keV);
     defaultCutValue = 0.1 * mm;
 
-    fEmPhysicsList = NULL;
-    fDecPhysicsList = NULL;
-    fRadDecPhysicsList = NULL;
+    fEmPhysicsList = nullptr;
+    fDecPhysicsList = nullptr;
+    fRadDecPhysicsList = nullptr;
 
     InitializePhysicsLists();
 }
@@ -102,22 +100,22 @@ void PhysicsList::InitializePhysicsLists() {
 
     // Electromagnetic physicsList
     if (restPhysList->FindPhysicsList("G4EmLivermorePhysics") >= 0) {
-        if (fEmPhysicsList == NULL) fEmPhysicsList = new G4EmLivermorePhysics();
+        if (fEmPhysicsList == nullptr) fEmPhysicsList = new G4EmLivermorePhysics();
         emCounter++;
     }
 
     if (restPhysList->FindPhysicsList("G4EmPenelopePhysics") >= 0) {
-        if (fEmPhysicsList == NULL) fEmPhysicsList = new G4EmPenelopePhysics();
+        if (fEmPhysicsList == nullptr) fEmPhysicsList = new G4EmPenelopePhysics();
         emCounter++;
     }
 
     if (restPhysList->FindPhysicsList("G4EmStandardPhysics_option3") >= 0) {
-        if (fEmPhysicsList == NULL) fEmPhysicsList = new G4EmStandardPhysics_option3();
+        if (fEmPhysicsList == nullptr) fEmPhysicsList = new G4EmStandardPhysics_option3();
         emCounter++;
     }
 
     if (restPhysList->FindPhysicsList("G4EmStandardPhysics_option4") >= 0) {
-        if (fEmPhysicsList == NULL) fEmPhysicsList = new G4EmStandardPhysics_option4();
+        if (fEmPhysicsList == nullptr) fEmPhysicsList = new G4EmStandardPhysics_option4();
         emCounter++;
     }
 
@@ -155,11 +153,11 @@ void PhysicsList::ConstructParticle() {
     G4Geantino::GeantinoDefinition();
 
     // particles defined in PhysicsLists
-    if (fDecPhysicsList != NULL) fDecPhysicsList->ConstructParticle();
+    if (fDecPhysicsList != nullptr) fDecPhysicsList->ConstructParticle();
 
-    if (fEmPhysicsList != NULL) fEmPhysicsList->ConstructParticle();
+    if (fEmPhysicsList != nullptr) fEmPhysicsList->ConstructParticle();
 
-    if (fRadDecPhysicsList != NULL) fRadDecPhysicsList->ConstructParticle();
+    if (fRadDecPhysicsList != nullptr) fRadDecPhysicsList->ConstructParticle();
 
     for (size_t i = 0; i < fHadronPhys.size(); i++) fHadronPhys[i]->ConstructParticle();
 }
@@ -168,7 +166,7 @@ void PhysicsList::ConstructProcess() {
     AddTransportation();
 
     // Electromagnetic physics list
-    if (fEmPhysicsList != NULL) {
+    if (fEmPhysicsList != nullptr) {
         fEmPhysicsList->ConstructProcess();
         em_config.AddModels();
         G4EmProcessOptions emOptions;
@@ -178,10 +176,10 @@ void PhysicsList::ConstructProcess() {
     }
 
     // Decay physics list
-    if (fDecPhysicsList != NULL) fDecPhysicsList->ConstructProcess();
+    if (fDecPhysicsList != nullptr) fDecPhysicsList->ConstructProcess();
 
     // Radioactive decay
-    if (fRadDecPhysicsList != NULL) fRadDecPhysicsList->ConstructProcess();
+    if (fRadDecPhysicsList != nullptr) fRadDecPhysicsList->ConstructProcess();
 
     // hadronic physics lists
     for (size_t i = 0; i < fHadronPhys.size(); i++) fHadronPhys[i]->ConstructProcess();
