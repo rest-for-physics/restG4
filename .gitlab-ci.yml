@@ -25,7 +25,7 @@ Build and Install:
     - git clone https://github.com/rest-for-physics/framework.git framework
     - cd framework
     - ./scripts/checkoutRemoteBranch.sh ${CI_COMMIT_BRANCH}
-    - if [ -d ${CI_PROJECT_DIR}/install ]; then rm -rf ${CI_PROJECT_DIR}/install; fi
+    - then rm -rf ${CI_PROJECT_DIR}/install
     - git submodule init source/libraries/geant4
     - git submodule update source/libraries/geant4
     - cd source/libraries/geant4/
@@ -38,7 +38,7 @@ Build and Install:
     - cd source/packages/restG4/
     - git checkout ${CI_COMMIT_BRANCH}
     - cd ../../../
-    - if [ -d build ]; then rm -rf build; fi
+    - rm -rf build
     - mkdir build
     - cd build
     - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install
@@ -55,13 +55,14 @@ Build Standalone:
   script:
     - echo "**${CI_PROJECT_DIR}**"
     - cd ${CI_PROJECT_DIR}/
-    - if [ -d build ]; then rm -rf build; fi
+    - rm -rf build
     - mkdir build
     - cd build
     - source ${CI_PROJECT_DIR}/install/thisREST.sh
-    - cmake ../ -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install
+    - cmake ../ -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install-standalone
     - make -j2 install
-    - ${CI_PROJECT_DIR}/install/bin/restG4 --help
+    - ${CI_PROJECT_DIR}/install-standalone/bin/restG4 --help
+    - rm -rf ${CI_PROJECT_DIR}/install-standalone
 
 Load REST Libraries:
   type: loadRESTLibs
