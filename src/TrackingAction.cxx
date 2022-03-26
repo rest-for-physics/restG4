@@ -60,21 +60,11 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track) {
     // full chain, just first decay) On future we must add an option through
     // TRestGeant4Metadata to store a given number of decays
 
-    //   if( fFullChain == true ) G4cout << "Full chain active" << G4endl;
-    //   else  G4cout << "Full chain not active" << G4endl;
-
     Int_t ID = track->GetTrackID();
-    if (!fFullChain && fCharge > 2 && ID > 1 && !name.contains("[")) {
+    if (!fFullChain && fCharge > 2 && ID > 1 && G4StrUtil::contains(name, "[")) {
         auto tr = (G4Track*)track;
         tr->SetTrackStatus(fStopAndKill);
     }
-
-    /*
-    if ( fFullChain == true && fCharge > 2  && ID > 1 && !name.contains("["))
-    {
-        restTrack->IncreaseSubEventID();
-    }
-    */
 }
 
 void TrackingAction::PostUserTrackingAction(const G4Track* track) {
