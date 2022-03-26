@@ -25,7 +25,7 @@ Build and Install:
     - git clone https://github.com/rest-for-physics/framework.git framework
     - cd framework
     - ./scripts/checkoutRemoteBranch.sh ${CI_COMMIT_BRANCH}
-    - then rm -rf ${CI_PROJECT_DIR}/install
+    - rm -rf ${CI_PROJECT_DIR}/install
     - git submodule init source/libraries/geant4
     - git submodule update source/libraries/geant4
     - cd source/libraries/geant4/
