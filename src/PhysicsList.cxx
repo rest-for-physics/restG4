@@ -38,6 +38,8 @@
 
 #include "Particles.h"
 
+using namespace std;
+
 Int_t emCounter = 0;
 
 PhysicsList::PhysicsList() : G4VModularPhysicsList() {

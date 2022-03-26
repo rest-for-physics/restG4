@@ -1,6 +1,8 @@
 
 #include "DetectorConstruction.h"
 
+#include <TRestGeant4GeometryInfo.h>
+
 #include <G4FieldManager.hh>
 #include <G4IonTable.hh>
 #include <G4Isotope.hh>
@@ -10,7 +12,7 @@
 #include <G4UniformMagField.hh>
 #include <G4UserLimits.hh>
 
-#include "TRestGeant4GeometryInfo.h"
+using namespace std;
 
 extern TRestGeant4Event* restG4Event;
 extern TRestGeant4Metadata* restG4Metadata;
@@ -202,7 +204,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physVolName) {
     G4PhysicalVolumeStore* physVolStore = G4PhysicalVolumeStore::GetInstance();
 
-    std::vector<G4VPhysicalVolume*>::const_iterator physVol;
+    vector<G4VPhysicalVolume*>::const_iterator physVol;
     for (physVol = physVolStore->begin(); physVol != physVolStore->end(); physVol++) {
         auto name = (*physVol)->GetName();
         auto alternativeName =

@@ -253,7 +253,7 @@ int EventAction::SetTrackSubEventIDs() {
     Double_t timeDelay = restG4Metadata->GetSubEventTimeDelay();  // in unit us
 
     // reorder tracks
-    std::map<int, TRestGeant4Track*> tracks;
+    map<int, TRestGeant4Track*> tracks;
     for (int n = 0; n < nTracks; n++) {
         TRestGeant4Track* track = restG4Event->GetTrack(n);
         tracks[track->GetTrackID()] = track;

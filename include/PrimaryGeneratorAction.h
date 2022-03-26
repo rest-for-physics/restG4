@@ -15,8 +15,6 @@
 #include "DetectorConstruction.h"
 #include "TRestGeant4Particle.h"
 
-using namespace std;
-
 const int nSpct = 3000;
 
 class G4Event;

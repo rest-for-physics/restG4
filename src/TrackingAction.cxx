@@ -11,6 +11,8 @@
 #include "EventAction.h"
 #include "RunAction.h"
 
+using namespace std;
+
 extern TRestGeant4Metadata* restG4Metadata;
 extern TRestGeant4Event* restG4Event;
 extern TRestGeant4Track* restTrack;
@@ -18,10 +20,10 @@ extern TRestGeant4Track* restTrack;
 G4double prevTime = 0;
 G4String aux;
 
-TrackingAction::TrackingAction(RunAction* RA, EventAction* EA)
+TrackingAction::TrackingAction(RunAction* runAction, EventAction* eventAction)
     : G4UserTrackingAction(),
-      fRun(RA),
-      fEvent(EA)
+      fRun(runAction),
+      fEvent(eventAction)
 
 {
     fFullChain = false;
