@@ -18,12 +18,10 @@ extern TRestGeant4Event* restG4Event;
 
 Int_t face = 0;
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 double GeneratorRndm() { return G4UniformRand(); }
 
 PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
-    : G4VUserPrimaryGeneratorAction(), fParticleGun(0), fDetector(pDetector) {
+    : G4VUserPrimaryGeneratorAction(), fParticleGun(nullptr), fDetector(pDetector) {
     G4int n_particle = 1;
     fParticleGun = new G4ParticleGun(n_particle);
 
@@ -36,10 +34,8 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
-    TString xLabel = (TString)spt->GetXaxis()->GetTitle();
+    auto xLabel = (TString)spt->GetXaxis()->GetTitle();
 
     if (xLabel.Contains("MeV")) {
         energyFactor = 1.e3;
@@ -77,8 +73,8 @@ void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
 }
 
 void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
-    string expression = (string)str;
-    if (fGeneratorSpatialDensityFunction) delete fGeneratorSpatialDensityFunction;
+    auto expression = (string)str;
+    delete fGeneratorSpatialDensityFunction;
     if (expression.find_first_of("xyz") == -1) {
         fGeneratorSpatialDensityFunction = nullptr;
         return;
@@ -123,9 +119,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
     }
 }
 
-//_____________________________________________________________________________
 G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRestGeant4Particle p) {
-    string particle_name = (string)p.GetParticleName();
+    auto particle_name = (string)p.GetParticleName();
 
     Double_t excited_energy = (double)p.GetExcitationLevel();  // in keV
 
@@ -369,11 +364,10 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
     fParticleGun->SetParticleMomentumDirection(direction);
 }
 
-//_____________________________________________________________________________
 void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
     Double_t energy = 0;
 
-    string energy_dist_type_name = (string)restG4Metadata->GetParticleSource(n)->GetEnergyDistType();
+    auto energy_dist_type_name = (string)restG4Metadata->GetParticleSource(n)->GetEnergyDistType();
     energy_dist_type_name = g4_metadata_parameters::CleanString(energy_dist_type_name);
 
     if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {

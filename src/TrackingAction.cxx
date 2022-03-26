@@ -1,4 +1,5 @@
 
+
 #include "TrackingAction.h"
 
 #include <G4ParticleTypes.hh>
@@ -63,8 +64,8 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track) {
     //   else  G4cout << "Full chain not active" << G4endl;
 
     Int_t ID = track->GetTrackID();
-    if (fFullChain == false && fCharge > 2 && ID > 1 && !name.contains("[")) {
-        G4Track* tr = (G4Track*)track;
+    if (!fFullChain && fCharge > 2 && ID > 1 && !name.contains("[")) {
+        auto tr = (G4Track*)track;
         tr->SetTrackStatus(fStopAndKill);
     }
 

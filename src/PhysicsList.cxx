@@ -77,8 +77,9 @@ PhysicsList::~PhysicsList() {
 
     delete fDecPhysicsList;
     delete fRadDecPhysicsList;
-    for (size_t i = 0; i < fHadronPhys.size(); i++) {
-        delete fHadronPhys[i];
+
+    for (auto hadronicPhysicsList : fHadronPhys) {
+        delete hadronicPhysicsList;
     }
 }
 
@@ -146,7 +147,7 @@ void PhysicsList::InitializePhysicsLists() {
 
     G4cout << "Number of hadronic physics lists added " << fHadronPhys.size() << G4endl;
 }
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 void PhysicsList::ConstructParticle() {
     // pseudo-particles
     G4Geantino::GeantinoDefinition();
@@ -176,7 +177,7 @@ void PhysicsList::ConstructProcess() {
     // Radioactive decay
     if (fRadDecPhysicsList) fRadDecPhysicsList->ConstructProcess();
 
-    // hadronic physics lists
+    // Hadronic physics lists
     for (size_t i = 0; i < fHadronPhys.size(); i++) fHadronPhys[i]->ConstructProcess();
 
     if (restPhysList->FindPhysicsList("G4RadioactiveDecay")) {
@@ -194,7 +195,7 @@ void PhysicsList::ConstructProcess() {
                       "ICM not defined."
                    << G4endl;
 
-        // Enabling electron re-arrangment (ARM) option.
+        // Enabling electron re-arrangement (ARM) option.
         if (restPhysList->GetPhysicsListOptionValue("G4RadioactiveDecay", "ARM") == "true")
             radioactiveDecay->SetARM(true);  // Internal Conversion
         else if (restPhysList->GetPhysicsListOptionValue("G4RadioactiveDecay", "ARM") == "false")
@@ -237,17 +238,17 @@ while ((*theParticleIterator)())
     theParticleIterator->reset();
     while ((*theParticleIterator)()) {
         G4ParticleDefinition* particle = theParticleIterator->value();
-        G4String partname = particle->GetParticleName();
+        const auto& particleName = particle->GetParticleName();
         G4ProcessManager* processManager = particle->GetProcessManager();
 
-        if (partname == "e-")
+        if (particleName == "e-")
             processManager->AddDiscreteProcess(new G4StepLimiter("e-Step"));
-        else if (partname == "e+")
+        else if (particleName == "e+")
             processManager->AddDiscreteProcess(new G4StepLimiter("e+Step"));
 
-        if (partname == "mu-")
+        if (particleName == "mu-")
             processManager->AddDiscreteProcess(new G4StepLimiter("mu-Step"));
-        else if (partname == "mu+")
+        else if (particleName == "mu+")
             processManager->AddDiscreteProcess(new G4StepLimiter("mu+Step"));
     }
 

@@ -1,9 +1,9 @@
 
 #include "RunAction.h"
-#include "TRestRun.h"
 
 #include <PrimaryGeneratorAction.h>
 #include <TRestGeant4Metadata.h>
+#include <TRestRun.h>
 
 #include <G4PhysicalConstants.hh>
 #include <G4Run.hh>
