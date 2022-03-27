@@ -8,8 +8,6 @@
 #include <iostream>
 #include <map>
 
-
-
 class G4Run;
 class PrimaryGeneratorAction;
 

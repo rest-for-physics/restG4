@@ -8,7 +8,6 @@
 #include <G4VModularPhysicsList.hh>
 #include <globals.hh>
 
-
 class G4VPhysicsConstructor;
 
 class PhysicsList : public G4VModularPhysicsList {
