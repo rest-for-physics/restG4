@@ -8,7 +8,7 @@
 #include <iostream>
 #include <map>
 
-using namespace std;
+
 
 class G4Run;
 class PrimaryGeneratorAction;

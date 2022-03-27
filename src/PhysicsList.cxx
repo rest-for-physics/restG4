@@ -36,9 +36,10 @@
 #include <G4UAtomicDeexcitation.hh>
 #include <G4UnitsTable.hh>
 #include <G4UniversalFluctuation.hh>
-#include <G4IonTable.hh>
 
 #include "Particles.h"
+
+using namespace std;
 
 Int_t emCounter = 0;
 

@@ -13,12 +13,12 @@
 #include <G4UnitsTable.hh>
 #include <Randomize.hh>
 
+using namespace std;
+
 extern TRestGeant4Metadata* restG4Metadata;
 extern TRestGeant4Event* restG4Event;
 
 Int_t face = 0;
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 double GeneratorRndm() { return G4UniformRand(); }
 
@@ -188,7 +188,7 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
         for (const auto& pair : g4_metadata_parameters::angular_dist_types_map) {
             cout << pair.first << ", ";
         }
-        cout << std::endl;
+        cout << endl;
         throw "Invalid angular distribution";
     }
     // generator type
@@ -204,7 +204,7 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
         for (const auto& pair : g4_metadata_parameters::generator_types_map) {
             cout << pair.first << ", ";
         }
-        cout << std::endl;
+        cout << endl;
         throw "Invalid generator type";
     }
 
@@ -390,7 +390,7 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
         for (const auto& pair : g4_metadata_parameters::energy_dist_types_map) {
             cout << pair.first << ", ";
         }
-        cout << std::endl;
+        cout << endl;
         G4cout << "WARNING! Energy distribution type was not recognized. Setting "
                   "energy to 1keV"
                << G4endl;

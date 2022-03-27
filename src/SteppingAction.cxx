@@ -13,6 +13,8 @@
 #include <G4UnitsTable.hh>
 #include <globals.hh>
 
+using namespace std;
+
 extern TRestGeant4Event* restG4Event;
 extern TRestGeant4Metadata* restG4Metadata;
 extern TRestGeant4Track* restTrack;

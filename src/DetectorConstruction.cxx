@@ -12,6 +12,8 @@
 
 #include "TRestGeant4GeometryInfo.h"
 
+using namespace std;
+
 extern TRestGeant4Event* restG4Event;
 extern TRestGeant4Metadata* restG4Metadata;
 

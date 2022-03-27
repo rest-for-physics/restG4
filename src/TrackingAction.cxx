@@ -10,6 +10,8 @@
 #include "EventAction.h"
 #include "RunAction.h"
 
+using namespace std;
+
 extern TRestGeant4Metadata* restG4Metadata;
 extern TRestGeant4Event* restG4Event;
 extern TRestGeant4Track* restTrack;
