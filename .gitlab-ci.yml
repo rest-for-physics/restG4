@@ -165,3 +165,13 @@ Load REST Libraries:
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/10.Geometries/
     - restG4 Assembly.rml
     - restRoot -b -q Validate.C'("Run00001_Assembly_Assembly.root")'
+
+11_Xrays:
+  type: examples
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cd ${CI_PROJECT_DIR}/install/examples/restG4/11.Xrays/
+    - restG4 xrays.rml
+    - restRoot -b -q Validate.C'("Run00001_Assembly_Assembly.root")'
+    - restManager --c analysis.rml --f RestG4_xrays_00001_ArgonISO.root
+    - restRoot -b -q GetQE.C'("Run_g4Analysis_00001_xrays.root")'
