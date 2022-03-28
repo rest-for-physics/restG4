@@ -167,8 +167,8 @@ void PhysicsList::ConstructParticle() {
         fRadDecPhysicsList->ConstructParticle();
     }
 
-    for (size_t i = 0; i < fHadronPhys.size(); i++) {
-        fHadronPhys[i]->ConstructParticle();
+    for (auto& hadronPhysics : fHadronPhys) {
+        hadronPhysics->ConstructParticle();
     }
 }
 
