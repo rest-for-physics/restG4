@@ -1,6 +1,5 @@
 
 #include "RunAction.h"
-#include "TRestRun.h"
 
 #include <PrimaryGeneratorAction.h>
 #include <TRestGeant4Metadata.h>
@@ -11,6 +10,10 @@
 #include <G4SystemOfUnits.hh>
 #include <G4UnitsTable.hh>
 #include <iomanip>
+
+#include "TRestRun.h"
+
+using namespace std;
 
 extern TRestGeant4Metadata* restG4Metadata;
 extern TRestRun* restRun;

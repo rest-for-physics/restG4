@@ -15,8 +15,6 @@
 #include "DetectorConstruction.h"
 #include "TRestGeant4Particle.h"
 
-using namespace std;
-
 const int nSpct = 3000;
 
 class G4Event;
@@ -36,7 +34,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     void SetAngularDistribution(TH1D* ang) { fAngularDistribution = ang; }
 
    private:
-    vector<TRestGeant4Particle> fTempParticles;
+    std::vector<TRestGeant4Particle> fTempParticles;
 
     G4ParticleGun* fParticleGun;
     DetectorConstruction* fDetector;

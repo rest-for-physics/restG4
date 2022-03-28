@@ -12,8 +12,6 @@
 #include <globals.hh>
 #include <iostream>
 
-using namespace std;
-
 class SteppingAction : public G4UserSteppingAction {
    public:
     SteppingAction();
