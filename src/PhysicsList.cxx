@@ -170,7 +170,9 @@ void PhysicsList::ConstructProcess() {
     // Electromagnetic physics list
     if (fEmPhysicsList) {
         fEmPhysicsList->ConstructProcess();
-        em_config.AddModels();
+        fEmConfig.AddModels();
+
+        // G4UImanager* UI = G4UImanager::GetUIpointer();
     }
 
     // Decay physics list
