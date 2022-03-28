@@ -155,13 +155,21 @@ void PhysicsList::ConstructParticle() {
     G4Geantino::GeantinoDefinition();
 
     // particles defined in PhysicsLists
-    if (fDecPhysicsList) fDecPhysicsList->ConstructParticle();
+    if (fDecPhysicsList) {
+        fDecPhysicsList->ConstructParticle();
+    }
 
-    if (fEmPhysicsList) fEmPhysicsList->ConstructParticle();
+    if (fEmPhysicsList) {
+        fEmPhysicsList->ConstructParticle();
+    }
 
-    if (fRadDecPhysicsList) fRadDecPhysicsList->ConstructParticle();
+    if (fRadDecPhysicsList) {
+        fRadDecPhysicsList->ConstructParticle();
+    }
 
-    for (size_t i = 0; i < fHadronPhys.size(); i++) fHadronPhys[i]->ConstructParticle();
+    for (size_t i = 0; i < fHadronPhys.size(); i++) {
+        fHadronPhys[i]->ConstructParticle();
+    }
 }
 
 void PhysicsList::ConstructProcess() {
