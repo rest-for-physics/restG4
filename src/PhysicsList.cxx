@@ -33,6 +33,7 @@
 #include <G4StoppingPhysics.hh>
 #include <G4SystemOfUnits.hh>
 #include <G4UAtomicDeexcitation.hh>
+#include <G4UImanager.hh>
 #include <G4UnitsTable.hh>
 #include <G4UniversalFluctuation.hh>
 
@@ -180,7 +181,10 @@ void PhysicsList::ConstructProcess() {
         fEmPhysicsList->ConstructProcess();
         fEmConfig.AddModels();
 
-        // G4UImanager* UI = G4UImanager::GetUIpointer();
+        G4UImanager* UI = G4UImanager::GetUIpointer();
+        UI->ApplyCommand("/process/em/fluo true");
+        UI->ApplyCommand("/process/em/auger true");
+        UI->ApplyCommand("/process/em/pixe true");
     }
 
     // Decay physics list
