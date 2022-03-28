@@ -34,7 +34,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     void SetAngularDistribution(TH1D* ang) { fAngularDistribution = ang; }
 
    private:
-    vector<TRestGeant4Particle> fTempParticles;
+    std::vector<TRestGeant4Particle> fTempParticles;
 
     G4ParticleGun* fParticleGun;
     DetectorConstruction* fDetector;

@@ -97,4 +97,3 @@ Int_t GetQE(string inputFile) {
     cout << "All tests passed! [\033[32mOK\033[0m]\n";
     return 0;
 }
-
