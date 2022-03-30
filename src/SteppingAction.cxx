@@ -33,8 +33,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
             (TString &&) aStep->GetPreStepPoint()->GetPhysicalVolume()->GetName());
     const auto& particleName = aStep->GetTrack()->GetDefinition()->GetParticleName();
 
-    ener_dep = aStep->GetTotalEnergyDeposit();
-    eKin = aStep->GetTrack()->GetKineticEnergy() / keV;
+    const auto TotalEnergyDeposit = aStep->GetTotalEnergyDeposit();
+    const auto KineticEnergy = aStep->GetTrack()->GetKineticEnergy() / keV;
 
     auto sensitiveVolumeName =
         restG4Metadata->GetGeant4GeometryInfo()->GetAlternativeNameFromGeant4PhysicalName(
@@ -71,8 +71,6 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     restG4Metadata->GetGeant4PhysicsInfo()->InsertProcessName(processID, TString(processName));
 
     G4Track* aTrack = aStep->GetTrack();
-    parentID = aTrack->GetParentID();
-    trackID = aTrack->GetTrackID();
 
     Double_t x = aTrack->GetPosition().x() / mm;
     Double_t y = aTrack->GetPosition().y() / mm;
@@ -135,7 +133,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
 
     } else {
         if (restG4Metadata->GetSensitiveVolume() == volumeName) {
-            restG4Event->AddEnergyToSensitiveVolume(ener_dep / keV);
+            restG4Event->AddEnergyToSensitiveVolume(TotalEnergyDeposit / keV);
         }
 
         TVector3 hitPosition(x, y, z);
@@ -158,9 +156,11 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
 
                 if (isActiveVolume) {
                     volume = volID;
-                    if (restG4Metadata->GetVerboseLevel() >= REST_Extreme) G4cout << "Storing hit" << G4endl;
-                    restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, pcsID, volID, eKin,
-                                        momentumDirection);
+                    if (restG4Metadata->GetVerboseLevel() >= REST_Extreme) {
+                        G4cout << "Storing hit" << G4endl;
+                    }
+                    restTrack->AddG4Hit(hitPosition, TotalEnergyDeposit / keV, hit_global_time, pcsID, volID,
+                                        KineticEnergy, momentumDirection);
                     alreadyStored = true;
                 }
             }
@@ -168,9 +168,10 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
 
         // See issue #65.
         // If the radioactive decay occurs in a non-active volume then the id will be -1
-        Bool_t isDecay = (processName == (G4String) "RadioactiveDecay");
-        if (!alreadyStored && isDecay)
-            restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, pcsID, volume, eKin,
-                                momentumDirection);
+        Bool_t isDecay = (processName == "RadioactiveDecay");
+        if (!alreadyStored && isDecay) {
+            restTrack->AddG4Hit(hitPosition, TotalEnergyDeposit / keV, hit_global_time, pcsID, volume,
+                                KineticEnergy, momentumDirection);
+        }
     }
 }

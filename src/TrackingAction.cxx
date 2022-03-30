@@ -44,7 +44,7 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track) {
             cout << "EXTREME: Processing track " << track->GetTrackID() << endl;
         }
     G4ParticleDefinition* particle = track->GetDefinition();
-    G4String name = particle->GetParticleName();
+    const auto& name = particle->GetParticleName();
     fCharge = particle->GetPDGCharge();
 
     restTrack->RemoveHits();
