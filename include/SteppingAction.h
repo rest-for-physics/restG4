@@ -29,7 +29,6 @@ class SteppingAction : public G4UserSteppingAction {
     TH2D* GetSpatialDistribution() { return fSpatialDistribution; }
 
    private:
-    G4String nom_vol, nom_part, nom_proc;
     G4double dif_ener, ener_dep, ener, eKin;
     G4int trackID, parentID;
 
