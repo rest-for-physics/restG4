@@ -51,7 +51,7 @@ Bool_t saveAllEvents;
 const Int_t maxBiasingVolumes = 50;
 Int_t biasing = 0;
 
-// This histograms would be better placed inside TRestGeant4BiasingVolume
+// These histograms would be better placed inside TRestGeant4BiasingVolume
 TH1D* biasingSpectrum[maxBiasingVolumes];
 TH1D* angularDistribution[maxBiasingVolumes];
 TH2D* spatialDistribution[maxBiasingVolumes];
