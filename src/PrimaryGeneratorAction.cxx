@@ -23,11 +23,11 @@ Int_t face = 0;
 double GeneratorRndm() { return G4UniformRand(); }
 
 PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
-    : G4VUserPrimaryGeneratorAction(), fParticleGun(0), fDetector(pDetector) {
+    : G4VUserPrimaryGeneratorAction(), fParticleGun(nullptr), fDetector(pDetector) {
     G4int n_particle = 1;
     fParticleGun = new G4ParticleGun(n_particle);
 
-    fGeneratorSpatialDensityFunction = NULL;
+    fGeneratorSpatialDensityFunction = nullptr;
 
     for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
         restG4Metadata->GetParticleSource(i)->SetRndmMethod(GeneratorRndm);
@@ -36,10 +36,8 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
-    TString xLabel = (TString)spt->GetXaxis()->GetTitle();
+    auto xLabel = (TString)spt->GetXaxis()->GetTitle();
 
     if (xLabel.Contains("MeV")) {
         energyFactor = 1.e3;
@@ -77,10 +75,10 @@ void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
 }
 
 void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
-    string expression = (string)str;
-    if (fGeneratorSpatialDensityFunction != NULL) delete fGeneratorSpatialDensityFunction;
+    auto expression = (string)str;
+    delete fGeneratorSpatialDensityFunction;
     if (expression.find_first_of("xyz") == -1) {
-        fGeneratorSpatialDensityFunction = NULL;
+        fGeneratorSpatialDensityFunction = nullptr;
         return;
     }
     fGeneratorSpatialDensityFunction = new TF3("GeneratorDistFunc", str);
@@ -123,9 +121,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
     }
 }
 
-//_____________________________________________________________________________
 G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRestGeant4Particle p) {
-    string particle_name = (string)p.GetParticleName();
+    auto particle_name = (string)p.GetParticleName();
 
     Double_t excited_energy = (double)p.GetExcitationLevel();  // in keV
 
@@ -369,11 +366,10 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
     fParticleGun->SetParticleMomentumDirection(direction);
 }
 
-//_____________________________________________________________________________
 void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
     Double_t energy = 0;
 
-    string energy_dist_type_name = (string)restG4Metadata->GetParticleSource(n)->GetEnergyDistType();
+    auto energy_dist_type_name = (string)restG4Metadata->GetParticleSource(n)->GetEnergyDistType();
     energy_dist_type_name = g4_metadata_parameters::CleanString(energy_dist_type_name);
 
     if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
@@ -496,7 +492,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
 
         // use the density funciton. If the density is small, then val2 is small, we are more
         // likely to regenerate the particle position
-        if (fGeneratorSpatialDensityFunction != NULL) {
+        if (fGeneratorSpatialDensityFunction) {
             double val1 = G4UniformRand();
             double val2 = fGeneratorSpatialDensityFunction->Eval(x, y, z);
             if (val2 > 1) {
@@ -555,7 +551,7 @@ G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() {
         n = a * a + b * b + c * c;
     } while (n > 1 || n == 0.0);
 
-    n = std::sqrt(n);
+    n = sqrt(n);
     a /= n;
     b /= n;
     c /= n;

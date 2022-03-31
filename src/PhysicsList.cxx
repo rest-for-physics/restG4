@@ -10,7 +10,6 @@
 #include <G4EmLivermorePhysics.hh>
 #include <G4EmParameters.hh>
 #include <G4EmPenelopePhysics.hh>
-#include <G4EmProcessOptions.hh>
 #include <G4EmStandardPhysics_option3.hh>
 #include <G4EmStandardPhysics_option4.hh>
 #include <G4HadronElasticPhysics.hh>
@@ -34,6 +33,7 @@
 #include <G4StoppingPhysics.hh>
 #include <G4SystemOfUnits.hh>
 #include <G4UAtomicDeexcitation.hh>
+#include <G4UImanager.hh>
 #include <G4UnitsTable.hh>
 #include <G4UniversalFluctuation.hh>
 
@@ -49,7 +49,6 @@ PhysicsList::PhysicsList() : G4VModularPhysicsList() {
 
 PhysicsList::PhysicsList(TRestGeant4PhysicsLists* physicsLists) : G4VModularPhysicsList() {
     // add new units for radioActive decays
-    //
     const G4double minute = 60 * second;
     const G4double hour = 60 * minute;
     const G4double day = 24 * hour;
@@ -69,9 +68,9 @@ PhysicsList::PhysicsList(TRestGeant4PhysicsLists* physicsLists) : G4VModularPhys
         restPhysList->GetMaximumEnergyProductionCuts() * keV);
     defaultCutValue = 0.1 * mm;
 
-    fEmPhysicsList = NULL;
-    fDecPhysicsList = NULL;
-    fRadDecPhysicsList = NULL;
+    fEmPhysicsList = nullptr;
+    fDecPhysicsList = nullptr;
+    fRadDecPhysicsList = nullptr;
 
     InitializePhysicsLists();
 }
@@ -81,44 +80,45 @@ PhysicsList::~PhysicsList() {
 
     delete fDecPhysicsList;
     delete fRadDecPhysicsList;
-    for (size_t i = 0; i < fHadronPhys.size(); i++) {
-        delete fHadronPhys[i];
+
+    for (auto hadronicPhysicsList : fHadronPhys) {
+        delete hadronicPhysicsList;
     }
 }
 
 void PhysicsList::InitializePhysicsLists() {
     // Decay physics and all particles
-    if (restPhysList->FindPhysicsList("G4DecayPhysics") >= 0)
+    if (restPhysList->FindPhysicsList("G4DecayPhysics") >= 0) {
         fDecPhysicsList = new G4DecayPhysics();
-    else if (restPhysList->GetVerboseLevel() >= REST_Debug) {
+    } else if (restPhysList->GetVerboseLevel() >= REST_Debug) {
         G4cout << "restG4. PhysicsList. G4DecayPhysics is not enabled!!" << G4endl;
     }
 
     // RadioactiveDecay physicsList
-    if (restPhysList->FindPhysicsList("G4RadioactiveDecayPhysics") >= 0)
+    if (restPhysList->FindPhysicsList("G4RadioactiveDecayPhysics") >= 0) {
         fRadDecPhysicsList = new G4RadioactiveDecayPhysics();
-    else if (restPhysList->GetVerboseLevel() >= REST_Debug) {
+    } else if (restPhysList->GetVerboseLevel() >= REST_Debug) {
         G4cout << "restG4. PhysicsList. G4RadioactiveDecayPhysics is not enabled!!" << G4endl;
     }
 
     // Electromagnetic physicsList
     if (restPhysList->FindPhysicsList("G4EmLivermorePhysics") >= 0) {
-        if (fEmPhysicsList == NULL) fEmPhysicsList = new G4EmLivermorePhysics();
+        if (fEmPhysicsList == nullptr) fEmPhysicsList = new G4EmLivermorePhysics();
         emCounter++;
     }
 
     if (restPhysList->FindPhysicsList("G4EmPenelopePhysics") >= 0) {
-        if (fEmPhysicsList == NULL) fEmPhysicsList = new G4EmPenelopePhysics();
+        if (fEmPhysicsList == nullptr) fEmPhysicsList = new G4EmPenelopePhysics();
         emCounter++;
     }
 
     if (restPhysList->FindPhysicsList("G4EmStandardPhysics_option3") >= 0) {
-        if (fEmPhysicsList == NULL) fEmPhysicsList = new G4EmStandardPhysics_option3();
+        if (fEmPhysicsList == nullptr) fEmPhysicsList = new G4EmStandardPhysics_option3();
         emCounter++;
     }
 
     if (restPhysList->FindPhysicsList("G4EmStandardPhysics_option4") >= 0) {
-        if (fEmPhysicsList == NULL) fEmPhysicsList = new G4EmStandardPhysics_option4();
+        if (fEmPhysicsList == nullptr) fEmPhysicsList = new G4EmStandardPhysics_option4();
         emCounter++;
     }
 
@@ -134,133 +134,140 @@ void PhysicsList::InitializePhysicsLists() {
     }
 
     // Hadronic PhysicsList
-    if (restPhysList->FindPhysicsList("G4HadronPhysicsQGSP_BIC_HP") >= 0)
+    if (restPhysList->FindPhysicsList("G4HadronPhysicsQGSP_BIC_HP") >= 0) {
         fHadronPhys.push_back(new G4HadronPhysicsQGSP_BIC_HP());
+    }
 
-    if (restPhysList->FindPhysicsList("G4IonBinaryCascadePhysics") >= 0)
+    if (restPhysList->FindPhysicsList("G4IonBinaryCascadePhysics") >= 0) {
         fHadronPhys.push_back(new G4IonBinaryCascadePhysics());
+    }
 
-    if (restPhysList->FindPhysicsList("G4HadronElasticPhysicsHP") >= 0)
+    if (restPhysList->FindPhysicsList("G4HadronElasticPhysicsHP") >= 0) {
         fHadronPhys.push_back(new G4HadronElasticPhysicsHP());
+    }
 
-    if (restPhysList->FindPhysicsList("G4NeutronTrackingCut") >= 0)
+    if (restPhysList->FindPhysicsList("G4NeutronTrackingCut") >= 0) {
         fHadronPhys.push_back(new G4NeutronTrackingCut());
+    }
 
-    if (restPhysList->FindPhysicsList("G4EmExtraPhysics") >= 0) fHadronPhys.push_back(new G4EmExtraPhysics());
+    if (restPhysList->FindPhysicsList("G4EmExtraPhysics") >= 0) {
+        fHadronPhys.push_back(new G4EmExtraPhysics());
+    }
 
     G4cout << "Number of hadronic physics lists added " << fHadronPhys.size() << G4endl;
 }
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 void PhysicsList::ConstructParticle() {
     // pseudo-particles
     G4Geantino::GeantinoDefinition();
 
     // particles defined in PhysicsLists
-    if (fDecPhysicsList != NULL) fDecPhysicsList->ConstructParticle();
+    if (fDecPhysicsList) {
+        fDecPhysicsList->ConstructParticle();
+    }
 
-    if (fEmPhysicsList != NULL) fEmPhysicsList->ConstructParticle();
+    if (fEmPhysicsList) {
+        fEmPhysicsList->ConstructParticle();
+    }
 
-    if (fRadDecPhysicsList != NULL) fRadDecPhysicsList->ConstructParticle();
+    if (fRadDecPhysicsList) {
+        fRadDecPhysicsList->ConstructParticle();
+    }
 
-    for (size_t i = 0; i < fHadronPhys.size(); i++) fHadronPhys[i]->ConstructParticle();
+    for (auto& hadronicPhysicsList : fHadronPhys) {
+        hadronicPhysicsList->ConstructParticle();
+    }
 }
 
 void PhysicsList::ConstructProcess() {
     AddTransportation();
 
     // Electromagnetic physics list
-    if (fEmPhysicsList != NULL) {
+    if (fEmPhysicsList) {
         fEmPhysicsList->ConstructProcess();
-        em_config.AddModels();
-        G4EmProcessOptions emOptions;
-        emOptions.SetFluo(true);   // To activate deexcitation processes and fluorescence
-        emOptions.SetAuger(true);  // To activate Auger effect if deexcitation is activated
-        emOptions.SetPIXE(true);   // To activate Particle Induced X-Ray Emission (PIXE)
+        fEmConfig.AddModels();
+
+        G4UImanager* UI = G4UImanager::GetUIpointer();
+        UI->ApplyCommand("/process/em/fluo true");
+        UI->ApplyCommand("/process/em/auger true");
+        UI->ApplyCommand("/process/em/pixe true");
     }
 
     // Decay physics list
-    if (fDecPhysicsList != NULL) fDecPhysicsList->ConstructProcess();
+    if (fDecPhysicsList) {
+        fDecPhysicsList->ConstructProcess();
+    }
 
     // Radioactive decay
-    if (fRadDecPhysicsList != NULL) fRadDecPhysicsList->ConstructProcess();
+    if (fRadDecPhysicsList) {
+        fRadDecPhysicsList->ConstructProcess();
+    }
 
-    // hadronic physics lists
-    for (size_t i = 0; i < fHadronPhys.size(); i++) fHadronPhys[i]->ConstructProcess();
+    // Hadronic physics lists
+    for (auto& hadronicPhysicsList : fHadronPhys) {
+        hadronicPhysicsList->ConstructProcess();
+    }
 
     if (restPhysList->FindPhysicsList("G4RadioactiveDecay")) {
-        G4RadioactiveDecay* radioactiveDecay = new G4RadioactiveDecay();
+        auto radioactiveDecay = new G4RadioactiveDecay();
 
-        radioactiveDecay->SetHLThreshold(nanosecond);
-
+        const auto decayTimeThreshold = nanosecond;
+#ifdef GEANT4_VERSION_LESS_11_0_0
+        radioactiveDecay->SetHLThreshold(decayTimeThreshold);
+#else
+        radioactiveDecay->SetThresholdForVeryLongDecayTime(decayTimeThreshold);
+#endif
         // Setting Internal Conversion (ICM) option.
-        if (restPhysList->GetPhysicsListOptionValue("G4RadioactiveDecay", "ICM") == "true")
-            radioactiveDecay->SetICM(true);  // Internal Conversion
-        else if (restPhysList->GetPhysicsListOptionValue("G4RadioactiveDecay", "ICM") == "false")
-            radioactiveDecay->SetICM(false);  // Internal Conversion
-        else if (restPhysList->GetVerboseLevel() >= REST_Essential)
+        if (restPhysList->GetPhysicsListOptionValue("G4RadioactiveDecay", "ICM") == "true") {
+            radioactiveDecay->SetICM(true);
+        }  // Internal Conversion
+        else if (restPhysList->GetPhysicsListOptionValue("G4RadioactiveDecay", "ICM") == "false") {
+            radioactiveDecay->SetICM(false);
+        }  // Internal Conversion
+        else if (restPhysList->GetVerboseLevel() >= REST_Essential) {
             G4cout << "REST WARNING. restG4. PhysicsList. G4RadioactiveDecay. Option "
                       "ICM not defined."
                    << G4endl;
+        }
 
-        // Enabling electron re-arrangment (ARM) option.
-        if (restPhysList->GetPhysicsListOptionValue("G4RadioactiveDecay", "ARM") == "true")
-            radioactiveDecay->SetARM(true);  // Internal Conversion
-        else if (restPhysList->GetPhysicsListOptionValue("G4RadioactiveDecay", "ARM") == "false")
-            radioactiveDecay->SetARM(false);  // Internal Conversion
-        else if (restPhysList->GetVerboseLevel() >= REST_Essential)
+        // Enabling electron re-arrangement (ARM) option.
+        if (restPhysList->GetPhysicsListOptionValue("G4RadioactiveDecay", "ARM") == "true") {
+            radioactiveDecay->SetARM(true);
+        }  // Internal Conversion
+        else if (restPhysList->GetPhysicsListOptionValue("G4RadioactiveDecay", "ARM") == "false") {
+            radioactiveDecay->SetARM(false);
+        }  // Internal Conversion
+        else if (restPhysList->GetVerboseLevel() >= REST_Essential) {
             G4cout << "REST WARNING. restG4. PhysicsList. G4RadioactiveDecay. Option "
                       "ARM not defined."
                    << G4endl;
+        }
     }
 
-/*
-   G4ScreenedNuclearRecoil* nucr = new G4ScreenedNuclearRecoil();
-   G4double energyLimit = 100.*MeV;
-   nucr->SetMaxEnergyForScattering(energyLimit);
-   ph->RegisterProcess( nucr, G4GenericIon::GenericIon());
-   */
-
-/* theParticleIterator->reset();
-while ((*theParticleIterator)())
-{
-    G4ParticleDefinition* particle = theParticleIterator->value();
-    G4String partname = particle->GetParticleName();
-    if(partname == "alpha" || partname == "He3" || partname == "GenericIon") {
-        G4BraggIonGasModel* mod1 = new G4BraggIonGasModel();
-        G4BetheBlochIonGasModel* mod2 = new G4BetheBlochIonGasModel();
-        G4double eth = 2.*MeV*particle->GetPDGMass()/CLHEP::proton_mass_c2;
-        em_config.SetExtraEmModel(partname,"braggIoni",mod1,"",0.0,eth,
-                new G4IonFluctuations());
-        em_config.SetExtraEmModel(partname,"betheIoni",mod2,"",eth,100*TeV,
-                new G4UniversalFluctuation());
-
-    }
-} */
-
-// Requires Geant4 version higher than 10.2.9. Defined at CMakeLists.
-#ifdef G4104
     auto theParticleIterator = GetParticleIterator();
 
-    // to implement UserLimits to StepSize inside the gas
+    // To implement UserLimits to StepSize inside the gas
     theParticleIterator->reset();
     while ((*theParticleIterator)()) {
         G4ParticleDefinition* particle = theParticleIterator->value();
-        G4String partname = particle->GetParticleName();
+        const auto& particleName = particle->GetParticleName();
         G4ProcessManager* processManager = particle->GetProcessManager();
 
-        if (partname == "e-")
+        if (particleName == "e-") {
             processManager->AddDiscreteProcess(new G4StepLimiter("e-Step"));
-        else if (partname == "e+")
+        } else if (particleName == "e+") {
             processManager->AddDiscreteProcess(new G4StepLimiter("e+Step"));
+        }
 
-        if (partname == "mu-")
+        if (particleName == "mu-") {
             processManager->AddDiscreteProcess(new G4StepLimiter("mu-Step"));
-        else if (partname == "mu+")
+        } else if (particleName == "mu+") {
             processManager->AddDiscreteProcess(new G4StepLimiter("mu+Step"));
+        }
     }
 
     // There might be a better way to do this
-    for (int Z = 1; Z <= 40; Z++)
+    for (int Z = 1; Z <= 40; Z++) {
         for (int A = 2 * Z; A <= 3 * Z; A++) {
             for (unsigned int n = 0; n < restPhysList->GetIonStepList().size(); n++) {
                 if (restPhysList->GetIonStepList()[n] == G4IonTable::GetIonTable()->GetIonName(Z, A)) {
@@ -272,7 +279,7 @@ while ((*theParticleIterator)())
                 }
             }
         }
-#endif  // G4104
+    }
 }
 
 void PhysicsList::SetCuts() {

@@ -134,19 +134,19 @@ int main(int argc, char** argv) {
 
     biasing = restG4Metadata->GetNumberOfBiasingVolumes();
     for (int i = 0; i < biasing; i++) {
-        TString spctName = "Bias_Spectrum_" + TString(Form("%d", i));
+        TString spectrumName = "Bias_Spectrum_" + TString(Form("%d", i));
         TString angDistName = "Bias_Angular_Distribution_" + TString(Form("%d", i));
         TString spatialDistName = "Bias_Spatial_Distribution_" + TString(Form("%d", i));
 
         Double_t maxEnergy = restG4Metadata->GetBiasingVolume(i).GetMaxEnergy();
         Double_t minEnergy = restG4Metadata->GetBiasingVolume(i).GetMinEnergy();
-        Int_t nbins = (Int_t)(maxEnergy - minEnergy);
+        auto nBins = (Int_t)(maxEnergy - minEnergy);
 
         Double_t biasSize = restG4Metadata->GetBiasingVolume(i).GetBiasingVolumeSize();
         TString biasType = restG4Metadata->GetBiasingVolume(i).GetBiasingVolumeType();
 
-        cout << "Initializing biasing histogram : " << spctName << endl;
-        biasingSpectrum[i] = new TH1D(spctName, "Biasing gamma spectrum", nbins, minEnergy, maxEnergy);
+        cout << "Initializing biasing histogram : " << spectrumName << endl;
+        biasingSpectrum[i] = new TH1D(spectrumName, "Biasing gamma spectrum", nBins, minEnergy, maxEnergy);
         angularDistribution[i] = new TH1D(angDistName, "Biasing angular distribution", 150, 0, M_PI / 2);
 
         if (biasType == "virtualSphere")
@@ -414,13 +414,13 @@ int main(int argc, char** argv) {
         sleep(5);
 
         // Then we just add the geometry
-        TFile* f1 = new TFile(Filename, "update");
+        auto file = new TFile(Filename, "update");
         TGeoManager* geo2 = gdml->CreateGeoM();
 
-        f1->cd();
+        file->cd();
         geo2->SetName("Geometry");
         geo2->Write();
-        f1->Close();
+        file->Close();
         exit(0);
     }
     // father process
