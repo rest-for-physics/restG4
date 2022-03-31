@@ -1,10 +1,5 @@
 
 Int_t Validate(string fname) {
-    gSystem->Load("libRestCore.so");
-    gSystem->Load("libRestMetadata.so");
-    gSystem->Load("libRestEvents.so");
-    gSystem->Load("libRestTools.so");
-
     TRestRun* run = new TRestRun(fname);
 
     if (run->GetParentRunNumber() != 0) {
