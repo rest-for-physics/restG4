@@ -137,8 +137,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         }
 
         TVector3 hitPosition(x, y, z);
-        Int_t pcsID = processID;  //  restTrack->GetProcessID(nom_proc);
-        Double_t hit_global_time = aStep->GetPreStepPoint()->GetGlobalTime() / second;
+        Double_t hitGlobalTime = aStep->GetPreStepPoint()->GetGlobalTime() / second;
         G4ThreeVector momentum = aStep->GetPreStepPoint()->GetMomentumDirection();
         TVector3 momentumDirection = TVector3(momentum.x(), momentum.y(), momentum.z());  //.Unit();
 
@@ -159,8 +158,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
                     if (restG4Metadata->GetVerboseLevel() >= REST_Extreme) {
                         G4cout << "Storing hit" << G4endl;
                     }
-                    restTrack->AddG4Hit(hitPosition, TotalEnergyDeposit / keV, hit_global_time, pcsID, volID,
-                                        KineticEnergy, momentumDirection);
+                    restTrack->AddG4Hit(hitPosition, TotalEnergyDeposit / keV, hitGlobalTime, processID,
+                                        volID, KineticEnergy, momentumDirection);
                     alreadyStored = true;
                 }
             }
@@ -170,7 +169,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         // If the radioactive decay occurs in a non-active volume then the id will be -1
         Bool_t isDecay = (processName == "RadioactiveDecay");
         if (!alreadyStored && isDecay) {
-            restTrack->AddG4Hit(hitPosition, TotalEnergyDeposit / keV, hit_global_time, pcsID, volume,
+            restTrack->AddG4Hit(hitPosition, TotalEnergyDeposit / keV, hitGlobalTime, processID, volume,
                                 KineticEnergy, momentumDirection);
         }
     }
