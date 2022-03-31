@@ -43,15 +43,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     parser->Read(gdmlToRead, false);
 
-    auto geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
+    auto& geometryInfo = restG4Metadata->GetMutableGeant4GeometryInfo();
 
-    geometryInfo->PopulateFromGdml(gdmlToRead);
+    geometryInfo.PopulateFromGdml(gdmlToRead);
 
     G4VPhysicalVolume* worldVolume = parser->GetWorldVolume();
 
-    geometryInfo->PopulateFromGeant4World(worldVolume);
+    geometryInfo.PopulateFromGeant4World(worldVolume);
 
-    geometryInfo->Print();
+    geometryInfo.Print();
 
     chdir(originDirectory);
 
@@ -63,7 +63,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     if (!physicalVolume) {
         // sensitive volume was not found, perhaps the user specified a logical volume
         auto physicalVolumes =
-            restG4Metadata->GetGeant4GeometryInfo()->GetAllPhysicalVolumesFromLogical(sensitiveVolume);
+            restG4Metadata->GetGeant4GeometryInfo().GetAllPhysicalVolumesFromLogical(sensitiveVolume);
 
         if (physicalVolumes.size() == 1) {
             restG4Metadata->SetSensitiveVolume(physicalVolumes[0]);
@@ -208,7 +208,7 @@ G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physV
     for (physVol = physVolStore->begin(); physVol != physVolStore->end(); physVol++) {
         auto name = (*physVol)->GetName();
         auto alternativeName =
-            (G4String)restG4Metadata->GetGeant4GeometryInfo()->GetAlternativeNameFromGeant4PhysicalName(name);
+            (G4String)restG4Metadata->GetGeant4GeometryInfo().GetAlternativeNameFromGeant4PhysicalName(name);
 
         if (name == physVolName || alternativeName == physVolName) {
             return *physVol;
