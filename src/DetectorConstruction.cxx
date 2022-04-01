@@ -44,8 +44,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     parser->Read(gdmlToRead, false);
 
-    auto& geometryInfo = restG4Metadata->GetMutableGeant4GeometryInfo();
-
+    auto& geometryInfo = restG4Metadata->fGeant4GeometryInfo;
     geometryInfo.PopulateFromGdml(gdmlToRead);
 
     G4VPhysicalVolume* worldVolume = parser->GetWorldVolume();
@@ -56,8 +55,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     chdir(originDirectory);
 
-    // TODO : Take the name of the sensitive volume and use it here to define its
-    // StepSize
+    // TODO : Take the name of the sensitive volume and use it here to define its StepSize
     auto sensitiveVolume = (string)restG4Metadata->GetSensitiveVolume();
 
     G4VPhysicalVolume* physicalVolume = GetPhysicalVolume(sensitiveVolume);

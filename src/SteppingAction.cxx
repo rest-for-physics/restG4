@@ -67,8 +67,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     // const auto& processTypeName = G4VProcess::GetProcessTypeName(process->GetProcessType());
     const auto& processID = process->GetProcessType() * 1000 + process->GetProcessSubType();
 
-    auto& geant4PhysicsInfo = restG4Metadata->GetMutableGeant4PhysicsInfo();
-    geant4PhysicsInfo.InsertProcessName(processID, TString(processName));
+    auto& physicsInfo = restG4Metadata->fGeant4PhysicsInfo;
+    physicsInfo.InsertProcessName(processID, TString(processName));
 
     G4Track* aTrack = aStep->GetTrack();
 
