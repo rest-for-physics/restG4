@@ -28,7 +28,8 @@ SteppingAction::~SteppingAction() {}
 
 void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     // Variables that describe a step are taken.
-    const auto& volumeName = restG4Metadata->GetGeant4GeometryInfo().GetAlternativeNameFromGeant4PhysicalName(
+    const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
+    const auto& volumeName = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(
         (TString &&) aStep->GetPreStepPoint()->GetPhysicalVolume()->GetName());
     const auto& particleName = aStep->GetTrack()->GetDefinition()->GetParticleName();
 
@@ -36,8 +37,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     const auto KineticEnergy = aStep->GetTrack()->GetKineticEnergy() / keV;
 
     auto sensitiveVolumeName =
-        restG4Metadata->GetGeant4GeometryInfo().GetAlternativeNameFromGeant4PhysicalName(
-            restG4Metadata->GetSensitiveVolume());
+        geometryInfo.GetAlternativeNameFromGeant4PhysicalName(restG4Metadata->GetSensitiveVolume());
 
     if (restTrack->GetParticleName() == "geantino" && sensitiveVolumeName.Data() == volumeName) {
         restG4Metadata->SetSaveAllEvents(true);
@@ -67,8 +67,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     // const auto& processTypeName = G4VProcess::GetProcessTypeName(process->GetProcessType());
     const auto& processID = process->GetProcessType() * 1000 + process->GetProcessSubType();
 
-    auto& geant4GeometryInfo = restG4Metadata->GetMutableGeant4PhysicsInfo();
-    geant4GeometryInfo.InsertProcessName(processID, TString(processName));
+    auto& geant4PhysicsInfo = restG4Metadata->GetMutableGeant4PhysicsInfo();
+    geant4PhysicsInfo.InsertProcessName(processID, TString(processName));
 
     G4Track* aTrack = aStep->GetTrack();
 
