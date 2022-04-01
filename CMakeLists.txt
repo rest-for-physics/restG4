@@ -25,13 +25,14 @@ find_package(Geant4 REQUIRED ui_all vis_all)
 include(${Geant4_USE_FILE})
 message("-- Found Geant4 version: ${Geant4_VERSION}")
 
-if (${Geant4_VERSION} VERSION_GREATER "10.2.9")
-    add_definitions(-DG4104)
+# Fix for older Geant4 versions
+if (${Geant4_VERSION} VERSION_LESS 11.0.0)
+    add_compile_definitions(GEANT4_VERSION_LESS_11_0_0)
 endif ()
 
 # Fix to allow compatibility with older Geant4 versions that don't have G4RunManagerFactory
 if (NOT EXISTS "${Geant4_INCLUDE_DIRS}/G4RunManagerFactory.hh")
-    add_definitions(-DWITHOUT_G4RunManagerFactory)
+    add_compile_definitions(GEANT4_WITHOUT_G4RunManagerFactory)
 endif ()
 
 if (NOT DEFINED CMAKE_INSTALL_PREFIX)

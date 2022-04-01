@@ -17,11 +17,11 @@ class SteppingAction : public G4UserSteppingAction {
     SteppingAction();
     ~SteppingAction();
 
-    void SetBiasingVolume(TRestGeant4BiasingVolume biasVol) { restBiasingVolume = biasVol; }
+    void SetBiasingVolume(const TRestGeant4BiasingVolume& biasVol) { restBiasingVolume = biasVol; }
     void SetBiasingSpectrum(TH1D* bSpectrum) { fBiasingSpectrum = bSpectrum; }
     void SetAngularDistribution(TH1D* aDist) { fAngularDistribution = aDist; }
     void SetSpatialDistribution(TH2D* sDist) { fSpatialDistribution = sDist; }
-    void UserSteppingAction(const G4Step*);
+    void UserSteppingAction(const G4Step*) override;
 
     TRestGeant4BiasingVolume GetBiasingVolume() { return restBiasingVolume; }
     TH1D* GetBiasingSpectrum() { return fBiasingSpectrum; }
@@ -37,7 +37,7 @@ class SteppingAction : public G4UserSteppingAction {
     TH1D* fAngularDistribution;
     TH2D* fSpatialDistribution;
 
-    Double_t absDouble(Double_t x) {
+    static Double_t absDouble(Double_t x) {
         if (x < 0) return -x;
         return x;
     }
@@ -45,14 +45,5 @@ class SteppingAction : public G4UserSteppingAction {
     TRestGeant4BiasingVolume restBiasingVolume;
 
     G4ThreeVector previousDirection;
-
-    /*
-       G4ThreeVector momentum;
-       G4double x, y, z;
-       G4int step;
-
-
-       void WriteDefaultInt();
-       */
 };
 #endif

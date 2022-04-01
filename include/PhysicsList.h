@@ -24,7 +24,7 @@ class PhysicsList : public G4VModularPhysicsList {
     virtual void SetCuts();
 
    private:
-    G4EmConfigurator em_config;
+    G4EmConfigurator fEmConfig;
 
     G4VPhysicsConstructor* fEmPhysicsList;
     G4VPhysicsConstructor* fDecPhysicsList;
