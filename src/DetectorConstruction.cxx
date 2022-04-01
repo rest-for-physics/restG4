@@ -4,6 +4,7 @@
 #include <TRestGeant4GeometryInfo.h>
 
 #include <G4FieldManager.hh>
+#include <G4GDMLParser.hh>
 #include <G4IonTable.hh>
 #include <G4Isotope.hh>
 #include <G4MagneticField.hh>
