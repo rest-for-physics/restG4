@@ -174,3 +174,43 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         }
     }
 }
+
+void TRestGeant4Hits::InsertStep(const G4Step* step) {
+    const auto* track = step->GetTrack();
+
+    const TVector3 position = {track->GetPosition().x(), track->GetPosition().y(), track->GetPosition().z()};
+    auto energy = step->GetTotalEnergyDeposit() / keV;
+    auto globalTime = step->GetPreStepPoint()->GetGlobalTime() / second;
+
+    AddHit(position, energy, globalTime);
+
+    const auto processName = TString(step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName());
+    const auto processID = restTrack->GetProcessID(processName);
+    const auto kineticEnergy = step->GetTrack()->GetKineticEnergy() / keV;
+    const TVector3 momentumDirection = {step->GetPreStepPoint()->GetMomentumDirection().x(),
+                                        step->GetPreStepPoint()->GetMomentumDirection().y(),
+                                        step->GetPreStepPoint()->GetMomentumDirection().z()};
+
+    fProcessID.Set(fNHits);
+    fProcessID[fNHits - 1] = processID;
+
+    /*
+     * TODO: add this
+    fVolumeID.Set(fNHits);
+    fVolumeID[fNHits - 1] = volume;
+     */
+
+    fKineticEnergy.Set(fNHits);
+    fKineticEnergy[fNHits - 1] = (Float_t)kineticEnergy;
+
+    fMomentumDirectionX.Set(fNHits);
+    fMomentumDirectionX[fNHits - 1] = momentumDirection.x();
+
+    fMomentumDirectionY.Set(fNHits);
+    fMomentumDirectionY[fNHits - 1] = momentumDirection.y();
+
+    fMomentumDirectionZ.Set(fNHits);
+    fMomentumDirectionZ[fNHits - 1] = momentumDirection.z();
+}
+
+void TRestGeant4Track::InsertStep(const G4Step* step) { fHits.InsertStep(step); }
