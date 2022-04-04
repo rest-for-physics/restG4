@@ -154,8 +154,10 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
                 if (isActiveVolume) {
                     volume = volID;
                     if (restG4Metadata->GetVerboseLevel() >= REST_Extreme) G4cout << "Storing hit" << G4endl;
+                    /*
                     restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, pcsID, volID, eKin,
                                         momentumDirection);
+                    */
                     alreadyStored = true;
                 }
             }
@@ -164,8 +166,11 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         // See issue #65.
         // If the radioactive decay occurs in a non-active volume then the id will be -1
         Bool_t isDecay = (nom_proc == (G4String) "RadioactiveDecay");
-        if (!alreadyStored && isDecay)
+        if (!alreadyStored && isDecay) {
+            /*
             restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, pcsID, volume, eKin,
                                 momentumDirection);
+            */
+        }
     }
 }
