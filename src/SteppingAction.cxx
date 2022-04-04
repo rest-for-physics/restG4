@@ -70,9 +70,6 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     Double_t y = aTrack->GetPosition().y() / mm;
     Double_t z = aTrack->GetPosition().z() / mm;
 
-    //   G4cout << "Step direction : " << aTrack->GetMomentumDirection() <<
-    //   G4endl;
-
     if (biasing > 0) {
         // In biasing mode we do not store hits. Just check if we observe a gamma
         // inside the volume
@@ -158,6 +155,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
                     restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, pcsID, volID, eKin,
                                         momentumDirection);
                     */
+                    restTrack->InsertStep(aStep);
+
                     alreadyStored = true;
                 }
             }
@@ -171,6 +170,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
             restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, pcsID, volume, eKin,
                                 momentumDirection);
             */
+            restTrack->InsertStep(aStep);
         }
     }
 }
@@ -182,8 +182,6 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     auto energy = step->GetTotalEnergyDeposit() / keV;
     auto globalTime = step->GetPreStepPoint()->GetGlobalTime() / second;
 
-    AddHit(position, energy, globalTime);
-
     const auto processName = TString(step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName());
     const auto processID = restTrack->GetProcessID(processName);
     const auto kineticEnergy = step->GetTrack()->GetKineticEnergy() / keV;
@@ -191,26 +189,30 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
                                         step->GetPreStepPoint()->GetMomentumDirection().y(),
                                         step->GetPreStepPoint()->GetMomentumDirection().z()};
 
+    const auto volumeName = restG4Metadata->GetGeant4GeometryInfo()->GetAlternativeNameFromGeant4PhysicalName(
+        TString(step->GetPreStepPoint()->GetPhysicalVolume()->GetName()));
+    const auto volumeID = restG4Metadata->GetGeant4GeometryInfo()->GetIDFromVolumeName(volumeName);
+
+    AddHit(position, energy, globalTime);
+
     fProcessID.Set(fNHits);
     fProcessID[fNHits - 1] = processID;
 
-    /*
-     * TODO: add this
+    // TODO: this may not be accurate yet, check and fix
     fVolumeID.Set(fNHits);
-    fVolumeID[fNHits - 1] = volume;
-     */
+    fVolumeID[fNHits - 1] = volumeID;
 
     fKineticEnergy.Set(fNHits);
-    fKineticEnergy[fNHits - 1] = (Float_t)kineticEnergy;
+    fKineticEnergy[fNHits - 1] = static_cast<float>(kineticEnergy);
 
     fMomentumDirectionX.Set(fNHits);
-    fMomentumDirectionX[fNHits - 1] = momentumDirection.x();
+    fMomentumDirectionX[fNHits - 1] = static_cast<float>(momentumDirection.x());
 
     fMomentumDirectionY.Set(fNHits);
-    fMomentumDirectionY[fNHits - 1] = momentumDirection.y();
+    fMomentumDirectionY[fNHits - 1] = static_cast<float>(momentumDirection.y());
 
     fMomentumDirectionZ.Set(fNHits);
-    fMomentumDirectionZ[fNHits - 1] = momentumDirection.z();
+    fMomentumDirectionZ[fNHits - 1] = static_cast<float>(momentumDirection.z());
 }
 
 void TRestGeant4Track::InsertStep(const G4Step* step) { fHits.InsertStep(step); }
