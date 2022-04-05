@@ -183,11 +183,11 @@ void EventAction::FillSubEvent(Int_t subId) {
     }
 
     for (int n = 0; n < restG4Event->GetNumberOfTracks(); n++) {
-        TRestGeant4Track* tck = restG4Event->GetTrack(n);
+        const auto& tck = restG4Event->GetTrack(n);
 
-        if (tck->GetSubEventID() == subId)
-            if (tck->GetNumberOfHits() > 0 || restG4Metadata->RegisterEmptyTracks()) {
-                subRestG4Event->AddTrack(*tck);
+        if (tck.GetSubEventID() == subId)
+            if (tck.GetNumberOfHits() > 0 || restG4Metadata->RegisterEmptyTracks()) {
+                subRestG4Event->AddTrack(tck);
             }
     }
 
@@ -206,10 +206,10 @@ void EventAction::ReOrderTrackIds(Int_t subId) {
 
     if (subId > 0) {
         for (int n = 0; n < restG4Event->GetNumberOfTracks(); n++) {
-            TRestGeant4Track* tck = restG4Event->GetTrack(n);
+            const auto& tck = restG4Event->GetTrack(n);
 
-            if (tck->GetSubEventID() == subId - 1)
-                if (tck->isRadiactiveDecay()) subRestG4Event->SetSubEventTag(tck->GetParticleName());
+            if (tck.GetSubEventID() == subId - 1)
+                if (tck.isRadiactiveDecay()) subRestG4Event->SetSubEventTag(tck.GetParticleName());
         }
     }
 
@@ -218,27 +218,27 @@ void EventAction::ReOrderTrackIds(Int_t subId) {
     Int_t nTracks = subRestG4Event->GetNumberOfTracks();
 
     for (int i = 0; i < nTracks; i++) {
-        TRestGeant4Track* tr = subRestG4Event->GetTrack(i);
+        const auto& tr = subRestG4Event->GetTrackPointer(i);
         tr->SetTrackID(tr->GetTrackID() - lowestID + 1);
         tr->SetParentID(tr->GetParentID() - lowestID + 1);
         if (tr->GetParentID() < 0) tr->SetParentID(0);
     }
 
     for (int i = 0; i < nTracks; i++) {
-        TRestGeant4Track* tr = subRestG4Event->GetTrack(i);
+        TRestGeant4Track* tr = subRestG4Event->GetTrackPointer(i);
         Int_t id = tr->GetTrackID();
 
         if (id - i != 1) {
             // Changing track ids
             tr->SetTrackID(i + 1);
             for (int t = i + 1; t < subRestG4Event->GetNumberOfTracks(); t++) {
-                TRestGeant4Track* tr2 = subRestG4Event->GetTrack(t);
+                TRestGeant4Track* tr2 = subRestG4Event->GetTrackPointer(t);
                 if (tr2->GetTrackID() == i + 1) tr2->SetTrackID(id);
             }
 
             // Changing parent ids
             for (int t = 0; t < subRestG4Event->GetNumberOfTracks(); t++) {
-                TRestGeant4Track* tr2 = subRestG4Event->GetTrack(t);
+                TRestGeant4Track* tr2 = subRestG4Event->GetTrackPointer(t);
                 if (tr2->GetParentID() == id)
                     tr2->SetParentID(i + 1);
                 else if (tr2->GetParentID() == i + 1)
@@ -255,7 +255,7 @@ int EventAction::SetTrackSubEventIDs() {
     // reorder tracks
     map<int, TRestGeant4Track*> tracks;
     for (int n = 0; n < nTracks; n++) {
-        TRestGeant4Track* track = restG4Event->GetTrack(n);
+        TRestGeant4Track* track = restG4Event->GetTrackPointer(n);
         tracks[track->GetTrackID()] = track;
     }
 
