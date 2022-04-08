@@ -16,16 +16,16 @@ Int_t Validate(string filename) {
 
     const auto geometryInfo = metadata->GetGeant4GeometryInfo();
 
-    geometryInfo->Print();
+    geometryInfo.Print();
 
-    if (geometryInfo->GetAllPhysicalVolumes().size() != 374) {
-        cout << "Incorrect number of physical volumes " << geometryInfo->GetAllPhysicalVolumes().size()
+    if (geometryInfo.GetAllPhysicalVolumes().size() != 374) {
+        cout << "Incorrect number of physical volumes " << geometryInfo.GetAllPhysicalVolumes().size()
              << endl;
         // assembly do not work on older geant4 versions...
         // return 1;
     }
-    if (geometryInfo->GetAllLogicalVolumes().size() != 22) {
-        cout << "Incorrect number of logical volumes " << geometryInfo->GetAllLogicalVolumes().size() << endl;
+    if (geometryInfo.GetAllLogicalVolumes().size() != 22) {
+        cout << "Incorrect number of logical volumes " << geometryInfo.GetAllLogicalVolumes().size() << endl;
         // assembly do not work on older geant4 versions...
         // return 1;
     }
