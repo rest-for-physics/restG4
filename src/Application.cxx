@@ -1,8 +1,5 @@
-// REST G4 main program. restG4.cxx
-//
-// Author : J. Galan
-// Date : Jul-2015
-//
+
+#include "Application.h"
 
 #include <TGeoVolume.h>
 #include <TH1D.h>
@@ -40,21 +37,7 @@
 
 using namespace std;
 
-Bool_t saveAllEvents;
-
-const Int_t maxBiasingVolumes = 50;
-
-// These histograms would be better placed inside TRestGeant4BiasingVolume
-TH1D* biasingSpectrum[maxBiasingVolumes];
-TH1D* angularDistribution[maxBiasingVolumes];
-TH2D* spatialDistribution[maxBiasingVolumes];
-
-TH1D initialEnergySpectrum;
-TH1D initialAngularDistribution;
-
-Int_t N_events;
-
-int main(int argc, char** argv) {
+void Application::Run(int argc, char** argv) {
     auto simulationManager = SimulationManager::Instance();
 
     TRestRun* restRun = simulationManager->fRestRun;
@@ -64,6 +47,20 @@ int main(int argc, char** argv) {
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
     TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
     Int_t& biasing = simulationManager->fBiasing;
+
+    Bool_t saveAllEvents;
+
+    const Int_t maxBiasingVolumes = 50;
+
+    // These histograms would be better placed inside TRestGeant4BiasingVolume
+    TH1D* biasingSpectrum[maxBiasingVolumes];
+    TH1D* angularDistribution[maxBiasingVolumes];
+    TH2D* spatialDistribution[maxBiasingVolumes];
+
+    TH1D initialEnergySpectrum;
+    TH1D initialAngularDistribution;
+
+    Int_t N_events;
 
     auto start_time = chrono::steady_clock::now();
 
@@ -164,7 +161,6 @@ int main(int argc, char** argv) {
             spatialDistribution[i] =
                 new TH2D(spatialDistName, "Biasing spatial distribution", 100, -1, 1, 100, -1, 1);
     }
-    // }}}
 
     // choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
@@ -438,6 +434,4 @@ int main(int argc, char** argv) {
     auto end_time = chrono::steady_clock::now();
     cout << "Elapsed time: " << chrono::duration_cast<chrono::seconds>(end_time - start_time).count()
          << " seconds" << endl;
-
-    return 0;
 }

@@ -69,7 +69,7 @@ target_include_directories(${LIBRARY} SYSTEM PUBLIC ${INCLUDE_DIRS})
 ADD_LIBRARY_TEST()
 
 # Add the executable
-add_executable(${PROJECT_NAME} restG4.cxx)
+add_executable(${PROJECT_NAME} main.cxx)
 target_link_libraries(
         ${PROJECT_NAME} PUBLIC
         ${LIBRARY}
