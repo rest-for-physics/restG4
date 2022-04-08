@@ -1,5 +1,4 @@
-image: ghcr.io/lobis/root-geant4-garfield:cpp17_ROOT-v6-26-00_Geant4-v10.4.3_Garfield-af4a1451
-#image: nkx1231/root6-geant4-garfield:0.8
+image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
 
 stages:
   - build
@@ -19,7 +18,7 @@ before_script:
 
 # This is the one we use to run validations tests. We save the installation as an artifact.
 Build and Install:
-  type: build
+  stage: build
   script:
     - echo "**${CI_PROJECT_DIR}**"
     - git clone https://github.com/rest-for-physics/framework.git framework
@@ -51,7 +50,7 @@ Build and Install:
     expire_in: 1 day
 
 Build Standalone:
-  type: build-standalone
+  stage: build-standalone
   script:
     - echo "**${CI_PROJECT_DIR}**"
     - cd ${CI_PROJECT_DIR}/
@@ -65,13 +64,13 @@ Build Standalone:
     - rm -rf ${CI_PROJECT_DIR}/install-standalone
 
 Load REST Libraries:
-  type: loadRESTLibs
+  stage: loadRESTLibs
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - restRoot -b -q
 
 01_NLDBD:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/01.NLDBD/
@@ -80,7 +79,7 @@ Load REST Libraries:
     - restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
 
 03_Fluorescence:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/03.Fluorescence/
@@ -90,7 +89,7 @@ Load REST Libraries:
     - restRoot -b -q Validate.C'("Run00111_g4Analysis_Gamma_rest.root")'
 
 04_MuonScan:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/04.MuonScan/
@@ -101,7 +100,7 @@ Load REST Libraries:
     - restRoot -b -q ValidateWall.C'("Run00111_restG4_MuonsFromWall_rest.root")'
 
 05_PandaXIII:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/05.PandaXIII/
@@ -109,7 +108,7 @@ Load REST Libraries:
     - restRoot -b -q ValidateG4.C'("Xe136bb0n_n2E06.root")'
 
 06_IonRecoils:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/06.IonRecoils/
@@ -117,7 +116,7 @@ Load REST Libraries:
     - restRoot -b -q Validate.C'("Run00001_F20_Recoils.root")'
 
 07_FullChainDecay:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/07.FullChainDecay/
@@ -130,7 +129,7 @@ Load REST Libraries:
     - restRoot -b -q Validate.C'("Run00002_Be7_SingleChainDecay.root", 1)'
 
 08_Alphas:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/08.Alphas/
@@ -151,7 +150,7 @@ Load REST Libraries:
     - restRoot -b -q Validate.C
 
 09_Pb210_Shielding:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/09.Pb210_Shield/
@@ -159,7 +158,7 @@ Load REST Libraries:
     - restRoot -b -q Validate.C'("Run00001_Pb210_Shielding.root")'
 
 10_Geometries:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/10.Geometries/
@@ -167,7 +166,7 @@ Load REST Libraries:
     - restRoot -b -q Validate.C'("Run00001_Assembly_Assembly.root")'
 
 11_Xrays:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/11.Xrays/
