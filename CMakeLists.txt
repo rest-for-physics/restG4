@@ -58,10 +58,20 @@ string(STRIP "${LINK_LIBRARIES}" LINK_LIBRARIES)
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cxx)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.h)
 
-# Add the executable, and link it to the Geant4 libraries
-add_executable(${PROJECT_NAME} restG4.cxx ${sources} ${headers})
-target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARIES})
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${INCLUDE_DIRS})
+# Create a library, necessary to enable testing
+set(LIBRARY ${PROJECT_NAME}Lib)
+add_library(${LIBRARY} SHARED)
+
+target_sources(${LIBRARY} PUBLIC ${sources})
+target_link_libraries(${LIBRARY} ${LINK_LIBRARIES})
+target_include_directories(${LIBRARY} SYSTEM PUBLIC ${INCLUDE_DIRS})
+
+# Add the executable
+add_executable(${PROJECT_NAME} restG4.cxx)
+target_link_libraries(
+        ${PROJECT_NAME} PUBLIC
+        ${LIBRARY}
+)
 
 # Copy scripts to the build directory
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/
