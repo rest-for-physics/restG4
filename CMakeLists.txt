@@ -59,12 +59,14 @@ file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cxx)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.h)
 
 # Create a library, necessary to enable testing
-set(LIBRARY ${PROJECT_NAME}Lib)
+set(LIBRARY RestRestG4) # this way the `ADD_LIBRARY_TEST` macro will pick the library name correctly
 add_library(${LIBRARY} SHARED)
 
 target_sources(${LIBRARY} PUBLIC ${sources})
 target_link_libraries(${LIBRARY} ${LINK_LIBRARIES})
 target_include_directories(${LIBRARY} SYSTEM PUBLIC ${INCLUDE_DIRS})
+
+ADD_LIBRARY_TEST()
 
 # Add the executable
 add_executable(${PROJECT_NAME} restG4.cxx)
