@@ -12,10 +12,9 @@
 #include <G4UniformMagField.hh>
 #include <G4UserLimits.hh>
 
-using namespace std;
+#include "SimulationManager.h"
 
-extern TRestGeant4Event* restG4Event;
-extern TRestGeant4Metadata* restG4Metadata;
+using namespace std;
 
 DetectorConstruction::DetectorConstruction() {
     G4cout << "Detector Construction" << G4endl;
@@ -25,6 +24,9 @@ DetectorConstruction::DetectorConstruction() {
 DetectorConstruction::~DetectorConstruction() { delete parser; }
 
 G4VPhysicalVolume* DetectorConstruction::Construct() {
+    TRestGeant4Event* restG4Event = SimulationManager::Instance()->fRestGeant4Event;
+    TRestGeant4Metadata* restG4Metadata = SimulationManager::Instance()->fRestGeant4Metadata;
+
     cout << "Isotope table " << endl;
     cout << *(G4Isotope::GetIsotopeTable()) << endl;
 
@@ -203,6 +205,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
 G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physVolName) {
     G4PhysicalVolumeStore* physVolStore = G4PhysicalVolumeStore::GetInstance();
+    TRestGeant4Metadata* restG4Metadata = SimulationManager::Instance()->fRestGeant4Metadata;
 
     vector<G4VPhysicalVolume*>::const_iterator physVol;
     for (physVol = physVolStore->begin(); physVol != physVolStore->end(); physVol++) {
@@ -219,6 +222,8 @@ G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physV
 }
 
 void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* world) {
+    TRestGeant4Metadata* restG4Metadata = SimulationManager::Instance()->fRestGeant4Metadata;
+
     const int n = int(world->GetLogicalVolume()->GetNoDaughters());
     for (int i = 0; i < n + 1; i++) {  // world is the + 1
         G4VPhysicalVolume* volume;

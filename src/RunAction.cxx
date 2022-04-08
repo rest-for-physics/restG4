@@ -12,10 +12,9 @@
 #include <G4UnitsTable.hh>
 #include <iomanip>
 
-using namespace std;
+#include "SimulationManager.h"
 
-extern TRestGeant4Metadata* restG4Metadata;
-extern TRestRun* restRun;
+using namespace std;
 
 RunAction::RunAction(PrimaryGeneratorAction* gen) : G4UserRunAction(), fPrimary(gen) {}
 
@@ -27,6 +26,9 @@ void RunAction::BeginOfRunAction(const G4Run*) {
 }
 
 void RunAction::EndOfRunAction(const G4Run* run) {
+    TRestRun* restRun = SimulationManager::Instance()->fRestRun;
+    TRestGeant4Metadata* restG4Metadata = SimulationManager::Instance()->fRestGeant4Metadata;
+
     G4int nbEvents = run->GetNumberOfEvent();
     if (nbEvents == 0) {
         return;

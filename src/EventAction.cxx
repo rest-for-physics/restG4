@@ -8,19 +8,26 @@
 #include <fstream>
 #include <iomanip>
 
-extern TRestRun* restRun;
-extern TRestGeant4Metadata* restG4Metadata;
-extern TRestGeant4Event* restG4Event;
-extern TRestGeant4Event* subRestG4Event;
-extern TRestGeant4Track* restTrack;
+#include "SimulationManager.h"
 
 using namespace std;
 
-EventAction::EventAction() : G4UserEventAction() { restG4Metadata->isFullChainActivated(); }
+EventAction::EventAction() : G4UserEventAction() {
+    TRestGeant4Metadata* restG4Metadata = SimulationManager::Instance()->fRestGeant4Metadata;
+
+    restG4Metadata->isFullChainActivated();
+}
 
 EventAction::~EventAction() {}
 
 void EventAction::BeginOfEventAction(const G4Event* geant4_event) {
+    auto simulationManager = SimulationManager::Instance();
+    TRestRun* restRun = simulationManager->fRestRun;
+    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+
     G4int event_number = geant4_event->GetEventID();
 
     restG4Metadata->GetVerboseLevel();
@@ -57,6 +64,13 @@ void EventAction::BeginOfEventAction(const G4Event* geant4_event) {
 }
 
 void EventAction::EndOfEventAction(const G4Event* geant4_event) {
+    auto simulationManager = SimulationManager::Instance();
+    TRestRun* restRun = simulationManager->fRestRun;
+    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+
     G4int event_number = geant4_event->GetEventID();
 
     if (restG4Metadata->GetVerboseLevel() >= REST_Extreme) {
@@ -155,6 +169,13 @@ void EventAction::EndOfEventAction(const G4Event* geant4_event) {
  * number), see if it can be optimised.
  * */
 void EventAction::FillSubEvent(Int_t subId) {
+    auto simulationManager = SimulationManager::Instance();
+    TRestRun* restRun = simulationManager->fRestRun;
+    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+
     subRestG4Event->Initialize();
     subRestG4Event->ClearVolumes();
 
@@ -199,6 +220,13 @@ void EventAction::FillSubEvent(Int_t subId) {
 }
 
 void EventAction::ReOrderTrackIds(Int_t subId) {
+    auto simulationManager = SimulationManager::Instance();
+    TRestRun* restRun = simulationManager->fRestRun;
+    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+
     // We define as event timestamp the system time.
     // We will be always able to extract the global simulation time from Geant4 tracks.
     time_t systime = time(nullptr);
@@ -249,6 +277,13 @@ void EventAction::ReOrderTrackIds(Int_t subId) {
 }
 
 int EventAction::SetTrackSubEventIDs() {
+    auto simulationManager = SimulationManager::Instance();
+    TRestRun* restRun = simulationManager->fRestRun;
+    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+
     Int_t nTracks = restG4Event->GetNumberOfTracks();
     Double_t timeDelay = restG4Metadata->GetSubEventTimeDelay();  // in unit us
 

@@ -13,20 +13,30 @@
 #include <G4UnitsTable.hh>
 #include <globals.hh>
 
+#include "SimulationManager.h"
+
 using namespace std;
 
-extern TRestGeant4Event* restG4Event;
-extern TRestGeant4Metadata* restG4Metadata;
-extern TRestGeant4Track* restTrack;
-extern Int_t biasing;
-
 SteppingAction::SteppingAction() {
+    auto simulationManager = SimulationManager::Instance();
+    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+    Int_t& biasing = simulationManager->fBiasing;
+
     if (biasing > 1) restBiasingVolume = restG4Metadata->GetBiasingVolume(biasing - 1);
 }
 
 SteppingAction::~SteppingAction() {}
 
 void SteppingAction::UserSteppingAction(const G4Step* aStep) {
+    auto simulationManager = SimulationManager::Instance();
+    TRestRun* restRun = simulationManager->fRestRun;
+    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+    TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
+    Int_t& biasing = simulationManager->fBiasing;
+
     // Variables that describe a step are taken.
     nom_vol = restG4Metadata->GetGeant4GeometryInfo()->GetAlternativeNameFromGeant4PhysicalName(
         (TString &&) aStep->GetPreStepPoint()->GetPhysicalVolume()->GetName());

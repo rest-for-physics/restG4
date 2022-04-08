@@ -26,6 +26,7 @@
 #include "PhysicsList.h"
 #include "PrimaryGeneratorAction.h"
 #include "RunAction.h"
+#include "SimulationManager.h"
 #include "SteppingAction.h"
 #include "TrackingAction.h"
 
@@ -39,19 +40,11 @@
 
 using namespace std;
 
-// We define rest objects that will be used in Geant4
-TRestRun* restRun;
-TRestGeant4Track* restTrack;
-TRestGeant4Event *restG4Event, *subRestG4Event;
-TRestGeant4Metadata* restG4Metadata;
-TRestGeant4PhysicsLists* restPhysList;
-
 Bool_t saveAllEvents;
 
 const Int_t maxBiasingVolumes = 50;
-Int_t biasing = 0;
 
-// This histograms would be better placed inside TRestGeant4BiasingVolume
+// These histograms would be better placed inside TRestGeant4BiasingVolume
 TH1D* biasingSpectrum[maxBiasingVolumes];
 TH1D* angularDistribution[maxBiasingVolumes];
 TH2D* spatialDistribution[maxBiasingVolumes];
@@ -62,6 +55,16 @@ TH1D initialAngularDistribution;
 Int_t N_events;
 
 int main(int argc, char** argv) {
+    auto simulationManager = SimulationManager::Instance();
+
+    TRestRun* restRun = simulationManager->fRestRun;
+    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+    TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
+    Int_t& biasing = simulationManager->fBiasing;
+
     auto start_time = chrono::steady_clock::now();
 
     char cwd[kMAXPATHLEN];

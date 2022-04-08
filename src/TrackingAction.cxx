@@ -10,12 +10,9 @@
 
 #include "EventAction.h"
 #include "RunAction.h"
+#include "SimulationManager.h"
 
 using namespace std;
-
-extern TRestGeant4Metadata* restG4Metadata;
-extern TRestGeant4Event* restG4Event;
-extern TRestGeant4Track* restTrack;
 
 G4double prevTime = 0;
 G4String aux;
@@ -26,6 +23,9 @@ TrackingAction::TrackingAction(RunAction* runAction, EventAction* eventAction)
       fEvent(eventAction)
 
 {
+    auto simulationManager = SimulationManager::Instance();
+    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+
     fFullChain = false;
 
     fFullChain = restG4Metadata->isFullChainActivated();
@@ -39,6 +39,15 @@ TrackingAction::TrackingAction(RunAction* runAction, EventAction* eventAction)
 TrackingAction::~TrackingAction() {}
 
 void TrackingAction::PreUserTrackingAction(const G4Track* track) {
+    auto simulationManager = SimulationManager::Instance();
+    TRestRun* restRun = simulationManager->fRestRun;
+    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+    TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
+    Int_t& biasing = simulationManager->fBiasing;
+
     if (restG4Metadata->GetVerboseLevel() >= REST_Extreme)
         if (track->GetTrackID() % 10 == 0) {
             cout << "EXTREME: Processing track " << track->GetTrackID() << endl;
@@ -76,6 +85,10 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track) {
 }
 
 void TrackingAction::PostUserTrackingAction(const G4Track* track) {
+    auto simulationManager = SimulationManager::Instance();
+    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
+
     restTrack->SetTrackTimeLength(track->GetLocalTime() / microsecond);
 
     //   G4cout << "Storing track : Number of hits : " <<
