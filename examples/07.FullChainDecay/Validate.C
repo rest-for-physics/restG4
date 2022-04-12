@@ -1,30 +1,33 @@
 
-Int_t Validate(string fname, Int_t nDaughters) {
+Int_t Validate(string filename, Int_t nDaughters) {
     gSystem->Load("libRestFramework.so");
     gSystem->Load("libRestGeant4.so");
 
-    TRestRun* run = new TRestRun(fname);
+    TRestRun run(filename);
 
-    TRestGeant4Event* ev = (TRestGeant4Event*)run->GetInputEvent();
+    auto event = (TRestGeant4Event*)run.GetInputEvent();
 
-    std::vector<string> evTag;
-    for (int n = 0; n < run->GetEntries(); n++) {
-        run->GetEntry(n);
-        evTag.push_back((string)ev->GetSubEventTag());
+    std::vector<string> eventTags;
+    for (int n = 0; n < run.GetEntries(); n++) {
+        run.GetEntry(n);
+        eventTags.emplace_back((string)event->GetSubEventTag());
     }
 
-    std::sort(evTag.begin(), evTag.end());
+    std::sort(eventTags.begin(), eventTags.end());
 
-    auto iter = std::unique(evTag.begin(), evTag.end());
+    auto iter = std::unique(eventTags.begin(), eventTags.end());
 
-    evTag.erase(iter, evTag.end());
+    eventTags.erase(iter, eventTags.end());
 
-    cout << "Daughter isotopes: " << evTag.size() << endl;
-    for (unsigned int n = 0; n < evTag.size(); n++) cout << evTag[n] << " ";
+    cout << "Daughter isotopes: " << eventTags.size() << endl;
+    for (const auto& tag : eventTags) {
+        cout << tag << " ";
+    }
     cout << endl;
 
-    if (evTag.size() != nDaughters) {
-        cout << "Wrong number of isotopes found!" << endl;
+    if (eventTags.size() != nDaughters) {
+        cout << "Wrong number of isotopes found! " << eventTags.size() << " found vs " << nDaughters
+             << " required" << endl;
         return 13;
     }
 
