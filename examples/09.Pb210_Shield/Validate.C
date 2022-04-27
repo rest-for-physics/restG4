@@ -5,9 +5,9 @@ Int_t Validate(string fname) {
 
     TRestRun* run = new TRestRun(fname);
 
-    if (run->GetEntries() != 26) {
+    if (run->GetEntries() != 28) {
         cout << "Entries: " << run->GetEntries() << endl;
-        cout << "There was a problem simulation Pb210. The number of entries should be 26" << endl;
+        cout << "There was a problem simulation Pb210. The number of entries should be 28" << endl;
         return 10;
     }
 

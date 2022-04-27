@@ -91,7 +91,7 @@ Int_t Validate(string fname) {
 
     cout << "Number of hits in active volume 0: " << ev->GetNumberOfHits(0) << endl;
     cout << "Number of hits in active volume 1: " << ev->GetNumberOfHits(1) << endl;
-    if (ev->GetNumberOfHits(0) != 51 || ev->GetNumberOfHits(1) != 70) {
+    if (ev->GetNumberOfHits(0) != 51 || ev->GetNumberOfHits(1) != 51) {
         cout << "Error in number of hits at the active volumes" << endl;
         return 13;
     }
