@@ -24,46 +24,46 @@ Int_t Validate() {
     cout << "average theta: " << theta << ", average phi: " << phi << endl;
 
     
-    if (h1->Integral() != 1578) {
+    if (h1->Integral() != 1569) {
         cout << "Wrong number of alphas produced at 1MeV_5um!" << endl;
         cout << "Histogram contains : " << h1->Integral() << endl;
         return 10;
     }
 
-    if (h2->Integral() != 7182) {
+    if (h2->Integral() != 7286) {
         cout << "Wrong number of alphas produced at 5MeV_5um!" << endl;
         cout << "Histogram contains : " << h2->Integral() << endl;
         return 20;
     }
 
-    if (h3->Integral() != 9421) {
+    if (h3->Integral() != 9401) {
         cout << "Wrong number of alphas produced at 5MeV_1um!" << endl;
         cout << "Histogram contains : " << h3->Integral() << endl;
         return 30;
     }
 
-    if (thetaInt != 515) {
+    if (thetaInt != 2787) {
         cout << "Wrong theta angle value for entry 100!" << endl;
         cout << "Theta value is : " << thetaInt << endl;
         return 60;
     }
 
 
-    if (phiInt != 1539) {
+    if (phiInt != 1855) {
         cout << "Wrong phi angle value for entry 100!" << endl;
         cout << "Phi value is : " << phiInt << endl;
         return 60;
     }
 
 
-    if ((int)(1000 * theta) != 1589) {
+    if ((int)(1000 * theta) != 1566) {
         cout << "Wrong theta angle average!" << endl;
         cout << "Theta angle average : " << theta << " while it should be : " << 1.589 << endl;
         return 80;
     }
 
 
-    if ((int)(1000 * phi) != 27) {
+    if ((int)(1000 * phi) != -4) {
         cout << "Wrong phi angle average!" << endl;
         cout << "Phi angle average : " << phi << " while it should be : " << 0.027 << endl;
         return 90;
