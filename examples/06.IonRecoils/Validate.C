@@ -10,8 +10,8 @@ Int_t Validate(string fname) {
 
     Int_t nHitsEv0 = ev->GetNumberOfHits();
     cout << "Nhits : " << nHitsEv0 << endl;
-    if (nHitsEv0 < 20 || nHitsEv0 > 40) {
-        cout << "The number of hits in the recoil is not in the 20-40 range" << endl;
+    if (nHitsEv0 < 5 || nHitsEv0 > 40) {
+        cout << "The number of hits in the recoil is not in the 5-40 range" << endl;
         return 14;
     }
 
