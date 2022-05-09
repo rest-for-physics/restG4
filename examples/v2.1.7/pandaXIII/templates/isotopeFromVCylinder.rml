@@ -25,7 +25,7 @@
   <TRestG4Metadata name="restG4 Simulation run" title="Simulation of ${REST_ISOTOPE} decay from a virtual cylinder.">
 
     <parameter name="nEvents" value="100"/>
-    <parameter name="gdml_file" value="../geometry/${REST_GEOMETRY_TYPE}/${REST_GEOMETRY_SETUP}"/>
+    <parameter name="gdmlFile" value="../geometry/${REST_GEOMETRY_TYPE}/${REST_GEOMETRY_SETUP}"/>
     <parameter name="maxTargetStepSize" value="${REST_MAXSTEPSIZE}" units="um" />
     <parameter name="subEventTimeDelay" value="${REST_EVENTDELAY}" units="us" />
 
