@@ -415,11 +415,11 @@ int main(int argc, char** argv) {
 
         // Then we just add the geometry
         auto file = new TFile(Filename, "update");
-        TGeoManager* geo2 = gdml->CreateGeoM();
+        TGeoManager* geoManager = gdml->CreateGeoManager();
 
         file->cd();
-        geo2->SetName("Geometry");
-        geo2->Write();
+        geoManager->SetName("Geometry");
+        geoManager->Write();
         file->Close();
         exit(0);
     }
