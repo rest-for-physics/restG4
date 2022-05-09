@@ -37,7 +37,7 @@
         <parameter name="gdml_file" value="geometry/setup.gdml"/>
         <parameter name="subEventTimeDelay" value="100us"/>
 
-        <parameter name="Nevents" value="${REST_NEVENTS}"/>
+        <parameter name="nEvents" value="${REST_NEVENTS}"/>
 
         <generator type="virtualWall" position="(0,0,158-1.25+0.001)mm" rotation="(0,0,0)" lenX="20cm" lenY="20cm">
             <source particle="${REST_ISOTOPE}" excitedLevel="0.0" fullChain="on">

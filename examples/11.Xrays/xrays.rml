@@ -35,7 +35,7 @@ By default REST units are mm, keV and degrees
 
         <parameter name="seed" value="17021981"/>
 
-        <parameter name="Nevents" value="1000"/>
+        <parameter name="nEvents" value="1000"/>
         <parameter name="registerEmptyTracks" value="false"/>
         <parameter name="saveAllEvents" value="true"/>
 

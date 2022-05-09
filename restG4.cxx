@@ -360,7 +360,7 @@ int main(int argc, char** argv) {
         cout << "++++++++++ ERRORRRR +++++++++" << endl;
         cout << "++++++++++ ERRORRRR +++++++++" << endl;
         cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "The number of events to be simulated was not recongnized properly!" << endl;
+        cout << "The number of events to be simulated was not recognized properly!" << endl;
         cout << "Make sure you did not forget the number of events entry in TRestGeant4Metadata." << endl;
         cout << endl;
         cout << " ... or the parameter is properly constructed/interpreted." << endl;

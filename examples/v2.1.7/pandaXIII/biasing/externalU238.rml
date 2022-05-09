@@ -33,7 +33,7 @@
     <parameter name="gdml_file" value="../geometry/resistive/pandaXIII_Setup.gdml"/>
     <parameter name="maxTargetStepSize" value="10" units="mm" />
     
-    <parameter name="Nevents" value="100"/> 
+    <parameter name="nEvents" value="100"/>
     change the value to -1 to enter vis mode for more opeartions
     
     <generator type="virtualBox" size="12000" units="mm" >

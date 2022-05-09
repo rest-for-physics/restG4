@@ -31,7 +31,7 @@
 
     <parameter name="verboseLevel" value="1"/>
 
-    <parameter name="Nevents" value="100"/>
+    <parameter name="nEvents" value="100"/>
     change the value to -1 to enter vis mode for more opeartions
 
     <parameter name="gdml_file" value="../geometry/resistive/pandaXIII_Setup.gdml"/>
