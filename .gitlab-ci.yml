@@ -96,8 +96,10 @@ Load REST Libraries:
     - restG4 Muon.rml
     - geant4-config --version
     - restRoot -b -q Validate.C'("Run00111_restG4_MuonsFromPoint_rest.root")'
-    - restG4 CosmicMuons.rml
+    - restG4 CosmicMuonsFromWall.rml
     - restRoot -b -q ValidateWall.C'("Run00111_restG4_MuonsFromWall_rest.root")'
+    - restG4 CosmicMuonsFromCircle.rml
+    - restRoot -b -q ValidateCircle.C'("Run00111_restG4_MuonsFromCircle_rest.root")'
 
 05_PandaXIII:
   stage: examples
