@@ -6,7 +6,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake ${CMAKE_MODULE_PAT
 
 if (${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
     # this will only be accessed when build restG4 as a standalone package, not when building the framework
-    CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+    CMAKE_MINIMUM_REQUIRED(VERSION 3.16)
     find_package(REST REQUIRED)
     string(FIND ${REST_LIBRARIES} "RestGeant4" REST_GEANT4_FOUND)
     If (${REST_GEANT4_FOUND} EQUAL -1)
