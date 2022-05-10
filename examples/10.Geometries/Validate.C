@@ -1,31 +1,31 @@
 
-Int_t Validate(string filename) {
+Int_t Validate(const char* filename) {
     gSystem->Load("libRestFramework.so");
     gSystem->Load("libRestGeant4.so");
 
-    TRestRun* run = new TRestRun(filename);
+    TRestRun run(filename);
 
-    cout << "Entries: " << run->GetEntries() << endl;
+    cout << "Entries: " << run.GetEntries() << endl;
 
-    if (run->GetEntries() != 1000) {
-        cout << "Bad number of entries: " << run->GetEntries() << endl;
+    if (run.GetEntries() != 1000) {
+        cout << "Bad number of entries: " << run.GetEntries() << endl;
         return 1;
     }
 
-    auto metadata = (TRestGeant4Metadata*)run->GetMetadataClass("TRestGeant4Metadata");
+    auto metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
 
     const auto geometryInfo = metadata->GetGeant4GeometryInfo();
 
-    geometryInfo.Print();
+    geometryInfo->Print();
 
-    if (geometryInfo.GetAllPhysicalVolumes().size() != 374) {
-        cout << "Incorrect number of physical volumes " << geometryInfo.GetAllPhysicalVolumes().size()
+    if (geometryInfo->GetAllPhysicalVolumes().size() != 374) {
+        cout << "Incorrect number of physical volumes " << geometryInfo->GetAllPhysicalVolumes().size()
              << endl;
         // assembly do not work on older geant4 versions...
         // return 1;
     }
-    if (geometryInfo.GetAllLogicalVolumes().size() != 22) {
-        cout << "Incorrect number of logical volumes " << geometryInfo.GetAllLogicalVolumes().size() << endl;
+    if (geometryInfo->GetAllLogicalVolumes().size() != 22) {
+        cout << "Incorrect number of logical volumes " << geometryInfo->GetAllLogicalVolumes().size() << endl;
         // assembly do not work on older geant4 versions...
         // return 1;
     }
