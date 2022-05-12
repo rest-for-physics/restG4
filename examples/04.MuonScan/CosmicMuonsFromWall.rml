@@ -18,10 +18,10 @@ First concept author G. Luzón (16-11-2020) -->
 
     <TRestGeant4Metadata name="restG4 run" title="MuonsFromWall">
 
-        <parameter name="gdml_file" value="setup.gdml"/>
+        <parameter name="gdmlFile" value="setup.gdml"/>
         <parameter name="subEventTimeDelay" value="100us"/>
 
-        <parameter name="Nevents" value="1000"/>
+        <parameter name="nEvents" value="1000"/>
 
         <parameter name="saveAllEvents" value="false"/>
         <parameter name="printProgress" value="true"/>

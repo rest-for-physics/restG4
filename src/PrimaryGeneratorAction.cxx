@@ -468,7 +468,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
                 GenPositionOnCylinderSurface(x, y, z);
             } else if (generator_shape == g4_metadata_parameters::generator_shapes::SPHERE) {
                 GenPositionOnSphereSurface(x, y, z);
-            } else if (generator_shape == g4_metadata_parameters::generator_shapes::PLATE) {
+            } else if (generator_shape == g4_metadata_parameters::generator_shapes::CIRCLE) {
                 GenPositionOnPlate(x, y, z);
             } else if (generator_shape == g4_metadata_parameters::generator_shapes::WALL) {
                 GenPositionOnWall(x, y, z);

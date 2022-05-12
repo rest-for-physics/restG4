@@ -30,12 +30,12 @@ By default REST units are mm, keV and degrees
 
     <TRestGeant4Metadata name="AssemblyGeantino" title="AssemblyGeantino">
 
-        <parameter name="gdml_file" value="geometry/iaxo/setup.gdml"/>
+        <parameter name="gdmlFile" value="geometry/iaxo/setup.gdml"/>
         <parameter name="subEventTimeDelay" value="100" units="us"/>
 
         <parameter name="seed" value="17021981"/>
 
-        <parameter name="Nevents" value="1000"/>
+        <parameter name="nEvents" value="1000"/>
         <parameter name="registerEmptyTracks" value="false"/>
         <parameter name="saveAllEvents" value="true"/>
 
@@ -48,7 +48,7 @@ By default REST units are mm, keV and degrees
 
         <storage sensitiveVolume="gasVolume">
             <parameter name="energyRange" value="(0,10)" units="GeV"/>
-            <activeVolume name="Chamber_gas" chance="1" maxStepSize="1mm"/>
+            <activeVolume name="gasVolume" chance="1" maxStepSize="1mm"/>
         </storage>
 
     </TRestGeant4Metadata>
