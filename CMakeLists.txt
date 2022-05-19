@@ -25,6 +25,12 @@ find_package(Geant4 REQUIRED ui_all vis_all)
 include(${Geant4_USE_FILE})
 message("-- Found Geant4 version: ${Geant4_VERSION}")
 
+# Check Geant4 C++ standard is correct
+execute_process(COMMAND geant4-config --cxxstd OUTPUT_VARIABLE GEANT4_CXX_STD)
+if (NOT ${GEANT4_CXX_STD} MATCHES "17")
+    message(FATAL_ERROR "Geant4 installation was compiled with C++${GEANT4_CXX_STD} standard, but C++17 is required for REST")
+endif()
+
 # Fix for older Geant4 versions
 if (${Geant4_VERSION} VERSION_LESS 11.0.0)
     add_compile_definitions(GEANT4_VERSION_LESS_11_0_0)
