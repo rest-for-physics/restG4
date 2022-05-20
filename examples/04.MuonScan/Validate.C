@@ -64,34 +64,34 @@ Int_t Validate(string fname) {
 
     cout << "x: " << X << " y: " << Y << " z: " << Z << endl;
 
-    if (en != 2551) {
+    if (en != 1206) {
         cout << "Error in total energy" << endl;
         return 8;
     }
 
     en = (Int_t)(100 * ev->GetSensitiveVolumeEnergy());
-    if (en != 387) {
+    if (en != 496) {
         cout << "Error in total energy" << endl;
         return 9;
     }
 
-    if (ev->GetNumberOfHits() != 121) {
+    if (ev->GetNumberOfHits() != 102) {
         cout << "Error in the number of hits" << endl;
         return 10;
     }
 
-    if (ev->GetNumberOfTracks() != 3) {
+    if (ev->GetNumberOfTracks() != 1) {
         cout << "Error in the number of tracks" << endl;
         return 11;
     }
-    if (X != 0 || Y != 0 || Z != -29871) {
+    if (X != 0 || Y != 0 || Z != -30180) {
         cout << "Error in the event mean position" << endl;
         return 12;
     }
 
     cout << "Number of hits in active volume 0: " << ev->GetNumberOfHits(0) << endl;
     cout << "Number of hits in active volume 1: " << ev->GetNumberOfHits(1) << endl;
-    if (ev->GetNumberOfHits(0) != 51 || ev->GetNumberOfHits(1) != 70) {
+    if (ev->GetNumberOfHits(0) != 51 || ev->GetNumberOfHits(1) != 51) {
         cout << "Error in number of hits at the active volumes" << endl;
         return 13;
     }
