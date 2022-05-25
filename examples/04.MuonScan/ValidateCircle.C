@@ -1,5 +1,5 @@
 
-Int_t ValidateWall(string fname) {
+Int_t ValidateCircle(string fname) {
     gSystem->Load("/usr/local/rest-for-physics/lib/libRestFramework.so");
     gSystem->Load("/usr/local/rest-for-physics/lib/libRestGeant4.so");
 
@@ -18,9 +18,9 @@ Int_t ValidateWall(string fname) {
     for (Int_t n = 0; n < run.GetEntries(); n++) {
         run.GetEntry(n);
         Double_t x = event->GetPrimaryEventOrigin().X();
-        Double_t y = event->GetPrimaryEventOrigin().Y();
+        Double_t z = event->GetPrimaryEventOrigin().Z();
 
-        const auto r = TMath::Sqrt(x * x + y * y) / 100;  // cm
+        const auto r = TMath::Sqrt(x * x + z * z) / 100;  // cm
 
         rMean += r / run.GetEntries();
         if (r < rMin) {
@@ -31,27 +31,27 @@ Int_t ValidateWall(string fname) {
         }
     }
 
-    if (rMean < 0.8 || rMean > 1.2) {
+    if (rMean < 2.75 || rMean > 3.25) {
         cout << "The average radius of the distribution is wrong!" << endl;
         cout << "R_mean (cm): " << rMean << endl;
         return 5;
     }
 
-    if (rMin > 0.15) {
+    if (rMin > 0.5) {
         cout << "The minimum radius of the distribution is wrong!" << endl;
         cout << "R_min (cm): " << rMin << endl;
         return 6;
     }
 
-    if (rMax > 1.5 || rMax < 1.35) {
+    if (rMax > 4.0 || rMax < 3.75) {
         cout << "The maximum radius of the distribution is wrong!" << endl;
         cout << "R_max (cm): " << rMax << endl;
         return 7;
     }
 
     cout << "Run entries: " << run.GetEntries() << endl;
-    if (run.GetEntries() < 350 || run.GetEntries() > 450) {
-        cout << "The number of entries is not between 350 and 450!" << endl;
+    if (run.GetEntries() < 600 || run.GetEntries() > 750) {
+        cout << "The number of entries is wrong!" << endl;
         cout << "Number of entries : " << run.GetEntries() << endl;
         return 8;
     }

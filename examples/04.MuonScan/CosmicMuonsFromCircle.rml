@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 
-<!--
-First concept author G. Luzón (16-11-2020) -->
-
 <restG4>
 
     <TRestRun name="CosmicMuonRun" title="A basic muon test with 2 active volumes">
@@ -21,16 +18,19 @@ First concept author G. Luzón (16-11-2020) -->
         <parameter name="gdmlFile" value="setup.gdml"/>
         <parameter name="subEventTimeDelay" value="100us"/>
 
-        <parameter name="nEvents" value="1000"/>
+        <parameter name="nEvents" value="5000"/>
 
+        <parameter name="seed" value="17021981"/>
         <parameter name="saveAllEvents" value="false"/>
         <parameter name="printProgress" value="true"/>
 
-        <generator type="surface" shape="circle" position="(0,0,50)cm" size="(15,0,0)cm" rotationAngle="0"
-                   rotationAxis="(1,0,0)">
+        <!-- From planar surface above detector (cosmic rays) -->
+        <generator type="surface" shape="circle"
+                   position="(0,100,0)mm" size="(400,0,0)mm"
+                   rotationAngle="90deg" rotationAxis="(1,0,0)">
             <source particle="mu-" excitedLevel="0.0" fullChain="on">
                 <energyDist type="TH1D" file="Muons.root" spctName="cosmicmuon"/>
-                <angularDist type="TH1D" file="CosmicAngles.root" spctName="Theta2" direction="(0,0,-1)"/>
+                <angularDist type="TH1D" file="CosmicAngles.root" spctName="Theta2" direction="(0,-1,0)"/>
             </source>
         </generator>
 
@@ -52,13 +52,13 @@ First concept author G. Luzón (16-11-2020) -->
         <parameter name="maxEnergyRangeProductionCuts" value="1" units="GeV"/>
 
         <!-- EM Physics lists -->
-        <physicsList name="G4EmLivermorePhysics"></physicsList>
+        <physicsList name="G4EmLivermorePhysics"/>
         <!-- <physicsList name="G4EmPenelopePhysics"> </physicsList> -->
         <!-- <physicsList name="G4EmStandardPhysics_option3"> </physicsList> -->
 
         <!-- Decay physics lists -->
-        <physicsList name="G4DecayPhysics"></physicsList>
-        <physicsList name="G4RadioactiveDecayPhysics"></physicsList>
+        <physicsList name="G4DecayPhysics"/>
+        <physicsList name="G4RadioactiveDecayPhysics"/>
         <physicsList name="G4RadioactiveDecay">
             <option name="ICM" value="true"/>
             <option name="ARM" value="true"/>
@@ -66,10 +66,10 @@ First concept author G. Luzón (16-11-2020) -->
 
         <!-- Hadron physics lists -->
 
-        <physicsList name="G4HadronElasticPhysicsHP"></physicsList>
-        <physicsList name="G4IonBinaryCascadePhysics"></physicsList>
-        <physicsList name="G4HadronPhysicsQGSP_BIC_HP"></physicsList>
-        <physicsList name="G4EmExtraPhysics"></physicsList>
+        <physicsList name="G4HadronElasticPhysicsHP"/>
+        <physicsList name="G4IonBinaryCascadePhysics"/>
+        <physicsList name="G4HadronPhysicsQGSP_BIC_HP"/>
+        <physicsList name="G4EmExtraPhysics"/>
 
     </TRestGeant4PhysicsLists>
 

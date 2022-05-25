@@ -37,7 +37,7 @@ void RunAction::EndOfRunAction(const G4Run* run) {
     // G4double eprimary = fPrimary->GetParticleGun()->GetParticleEnergy();
 
     G4cout << "======================== run summary ======================";
-    G4cout << "\n" << nbEvents << " Events simulated, " << restRun->GetEntries() << "Events stored\n";
+    G4cout << "\n" << nbEvents << " Events simulated, " << restRun->GetEntries() << " Events stored\n";
     G4cout << "===========================================================";
     G4cout << G4endl;
 

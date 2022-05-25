@@ -69,7 +69,10 @@ add_executable(${PROJECT_NAME} restG4.cxx ${sources} ${headers})
 target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARIES})
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${INCLUDE_DIRS})
 
-# Copy scripts to the build directory
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+        )
+
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/
         DESTINATION ./examples/restG4/
         COMPONENT install
@@ -80,7 +83,6 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/mac
         COMPONENT install
         )
 
-# Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
 if (NOT ${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
