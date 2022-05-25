@@ -90,14 +90,14 @@ void PhysicsList::InitializePhysicsLists() {
     // Decay physics and all particles
     if (restPhysList->FindPhysicsList("G4DecayPhysics") >= 0) {
         fDecPhysicsList = new G4DecayPhysics();
-    } else if (restPhysList->GetVerboseLevel() >= REST_Debug) {
+    } else if (restPhysList->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         G4cout << "restG4. PhysicsList. G4DecayPhysics is not enabled!!" << G4endl;
     }
 
     // RadioactiveDecay physicsList
     if (restPhysList->FindPhysicsList("G4RadioactiveDecayPhysics") >= 0) {
         fRadDecPhysicsList = new G4RadioactiveDecayPhysics();
-    } else if (restPhysList->GetVerboseLevel() >= REST_Debug) {
+    } else if (restPhysList->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         G4cout << "restG4. PhysicsList. G4RadioactiveDecayPhysics is not enabled!!" << G4endl;
     }
 
@@ -122,7 +122,7 @@ void PhysicsList::InitializePhysicsLists() {
         emCounter++;
     }
 
-    if (restPhysList->GetVerboseLevel() >= REST_Essential && emCounter == 0) {
+    if (restPhysList->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Essential && emCounter == 0) {
         G4cout << "REST WARNING : No electromagenetic physics list has been enabled!!" << G4endl;
     }
 
@@ -224,7 +224,7 @@ void PhysicsList::ConstructProcess() {
         else if (restPhysList->GetPhysicsListOptionValue("G4RadioactiveDecay", "ICM") == "false") {
             radioactiveDecay->SetICM(false);
         }  // Internal Conversion
-        else if (restPhysList->GetVerboseLevel() >= REST_Essential) {
+        else if (restPhysList->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Essential) {
             G4cout << "REST WARNING. restG4. PhysicsList. G4RadioactiveDecay. Option "
                       "ICM not defined."
                    << G4endl;
@@ -237,7 +237,7 @@ void PhysicsList::ConstructProcess() {
         else if (restPhysList->GetPhysicsListOptionValue("G4RadioactiveDecay", "ARM") == "false") {
             radioactiveDecay->SetARM(false);
         }  // Internal Conversion
-        else if (restPhysList->GetVerboseLevel() >= REST_Essential) {
+        else if (restPhysList->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Essential) {
             G4cout << "REST WARNING. restG4. PhysicsList. G4RadioactiveDecay. Option "
                       "ARM not defined."
                    << G4endl;
