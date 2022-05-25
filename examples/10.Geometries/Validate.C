@@ -1,18 +1,18 @@
 
-Int_t Validate(string filename) {
+Int_t Validate(const char* filename) {
     gSystem->Load("libRestFramework.so");
     gSystem->Load("libRestGeant4.so");
 
-    TRestRun* run = new TRestRun(filename);
+    TRestRun run(filename);
 
-    cout << "Entries: " << run->GetEntries() << endl;
+    cout << "Entries: " << run.GetEntries() << endl;
 
-    if (run->GetEntries() != 1000) {
-        cout << "Bad number of entries: " << run->GetEntries() << endl;
+    if (run.GetEntries() != 1000) {
+        cout << "Bad number of entries: " << run.GetEntries() << endl;
         return 1;
     }
 
-    auto metadata = (TRestGeant4Metadata*)run->GetMetadataClass("TRestGeant4Metadata");
+    auto metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
 
     const auto geometryInfo = metadata->GetGeant4GeometryInfo();
 

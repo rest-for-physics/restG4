@@ -19,6 +19,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 
 #include "CommandLineSetup.h"
 #include "DetectorConstruction.h"
@@ -360,7 +361,7 @@ int main(int argc, char** argv) {
         cout << "++++++++++ ERRORRRR +++++++++" << endl;
         cout << "++++++++++ ERRORRRR +++++++++" << endl;
         cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "The number of events to be simulated was not recongnized properly!" << endl;
+        cout << "The number of events to be simulated was not recognized properly!" << endl;
         cout << "Make sure you did not forget the number of events entry in TRestGeant4Metadata." << endl;
         cout << endl;
         cout << " ... or the parameter is properly constructed/interpreted." << endl;
@@ -384,7 +385,7 @@ int main(int argc, char** argv) {
 
     systime = time(nullptr);
     restRun->SetEndTimeStamp((Double_t)systime);
-    TString Filename = restRun->GetOutputFileName();
+    TString filename = TString(filesystem::weakly_canonical(restRun->GetOutputFileName().Data()));
 
     restRun->UpdateOutputFile();
     restRun->CloseFile();
@@ -414,12 +415,12 @@ int main(int argc, char** argv) {
         sleep(5);
 
         // Then we just add the geometry
-        auto file = new TFile(Filename, "update");
-        TGeoManager* geo2 = gdml->CreateGeoM();
+        auto file = new TFile(filename, "update");
+        TGeoManager* geoManager = gdml->CreateGeoManager();
 
         file->cd();
-        geo2->SetName("Geometry");
-        geo2->Write();
+        geoManager->SetName("Geometry");
+        geoManager->Write();
         file->Close();
         exit(0);
     }
@@ -431,7 +432,7 @@ int main(int argc, char** argv) {
         printf("Writing geometry ... \n");
     }
 
-    cout << "============== Generated file: " << Filename << " ==============" << endl;
+    cout << "============== Generated file: " << filename << " ==============" << endl;
     auto end_time = chrono::steady_clock::now();
     cout << "Elapsed time: " << chrono::duration_cast<chrono::seconds>(end_time - start_time).count()
          << " seconds" << endl;

@@ -146,16 +146,20 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         // We check if the hit must be stored and keep it on restG4Track
         for (int volID = 0; volID < restG4Metadata->GetNumberOfActiveVolumes(); volID++) {
             if (restG4Event->isVolumeStored(volID)) {
-                if (restG4Metadata->GetVerboseLevel() >= REST_Extreme)
+                if (restG4Metadata->GetVerboseLevel() >=
+                    TRestStringOutput::REST_Verbose_Level::REST_Extreme) {
                     G4cout << "Step volume :" << volumeName << "::("
                            << (G4String)restG4Metadata->GetActiveVolumeName(volID) << ")" << G4endl;
+                }
 
                 // We store the hit if we have activated in the config
                 Bool_t isActiveVolume = (volumeName == restG4Metadata->GetActiveVolumeName(volID));
 
                 if (isActiveVolume) {
                     volume = volID;
-                    if (restG4Metadata->GetVerboseLevel() >= REST_Extreme) {
+
+                    if (restG4Metadata->GetVerboseLevel() >=
+                        TRestStringOutput::REST_Verbose_Level::REST_Extreme) {
                         G4cout << "Storing hit" << G4endl;
                     }
                     restTrack->AddG4Hit(hitPosition, TotalEnergyDeposit / keV, hitGlobalTime, processID,

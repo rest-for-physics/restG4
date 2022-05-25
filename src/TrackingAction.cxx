@@ -39,7 +39,7 @@ TrackingAction::TrackingAction(RunAction* runAction, EventAction* eventAction)
 TrackingAction::~TrackingAction() {}
 
 void TrackingAction::PreUserTrackingAction(const G4Track* track) {
-    if (restG4Metadata->GetVerboseLevel() >= REST_Extreme)
+    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Extreme)
         if (track->GetTrackID() % 10 == 0) {
             cout << "EXTREME: Processing track " << track->GetTrackID() << endl;
         }
