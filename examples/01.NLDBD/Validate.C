@@ -61,27 +61,27 @@ Int_t Validate(string fname) {
 
     cout << "x: " << X << " y: " << Y << " z: " << Z << endl;
 
-    if (en != 245699) {
+    if (en != 245700) {
         cout << "Error in total energy" << endl;
         return 8;
     }
 
-    en = (Int_t)(100 * ev->GetSensitiveVolumeEnergy());
-    if (en != 245699) {
-        cout << "Error in total energy" << endl;
-        return 9;
-    }
+    //en = (Int_t)(100 * ev->GetSensitiveVolumeEnergy());
+    //if (en != 245699) {
+    //    cout << "Error in total energy" << endl;
+    //    return 9;
+    //}
 
-    if (ev->GetNumberOfHits() != 355) {
+    if (ev->GetNumberOfHits() != 401) {
         cout << "Error in the number of hits" << endl;
         return 10;
     }
 
-    if (ev->GetNumberOfTracks() != 17) {
+    if (ev->GetNumberOfTracks() != 11) {
         cout << "Error in the number of tracks" << endl;
         return 11;
     }
-    if (X != 5612 || Y != -40678 || Z != 83360) {
+    if (X != -52709 || Y != 37592 || Z != 59585) {
         cout << "Error in the event mean position" << endl;
         return 12;
     }
