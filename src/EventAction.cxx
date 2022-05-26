@@ -29,7 +29,8 @@ void EventAction::BeginOfEventAction(const G4Event* geant4_event) {
         cout << "DEBUG: Start of event ID " << event_number << " (" << event_number + 1 << " of "
              << restG4Metadata->GetNumberOfEvents() << "). " << restRun->GetEntries() << " Events stored."
              << endl;
-    } else if ((restG4Metadata->PrintProgress() || restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Info) &&
+    } else if ((restG4Metadata->PrintProgress() ||
+                restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Info) &&
                geant4_event->GetEventID() % 10000 == 0) {
         cout << "INFO: Start of event ID " << event_number << " (" << event_number + 1 << " of "
              << restG4Metadata->GetNumberOfEvents() << "). " << restRun->GetEntries() << " Events stored."
@@ -90,7 +91,8 @@ void EventAction::EndOfEventAction(const G4Event* geant4_event) {
                 debug_level = "DEBUG";
             }
 
-            if (is_sensitive || restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
+            if (is_sensitive ||
+                restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
                 cout << debug_level
                      << ": Energy deposited in ACTIVE and SENSITIVE volumes: " << total_deposited_energy
                      << " keV" << endl;
@@ -114,7 +116,8 @@ void EventAction::EndOfEventAction(const G4Event* geant4_event) {
                 analysis_tree->Fill();
             } else {
                 // analysis tree is not found (nullptr)
-                if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Warning) {
+                if (restG4Metadata->GetVerboseLevel() >=
+                    TRestStringOutput::REST_Verbose_Level::REST_Warning) {
                     cout << "WARNING: Analysis tree is not found ('nullptr'). Cannot write event info"
                          << endl;
                 }
@@ -125,7 +128,8 @@ void EventAction::EndOfEventAction(const G4Event* geant4_event) {
                 event_tree->Fill();
             } else {
                 // event tree is not found (nullptr)
-                if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Warning) {
+                if (restG4Metadata->GetVerboseLevel() >=
+                    TRestStringOutput::REST_Verbose_Level::REST_Warning) {
                     cout << "WARNING: Event tree is not found ('nullptr'). Cannot write event info" << endl;
                 }
             }
@@ -138,7 +142,8 @@ void EventAction::EndOfEventAction(const G4Event* geant4_event) {
             debug_level = "DEBUG";
         }
 
-        if (is_sensitive || restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
+        if (is_sensitive ||
+            restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
             cout << debug_level
                  << ": Events depositing energy in sensitive volume: " << sensitive_volume_hits_count << "/"
                  << event_number + 1 << endl;
@@ -207,9 +212,11 @@ void EventAction::ReOrderTrackIds(Int_t subId) {
     if (subId > 0) {
         for (int n = 0; n < restG4Event->GetNumberOfTracks(); n++) {
             const auto& tck = restG4Event->GetTrack(n);
-
-            if (tck.GetSubEventID() == subId - 1)
-                if (tck.isRadiactiveDecay()) subRestG4Event->SetSubEventTag(tck.GetParticleName());
+            if (tck.GetSubEventID() == subId - 1) {
+                if (tck.isRadioactiveDecay()) {
+                    subRestG4Event->SetSubEventTag(tck.GetParticleName());
+                }
+            }
         }
     }
 
