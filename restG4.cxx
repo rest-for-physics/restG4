@@ -65,21 +65,21 @@ Int_t N_events;
 int main(int argc, char** argv) {
     auto start_time = chrono::steady_clock::now();
 
-    char cwd[kMAXPATHLEN];
-    cout << "Current working directory: " << getcwd(cwd, sizeof(cwd)) << endl;
+    const auto originalDirectory = filesystem::current_path();
+
+    cout << "Current working directory: " << originalDirectory << endl;
 
     CommandLineParameters commandLineParameters = CommandLineSetup::ProcessParameters(argc, argv);
     CommandLineSetup::Print(commandLineParameters);
 
     /// Separating relative path and pure RML filename
     char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
-    std::pair<string, string> pathAndRml = TRestTools::SeparatePathAndName(inputConfigFile);
-    char* inputRMLClean = (char*)pathAndRml.second.data();
+    const auto [inputRmlPath, inputRmlClean] = TRestTools::SeparatePathAndName(inputConfigFile);
+    cout << "X: " << inputRmlPath << " Y: " << inputRmlClean << endl;
 
-    const auto previousDirectory = filesystem::current_path();
-    TRestTools::ChangeDirectory(pathAndRml.first);
+    filesystem::current_path(inputRmlPath);
 
-    restG4Metadata = new TRestGeant4Metadata(inputRMLClean);
+    restG4Metadata = new TRestGeant4Metadata(inputRmlClean.c_str());
 
     if (!commandLineParameters.geometryFile.IsNull()) {
         restG4Metadata->SetGdmlFilename(commandLineParameters.geometryFile.Data());
@@ -106,16 +106,16 @@ int main(int argc, char** argv) {
     restG4Metadata->SetGdmlReference(gdml->GetGDMLVersion());
     restG4Metadata->SetMaterialsReference(gdml->GetEntityVersion("materials"));
 
-    restPhysList = new TRestGeant4PhysicsLists(inputRMLClean);
+    restPhysList = new TRestGeant4PhysicsLists(inputRmlClean.c_str());
 
     restRun = new TRestRun();
-    restRun->LoadConfigFromFile(inputRMLClean);
+    restRun->LoadConfigFromFile(inputRmlClean.c_str());
 
     if (!commandLineParameters.outputFile.IsNull()) {
         restRun->SetOutputFileName(commandLineParameters.outputFile.Data());
     }
 
-    filesystem::current_path(previousDirectory);
+    filesystem::current_path(originalDirectory);
 
     TString runTag = restRun->GetRunTag();
     if (runTag == "Null" || runTag == "") restRun->SetRunTag(restG4Metadata->GetTitle());
@@ -163,7 +163,6 @@ int main(int argc, char** argv) {
             spatialDistribution[i] =
                 new TH2D(spatialDistName, "Biasing spatial distribution", 100, -1, 1, 100, -1, 1);
     }
-    // }}}
 
     // choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
