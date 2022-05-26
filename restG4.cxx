@@ -52,7 +52,7 @@ Bool_t saveAllEvents;
 const Int_t maxBiasingVolumes = 50;
 Int_t biasing = 0;
 
-// This histograms would be better placed inside TRestGeant4BiasingVolume
+// These histograms would be better placed inside TRestGeant4BiasingVolume
 TH1D* biasingSpectrum[maxBiasingVolumes];
 TH1D* angularDistribution[maxBiasingVolumes];
 TH2D* spatialDistribution[maxBiasingVolumes];
@@ -75,9 +75,10 @@ int main(int argc, char** argv) {
     /// Separating relative path and pure RML filename
     char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
     const auto [inputRmlPath, inputRmlClean] = TRestTools::SeparatePathAndName(inputConfigFile);
-    cout << "X: " << inputRmlPath << " Y: " << inputRmlClean << endl;
 
-    filesystem::current_path(inputRmlPath);
+    if (!filesystem::path(inputRmlPath).empty()) {
+        filesystem::current_path(inputRmlPath);
+    }
 
     restG4Metadata = new TRestGeant4Metadata(inputRmlClean.c_str());
 
@@ -385,7 +386,7 @@ int main(int argc, char** argv) {
 
     systime = time(nullptr);
     restRun->SetEndTimeStamp((Double_t)systime);
-    TString filename = TString(filesystem::weakly_canonical(restRun->GetOutputFileName().Data()));
+    TString filename = TRestTools::ToAbsoluteName(restRun->GetOutputFileName().Data());
 
     restRun->UpdateOutputFile();
     restRun->CloseFile();
