@@ -76,6 +76,7 @@ int main(int argc, char** argv) {
     std::pair<string, string> pathAndRml = TRestTools::SeparatePathAndName(inputConfigFile);
     char* inputRMLClean = (char*)pathAndRml.second.data();
 
+    const auto previousDirectory = filesystem::current_path();
     TRestTools::ChangeDirectory(pathAndRml.first);
 
     restG4Metadata = new TRestGeant4Metadata(inputRMLClean);
@@ -114,7 +115,7 @@ int main(int argc, char** argv) {
         restRun->SetOutputFileName(commandLineParameters.outputFile.Data());
     }
 
-    TRestTools::ReturnToPreviousDirectory();
+    filesystem::current_path(previousDirectory);
 
     TString runTag = restRun->GetRunTag();
     if (runTag == "Null" || runTag == "") restRun->SetRunTag(restG4Metadata->GetTitle());
