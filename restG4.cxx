@@ -410,7 +410,7 @@ int main(int argc, char** argv) {
         // writing the geometry object
         freopen("/dev/null", "w", stdout);
         freopen("/dev/null", "w", stderr);
-        REST_Display_CompatibilityMode = true; 
+        // REST_Display_CompatibilityMode = true;
 
         // We wait the father process ends properly
         sleep(5);
