@@ -33,31 +33,31 @@ Int_t Validate(string fname) {
     }
 
     cout << "Testing reading of Geant4 metadata class" << endl;
-    TRestGeant4Metadata* g4Md = (TRestGeant4Metadata*)run->GetMetadataClass("TRestGeant4Metadata");
-    if (!g4Md) {
+    TRestGeant4Metadata* geant4Metadata = (TRestGeant4Metadata*)run->GetMetadataClass("TRestGeant4Metadata");
+    if (!geant4Metadata) {
         cout << "Problem reading Geant4 metadata class!" << endl;
         return 6;
     }
-    g4Md->PrintMetadata();
+    geant4Metadata->PrintMetadata();
 
-    if (g4Md->GetNumberOfActiveVolumes() != 1) {
+    if (geant4Metadata->GetNumberOfActiveVolumes() != 1) {
         cout << "The number of registered volumes is not 1!" << endl;
         return 7;
     }
 
-    TRestGeant4Event* ev = (TRestGeant4Event*)run->GetInputEvent();
+    TRestGeant4Event* event = run->GetInputEvent<TRestGeant4Event>();
     run->GetEntry(9);
 
-    cout << "Total energy : " << ev->GetTotalDepositedEnergy() << endl;
-    Int_t en = (Int_t)(100 * ev->GetTotalDepositedEnergy());
+    cout << "Total energy : " << event->GetTotalDepositedEnergy() << endl;
+    Int_t en = (Int_t)(100 * event->GetTotalDepositedEnergy());
     cout << "Energy integer : " << en << endl;
-    cout << "Sensitive volume energy : " << ev->GetSensitiveVolumeEnergy() << endl;
-    cout << "Number of hits : " << ev->GetNumberOfHits() << endl;
-    cout << "Number of tracks : " << ev->GetNumberOfTracks() << endl;
+    cout << "Sensitive volume energy : " << event->GetSensitiveVolumeEnergy() << endl;
+    cout << "Number of hits : " << event->GetNumberOfHits() << endl;
+    cout << "Number of tracks : " << event->GetNumberOfTracks() << endl;
 
-    Int_t X = (Int_t)(100 * ev->GetMeanPositionInVolume(0).X());
-    Int_t Y = (Int_t)(100 * ev->GetMeanPositionInVolume(0).Y());
-    Int_t Z = (Int_t)(100 * ev->GetMeanPositionInVolume(0).Z());
+    Int_t X = (Int_t)(100 * event->GetMeanPositionInVolume(0).X());
+    Int_t Y = (Int_t)(100 * event->GetMeanPositionInVolume(0).Y());
+    Int_t Z = (Int_t)(100 * event->GetMeanPositionInVolume(0).Z());
 
     cout << "x: " << X << " y: " << Y << " z: " << Z << endl;
 
@@ -66,18 +66,12 @@ Int_t Validate(string fname) {
         return 8;
     }
 
-    //en = (Int_t)(100 * ev->GetSensitiveVolumeEnergy());
-    //if (en != 245699) {
-    //    cout << "Error in total energy" << endl;
-    //    return 9;
-    //}
-
-    if (ev->GetNumberOfHits() != 401) {
+    if (event->GetNumberOfHits() != 401) {
         cout << "Error in the number of hits" << endl;
         return 10;
     }
 
-    if (ev->GetNumberOfTracks() != 11) {
+    if (event->GetNumberOfTracks() != 11) {
         cout << "Error in the number of tracks" << endl;
         return 11;
     }
