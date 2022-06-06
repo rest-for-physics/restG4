@@ -59,11 +59,11 @@ Int_t Validate(const char* filename) {
     double averageSensitiveEnergy = 0;
     constexpr double averageSensitiveEnergyRef = 2204.36;
 
-    size_t averageNumberOfHits = 0;
-    constexpr size_t averageNumberOfHitsRef = 2938;
+    double averageNumberOfHits = 0;
+    constexpr double averageNumberOfHitsRef = 2938;
 
-    size_t averageNumberOfTracks = 0;
-    constexpr size_t averageNumberOfTracksRef = 2058;
+    double averageNumberOfTracks = 0;
+    constexpr double averageNumberOfTracksRef = 2058;
 
     for (size_t i = 0; i < run.GetEntries(); i++) {
         run.GetEntry(i);
