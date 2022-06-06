@@ -60,7 +60,7 @@ TH2D* spatialDistribution[maxBiasingVolumes];
 TH1D initialEnergySpectrum;
 TH1D initialAngularDistribution;
 
-Int_t N_events;
+Int_t nEvents;
 
 int main(int argc, char** argv) {
     auto start_time = chrono::steady_clock::now();
@@ -250,7 +250,7 @@ int main(int argc, char** argv) {
     visManager->Initialize();
 #endif
 
-    N_events = restG4Metadata->GetNumberOfEvents();
+    nEvents = restG4Metadata->GetNumberOfEvents();
     // We pass the volume definition to Stepping action so that it records gammas
     // entering in We pass also the biasing spectrum so that gammas energies
     // entering the volume are recorded
@@ -264,8 +264,8 @@ int main(int argc, char** argv) {
     time_t systime = time(nullptr);
     restRun->SetStartTimeStamp((Double_t)systime);
 
-    cout << "Events : " << N_events << endl;
-    if (N_events > 0)  // batch mode
+    cout << "Number of events : " << nEvents << endl;
+    if (nEvents > 0)  // batch mode
     {
         G4String command = "/tracking/verbose 0";
         UI->ApplyCommand(command);
@@ -273,7 +273,7 @@ int main(int argc, char** argv) {
         UI->ApplyCommand(command);
 
         char tmp[256];
-        sprintf(tmp, "/run/beamOn %d", N_events);
+        sprintf(tmp, "/run/beamOn %d", nEvents);
 
         command = tmp;
         UI->ApplyCommand(command);
@@ -343,7 +343,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    else if (N_events == 0)  // define visualization and UI terminal for interactive mode
+    else if (nEvents == 0)  // define visualization and UI terminal for interactive mode
     {
         cout << "Entering vis mode.." << endl;
 #ifdef G4UI_USE
@@ -357,7 +357,7 @@ int main(int argc, char** argv) {
 #endif
     }
 
-    else  // N_events == -1
+    else  // nEvents == -1
     {
         cout << "++++++++++ ERRORRRR +++++++++" << endl;
         cout << "++++++++++ ERRORRRR +++++++++" << endl;
@@ -369,10 +369,10 @@ int main(int argc, char** argv) {
         cout << endl;
         cout << "It should be something like : " << endl;
         cout << endl;
-        cout << " <parameter name =\"Nevents\" value=\"100\"/>" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
+        cout << " <parameter name =\"nEvents\" value=\"100\"/>" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
         cout << endl;
     }
     restRun->GetOutputFile()->cd();
