@@ -1,39 +1,43 @@
 
-Int_t Validate(string fname) {
-    TRestRun* run = new TRestRun(fname);
+#include <TRestGeant4Event.h>
 
-    if (run->GetParentRunNumber() != 0) {
-        cout << "Parent run number value : " << run->GetParentRunNumber() << endl;
+Int_t Validate(const char* filename) {
+    cout << "Starting validation for '" << filename << "'" << endl;
+
+    TRestRun run(filename);
+
+    if (run.GetParentRunNumber() != 0) {
+        cout << "Parent run number value : " << run.GetParentRunNumber() << endl;
         cout << "The parent run number from restG4 generated file should be 0" << endl;
         return 1;
     }
 
-    if (run->GetRunNumber() != 1) {
-        cout << "Run number value : " << run->GetRunNumber() << endl;
+    if (run.GetRunNumber() != 1) {
+        cout << "Run number value : " << run.GetRunNumber() << endl;
         cout << "The run number on the validation chain should be 1 by default!" << endl;
         return 2;
     }
 
-    if (run->GetRunType() != "restG4") {
-        cout << "Run type : " << run->GetRunType() << endl;
+    if (run.GetRunType() != "restG4") {
+        cout << "Run type : " << run.GetRunType() << endl;
         cout << "The run type of restG4 generated data should be 'restG4'!" << endl;
         return 3;
     }
 
-    if (run->GetRunTag() != "NLDBD") {
-        cout << "Run tag : " << run->GetRunTag() << endl;
+    if (run.GetRunTag() != "NLDBD") {
+        cout << "Run tag : " << run.GetRunTag() << endl;
         cout << "The run tag of the basic validation test should be 'NLDBD'!" << endl;
         return 4;
     }
 
-    if (run->GetEntries() != 100) {
-        cout << "Run entries : " << run->GetEntries() << endl;
+    if (run.GetEntries() != 100) {
+        cout << "Run entries : " << run.GetEntries() << endl;
         cout << "The NLDBD simulation is launched from gas. It should always generate 100 events." << endl;
         return 5;
     }
 
     cout << "Testing reading of Geant4 metadata class" << endl;
-    TRestGeant4Metadata* geant4Metadata = (TRestGeant4Metadata*)run->GetMetadataClass("TRestGeant4Metadata");
+    TRestGeant4Metadata* geant4Metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
     if (!geant4Metadata) {
         cout << "Problem reading Geant4 metadata class!" << endl;
         return 6;
@@ -41,47 +45,63 @@ Int_t Validate(string fname) {
     geant4Metadata->PrintMetadata();
 
     if (geant4Metadata->GetNumberOfActiveVolumes() != 1) {
-        cout << "The number of registered volumes is not 1!" << endl;
+        cout << "The number of registered does not match the reference value of 1" << endl;
         return 7;
     }
 
-    TRestGeant4Event* event = run->GetInputEvent<TRestGeant4Event>();
-    run->GetEntry(9);
+    TRestGeant4Event* event = run.GetInputEvent<TRestGeant4Event>();
 
-    cout << "Total energy : " << event->GetTotalDepositedEnergy() << endl;
-    Int_t en = (Int_t)(100 * event->GetTotalDepositedEnergy());
-    cout << "Energy integer : " << en << endl;
-    cout << "Sensitive volume energy : " << event->GetSensitiveVolumeEnergy() << endl;
-    cout << "Number of hits : " << event->GetNumberOfHits() << endl;
-    cout << "Number of tracks : " << event->GetNumberOfTracks() << endl;
+    size_t nEvents = run.GetEntries();
 
-    Int_t X = (Int_t)(100 * event->GetMeanPositionInVolume(0).X());
-    Int_t Y = (Int_t)(100 * event->GetMeanPositionInVolume(0).Y());
-    Int_t Z = (Int_t)(100 * event->GetMeanPositionInVolume(0).Z());
+    double averageTotalEnergy = 0;
+    constexpr double averageTotalEnergyRef = 2204.36;
 
-    cout << "x: " << X << " y: " << Y << " z: " << Z << endl;
+    double averageSensitiveEnergy = 0;
+    constexpr double averageSensitiveEnergyRef = 2204.36;
 
-    if (en != 245700) {
-        cout << "Error in total energy" << endl;
+    size_t averageNumberOfHits = 0;
+    constexpr size_t averageNumberOfHitsRef = 2938;
+
+    size_t averageNumberOfTracks = 0;
+    constexpr size_t averageNumberOfTracksRef = 2058;
+
+    for (size_t i = 0; i < run.GetEntries(); i++) {
+        run.GetEntry(i);
+
+        averageTotalEnergy += event->GetTotalDepositedEnergy() / nEvents;
+        averageSensitiveEnergy += event->GetSensitiveVolumeEnergy() / nEvents;
+        averageNumberOfHits += event->GetNumberOfHits() / nEvents;
+        averageNumberOfTracks += event->GetNumberOfTracks() / nEvents;
+    }
+
+    cout << "Average total energy: " << averageTotalEnergy << " keV" << endl;
+    cout << "Average sensitive energy: " << averageSensitiveEnergy << " keV" << endl;
+    cout << "Average number of hits: " << averageNumberOfHits << endl;
+    cout << "Average number of tracks: " << averageNumberOfTracks << endl;
+
+    if (averageNumberOfHits != averageNumberOfHitsRef) {
+        cout << "The average number of hits does not match the reference value of " << averageNumberOfHitsRef
+             << endl;
         return 8;
     }
 
-    if (event->GetNumberOfHits() != 401) {
-        cout << "Error in the number of hits" << endl;
+    if (averageNumberOfTracks != averageNumberOfTracksRef) {
+        cout << "The average number of tracks does not match the reference value of "
+             << averageNumberOfTracksRef << endl;
+        return 9;
+    }
+
+    if (TMath::Abs(averageSensitiveEnergy - averageSensitiveEnergyRef) / averageSensitiveEnergyRef > 0.01) {
+        cout << "The average sensitive volume energy does not match the reference value of "
+             << averageSensitiveEnergyRef << endl;
         return 10;
     }
 
-    if (event->GetNumberOfTracks() != 11) {
-        cout << "Error in the number of tracks" << endl;
+    if (TMath::Abs(averageTotalEnergy - averageTotalEnergyRef) / averageTotalEnergyRef > 0.01) {
+        cout << "The average total energy does not match the reference value of " << averageTotalEnergyRef
+             << endl;
         return 11;
     }
-    if (X != -52709 || Y != 37592 || Z != 59585) {
-        cout << "Error in the event mean position" << endl;
-        return 12;
-    }
-
-    cout << "All tests passed! [\033[32mOK\033[0m]\n";
-    // Other tests like opening other metadata classes. Detector TGeoManager, etc.
 
     return 0;
 }

@@ -359,9 +359,9 @@ int main(int argc, char** argv) {
 
     else  // nEvents == -1
     {
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
         cout << "The number of events to be simulated was not recognized properly!" << endl;
         cout << "Make sure you did not forget the number of events entry in TRestGeant4Metadata." << endl;
         cout << endl;
