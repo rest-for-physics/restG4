@@ -26,9 +26,9 @@ Int_t Validate(string fname) {
         return 4;
     }
 
-    if (run->GetEntries() != 10) {
+    if (run->GetEntries() != 100) {
         cout << "Run entries : " << run->GetEntries() << endl;
-        cout << "The NLDBD simulation is launched from gas. It should always generate 10 events." << endl;
+        cout << "The NLDBD simulation is launched from gas. It should always generate 100 events." << endl;
         return 5;
     }
 
