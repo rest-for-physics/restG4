@@ -32,7 +32,7 @@ Int_t Validate(const char* filename) {
 
     if (run.GetEntries() != 100) {
         cout << "Run entries : " << run.GetEntries() << endl;
-        cout << "The NLDBD simulation is launched from gas. It should always generate 100 events." << endl;
+        cout << "The number of stored events should match the reference value of 100" << endl;
         return 5;
     }
 
@@ -51,7 +51,7 @@ Int_t Validate(const char* filename) {
 
     TRestGeant4Event* event = run.GetInputEvent<TRestGeant4Event>();
 
-    size_t nEvents = run.GetEntries();
+    double nEvents = run.GetEntries();
 
     double averageTotalEnergy = 0;
     constexpr double averageTotalEnergyRef = 2204.36;
@@ -60,10 +60,10 @@ Int_t Validate(const char* filename) {
     constexpr double averageSensitiveEnergyRef = 2204.36;
 
     double averageNumberOfHits = 0;
-    constexpr double averageNumberOfHitsRef = 2938;
+    constexpr double averageNumberOfHitsRef = 2988.81;
 
     double averageNumberOfTracks = 0;
-    constexpr double averageNumberOfTracksRef = 2058;
+    constexpr double averageNumberOfTracksRef = 2105.81;
 
     TVector3 averagePosition = {};
     const TVector3 averagePositionRef = {-3.37783, 64.9937, 117.623};
@@ -75,7 +75,7 @@ Int_t Validate(const char* filename) {
         averageSensitiveEnergy += event->GetSensitiveVolumeEnergy() / nEvents;
         averageNumberOfHits += event->GetNumberOfHits() / nEvents;
         averageNumberOfTracks += event->GetNumberOfTracks() / nEvents;
-        averagePosition += event->GetMeanPositionInVolume(0) * (1.0 / double(nEvents));
+        averagePosition += event->GetMeanPositionInVolume(0) * (1.0 / nEvents);
     }
 
     cout << "Average total energy: " << averageTotalEnergy << " keV" << endl;
@@ -85,13 +85,13 @@ Int_t Validate(const char* filename) {
     cout << "Average position: (" << averagePosition.x() << ", " << averagePosition.y() << ", "
          << averagePosition.z() << ") mm" << endl;
 
-    if (averageNumberOfHits != averageNumberOfHitsRef) {
+    if (TMath::Abs(averageNumberOfHits - averageNumberOfHitsRef) / averageNumberOfHitsRef > 0.01) {
         cout << "The average number of hits does not match the reference value of " << averageNumberOfHitsRef
              << endl;
         return 8;
     }
 
-    if (averageNumberOfTracks != averageNumberOfTracksRef) {
+    if (TMath::Abs(averageNumberOfTracks - averageNumberOfTracksRef) / averageNumberOfTracksRef > 0.01) {
         cout << "The average number of tracks does not match the reference value of "
              << averageNumberOfTracksRef << endl;
         return 9;

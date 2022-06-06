@@ -17,7 +17,7 @@
         <parameter name="gdmlFile" value="setup.gdml"/>
         <parameter name="subEventTimeDelay" value="100us"/>
 
-        <parameter name="nEvents" value="10"/>
+        <parameter name="nEvents" value="100"/>
         <parameter name="saveAllEvents" value="off"/>
 
         <parameter name="seed" value="17021981"/>

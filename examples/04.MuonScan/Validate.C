@@ -1,103 +1,135 @@
 
-Int_t Validate(string fname) {
-    gSystem->Load("libRestFramework.so");
-    gSystem->Load("libRestGeant4.so");
+#include <TRestGeant4Event.h>
 
-    TRestRun* run = new TRestRun(fname);
+Int_t Validate(const char* filename) {
+    cout << "Starting validation for '" << filename << "'" << endl;
 
-    if (run->GetParentRunNumber() != 0) {
-        cout << "Parent run number value : " << run->GetParentRunNumber() << endl;
+    TRestRun run(filename);
+
+    if (run.GetParentRunNumber() != 0) {
+        cout << "Parent run number value : " << run.GetParentRunNumber() << endl;
         cout << "The parent run number from restG4 generated file should be 0" << endl;
         return 1;
     }
 
-    if (run->GetRunNumber() != 111) {
-        cout << "Run number value : " << run->GetRunNumber() << endl;
+    if (run.GetRunNumber() != 111) {
+        cout << "Run number value : " << run.GetRunNumber() << endl;
         cout << "The run number on the Muon example should be 111 by default!" << endl;
         return 2;
     }
 
-    if (run->GetRunType() != "restG4") {
-        cout << "Run type : " << run->GetRunType() << endl;
+    if (run.GetRunType() != "restG4") {
+        cout << "Run type : " << run.GetRunType() << endl;
         cout << "The run type of restG4 generated data should be 'restG4'!" << endl;
         return 3;
     }
 
-    if (run->GetRunTag() != "MuonsFromPoint") {
-        cout << "Run tag : " << run->GetRunTag() << endl;
+    if (run.GetRunTag() != "MuonsFromPoint") {
+        cout << "Run tag : " << run.GetRunTag() << endl;
         cout << "The run tag of the basic validation test should be 'MuonsFromPoint'!" << endl;
         return 4;
     }
 
-    if (run->GetEntries() != 10) {
-        cout << "Run entries : " << run->GetEntries() << endl;
-        cout << "The Muon simulation should always generate 10 events." << endl;
+    if (run.GetEntries() != 100) {
+        cout << "Run entries : " << run.GetEntries() << endl;
+        cout << "The number of stored events should match the reference value of 100" << endl;
         return 5;
     }
 
     cout << "Testing reading of Geant4 metadata class" << endl;
-    TRestGeant4Metadata* g4Md = (TRestGeant4Metadata*)run->GetMetadataClass("TRestGeant4Metadata");
-    if (!g4Md) {
+    TRestGeant4Metadata* geant4Metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
+    if (!geant4Metadata) {
         cout << "Problem reading Geant4 metadata class!" << endl;
         return 6;
     }
-    g4Md->PrintMetadata();
+    geant4Metadata->PrintMetadata();
 
-    if (g4Md->GetNumberOfActiveVolumes() != 2) {
-        cout << "The number of registered volumes is not 2!" << endl;
+    if (geant4Metadata->GetNumberOfActiveVolumes() != 2) {
+        cout << "The number of registered does not match the reference value of 2" << endl;
         return 7;
     }
 
-    TRestGeant4Event* ev = (TRestGeant4Event*)run->GetInputEvent();
-    run->GetEntry(9);
+    TRestGeant4Event* event = run.GetInputEvent<TRestGeant4Event>();
 
-    cout << "Total energy : " << ev->GetTotalDepositedEnergy() << endl;
-    Int_t en = (Int_t)(100 * ev->GetTotalDepositedEnergy());
-    cout << "Energy integer : " << en << endl;
-    cout << "Sensitive volume energy : " << ev->GetSensitiveVolumeEnergy() << endl;
-    cout << "Number of hits : " << ev->GetNumberOfHits() << endl;
-    cout << "Number of tracks : " << ev->GetNumberOfTracks() << endl;
+    double nEvents = run.GetEntries();
 
-    Int_t X = (Int_t)(100 * ev->GetMeanPositionInVolume(0).X());
-    Int_t Y = (Int_t)(100 * ev->GetMeanPositionInVolume(0).Y());
-    Int_t Z = (Int_t)(100 * ev->GetMeanPositionInVolume(0).Z());
+    double averageTotalEnergy = 0;
+    constexpr double averageTotalEnergyRef = 18.32;
 
-    cout << "x: " << X << " y: " << Y << " z: " << Z << endl;
+    double averageSensitiveEnergy = 0;
+    constexpr double averageSensitiveEnergyRef = 8.14;
 
-    if (en != 1206) {
-        cout << "Error in total energy" << endl;
+    double averageNumberOfTracks = 0;
+    constexpr double averageNumberOfTracksRef = 5.06;
+
+    double averageNumberOfHitsVolume0 = 0;
+    constexpr double averageNumberOfHitsVolume0Ref = 57.01;
+
+    double averageNumberOfHitsVolume1 = 0;
+    constexpr double averageNumberOfHitsVolume1Ref = 78.86;
+
+    TVector3 averagePosition = {};
+    const TVector3 averagePositionRef = {-0.041182, -0.054554, -299.243};
+
+    for (size_t i = 0; i < run.GetEntries(); i++) {
+        run.GetEntry(i);
+
+        averageTotalEnergy += event->GetTotalDepositedEnergy() / nEvents;
+        averageSensitiveEnergy += event->GetSensitiveVolumeEnergy() / nEvents;
+        averageNumberOfHitsVolume0 += event->GetNumberOfHits(0) / nEvents;
+        averageNumberOfHitsVolume1 += event->GetNumberOfHits(1) / nEvents;
+        averageNumberOfTracks += event->GetNumberOfTracks() / nEvents;
+        averagePosition += event->GetMeanPositionInVolume(0) * (1.0 / nEvents);
+    }
+
+    cout << "Average total energy: " << averageTotalEnergy << " keV" << endl;
+    cout << "Average sensitive energy: " << averageSensitiveEnergy << " keV" << endl;
+    cout << "Average number of hits in volume 0: " << averageNumberOfHitsVolume0 << endl;
+    cout << "Average number of hits in volume 1: " << averageNumberOfHitsVolume1 << endl;
+    cout << "Average number of tracks: " << averageNumberOfTracks << endl;
+    cout << "Average position: (" << averagePosition.x() << ", " << averagePosition.y() << ", "
+         << averagePosition.z() << ") mm" << endl;
+
+    if (TMath::Abs(averageNumberOfTracks - averageNumberOfTracksRef) / averageNumberOfTracksRef > 0.01) {
+        cout << "The average number of tracks does not match the reference value of "
+             << averageNumberOfTracksRef << endl;
         return 8;
     }
 
-    en = (Int_t)(100 * ev->GetSensitiveVolumeEnergy());
-    if (en != 496) {
-        cout << "Error in total energy" << endl;
+    if (TMath::Abs(averageNumberOfHitsVolume0 - averageNumberOfHitsVolume0Ref) /
+            averageNumberOfHitsVolume0Ref >
+        0.01) {
+        cout << "The average number of hits in volume 0 does not match the reference value of "
+             << averageNumberOfHitsVolume0Ref << endl;
         return 9;
     }
 
-    if (ev->GetNumberOfHits() != 102) {
-        cout << "Error in the number of hits" << endl;
+    if (TMath::Abs(averageNumberOfHitsVolume1 - averageNumberOfHitsVolume1Ref) /
+            averageNumberOfHitsVolume1Ref >
+        0.01) {
+        cout << "The average number of hits in volume 1 does not match the reference value of "
+             << averageNumberOfHitsVolume1Ref << endl;
         return 10;
     }
 
-    if (ev->GetNumberOfTracks() != 1) {
-        cout << "Error in the number of tracks" << endl;
+    if (TMath::Abs(averageSensitiveEnergy - averageSensitiveEnergyRef) / averageSensitiveEnergyRef > 0.01) {
+        cout << "The average sensitive volume energy does not match the reference value of "
+             << averageSensitiveEnergyRef << endl;
         return 11;
     }
-    if (X != 0 || Y != 0 || Z != -30180) {
-        cout << "Error in the event mean position" << endl;
+
+    if (TMath::Abs(averageTotalEnergy - averageTotalEnergyRef) / averageTotalEnergyRef > 0.01) {
+        cout << "The average total energy does not match the reference value of " << averageTotalEnergyRef
+             << endl;
         return 12;
     }
 
-    cout << "Number of hits in active volume 0: " << ev->GetNumberOfHits(0) << endl;
-    cout << "Number of hits in active volume 1: " << ev->GetNumberOfHits(1) << endl;
-    if (ev->GetNumberOfHits(0) != 51 || ev->GetNumberOfHits(1) != 51) {
-        cout << "Error in number of hits at the active volumes" << endl;
+    if (TMath::Abs(averagePosition.Mag() - averagePositionRef.Mag()) / averagePositionRef.Mag() > 0.01) {
+        cout << "The average position does not match the reference value of "
+             << "(" << averagePositionRef.x() << ", " << averagePositionRef.y() << ", "
+             << averagePositionRef.z() << ") mm" << endl;
         return 13;
     }
-
-    cout << "All tests passed! [\033[32mOK\033[0m]\n";
-    // Other tests like opening other metadata classes. Detector TGeoManager, etc.
 
     return 0;
 }
