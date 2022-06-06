@@ -65,6 +65,9 @@ Int_t Validate(const char* filename) {
     double averageNumberOfTracks = 0;
     constexpr double averageNumberOfTracksRef = 2058;
 
+    TVector3 averagePosition = {};
+    const TVector3 averagePositionRef = {-3.37783, 64.9937, 117.623};
+
     for (size_t i = 0; i < run.GetEntries(); i++) {
         run.GetEntry(i);
 
@@ -72,12 +75,15 @@ Int_t Validate(const char* filename) {
         averageSensitiveEnergy += event->GetSensitiveVolumeEnergy() / nEvents;
         averageNumberOfHits += event->GetNumberOfHits() / nEvents;
         averageNumberOfTracks += event->GetNumberOfTracks() / nEvents;
+        averagePosition += event->GetMeanPositionInVolume(0) * (1.0 / double(nEvents));
     }
 
     cout << "Average total energy: " << averageTotalEnergy << " keV" << endl;
     cout << "Average sensitive energy: " << averageSensitiveEnergy << " keV" << endl;
     cout << "Average number of hits: " << averageNumberOfHits << endl;
     cout << "Average number of tracks: " << averageNumberOfTracks << endl;
+    cout << "Average position: (" << averagePosition.x() << ", " << averagePosition.y() << ", "
+         << averagePosition.z() << ") mm" << endl;
 
     if (averageNumberOfHits != averageNumberOfHitsRef) {
         cout << "The average number of hits does not match the reference value of " << averageNumberOfHitsRef
@@ -101,6 +107,13 @@ Int_t Validate(const char* filename) {
         cout << "The average total energy does not match the reference value of " << averageTotalEnergyRef
              << endl;
         return 11;
+    }
+
+    if (TMath::Abs(averagePosition.Mag() - averagePositionRef.Mag()) / averagePositionRef.Mag() > 0.01) {
+        cout << "The average position does not match the reference value of "
+             << "(" << averagePositionRef.x() << ", " << averagePositionRef.y() << ", "
+             << averagePositionRef.z() << ") mm" << endl;
+        return 12;
     }
 
     return 0;
