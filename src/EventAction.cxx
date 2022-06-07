@@ -16,22 +16,26 @@ extern TRestGeant4Track* restTrack;
 
 using namespace std;
 
-EventAction::EventAction() : G4UserEventAction() { restG4Metadata->isFullChainActivated(); }
+EventAction::EventAction() : G4UserEventAction() {
+    fTimer.Start();
+    restG4Metadata->isFullChainActivated();
+}
 
 EventAction::~EventAction() {}
 
-void EventAction::BeginOfEventAction(const G4Event* geant4_event) {
-    G4int event_number = geant4_event->GetEventID();
+void EventAction::BeginOfEventAction(const G4Event* event) {
+    G4int eventID = event->GetEventID();
 
     restG4Metadata->GetVerboseLevel();
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
-        cout << "DEBUG: Start of event ID " << event_number << " (" << event_number + 1 << " of "
+        cout << "DEBUG: Start of event ID " << eventID << " (" << eventID + 1 << " of "
              << restG4Metadata->GetNumberOfEvents() << "). " << restRun->GetEntries() << " Events stored."
              << endl;
-    } else if ((restG4Metadata->PrintProgress() || restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Info) &&
-               geant4_event->GetEventID() % 10000 == 0) {
-        cout << "INFO: Start of event ID " << event_number << " (" << event_number + 1 << " of "
+    } else if ((restG4Metadata->PrintProgress() ||
+                restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Info) &&
+               event->GetEventID() % 10000 == 0) {
+        cout << "INFO: Start of event ID " << eventID << " (" << eventID + 1 << " of "
              << restG4Metadata->GetNumberOfEvents() << "). " << restRun->GetEntries() << " Events stored."
              << endl
              << endl;
@@ -39,7 +43,7 @@ void EventAction::BeginOfEventAction(const G4Event* geant4_event) {
 
     restTrack->Initialize();
 
-    restG4Event->SetID(event_number);
+    restG4Event->SetID(eventID);
     restG4Event->SetOK(true);
     time_t system_time = time(nullptr);
 
@@ -90,7 +94,8 @@ void EventAction::EndOfEventAction(const G4Event* geant4_event) {
                 debug_level = "DEBUG";
             }
 
-            if (is_sensitive || restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
+            if (is_sensitive ||
+                restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
                 cout << debug_level
                      << ": Energy deposited in ACTIVE and SENSITIVE volumes: " << total_deposited_energy
                      << " keV" << endl;
@@ -114,7 +119,8 @@ void EventAction::EndOfEventAction(const G4Event* geant4_event) {
                 analysis_tree->Fill();
             } else {
                 // analysis tree is not found (nullptr)
-                if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Warning) {
+                if (restG4Metadata->GetVerboseLevel() >=
+                    TRestStringOutput::REST_Verbose_Level::REST_Warning) {
                     cout << "WARNING: Analysis tree is not found ('nullptr'). Cannot write event info"
                          << endl;
                 }
@@ -125,7 +131,8 @@ void EventAction::EndOfEventAction(const G4Event* geant4_event) {
                 event_tree->Fill();
             } else {
                 // event tree is not found (nullptr)
-                if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Warning) {
+                if (restG4Metadata->GetVerboseLevel() >=
+                    TRestStringOutput::REST_Verbose_Level::REST_Warning) {
                     cout << "WARNING: Event tree is not found ('nullptr'). Cannot write event info" << endl;
                 }
             }
@@ -138,7 +145,8 @@ void EventAction::EndOfEventAction(const G4Event* geant4_event) {
             debug_level = "DEBUG";
         }
 
-        if (is_sensitive || restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
+        if (is_sensitive ||
+            restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
             cout << debug_level
                  << ": Events depositing energy in sensitive volume: " << sensitive_volume_hits_count << "/"
                  << event_number + 1 << endl;
