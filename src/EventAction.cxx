@@ -58,12 +58,15 @@ void EventAction::BeginOfEventAction(const G4Event* event) {
 
     // Defining if the hits in a given volume will be stored
     for (int i = 0; i < restG4Metadata->GetNumberOfActiveVolumes(); i++) {
-        Double_t rndNumber = G4UniformRand();
-
-        if (restG4Metadata->GetStorageChance(i) >= rndNumber) {
+        if (restG4Metadata->GetStorageChance(i) >= 1.00) {
             restG4Event->ActivateVolumeForStorage(i);
         } else {
-            restG4Event->DisableVolumeForStorage(i);
+            Double_t randomNumber = G4UniformRand();
+            if (restG4Metadata->GetStorageChance(i) >= randomNumber) {
+                restG4Event->ActivateVolumeForStorage(i);
+            } else {
+                restG4Event->DisableVolumeForStorage(i);
+            }
         }
     }
 }
