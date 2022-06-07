@@ -54,10 +54,10 @@ Int_t Validate(const char* filename) {
     double nEvents = run.GetEntries();
 
     double averageTotalEnergy = 0;
-    constexpr double averageTotalEnergyRef = 18.32;
+    constexpr double averageTotalEnergyRef = 17.0907;
 
     double averageSensitiveEnergy = 0;
-    constexpr double averageSensitiveEnergyRef = 8.14;
+    constexpr double averageSensitiveEnergyRef = 8.59097;
 
     double averageNumberOfTracks = 0;
     constexpr double averageNumberOfTracksRef = 3.82;
