@@ -41,7 +41,7 @@ Int_t Validate() {
         return 20;
     }
 
-    if (h3->Integral() != 9537) {
+    if (h3->Integral() != 9554) {
         cout << "Wrong number of alphas produced at 5MeV_1um!" << endl;
         cout << "Histogram contains : " << h3->Integral() << endl;
         return 30;
