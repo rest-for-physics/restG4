@@ -74,6 +74,12 @@ int main(int argc, char** argv) {
 
     /// Separating relative path and pure RML filename
     char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
+
+    if (!TRestTools::CheckFileIsAccessible(inputConfigFile)) {
+        cout << "Input rml file: " << inputConfigFile << " not found, please check file name" << endl;
+        exit(1);
+    }
+
     const auto [inputRmlPath, inputRmlClean] = TRestTools::SeparatePathAndName(inputConfigFile);
 
     if (!filesystem::path(inputRmlPath).empty()) {
