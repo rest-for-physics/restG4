@@ -30,9 +30,9 @@ Int_t Validate(const char* filename) {
         return 4;
     }
 
-    if (run.GetEntries() != 100) {
+    if (run.GetEntries() != 1000) {
         cout << "Run entries : " << run.GetEntries() << endl;
-        cout << "The number of stored events should match the reference value of 100" << endl;
+        cout << "The number of stored events should match the reference value of 1000" << endl;
         return 5;
     }
 
