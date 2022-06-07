@@ -69,7 +69,7 @@ Load REST Libraries:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - restRoot -b -q
 
-01_NLDBD:
+01.NLDBD:
   stage: Run Examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
@@ -78,7 +78,7 @@ Load REST Libraries:
     - geant4-config --version
     - restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
 
-03_Fluorescence:
+03.Fluorescence:
   stage: Run Examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
@@ -88,7 +88,7 @@ Load REST Libraries:
     - geant4-config --version
     - restRoot -b -q Validate.C'("Run00111_g4Analysis_Gamma_rest.root")'
 
-04_MuonScan:
+04.MuonScan:
   stage: Run Examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
@@ -101,7 +101,7 @@ Load REST Libraries:
     - restG4 CosmicMuonsFromCircle.rml
     - restRoot -b -q ValidateCircle.C'("Run00111_restG4_MuonsFromCircle_rest.root")'
 
-05_PandaXIII:
+05.PandaXIII:
   stage: Run Examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
@@ -109,7 +109,7 @@ Load REST Libraries:
     - restG4 Xe136bb0n.rml
     - restRoot -b -q ValidateG4.C'("Xe136bb0n_n2E06.root")'
 
-06_IonRecoils:
+06.IonRecoils:
   stage: Run Examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
@@ -117,7 +117,7 @@ Load REST Libraries:
     - restG4 recoils.rml
     - restRoot -b -q Validate.C'("Run00001_F20_Recoils.root")'
 
-07_FullChainDecay:
+07.FullChainDecay:
   stage: Run Examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
@@ -130,7 +130,7 @@ Load REST Libraries:
     - restG4 singleDecay.rml
     - restRoot -b -q Validate.C'("Run00002_Be7_SingleChainDecay.root", 1)'
 
-08_Alphas:
+08.Alphas:
   stage: Run Examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
@@ -151,7 +151,7 @@ Load REST Libraries:
     - restManager --c plots.rml --f "data/*g4Ana*root" --batch
     - restRoot -b -q Validate.C
 
-09_Pb210_Shielding:
+09.Pb210_Shielding:
   stage: Run Examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
@@ -159,7 +159,7 @@ Load REST Libraries:
     - restG4 Pb210.rml
     - restRoot -b -q Validate.C'("Run00001_Pb210_Shielding.root")'
 
-10_Geometries:
+10.Geometries:
   stage: Run Examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
@@ -167,7 +167,7 @@ Load REST Libraries:
     - restG4 Assembly.rml
     - restRoot -b -q Validate.C'("Run00001_Assembly_Assembly.root")'
 
-11_Xrays:
+11.Xrays:
   stage: Run Examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
