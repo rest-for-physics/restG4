@@ -54,19 +54,21 @@ Int_t Validate(const char* filename) {
     double nEvents = run.GetEntries();
 
     double averageTotalEnergy = 0;
-    constexpr double averageTotalEnergyRef = 2204.36;
+    constexpr double averageTotalEnergyRef = 2280.96;
 
     double averageSensitiveEnergy = 0;
-    constexpr double averageSensitiveEnergyRef = 2204.36;
+    constexpr double averageSensitiveEnergyRef = 2280.96;
 
     double averageNumberOfHits = 0;
-    constexpr double averageNumberOfHitsRef = 2988.81;
+    constexpr double averageNumberOfHitsRef = 3071.17;
 
     double averageNumberOfTracks = 0;
-    constexpr double averageNumberOfTracksRef = 2105.81;
+    constexpr double averageNumberOfTracksRef = 2161.43;
 
     TVector3 averagePosition = {};
-    const TVector3 averagePositionRef = {-3.37783, 64.9937, 117.623};
+    const TVector3 averagePositionRef = {-38.8987, 27.5536, 91.3969};
+
+    constexpr double tolerance = 0.05;
 
     for (size_t i = 0; i < run.GetEntries(); i++) {
         run.GetEntry(i);
@@ -85,31 +87,34 @@ Int_t Validate(const char* filename) {
     cout << "Average position: (" << averagePosition.x() << ", " << averagePosition.y() << ", "
          << averagePosition.z() << ") mm" << endl;
 
-    if (TMath::Abs(averageNumberOfHits - averageNumberOfHitsRef) / averageNumberOfHitsRef > 0.01) {
+    if (TMath::Abs(averageNumberOfHits - averageNumberOfHitsRef) / averageNumberOfHitsRef > tolerance * 5) {
         cout << "The average number of hits does not match the reference value of " << averageNumberOfHitsRef
              << endl;
         return 8;
     }
 
-    if (TMath::Abs(averageNumberOfTracks - averageNumberOfTracksRef) / averageNumberOfTracksRef > 0.01) {
+    if (TMath::Abs(averageNumberOfTracks - averageNumberOfTracksRef) / averageNumberOfTracksRef >
+        tolerance * 5) {
         cout << "The average number of tracks does not match the reference value of "
              << averageNumberOfTracksRef << endl;
         return 9;
     }
 
-    if (TMath::Abs(averageSensitiveEnergy - averageSensitiveEnergyRef) / averageSensitiveEnergyRef > 0.01) {
+    if (TMath::Abs(averageSensitiveEnergy - averageSensitiveEnergyRef) / averageSensitiveEnergyRef >
+        tolerance) {
         cout << "The average sensitive volume energy does not match the reference value of "
              << averageSensitiveEnergyRef << endl;
         return 10;
     }
 
-    if (TMath::Abs(averageTotalEnergy - averageTotalEnergyRef) / averageTotalEnergyRef > 0.01) {
+    if (TMath::Abs(averageTotalEnergy - averageTotalEnergyRef) / averageTotalEnergyRef > tolerance) {
         cout << "The average total energy does not match the reference value of " << averageTotalEnergyRef
              << endl;
         return 11;
     }
 
-    if (TMath::Abs(averagePosition.Mag() - averagePositionRef.Mag()) / averagePositionRef.Mag() > 0.01) {
+    if (TMath::Abs(averagePosition.Mag() - averagePositionRef.Mag()) / averagePositionRef.Mag() >
+        tolerance * 5) {
         cout << "The average position does not match the reference value of "
              << "(" << averagePositionRef.x() << ", " << averagePositionRef.y() << ", "
              << averagePositionRef.z() << ") mm" << endl;
