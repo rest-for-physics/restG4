@@ -11,6 +11,7 @@ on:
 env:
   BUILD_TYPE: Release
   REST_PATH: /rest/framework/install
+  REST_FRAMEWORK_SOURCE_DIR: ${{ github.workspace }}/../framework
 
 defaults:
   run:
@@ -25,27 +26,27 @@ jobs:
     steps:
       - name: Checkout framework
         run: |
-          git clone https://github.com/rest-for-physics/framework.git ${{ github.workspace }}/framework
-          cd ${{ github.workspace }}/framework
+          git clone https://github.com/rest-for-physics/framework.git ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
+          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           ./scripts/checkoutRemoteBranch.sh ${{ github.sha }}
 
       - name: Setup, build and install
         run: |
-          cd ${{ github.workspace }}/framework
+          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           git submodule init source/libraries/geant4 && git submodule update source/libraries/geant4
-          cd source/libraries/geant4/ && ${{ github.workspace }}/framework/scripts/checkoutRemoteBranch.sh ${{ github.sha }}
-          cd ${{ github.workspace }}/framework
+          cd source/libraries/geant4/ && ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/scripts/checkoutRemoteBranch.sh ${{ github.sha }}
+          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           git submodule init source/packages/restG4 && git submodule update source/packages/restG4
-          cd source/packages/restG4/ && git checkout ${{ github.sha }}
-          cd ${{ github.workspace }}/framework
-          mkdir -p ${{ github.workspace }}/framework/build && cd ${{ github.workspace }}/framework/build
+          rm -rf source/packages/restG4/ && cp -r ${{ github.workspace }} source/packages/restG4
+          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
+          mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
           cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
           make -j install
 
       - name: Build standalone
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
-          rm -rf ${{ github.workspace }}/framework
+          rm -rf ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           cd ${{ github.workspace }}
           mkdir -p ${{ github.workspace }}/build-standalone && cd ${{ github.workspace }}/build-standalone
           cmake ../ -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install-standalone
