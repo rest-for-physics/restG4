@@ -27,22 +27,21 @@ jobs:
         framework-branch: [master]
 
     steps:
-      - name: Checkout REST Framework
-        uses: actions/checkout@v3
-        with:
-          repository: rest-for-physics/framework
-          ref: ${{ matrix.framework-branch }}
-          path: /tmp/framework
-
-      - name: Setup and install
+      - name: Checkout REST framework
         run: |
-          cd /tmp/framework
+          git clone https://github.com/rest-for-physics/framework.git ${{ env.GITHUB_WORKSPACE }}/framework
+          cd ${{ env.GITHUB_WORKSPACE }}/framework
+          ./scripts/checkoutRemoteBranch.sh ${{ env.GITHUB_SHA }}
+
+      - name: Setup submodules and install
+        run: |
+          cd ${{ env.GITHUB_WORKSPACE }}/framework
           git submodule init source/libraries/geant4 && git submodule update source/libraries/geant4
           cd source/libraries/geant4/ && /tmp/framework/scripts/checkoutRemoteBranch.sh ${{ env.GITHUB_SHA }}
-          cd /tmp/framework
+          cd ${{ env.GITHUB_WORKSPACE }}/framework
           git submodule init source/packages/restG4 && git submodule update source/packages/restG4
           cd source/packages/restG4/ && git checkout ${{ env.GITHUB_SHA }}
-          cd /tmp/framework
+          cd ${{ env.GITHUB_WORKSPACE }}/framework
           mkdir -p build
           cd build
           cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
