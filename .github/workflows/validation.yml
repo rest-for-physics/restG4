@@ -51,6 +51,39 @@ jobs:
           path: ${{ env.REST_PATH }}
           key: ${{ github.sha }}
 
+  framework-install-old-Geant4:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/lobis/root-geant4-garfield:cpp17_ROOT-v6-26-00_Geant4-v10.4.3_Garfield-4ac1e62f
+
+    steps:
+      - name: Checkout framework
+        run: |
+          git clone https://github.com/rest-for-physics/framework.git ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
+          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
+          ./scripts/checkoutRemoteBranch.sh ${{ github.sha }}
+
+      - uses: actions/checkout@v3
+
+      - name: Setup, build and install
+        run: |
+          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
+          git submodule init source/libraries/geant4 && git submodule update source/libraries/geant4
+          cd source/libraries/geant4/ && ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/scripts/checkoutRemoteBranch.sh ${{ github.sha }}
+          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
+          rm -rf source/packages/restG4/ && cp -r ${{ github.workspace }} source/packages/restG4
+          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
+          mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
+          cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
+          make install
+
+      - name: Cache framework installation
+        id: framework-install-restG4-cache-old-Geant4
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.REST_PATH }}
+          key: ${{ github.sha }}-old-Geant4
+
   restG4-standalone-install:
     name: Install restG4 as a standalone application using the installed framework
     runs-on: ubuntu-latest
@@ -71,7 +104,6 @@ jobs:
       - name: Build as standalone
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
-          rm -rf ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           cd ${{ github.workspace }}
           mkdir -p ${{ github.workspace }}/build-standalone && cd ${{ github.workspace }}/build-standalone
           cmake ../ -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install-standalone
