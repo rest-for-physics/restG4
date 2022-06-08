@@ -18,7 +18,7 @@ defaults:
     shell: bash
 
 jobs:
-  build:
+  Framework:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
@@ -36,12 +36,11 @@ jobs:
           git submodule init source/libraries/geant4 && git submodule update source/libraries/geant4
           cd source/libraries/geant4/ && ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/scripts/checkoutRemoteBranch.sh ${{ github.sha }}
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          git submodule init source/packages/restG4 && git submodule update source/packages/restG4
           rm -rf source/packages/restG4/ && cp -r ${{ github.workspace }} source/packages/restG4
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
           cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
-          make -j install
+          make install
 
       - name: Build standalone
         run: |
@@ -50,6 +49,6 @@ jobs:
           cd ${{ github.workspace }}
           mkdir -p ${{ github.workspace }}/build-standalone && cd ${{ github.workspace }}/build-standalone
           cmake ../ -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install-standalone
-          make -j install
+          make install
           ${{ github.workspace }}/install-standalone/bin/restG4 --help
           rm -rf ${{ github.workspace }}/install-standalone ${{ github.workspace }}/build-standalone
