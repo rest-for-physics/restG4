@@ -152,7 +152,6 @@ jobs:
           key: ${{ github.sha }}
 
       - name: Run example
-        uses: actions/cache@v2
         run: |
           source ${CI_PROJECT_DIR}/install/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/
