@@ -46,7 +46,7 @@ jobs:
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
           cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
-          make install
+          make -j4 install
 
       - name: Cache framework installation
         id: framework-install-restG4-cache
@@ -92,12 +92,37 @@ jobs:
           path: ${{ env.REST_PATH }}
           key: ${{ github.sha }}-old-Geant4
 
+  check-installation:
+    name: Check framework and restG4 are accessible
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
+    needs: [framework-install]
+
+    steps:
+      - name: Restore cache
+        uses: actions/cache@v2
+        id: framework-install-restG4-cache
+        with:
+          path: ${{ env.REST_PATH }}
+          key: ${{ github.sha }}
+
+      - name: Check framework
+        run: |
+          source ${{ env.REST_PATH }}/thisREST.sh
+          restRoot -b -q
+
+      - name: Check restG4
+        run: |
+          source ${{ env.REST_PATH }}/thisREST.sh
+          restG4 --help
+
   restG4-standalone-install:
     name: Install restG4 as a standalone application using the installed framework
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-    needs: [framework-install]
+    needs: [check-installation]
 
     steps:
       - uses: actions/checkout@v3
