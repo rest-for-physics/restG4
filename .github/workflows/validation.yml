@@ -115,7 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-    needs: [check-installation]
+    needs: [framework-install]
 
     steps:
       - uses: actions/checkout@v3
@@ -153,7 +153,32 @@ jobs:
 
       - name: Run example
         run: |
-          source ${CI_PROJECT_DIR}/install/thisREST.sh
+          source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/
           restG4 NLDBD.rml
           restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
+
+  restG4-examples-03:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
+    needs: [check-installation, restG4-examples-01]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Restore cache
+        uses: actions/cache@v2
+        id: framework-install-restG4-cache
+        with:
+          path: ${{ env.REST_PATH }}
+          key: ${{ github.sha }}
+
+      - name: Run example
+        run: |
+          source ${{ env.REST_PATH }}/thisREST.sh
+          cd ${{ env.REST_PATH }}/examples/restG4/03.Fluorescence/
+          restG4 gamma.rml -o Run00111_Gamma_Fluorescence.root
+          restManager --c g4Analysis.rml --f Run00111_Gamma_Fluorescence.root
+          restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
+          restRoot -b -q Validate.C'("Run00111_g4Analysis_Gamma_rest.root")'
