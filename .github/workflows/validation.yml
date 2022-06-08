@@ -22,13 +22,10 @@ jobs:
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
 
-    strategy:
-      matrix:
-        framework-branch: [master]
-
     steps:
       - name: Checkout REST framework
         run: |
+          printenv
           git clone https://github.com/rest-for-physics/framework.git ${{ env.GITHUB_WORKSPACE }}/framework
           cd ${{ env.GITHUB_WORKSPACE }}/framework
           ./scripts/checkoutRemoteBranch.sh ${{ env.GITHUB_SHA }}
@@ -37,7 +34,7 @@ jobs:
         run: |
           cd ${{ env.GITHUB_WORKSPACE }}/framework
           git submodule init source/libraries/geant4 && git submodule update source/libraries/geant4
-          cd source/libraries/geant4/ && /tmp/framework/scripts/checkoutRemoteBranch.sh ${{ env.GITHUB_SHA }}
+          cd source/libraries/geant4/ && ${{ env.GITHUB_WORKSPACE }}/framework/scripts/checkoutRemoteBranch.sh ${{ env.GITHUB_SHA }}
           cd ${{ env.GITHUB_WORKSPACE }}/framework
           git submodule init source/packages/restG4 && git submodule update source/packages/restG4
           cd source/packages/restG4/ && git checkout ${{ env.GITHUB_SHA }}
