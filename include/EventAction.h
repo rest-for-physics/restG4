@@ -2,8 +2,6 @@
 #ifndef EventAction_h
 #define EventAction_h 1
 
-using namespace std;
-
 #include <TH1D.h>
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>

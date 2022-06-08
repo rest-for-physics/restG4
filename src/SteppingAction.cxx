@@ -13,6 +13,8 @@
 #include <G4UnitsTable.hh>
 #include <globals.hh>
 
+using namespace std;
+
 extern TRestGeant4Event* restG4Event;
 extern TRestGeant4Metadata* restG4Metadata;
 extern TRestGeant4Track* restTrack;
@@ -142,7 +144,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         // We check if the hit must be stored and keep it on restG4Track
         for (int volID = 0; volID < restG4Metadata->GetNumberOfActiveVolumes(); volID++) {
             if (restG4Event->isVolumeStored(volID)) {
-                if (restG4Metadata->GetVerboseLevel() >= REST_Extreme)
+                if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Extreme)
                     G4cout << "Step volume :" << nom_vol << "::("
                            << (G4String)restG4Metadata->GetActiveVolumeName(volID) << ")" << G4endl;
 
@@ -151,7 +153,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
 
                 if (isActiveVolume) {
                     volume = volID;
-                    if (restG4Metadata->GetVerboseLevel() >= REST_Extreme) G4cout << "Storing hit" << G4endl;
+                    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Extreme) G4cout << "Storing hit" << G4endl;
                     restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, pcsID, volID, eKin,
                                         momentumDirection);
                     alreadyStored = true;

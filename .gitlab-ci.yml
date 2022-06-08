@@ -1,8 +1,8 @@
-image: ghcr.io/lobis/root-geant4-garfield:cpp17_ROOT-v6-26-00_Geant4-v10.4.3_Garfield-af4a1451
-#image: nkx1231/root6-geant4-garfield:0.8
+image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
 
 stages:
   - build
+  - build-standalone
   - loadRESTLibs
   - examples
 
@@ -17,14 +17,14 @@ before_script:
   - apt update && apt install -y wget
 
 # This is the one we use to run validations tests. We save the installation as an artifact.
-build:
-  type: build
+Build and Install:
+  stage: build
   script:
     - echo "**${CI_PROJECT_DIR}**"
     - git clone https://github.com/rest-for-physics/framework.git framework
     - cd framework
     - ./scripts/checkoutRemoteBranch.sh ${CI_COMMIT_BRANCH}
-    - if [ -d ${CI_PROJECT_DIR}/install ]; then rm -rf ${CI_PROJECT_DIR}/install; fi
+    - rm -rf ${CI_PROJECT_DIR}/install
     - git submodule init source/libraries/geant4
     - git submodule update source/libraries/geant4
     - cd source/libraries/geant4/
@@ -37,11 +37,11 @@ build:
     - cd source/packages/restG4/
     - git checkout ${CI_COMMIT_BRANCH}
     - cd ../../../
-    - if [ -d build ]; then rm -rf build; fi
+    - rm -rf build
     - mkdir build
     - cd build
     - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install
-    - make install -j2
+    - make -j2 install
   artifacts:
     paths:
       - ${CI_PROJECT_DIR}/install
@@ -49,39 +49,28 @@ build:
       - ${CI_PROJECT_DIR}/framework/build
     expire_in: 1 day
 
-### We make sure the build and install directories are different
-##build_root_6.25_Geant4_10.7.1:
-##  image: lobis/root-geant4-garfieldpp:cxx14_ROOTv6-25-01_Geant4v10.7.1
-##  type: build
-##  script:
-##    - echo "**${CI_PROJECT_DIR}**"
-##    - git clone --single-branch --branch development https://github.com/rest-for-physics/framework.git framework
-##    - cd framework
-##    - if [ -d ${CI_PROJECT_DIR}/install2 ]; then rm -rf ${CI_PROJECT_DIR}/install2; fi
-##    - git submodule init source/libraries/geant4
-##    - git submodule update source/libraries/geant4
-##    - cd source/libraries/geant4/
-##    - git checkout master
-##    - cd ../../../
-##    - git submodule init source/packages/restG4
-##    - git submodule update source/packages/restG4
-##    - cd source/packages/restG4/
-##    - git checkout ${CI_COMMIT_BRANCH}
-##    - cd ../../../
-##    - if [ -d build2 ]; then rm -rf build2; fi
-##    - mkdir build2
-##    - cd build2
-##    - cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install2
-##    - make install -j2
+Build Standalone:
+  stage: build-standalone
+  script:
+    - echo "**${CI_PROJECT_DIR}**"
+    - cd ${CI_PROJECT_DIR}/
+    - rm -rf build
+    - mkdir build
+    - cd build
+    - source ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cmake ../ -DCMAKE_INSTALL_PREFIX=${CI_PROJECT_DIR}/install-standalone
+    - make -j2 install
+    - ${CI_PROJECT_DIR}/install-standalone/bin/restG4 --help
+    - rm -rf ${CI_PROJECT_DIR}/install-standalone
 
-loadRESTLibs:
-  type: loadRESTLibs
+Load REST Libraries:
+  stage: loadRESTLibs
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - restRoot -b -q
 
 01_NLDBD:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/01.NLDBD/
@@ -90,7 +79,7 @@ loadRESTLibs:
     - restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
 
 03_Fluorescence:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/03.Fluorescence/
@@ -100,18 +89,20 @@ loadRESTLibs:
     - restRoot -b -q Validate.C'("Run00111_g4Analysis_Gamma_rest.root")'
 
 04_MuonScan:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/04.MuonScan/
     - restG4 Muon.rml
     - geant4-config --version
     - restRoot -b -q Validate.C'("Run00111_restG4_MuonsFromPoint_rest.root")'
-    - restG4 CosmicMuons.rml
+    - restG4 CosmicMuonsFromWall.rml
     - restRoot -b -q ValidateWall.C'("Run00111_restG4_MuonsFromWall_rest.root")'
+    - restG4 CosmicMuonsFromCircle.rml
+    - restRoot -b -q ValidateCircle.C'("Run00111_restG4_MuonsFromCircle_rest.root")'
 
 05_PandaXIII:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/05.PandaXIII/
@@ -119,7 +110,7 @@ loadRESTLibs:
     - restRoot -b -q ValidateG4.C'("Xe136bb0n_n2E06.root")'
 
 06_IonRecoils:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/06.IonRecoils/
@@ -127,7 +118,7 @@ loadRESTLibs:
     - restRoot -b -q Validate.C'("Run00001_F20_Recoils.root")'
 
 07_FullChainDecay:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/07.FullChainDecay/
@@ -140,7 +131,7 @@ loadRESTLibs:
     - restRoot -b -q Validate.C'("Run00002_Be7_SingleChainDecay.root", 1)'
 
 08_Alphas:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/08.Alphas/
@@ -160,20 +151,28 @@ loadRESTLibs:
     - restManager --c plots.rml --f "data/*g4Ana*root" --batch
     - restRoot -b -q Validate.C
 
-
 09_Pb210_Shielding:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/09.Pb210_Shield/
     - restG4 Pb210.rml
     - restRoot -b -q Validate.C'("Run00001_Pb210_Shielding.root")'
 
-
 10_Geometries:
-  type: examples
+  stage: examples
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/10.Geometries/
     - restG4 Assembly.rml
     - restRoot -b -q Validate.C'("Run00001_Assembly_Assembly.root")'
+
+11_Xrays:
+  stage: examples
+  script:
+    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - cd ${CI_PROJECT_DIR}/install/examples/restG4/11.Xrays/
+    - restG4 xrays.rml
+    - restRoot -b -q Validate.C'("Run00001_Assembly_Assembly.root")'
+    - restManager --c analysis.rml --f RestG4_xrays_00001_ArgonISO.root
+    - restRoot -b -q GetQE.C'("Run_g4Analysis_00001_xrays.root")'

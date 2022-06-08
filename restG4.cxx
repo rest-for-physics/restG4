@@ -19,6 +19,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 
 #include "CommandLineSetup.h"
 #include "DetectorConstruction.h"
@@ -51,7 +52,7 @@ Bool_t saveAllEvents;
 const Int_t maxBiasingVolumes = 50;
 Int_t biasing = 0;
 
-// This histograms would be better placed inside TRestGeant4BiasingVolume
+// These histograms would be better placed inside TRestGeant4BiasingVolume
 TH1D* biasingSpectrum[maxBiasingVolumes];
 TH1D* angularDistribution[maxBiasingVolumes];
 TH2D* spatialDistribution[maxBiasingVolumes];
@@ -64,20 +65,22 @@ Int_t N_events;
 int main(int argc, char** argv) {
     auto start_time = chrono::steady_clock::now();
 
-    char cwd[kMAXPATHLEN];
-    cout << "Current working directory: " << getcwd(cwd, sizeof(cwd)) << endl;
+    const auto originalDirectory = filesystem::current_path();
+
+    cout << "Current working directory: " << originalDirectory << endl;
 
     CommandLineParameters commandLineParameters = CommandLineSetup::ProcessParameters(argc, argv);
     CommandLineSetup::Print(commandLineParameters);
 
     /// Separating relative path and pure RML filename
     char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
-    std::pair<string, string> pathAndRml = TRestTools::SeparatePathAndName(inputConfigFile);
-    char* inputRMLClean = (char*)pathAndRml.second.data();
+    const auto [inputRmlPath, inputRmlClean] = TRestTools::SeparatePathAndName(inputConfigFile);
 
-    TRestTools::ChangeDirectory(pathAndRml.first);
+    if (!filesystem::path(inputRmlPath).empty()) {
+        filesystem::current_path(inputRmlPath);
+    }
 
-    restG4Metadata = new TRestGeant4Metadata(inputRMLClean);
+    restG4Metadata = new TRestGeant4Metadata(inputRmlClean.c_str());
 
     if (!commandLineParameters.geometryFile.IsNull()) {
         restG4Metadata->SetGdmlFilename(commandLineParameters.geometryFile.Data());
@@ -104,16 +107,16 @@ int main(int argc, char** argv) {
     restG4Metadata->SetGdmlReference(gdml->GetGDMLVersion());
     restG4Metadata->SetMaterialsReference(gdml->GetEntityVersion("materials"));
 
-    restPhysList = new TRestGeant4PhysicsLists(inputRMLClean);
+    restPhysList = new TRestGeant4PhysicsLists(inputRmlClean.c_str());
 
     restRun = new TRestRun();
-    restRun->LoadConfigFromFile(inputRMLClean);
+    restRun->LoadConfigFromFile(inputRmlClean.c_str());
 
     if (!commandLineParameters.outputFile.IsNull()) {
         restRun->SetOutputFileName(commandLineParameters.outputFile.Data());
     }
 
-    TRestTools::ReturnToPreviousDirectory();
+    filesystem::current_path(originalDirectory);
 
     TString runTag = restRun->GetRunTag();
     if (runTag == "Null" || runTag == "") restRun->SetRunTag(restG4Metadata->GetTitle());
@@ -134,19 +137,19 @@ int main(int argc, char** argv) {
 
     biasing = restG4Metadata->GetNumberOfBiasingVolumes();
     for (int i = 0; i < biasing; i++) {
-        TString spctName = "Bias_Spectrum_" + TString(Form("%d", i));
+        TString spectrumName = "Bias_Spectrum_" + TString(Form("%d", i));
         TString angDistName = "Bias_Angular_Distribution_" + TString(Form("%d", i));
         TString spatialDistName = "Bias_Spatial_Distribution_" + TString(Form("%d", i));
 
         Double_t maxEnergy = restG4Metadata->GetBiasingVolume(i).GetMaxEnergy();
         Double_t minEnergy = restG4Metadata->GetBiasingVolume(i).GetMinEnergy();
-        Int_t nbins = (Int_t)(maxEnergy - minEnergy);
+        auto nBins = (Int_t)(maxEnergy - minEnergy);
 
         Double_t biasSize = restG4Metadata->GetBiasingVolume(i).GetBiasingVolumeSize();
         TString biasType = restG4Metadata->GetBiasingVolume(i).GetBiasingVolumeType();
 
-        cout << "Initializing biasing histogram : " << spctName << endl;
-        biasingSpectrum[i] = new TH1D(spctName, "Biasing gamma spectrum", nbins, minEnergy, maxEnergy);
+        cout << "Initializing biasing histogram : " << spectrumName << endl;
+        biasingSpectrum[i] = new TH1D(spectrumName, "Biasing gamma spectrum", nBins, minEnergy, maxEnergy);
         angularDistribution[i] = new TH1D(angDistName, "Biasing angular distribution", 150, 0, M_PI / 2);
 
         if (biasType == "virtualSphere")
@@ -161,7 +164,6 @@ int main(int argc, char** argv) {
             spatialDistribution[i] =
                 new TH2D(spatialDistName, "Biasing spatial distribution", 100, -1, 1, 100, -1, 1);
     }
-    // }}}
 
     // choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
@@ -360,7 +362,7 @@ int main(int argc, char** argv) {
         cout << "++++++++++ ERRORRRR +++++++++" << endl;
         cout << "++++++++++ ERRORRRR +++++++++" << endl;
         cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "The number of events to be simulated was not recongnized properly!" << endl;
+        cout << "The number of events to be simulated was not recognized properly!" << endl;
         cout << "Make sure you did not forget the number of events entry in TRestGeant4Metadata." << endl;
         cout << endl;
         cout << " ... or the parameter is properly constructed/interpreted." << endl;
@@ -384,7 +386,7 @@ int main(int argc, char** argv) {
 
     systime = time(nullptr);
     restRun->SetEndTimeStamp((Double_t)systime);
-    TString Filename = restRun->GetOutputFileName();
+    TString filename = TRestTools::ToAbsoluteName(restRun->GetOutputFileName().Data());
 
     restRun->UpdateOutputFile();
     restRun->CloseFile();
@@ -408,19 +410,19 @@ int main(int argc, char** argv) {
         // writing the geometry object
         freopen("/dev/null", "w", stdout);
         freopen("/dev/null", "w", stderr);
-        Console::CompatibilityMode = true;
+        REST_Display_CompatibilityMode = true; 
 
         // We wait the father process ends properly
         sleep(5);
 
         // Then we just add the geometry
-        TFile* f1 = new TFile(Filename, "update");
-        TGeoManager* geo2 = gdml->CreateGeoM();
+        auto file = new TFile(filename, "update");
+        TGeoManager* geoManager = gdml->CreateGeoManager();
 
-        f1->cd();
-        geo2->SetName("Geometry");
-        geo2->Write();
-        f1->Close();
+        file->cd();
+        geoManager->SetName("Geometry");
+        geoManager->Write();
+        file->Close();
         exit(0);
     }
     // father process
@@ -431,7 +433,7 @@ int main(int argc, char** argv) {
         printf("Writing geometry ... \n");
     }
 
-    cout << "============== Generated file: " << Filename << " ==============" << endl;
+    cout << "============== Generated file: " << filename << " ==============" << endl;
     auto end_time = chrono::steady_clock::now();
     cout << "Elapsed time: " << chrono::duration_cast<chrono::seconds>(end_time - start_time).count()
          << " seconds" << endl;

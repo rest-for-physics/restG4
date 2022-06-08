@@ -17,39 +17,38 @@ By default REST units are mm, keV and degrees
     </globals>
 
     <TRestRun name="Run metadata" title="REST Metadata run info (template)">
-        <parameter name="experimentName" value="Fluorescence"/>
+        <parameter name="experimentName" value="ArgonISO"/>
         <parameter name="runType" value="simulation"/>
-        <parameter name="runNumber" value="auto"/>
-        <parameter name="runTag" value="Electron"/>
-        <parameter name="outputFileName" value="Run[fRunNumber]_[fRunTag]_[fExperimentName].root"/>
+        <parameter name="runNumber" value="1"/>
+        <parameter name="runTag" value="xrays"/>
+        <parameter name="outputFileName" value="RestG4_[fRunTag]_[fRunNumber]_[fExperimentName].root"/>
         <parameter name="runDescription" value=""/>
         <parameter name="user" value="${USER}"/>
         <parameter name="overwrite" value="off"/>
         <parameter name="readOnly" value="false"/>
     </TRestRun>
 
-    <TRestGeant4Metadata name="Electron" title="ElectronFluor">
+    <TRestGeant4Metadata name="xrays" title="xrays">
 
         <parameter name="gdmlFile" value="geometry/setup.gdml"/>
         <parameter name="subEventTimeDelay" value="100" units="us"/>
 
         <parameter name="seed" value="17021981"/>
 
-        <!-- The number of events to be simulated is now defined in TRestGeant4Metadata -->
-        <parameter name="nEvents" value="30000"/>
+        <parameter name="nEvents" value="1000"/>
         <parameter name="registerEmptyTracks" value="false"/>
-        <parameter name="saveAllEvents" value="false"/>
+        <parameter name="saveAllEvents" value="true"/>
 
-        <generator type="point" position="(0,0,-200)" units="mm">
-            <source particle="e-">
+        <generator type="point" position="(0,0,-100)" units="mm">
+            <source particle="gamma">
                 <angularDist type="flux" direction="(0,0,1)"/>
-                <energyDist type="mono" energy="30.0" units="keV"/>
+                <energyDist type="flat" range="(0,15)keV"/>
             </source>
         </generator>
 
-        <storage sensitiveVolume="detector">
+        <storage sensitiveVolume="gas">
             <parameter name="energyRange" value="(0,30)" units="keV"/>
-            <activeVolume name="detector" chance="1" maxStepSize="1mm"/>
+            <activeVolume name="gas" chance="1" maxStepSize="0.005mm"/>
         </storage>
     </TRestGeant4Metadata>
 

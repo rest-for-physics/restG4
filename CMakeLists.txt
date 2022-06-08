@@ -4,6 +4,16 @@ project(restG4)
 message("===============  ${PROJECT_NAME}  ==============")
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake ${CMAKE_MODULE_PATH})
 
+if (${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+    # this will only be accessed when build restG4 as a standalone package, not when building the framework
+    CMAKE_MINIMUM_REQUIRED(VERSION 3.16)
+    find_package(REST REQUIRED)
+    string(FIND ${REST_LIBRARIES} "RestGeant4" REST_GEANT4_FOUND)
+    If (${REST_GEANT4_FOUND} EQUAL -1)
+        message(SEND_ERROR "REST found but 'RestGeant4' library is not present. Please install REST with Geant4Lib")
+    endif ()
+endif ()
+
 # Find ROOT
 find_package(ROOT REQUIRED COMPONENTS RIO Geom)
 execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS)
@@ -15,34 +25,26 @@ find_package(Geant4 REQUIRED ui_all vis_all)
 include(${Geant4_USE_FILE})
 message("-- Found Geant4 version: ${Geant4_VERSION}")
 
-if (${Geant4_VERSION} VERSION_GREATER "10.2.9")
-    add_definitions(-DG4104)
+# Check Geant4 C++ standard is correct
+execute_process(COMMAND geant4-config --cxxstd OUTPUT_VARIABLE GEANT4_CXX_STD)
+if (NOT ${GEANT4_CXX_STD} MATCHES "17")
+    message(FATAL_ERROR "Geant4 installation was compiled with C++${GEANT4_CXX_STD} standard, but C++17 is required for REST")
+endif()
+
+# Fix for older Geant4 versions
+if (${Geant4_VERSION} VERSION_LESS 11.0.0)
+    add_compile_definitions(GEANT4_VERSION_LESS_11_0_0)
 endif ()
 
 # Fix to allow compatibility with older Geant4 versions that don't have G4RunManagerFactory
 if (NOT EXISTS "${Geant4_INCLUDE_DIRS}/G4RunManagerFactory.hh")
-    add_definitions(-DWITHOUT_G4RunManagerFactory)
-endif ()
-
-# Find REST
-if (NOT DEFINED REST_PATH)
-    if (DEFINED ENV{REST_PATH})
-        set(REST_PATH $ENV{REST_PATH})
-    else ()
-        message(FATAL_ERROR "ERROR ::: REST_PATH must be defined as an environment variable and point to REST install directory")
-        return()
-    endif ()
-endif ()
-
-if (NOT DEFINED rest_include_dirs)
-    set(rest_include_dirs ${REST_PATH}/include)
+    add_compile_definitions(GEANT4_WITHOUT_G4RunManagerFactory)
 endif ()
 
 if (NOT DEFINED CMAKE_INSTALL_PREFIX)
     set(CMAKE_INSTALL_PREFIX ${REST_PATH})
 endif ()
-message(STATUS "Using REST_PATH: ${REST_PATH}")
-message(STATUS "Using rest_include_dirs: ${rest_include_dirs}")
+
 message(STATUS "Package ${PROJECT_NAME} will be installed in ${CMAKE_INSTALL_PREFIX}")
 
 if (NOT CMAKE_CXX_FLAGS)
@@ -50,9 +52,13 @@ if (NOT CMAKE_CXX_FLAGS)
 endif ()
 
 # Set include and lib
-set(INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include ${ROOT_INCLUDE_DIRS} ${rest_include_dirs} ${Geant4_INCLUDE_DIR})
+set(INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include ${ROOT_INCLUDE_DIRS} ${Geant4_INCLUDE_DIR} ${REST_INCLUDE_DIRS})
 
-set(LINK_LIBRARIES ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} RestGeant4)
+if (NOT ${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+    set(INCLUDE_DIRS ${INCLUDE_DIRS} ${rest_include_dirs})
+endif ()
+
+set(LINK_LIBRARIES ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} RestFramework RestGeant4)
 string(STRIP "${LINK_LIBRARIES}" LINK_LIBRARIES)
 
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cxx)
@@ -63,7 +69,10 @@ add_executable(${PROJECT_NAME} restG4.cxx ${sources} ${headers})
 target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARIES})
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${INCLUDE_DIRS})
 
-# Copy scripts to the build directory
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+        )
+
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/
         DESTINATION ./examples/restG4/
         COMPONENT install
@@ -74,8 +83,9 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/mac
         COMPONENT install
         )
 
-# Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
-set(package_added "${PROJECT_NAME} ")
-set(package_added ${package_added} PARENT_SCOPE)
+if (NOT ${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+    set(package_added "${PROJECT_NAME} ")
+    set(package_added ${package_added} PARENT_SCOPE)
+endif ()

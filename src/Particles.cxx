@@ -12,6 +12,8 @@
 #include <G4ShortLivedConstructor.hh>
 #include <G4SystemOfUnits.hh>
 
+using namespace std;
+
 Particles::Particles(const G4String& name) : G4VPhysicsConstructor(name) {}
 
 Particles::~Particles() {}

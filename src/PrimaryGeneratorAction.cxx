@@ -13,21 +13,21 @@
 #include <G4UnitsTable.hh>
 #include <Randomize.hh>
 
+using namespace std;
+
 extern TRestGeant4Metadata* restG4Metadata;
 extern TRestGeant4Event* restG4Event;
 
 Int_t face = 0;
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 double GeneratorRndm() { return G4UniformRand(); }
 
 PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
-    : G4VUserPrimaryGeneratorAction(), fParticleGun(0), fDetector(pDetector) {
+    : G4VUserPrimaryGeneratorAction(), fParticleGun(nullptr), fDetector(pDetector) {
     G4int n_particle = 1;
     fParticleGun = new G4ParticleGun(n_particle);
 
-    fGeneratorSpatialDensityFunction = NULL;
+    fGeneratorSpatialDensityFunction = nullptr;
 
     for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
         restG4Metadata->GetParticleSource(i)->SetRndmMethod(GeneratorRndm);
@@ -36,10 +36,8 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
-    TString xLabel = (TString)spt->GetXaxis()->GetTitle();
+    auto xLabel = (TString)spt->GetXaxis()->GetTitle();
 
     if (xLabel.Contains("MeV")) {
         energyFactor = 1.e3;
@@ -77,17 +75,17 @@ void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
 }
 
 void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
-    string expression = (string)str;
-    if (fGeneratorSpatialDensityFunction != NULL) delete fGeneratorSpatialDensityFunction;
+    auto expression = (string)str;
+    delete fGeneratorSpatialDensityFunction;
     if (expression.find_first_of("xyz") == -1) {
-        fGeneratorSpatialDensityFunction = NULL;
+        fGeneratorSpatialDensityFunction = nullptr;
         return;
     }
     fGeneratorSpatialDensityFunction = new TF3("GeneratorDistFunc", str);
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
-    if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
+    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         cout << "DEBUG: Primary generation" << endl;
     }
     // We have to initialize here and not in start of the event because
@@ -123,15 +121,14 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
     }
 }
 
-//_____________________________________________________________________________
 G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRestGeant4Particle p) {
-    string particle_name = (string)p.GetParticleName();
+    auto particle_name = (string)p.GetParticleName();
 
     Double_t excited_energy = (double)p.GetExcitationLevel();  // in keV
 
     Int_t charge = p.GetParticleCharge();
 
-    if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
+    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         cout << "DEBUG: Particle name: " << particle_name << endl;
         // cout << "DEBUG: Particle charge: " << charge << endl;
         cout << "DEBUG: Particle excited energy: " << excited_energy << " keV" << endl;
@@ -175,7 +172,7 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
     angular_dist_type_name = g4_metadata_parameters::CleanString(angular_dist_type_name);
     g4_metadata_parameters::angular_dist_types angular_dist_type;
 
-    if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
+    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         cout << "DEBUG: Angular distribution: " << angular_dist_type_name << endl;
     }
     // we first check if it is a valid parameter
@@ -188,7 +185,7 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
         for (const auto& pair : g4_metadata_parameters::angular_dist_types_map) {
             cout << pair.first << ", ";
         }
-        cout << std::endl;
+        cout << endl;
         throw "Invalid angular distribution";
     }
     // generator type
@@ -204,7 +201,7 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
         for (const auto& pair : g4_metadata_parameters::generator_types_map) {
             cout << pair.first << ", ";
         }
-        cout << std::endl;
+        cout << endl;
         throw "Invalid generator type";
     }
 
@@ -358,7 +355,7 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
     TVector3 eventDirection(direction.x(), direction.y(), direction.z());
     restG4Event->SetPrimaryEventDirection(eventDirection);
 
-    if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
+    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         cout << "DEBUG: Event direction (normalized): "
              << "(" << restG4Event->GetPrimaryEventDirection(n).X() << ", "
              << restG4Event->GetPrimaryEventDirection(n).Y() << ", "
@@ -369,14 +366,13 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
     fParticleGun->SetParticleMomentumDirection(direction);
 }
 
-//_____________________________________________________________________________
 void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
     Double_t energy = 0;
 
-    string energy_dist_type_name = (string)restG4Metadata->GetParticleSource(n)->GetEnergyDistType();
+    auto energy_dist_type_name = (string)restG4Metadata->GetParticleSource(n)->GetEnergyDistType();
     energy_dist_type_name = g4_metadata_parameters::CleanString(energy_dist_type_name);
 
-    if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
+    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         cout << "DEBUG: Energy distribution: " << energy_dist_type_name << endl;
     }
 
@@ -390,7 +386,7 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
         for (const auto& pair : g4_metadata_parameters::energy_dist_types_map) {
             cout << pair.first << ", ";
         }
-        cout << std::endl;
+        cout << endl;
         G4cout << "WARNING! Energy distribution type was not recognized. Setting "
                   "energy to 1keV"
                << G4endl;
@@ -445,7 +441,7 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
 
     restG4Event->SetPrimaryEventEnergy(energy / keV);
 
-    if (restG4Metadata->GetVerboseLevel() >= REST_Debug)
+    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug)
         cout << "DEBUG: Particle energy: " << energy / keV << " keV" << endl;
 }
 
@@ -472,7 +468,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
                 GenPositionOnCylinderSurface(x, y, z);
             } else if (generator_shape == g4_metadata_parameters::generator_shapes::SPHERE) {
                 GenPositionOnSphereSurface(x, y, z);
-            } else if (generator_shape == g4_metadata_parameters::generator_shapes::PLATE) {
+            } else if (generator_shape == g4_metadata_parameters::generator_shapes::CIRCLE) {
                 GenPositionOnPlate(x, y, z);
             } else if (generator_shape == g4_metadata_parameters::generator_shapes::WALL) {
                 GenPositionOnWall(x, y, z);
@@ -496,7 +492,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
 
         // use the density funciton. If the density is small, then val2 is small, we are more
         // likely to regenerate the particle position
-        if (fGeneratorSpatialDensityFunction != NULL) {
+        if (fGeneratorSpatialDensityFunction) {
             double val1 = G4UniformRand();
             double val2 = fGeneratorSpatialDensityFunction->Eval(x, y, z);
             if (val2 > 1) {
@@ -515,7 +511,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
     TVector3 eventPosition(x, y, z);
     restG4Event->SetPrimaryEventOrigin(eventPosition);
 
-    if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
+    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         cout << "DEBUG: Event origin: "
              << "(" << restG4Event->GetPrimaryEventOrigin().X() << ", "
              << restG4Event->GetPrimaryEventOrigin().Y() << ", " << restG4Event->GetPrimaryEventOrigin().Z()
@@ -555,7 +551,7 @@ G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() {
         n = a * a + b * b + c * c;
     } while (n > 1 || n == 0.0);
 
-    n = std::sqrt(n);
+    n = sqrt(n);
     a /= n;
     b /= n;
     c /= n;

@@ -8,7 +8,6 @@
 #include <G4VModularPhysicsList.hh>
 #include <globals.hh>
 
-using namespace std;
 class G4VPhysicsConstructor;
 
 class PhysicsList : public G4VModularPhysicsList {
@@ -25,7 +24,7 @@ class PhysicsList : public G4VModularPhysicsList {
     virtual void SetCuts();
 
    private:
-    G4EmConfigurator em_config;
+    G4EmConfigurator fEmConfig;
 
     G4VPhysicsConstructor* fEmPhysicsList;
     G4VPhysicsConstructor* fDecPhysicsList;

@@ -1,4 +1,5 @@
 
+
 #include "TrackingAction.h"
 
 #include <G4ParticleTypes.hh>
@@ -10,6 +11,8 @@
 #include "EventAction.h"
 #include "RunAction.h"
 
+using namespace std;
+
 extern TRestGeant4Metadata* restG4Metadata;
 extern TRestGeant4Event* restG4Event;
 extern TRestGeant4Track* restTrack;
@@ -17,10 +20,10 @@ extern TRestGeant4Track* restTrack;
 G4double prevTime = 0;
 G4String aux;
 
-TrackingAction::TrackingAction(RunAction* RA, EventAction* EA)
+TrackingAction::TrackingAction(RunAction* runAction, EventAction* eventAction)
     : G4UserTrackingAction(),
-      fRun(RA),
-      fEvent(EA)
+      fRun(runAction),
+      fEvent(eventAction)
 
 {
     fFullChain = false;
@@ -36,7 +39,7 @@ TrackingAction::TrackingAction(RunAction* RA, EventAction* EA)
 TrackingAction::~TrackingAction() {}
 
 void TrackingAction::PreUserTrackingAction(const G4Track* track) {
-    if (restG4Metadata->GetVerboseLevel() >= REST_Extreme)
+    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Extreme)
         if (track->GetTrackID() % 10 == 0) {
             cout << "EXTREME: Processing track " << track->GetTrackID() << endl;
         }
@@ -59,21 +62,17 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track) {
     // full chain, just first decay) On future we must add an option through
     // TRestGeant4Metadata to store a given number of decays
 
-    //   if( fFullChain == true ) G4cout << "Full chain active" << G4endl;
-    //   else  G4cout << "Full chain not active" << G4endl;
-
     Int_t ID = track->GetTrackID();
-    if (fFullChain == false && fCharge > 2 && ID > 1 && !name.contains("[")) {
-        G4Track* tr = (G4Track*)track;
+    if (!fFullChain && fCharge > 2 && ID > 1 &&
+#ifdef GEANT4_VERSION_LESS_11_0_0
+        !name.contains("[")
+#else
+        !G4StrUtil::contains(name, "[")
+#endif
+    ) {
+        auto tr = (G4Track*)track;
         tr->SetTrackStatus(fStopAndKill);
     }
-
-    /*
-    if ( fFullChain == true && fCharge > 2  && ID > 1 && !name.contains("["))
-    {
-        restTrack->IncreaseSubEventID();
-    }
-    */
 }
 
 void TrackingAction::PostUserTrackingAction(const G4Track* track) {
