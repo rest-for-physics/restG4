@@ -46,7 +46,7 @@ jobs:
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
           cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
-          make -j install
+          make -j4 install
 
       - name: Cache framework installation
         id: framework-install-restG4-cache
@@ -139,5 +139,5 @@ jobs:
           source ${{ env.REST_PATH }}/thisREST.sh
           mkdir -p build-standalone && cd build-standalone
           cmake ../ -DCMAKE_INSTALL_PREFIX=/rest/restG4-standalone/install
-          make -j install
+          make -j4 install
           /rest/restG4-standalone/install/bin/restG4 --help
