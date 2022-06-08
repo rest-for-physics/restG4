@@ -68,7 +68,7 @@ Int_t Validate(const char* filename) {
     TVector3 averagePosition = {};
     const TVector3 averagePositionRef = {-38.8987, 27.5536, 91.3969};
 
-    constexpr double tolerance = 0.005;
+    constexpr double tolerance = 0.001;
 
     for (size_t i = 0; i < run.GetEntries(); i++) {
         run.GetEntry(i);
