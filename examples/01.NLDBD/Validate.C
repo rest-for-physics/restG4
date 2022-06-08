@@ -68,7 +68,7 @@ Int_t Validate(const char* filename) {
     TVector3 averagePosition = {};
     const TVector3 averagePositionRef = {-38.8987, 27.5536, 91.3969};
 
-    constexpr double tolerance = 0.05;
+    constexpr double tolerance = 0.005;
 
     for (size_t i = 0; i < run.GetEntries(); i++) {
         run.GetEntry(i);
@@ -87,14 +87,14 @@ Int_t Validate(const char* filename) {
     cout << "Average position: (" << averagePosition.x() << ", " << averagePosition.y() << ", "
          << averagePosition.z() << ") mm" << endl;
 
-    if (TMath::Abs(averageNumberOfHits - averageNumberOfHitsRef) / averageNumberOfHitsRef > tolerance * 5) {
+    if (TMath::Abs(averageNumberOfHits - averageNumberOfHitsRef) / averageNumberOfHitsRef > tolerance) {
         cout << "The average number of hits does not match the reference value of " << averageNumberOfHitsRef
              << endl;
         return 8;
     }
 
     if (TMath::Abs(averageNumberOfTracks - averageNumberOfTracksRef) / averageNumberOfTracksRef >
-        tolerance * 5) {
+        tolerance) {
         cout << "The average number of tracks does not match the reference value of "
              << averageNumberOfTracksRef << endl;
         return 9;
@@ -114,7 +114,7 @@ Int_t Validate(const char* filename) {
     }
 
     if (TMath::Abs(averagePosition.Mag() - averagePositionRef.Mag()) / averagePositionRef.Mag() >
-        tolerance * 5) {
+        tolerance) {
         cout << "The average position does not match the reference value of "
              << "(" << averagePositionRef.x() << ", " << averagePositionRef.y() << ", "
              << averagePositionRef.z() << ") mm" << endl;

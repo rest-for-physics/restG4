@@ -5,7 +5,7 @@ Int_t Validate(const char* filename) {
 
     TRestRun run(filename);
 
-    constexpr double tolerance = 0.05;
+    constexpr double tolerance = 0.005;
     constexpr int numberOfEntriesRef = 252;
 
     if (TMath::Abs(run.GetEntries() - numberOfEntriesRef) / numberOfEntriesRef > tolerance) {
