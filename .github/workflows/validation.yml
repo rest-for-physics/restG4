@@ -4,75 +4,46 @@ on:
   workflow_dispatch:
 
   push:
-    branches: [ main ]
+    branches: [master]
   pull_request:
-    branches: [ main ]
+    branches: [master]
 
 env:
   BUILD_TYPE: Release
-  REST_PATH: /rest/install
+  REST_PATH: /rest/framework/install
 
 defaults:
   run:
-    shell: bash -ieo pipefail {0}
+    shell: bash
 
 jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:cpp17_ROOT-v6-26-00_Geant4-v10.4.3_Garfield-af4a1451
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
 
     strategy:
       matrix:
-        framework-branch: [ master ]
+        framework-branch: [master]
 
     steps:
-
       - name: Checkout REST Framework
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: rest-for-physics/framework
           ref: ${{ matrix.framework-branch }}
-          path: ${{env.REST_PATH}}../source
+          path: /tmp/framework
 
-      - name: Pull submodules
+      - name: Setup and install
         run: |
-          cd ${{env.REST_PATH}}../source
-          # python3 pull-submodules.py --force --dontask --latest:${GITHUB_SHA}
-          ./scripts/checkoutRemoteBranch.sh ${GITHUB_SHA}
-          git submodule init source/libraries/geant4
-          git submodule update source/libraries/geant4
-          cd source/libraries/geant4/          
-          ../../../scripts/checkoutRemoteBranch.sh ${CI_COMMIT_BRANCH}
-          cd ../../../
-          git submodule init source/packages/restG4
-          git submodule update source/packages/restG4
-          cd source/packages/restG4/
-          git checkout ${CI_COMMIT_BRANCH}
-          cd ../../../
-          if [ -d build ]; then rm -rf build; fi
-          mkdir build
+          cd /tmp/framework
+          git submodule init source/libraries/geant4 && git submodule update source/libraries/geant4
+          cd source/libraries/geant4/ && /tmp/framework/scripts/checkoutRemoteBranch.sh ${{ env.GITHUB_SHA }}
+          cd /tmp/framework
+          git submodule init source/packages/restG4 && git submodule update source/packages/restG4
+          cd source/packages/restG4/ && git checkout ${{ env.GITHUB_SHA }}
+          cd /tmp/framework
+          mkdir -p build
           cd build
-          cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{env.REST_PATH}}
-          make install -j2
-          
-          python3 pull-submodules.py --force --dontask --latest:${GITHUB_SHA}
-
-      - name: Checkout RestG4 (this repository)
-        uses: actions/checkout@v2
-        with:
-          path: ${{env.REST_PATH}}../source/packages/restG4
-
-      - name: Debug - Print latest commit info in Framework souce
-        run: |
-          cd ${{env.REST_PATH}}../source/packages/restG4
-          git branch
-          git show -s --format=%H
-
-      - name: Configure CMake (REST Framework)
-        run: |
-          mkdir cd ${{env.REST_PATH}}../source/build
-          cd ${{env.REST_PATH}}../source/build
-          cmake .. -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DREST_G4=ON -DREST_EVE=OFF
-          make -j2 install
-
+          cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
+          make -j install
