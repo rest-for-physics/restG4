@@ -19,11 +19,15 @@ defaults:
 
 jobs:
   framework-install:
+    name: Install framework with restG4
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
 
     steps:
+      - name: Print version of dependencies for image
+        run: version.sh
+
       - name: Checkout framework
         run: |
           git clone https://github.com/rest-for-physics/framework.git ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
@@ -52,11 +56,15 @@ jobs:
           key: ${{ github.sha }}
 
   framework-install-old-Geant4:
+    name: Install framework with restG4 on an older reference version of Geant4
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:cpp17_ROOT-v6-26-00_Geant4-v10.4.3_Garfield-4ac1e62f
 
     steps:
+      - name: Print version of dependencies for image
+        run: version.sh
+
       - name: Checkout framework
         run: |
           git clone https://github.com/rest-for-physics/framework.git ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
