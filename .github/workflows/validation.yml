@@ -18,7 +18,7 @@ defaults:
     shell: bash
 
 jobs:
-  Framework:
+  framework-install:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
@@ -29,6 +29,8 @@ jobs:
           git clone https://github.com/rest-for-physics/framework.git ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           ./scripts/checkoutRemoteBranch.sh ${{ github.sha }}
+
+      - uses: actions/checkout@v3
 
       - name: Setup, build and install
         run: |
@@ -42,7 +44,31 @@ jobs:
           cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
           make install
 
-      - name: Build standalone
+      - name: Cache framework installation
+        id: framework-install-restG4-cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.REST_PATH }}
+          key: ${{ github.sha }}
+
+  restG4-standalone-install:
+    name: Install restG4 as a standalone application using the installed framework
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
+    needs: [framework-install]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Restore cache
+        uses: actions/cache@v2
+        id: framework-install-restG4-cache
+        with:
+          path: ${{ env.REST_PATH }}
+          key: ${{ github.sha }}
+
+      - name: Build as standalone
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
           rm -rf ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
