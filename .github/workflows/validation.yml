@@ -38,14 +38,11 @@ jobs:
 
       - name: Setup, build and install
         run: |
-          pwd
-          ls -lht ${{ github.workspace }}
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           git submodule init source/libraries/geant4 && git submodule update source/libraries/geant4
           cd source/libraries/geant4/ && ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/scripts/checkoutRemoteBranch.sh ${{ github.sha }}
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          pwd
-          rm -rf source/packages/restG4/ && cp -r ${{ github.workspace }} source/packages/restG4
+          rm -rf source/packages/restG4/ && mv $GITHUB_WORKSPACE source/packages/restG4
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
           cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
@@ -82,11 +79,11 @@ jobs:
           git submodule init source/libraries/geant4 && git submodule update source/libraries/geant4
           cd source/libraries/geant4/ && ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/scripts/checkoutRemoteBranch.sh ${{ github.sha }}
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          rm -rf source/packages/restG4/ && cp -r ${{ github.workspace }} source/packages/restG4
+          rm -rf source/packages/restG4/ && mv $GITHUB_WORKSPACE source/packages/restG4
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
           cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
-          make install
+          make -j install
 
       - name: Cache framework installation
         id: framework-install-restG4-cache-old-Geant4
@@ -140,8 +137,6 @@ jobs:
       - name: Build as standalone
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
-          pwd
-          ls -lht
           mkdir -p build-standalone && cd build-standalone
           cmake ../ -DCMAKE_INSTALL_PREFIX=/rest/restG4-standalone/install
           make -j install
