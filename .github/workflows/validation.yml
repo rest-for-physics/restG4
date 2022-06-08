@@ -11,7 +11,7 @@ on:
 env:
   BUILD_TYPE: Release
   REST_PATH: /rest/framework/install
-  REST_FRAMEWORK_SOURCE_DIR: ${{ github.workspace }}/../framework
+  REST_FRAMEWORK_SOURCE_DIR: /rest/framework/source
 
 defaults:
   run:
@@ -46,7 +46,7 @@ jobs:
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
           cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
-          make -j4 install
+          make -j install
 
       - name: Cache framework installation
         id: framework-install-restG4-cache
@@ -137,9 +137,9 @@ jobs:
       - name: Build as standalone
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ github.workspace }}
-          mkdir -p ${{ github.workspace }}/build-standalone && cd ${{ github.workspace }}/build-standalone
-          cmake ../ -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install-standalone
-          make install
-          ${{ github.workspace }}/install-standalone/bin/restG4 --help
-          rm -rf ${{ github.workspace }}/install-standalone ${{ github.workspace }}/build-standalone
+          pwd
+          ls -lht
+          mkdir -p build-standalone && cd build-standalone
+          cmake ../ -DCMAKE_INSTALL_PREFIX=/rest/restG4-standalone/install
+          make -j install
+          /rest/restG4-standalone/install/bin/restG4 --help
