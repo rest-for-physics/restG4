@@ -135,26 +135,26 @@ jobs:
           make -j4 install
           /rest/restG4-standalone/install/bin/restG4 --help
 
-    restG4-examples-01:
-      runs-on: ubuntu-latest
-      container:
-        image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-      needs: [check-installation]
+  restG4-examples-01:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
+    needs: [check-installation]
 
-      steps:
-        - uses: actions/checkout@v3
+    steps:
+      - uses: actions/checkout@v3
 
-        - name: Restore cache
-          uses: actions/cache@v2
-          id: framework-install-restG4-cache
-          with:
-            path: ${{ env.REST_PATH }}
-            key: ${{ github.sha }}
+      - name: Restore cache
+        uses: actions/cache@v2
+        id: framework-install-restG4-cache
+        with:
+          path: ${{ env.REST_PATH }}
+          key: ${{ github.sha }}
 
-        - name: Run example
-          uses: actions/cache@v2
-          run: |
-            source ${CI_PROJECT_DIR}/install/thisREST.sh
-            cd ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/
-            restG4 NLDBD.rml
-            restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
+      - name: Run example
+        uses: actions/cache@v2
+        run: |
+          source ${CI_PROJECT_DIR}/install/thisREST.sh
+          cd ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/
+          restG4 NLDBD.rml
+          restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
