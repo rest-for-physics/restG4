@@ -33,9 +33,7 @@ jobs:
           git clone https://github.com/rest-for-physics/framework.git ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           ./scripts/checkoutRemoteBranch.sh ${{ github.sha }}
-
       - uses: actions/checkout@v3
-
       - name: Setup, build and install
         run: |
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
@@ -47,7 +45,6 @@ jobs:
           mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
           cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
           make -j4 install
-
       - name: Cache framework installation
         id: framework-install-restG4-cache
         uses: actions/cache@v2
@@ -70,9 +67,7 @@ jobs:
           git clone https://github.com/rest-for-physics/framework.git ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           ./scripts/checkoutRemoteBranch.sh ${{ github.sha }}
-
       - uses: actions/checkout@v3
-
       - name: Setup, build and install
         run: |
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
@@ -83,8 +78,7 @@ jobs:
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
           cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
-          make -j install
-
+          make -j4 install
       - name: Cache framework installation
         id: framework-install-restG4-cache-old-Geant4
         uses: actions/cache@v2
@@ -111,7 +105,6 @@ jobs:
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
           restRoot -b -q
-
       - name: Check restG4
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -141,3 +134,27 @@ jobs:
           cmake ../ -DCMAKE_INSTALL_PREFIX=/rest/restG4-standalone/install
           make -j4 install
           /rest/restG4-standalone/install/bin/restG4 --help
+
+    restG4-examples-01:
+      runs-on: ubuntu-latest
+      container:
+        image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
+      needs: [check-installation]
+
+      steps:
+        - uses: actions/checkout@v3
+
+        - name: Restore cache
+          uses: actions/cache@v2
+          id: framework-install-restG4-cache
+          with:
+            path: ${{ env.REST_PATH }}
+            key: ${{ github.sha }}
+
+        - name: Run example
+          uses: actions/cache@v2
+          run: |
+            source ${CI_PROJECT_DIR}/install/thisREST.sh
+            cd ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/
+            restG4 NLDBD.rml
+            restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
