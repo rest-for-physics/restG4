@@ -66,7 +66,8 @@ jobs:
         run: |
           git clone https://github.com/rest-for-physics/framework.git ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          ./scripts/checkoutRemoteBranch.sh ${{ github.sha }}
+          ./scripts/checkoutRemoteBranch.sh ${{ env.BRANCH_NAME }}
+          git log -1 --stat
       - uses: actions/checkout@v3
       - name: Setup, build and install
         run: |
