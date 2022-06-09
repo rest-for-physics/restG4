@@ -9,7 +9,7 @@ on:
     branches: [master]
 
 env:
-  BUILD_TYPE: Release
+  CMAKE_BUILD_TYPE: Release
   REST_PATH: /rest/framework/install
   REST_FRAMEWORK_SOURCE_DIR: /rest/framework/source
 
@@ -43,7 +43,7 @@ jobs:
           rm -rf source/packages/restG4/ && cp -r $GITHUB_WORKSPACE source/packages/restG4
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
-          cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
+          cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
           make -j4 install
       - name: Cache framework installation
         id: framework-install-restG4-cache
@@ -77,7 +77,7 @@ jobs:
           rm -rf source/packages/restG4/ && cp -r $GITHUB_WORKSPACE source/packages/restG4
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
-          cmake ../ -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
+          cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
           make -j4 install
       - name: Cache framework installation
         id: framework-install-restG4-cache-old-Geant4
@@ -131,7 +131,7 @@ jobs:
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
           mkdir -p build-standalone && cd build-standalone
-          cmake ../ -DCMAKE_INSTALL_PREFIX=/rest/restG4-standalone/install
+          cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=/rest/restG4-standalone/install
           make -j4 install
           /rest/restG4-standalone/install/bin/restG4 --help
 
