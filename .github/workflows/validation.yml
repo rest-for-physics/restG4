@@ -199,9 +199,9 @@ jobs:
           restG4 Muon.rml -o muons_from_point.root
           restRoot -b -q Validate.C'("muons_from_point.root")'
           restG4 CosmicMuonsFromWall.rml -o muons_from_wall.root
-          restRoot -b -q Validate.C'("muons_from_wall.root")'
+          restRoot -b -q ValidateWall.C'("muons_from_wall.root")'
           restG4 CosmicMuonsFromCircle.rml -o muons_from_circle.root
-          restRoot -b -q Validate.C'("muons_from_circle.root")'
+          restRoot -b -q ValidateCircle.C'("muons_from_circle.root")'
 
   restG4-examples-05:
     runs-on: ubuntu-latest
