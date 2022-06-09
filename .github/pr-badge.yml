@@ -19,3 +19,5 @@
   url: "https://gitlab.cern.ch/rest-for-physics/geant4lib/-/commits/$branchName"
 - imageUrl: "https://gitlab.cern.ch/rest-for-physics/framework/badges/$branchName/pipeline.svg"
   url: "https://gitlab.cern.ch/rest-for-physics/framework/-/commits/$branchName"
+- imageUrl: "https://github.com/rest-for-physics/restG4/actions/workflows/validation.yml/badge.svg?branch=$branchName"
+  url: "https://github.com/rest-for-physics/restG4/commits/$branchName"
