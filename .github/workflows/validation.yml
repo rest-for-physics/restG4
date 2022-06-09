@@ -174,9 +174,9 @@ jobs:
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/03.Fluorescence/
-          restG4 gamma.rml -o Run00111_Gamma_Fluorescence.root
-          restManager --c g4Analysis.rml --f Run00111_Gamma_Fluorescence.root
-          restRoot -b -q Validate.C'("Run00111_g4Analysis_Gamma_rest.root")'
+          restG4 gamma.rml -o gamma_fluorescence.root
+          restManager --c g4Analysis.rml --f gamma_fluorescence.root -o gamma_fluorescence_analysis.root
+          restRoot -b -q Validate.C'("gamma_fluorescence_analysis.root")'
 
   restG4-examples-04:
     runs-on: ubuntu-latest
@@ -196,12 +196,12 @@ jobs:
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/04.MuonScan/
-          restG4 Muon.rml -o Run00111_restG4_MuonsFromPoint_rest.root
-          restRoot -b -q Validate.C'("Run00111_restG4_MuonsFromPoint_rest.root")'
-          restG4 CosmicMuonsFromWall.rml -o Run00111_restG4_MuonsFromWall_rest.root
-          restRoot -b -q Validate.C'("Run00111_restG4_MuonsFromWall_rest.root")'
-          restG4 CosmicMuonsFromCircle.rml -o Run00111_restG4_MuonsFromCircle_rest.root
-          restRoot -b -q Validate.C'("Run00111_restG4_MuonsFromCircle_rest.root")'
+          restG4 Muon.rml -o muons_from_point.root
+          restRoot -b -q Validate.C'("muons_from_point.root")'
+          restG4 CosmicMuonsFromWall.rml -o muons_from_wall.root
+          restRoot -b -q Validate.C'("muons_from_wall.root")'
+          restG4 CosmicMuonsFromCircle.rml -o muons_from_circle.root
+          restRoot -b -q Validate.C'("muons_from_circle.root")'
 
   restG4-examples-05:
     runs-on: ubuntu-latest
