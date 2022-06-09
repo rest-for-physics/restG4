@@ -267,8 +267,8 @@ jobs:
           restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 14)'
           restG4 singleDecay.rml -o Run00002_U238_SingleChainDecay.root
           restRoot -b -q Validate.C'("Run00002_U238_SingleChainDecay.root", 1)'
-          REST_ISOTOPE="Be7"
-          restG4 singleDecay.rml -o Run00002_Be7_SingleChainDecay.root
+          export REST_ISOTOPE="Be7"
+          restG4 singleDecay.rml
           restRoot -b -q Validate.C'("Run00002_Be7_SingleChainDecay.root", 1)'
 
   restG4-examples-08:
@@ -290,16 +290,16 @@ jobs:
           source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/08.Alphas/
           mkdir data
-          REST_ENERGY=5
-          REST_FOIL=1
+          export REST_ENERGY=5
+          export REST_FOIL=1
           restG4 alphas.rml -o data/Run_5MeV_1um.root
           restManager --c analysis.rml --f data/Run_5MeV_1um.root
-          REST_ENERGY=5
-          REST_FOIL=5
+          export REST_ENERGY=5
+          export REST_FOIL=5
           restG4 alphas.rml -o data/Run_5MeV_5um.root
           restManager --c analysis.rml --f data/Run_5MeV_5um.root
-          REST_ENERGY=1
-          REST_FOIL=5
+          export REST_ENERGY=1
+          export REST_FOIL=5
           restG4 alphas.rml -o data/Run_1MeV_1um.root
           restManager --c analysis.rml --f data/Run_1MeV_1um.root
           restManager --c plots.rml --f "data/*g4Ana*root" --batch
