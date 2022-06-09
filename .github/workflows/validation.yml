@@ -12,6 +12,7 @@ env:
   CMAKE_BUILD_TYPE: Release
   REST_PATH: /rest/framework/install
   REST_FRAMEWORK_SOURCE_DIR: /rest/framework/source
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
 
 defaults:
   run:
@@ -27,12 +28,12 @@ jobs:
     steps:
       - name: Print version of dependencies for image
         run: version.sh
-
       - name: Checkout framework
         run: |
           git clone https://github.com/rest-for-physics/framework.git ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          ./scripts/checkoutRemoteBranch.sh ${{ github.sha }}
+          ./scripts/checkoutRemoteBranch.sh ${{ env.BRANCH_NAME }}
+          git log -1 --stat
       - uses: actions/checkout@v3
       - name: Setup, build and install
         run: |
@@ -61,7 +62,6 @@ jobs:
     steps:
       - name: Print version of dependencies for image
         run: version.sh
-
       - name: Checkout framework
         run: |
           git clone https://github.com/rest-for-physics/framework.git ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
@@ -100,7 +100,6 @@ jobs:
         with:
           path: ${{ env.REST_PATH }}
           key: ${{ github.sha }}
-
       - name: Check framework
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -119,14 +118,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
       - name: Restore cache
         uses: actions/cache@v2
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
           key: ${{ github.sha }}
-
       - name: Build as standalone
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -140,7 +137,6 @@ jobs:
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
     needs: [check-installation]
-
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
