@@ -50,7 +50,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.REST_PATH }}
-          key: test-${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
 
   framework-install-old-Geant4:
     name: Install framework with restG4 on an older reference version of Geant4 (v10.4.3)
@@ -97,7 +97,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: test-${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Check libraries
         run: |
           echo $LD_LIBRARY_PATH
@@ -111,6 +111,7 @@ jobs:
       - name: Check framework
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
+          cat ${{ env.REST_PATH }}/bin/rest-config
           rest-config --welcome
       - name: Check restG4
         run: |
