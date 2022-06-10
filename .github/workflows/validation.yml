@@ -78,6 +78,12 @@ jobs:
           mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
           cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
           make -j4 install
+      - name: Cache framework installation
+        id: framework-install-restG4-cache-old-Geant4
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.REST_PATH }}
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}-old-Geant4
 
   check-installation:
     name: Check framework and restG4 are accessible
