@@ -51,7 +51,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
 
   framework-install-old-Geant4:
     name: Install framework with restG4 on an older reference version of Geant4
@@ -85,7 +85,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}-old-Geant4
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}-old-Geant4
 
   check-installation:
     name: Check framework and restG4 are accessible
@@ -100,7 +100,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Check framework
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -124,7 +124,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Build as standalone
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -145,7 +145,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -166,7 +166,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -188,7 +188,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -213,7 +213,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -234,7 +234,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -255,7 +255,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -281,7 +281,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -315,7 +315,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -336,7 +336,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -357,7 +357,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
