@@ -13,7 +13,6 @@ env:
   REST_PATH: /rest/framework/install
   REST_FRAMEWORK_SOURCE_DIR: /rest/framework/source
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-  DOCKER_IMAGE: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
 
 defaults:
   run:
@@ -24,7 +23,7 @@ jobs:
     name: Install framework with restG4
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
     steps:
       - name: Print version of dependencies for image
         run: version.sh
@@ -90,7 +89,7 @@ jobs:
     name: Check framework and restG4 are accessible
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
     needs: [ framework-install ]
     steps:
       - name: Restore cache
@@ -122,7 +121,7 @@ jobs:
     name: Install restG4 as a standalone application using the installed framework
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
     needs: [ framework-install ]
     steps:
       - uses: actions/checkout@v3
@@ -143,7 +142,7 @@ jobs:
   restG4-examples-01:
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
     needs: [ check-installation ]
     steps:
       - uses: actions/checkout@v3
@@ -163,7 +162,7 @@ jobs:
   restG4-examples-03:
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
     needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
@@ -184,7 +183,7 @@ jobs:
   restG4-examples-04:
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
     needs: [ check-installation ]
     steps:
       - uses: actions/checkout@v3
@@ -208,7 +207,7 @@ jobs:
   restG4-examples-05:
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
     needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
@@ -228,7 +227,7 @@ jobs:
   restG4-examples-06:
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
     needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
@@ -248,7 +247,7 @@ jobs:
   restG4-examples-07:
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
     needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
@@ -273,7 +272,7 @@ jobs:
   restG4-examples-08:
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
     needs: [ check-installation ]
     steps:
       - uses: actions/checkout@v3
@@ -306,7 +305,7 @@ jobs:
   restG4-examples-09:
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
     needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
@@ -326,7 +325,7 @@ jobs:
   restG4-examples-10:
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
     needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
@@ -346,7 +345,7 @@ jobs:
   restG4-examples-11:
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
     needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
