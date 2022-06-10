@@ -48,6 +48,7 @@ jobs:
       - name: Check restG4
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
+          source /usr/local/root/install/bin/thisroot.sh
           restG4 --help
       - name: Cache framework installation
         id: framework-install-restG4-cache
