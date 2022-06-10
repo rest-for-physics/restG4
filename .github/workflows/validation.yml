@@ -47,10 +47,10 @@ jobs:
           make -j4 install
       - name: Cache framework installation
         id: framework-install-restG4-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
+          key: test-${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
 
   framework-install-old-Geant4:
     name: Install framework with restG4 on an older reference version of Geant4 (v10.4.3)
@@ -80,7 +80,7 @@ jobs:
           make -j4 install
       - name: Cache framework installation
         id: framework-install-restG4-cache-old-Geant4
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ env.REST_PATH }}
           key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}-old-Geant4
@@ -93,11 +93,11 @@ jobs:
     needs: [ framework-install ]
     steps:
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
+          key: test-${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Check libraries
         run: |
           echo $LD_LIBRARY_PATH
@@ -126,7 +126,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
@@ -147,7 +147,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
@@ -167,7 +167,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
@@ -188,7 +188,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
@@ -212,7 +212,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
@@ -232,7 +232,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
@@ -252,7 +252,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
@@ -277,7 +277,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
@@ -310,7 +310,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
@@ -330,7 +330,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
@@ -350,7 +350,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
