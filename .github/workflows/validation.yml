@@ -16,7 +16,7 @@ env:
 
 defaults:
   run:
-    shell: bash -ileo pipefail {0}
+    shell: bash
 
 jobs:
   framework-install:
