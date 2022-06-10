@@ -54,10 +54,10 @@ jobs:
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
 
   framework-install-old-Geant4:
-    name: Install framework with restG4 on an older reference version of Geant4
+    name: Install framework with restG4 on an older reference version of Geant4 (v10.4.3)
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:cpp17_ROOT-v6-26-00_Geant4-v10.4.3_Garfield-4ac1e62f
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-reference-jun2022
 
     steps:
       - name: Print version of dependencies for image
@@ -103,10 +103,10 @@ jobs:
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Check libraries
         run: |
-          ls -lht ${{ env.REST_PATH }}
-          ls -lht ${{ env.REST_PATH }}/lib
-          ls -lht ${{ env.REST_PATH }}/bin
           echo $LD_LIBRARY_PATH
+          ls -lht ${{ env.REST_PATH }}
+          ls -lht ${{ env.REST_PATH }}/lib | grep .so
+          ls -lht ${{ env.REST_PATH }}/bin
       - name: Check root
         run: |
           root-config --version
