@@ -101,6 +101,16 @@ jobs:
         with:
           path: ${{ env.REST_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
+      - name: Check libraries
+        run: |
+          ls -lht ${{ env.REST_PATH }}
+          ls -lht ${{ env.REST_PATH }}/lib
+          ls -lht ${{ env.REST_PATH }}/bin
+          echo $LD_LIBRARY_PATH
+      - name: Check root
+        run: |
+          root-config --version
+          root -b -q
       - name: Check framework
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
