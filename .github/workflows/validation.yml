@@ -4,27 +4,26 @@ on:
   workflow_dispatch:
 
   push:
-    branches: [master]
+    branches: [ master ]
   pull_request:
-    branches: [master]
+    branches: [ master ]
 
 env:
   CMAKE_BUILD_TYPE: Release
   REST_PATH: /rest/framework/install
   REST_FRAMEWORK_SOURCE_DIR: /rest/framework/source
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 defaults:
+  runs-on: ubuntu-latest
   run:
-    shell: bash
+    shell: bash -ileo pipefail {0}
+  container:
+    image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
 
 jobs:
   framework-install:
     name: Install framework with restG4
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
-
     steps:
       - name: Print version of dependencies for image
         run: version.sh
@@ -55,10 +54,8 @@ jobs:
 
   framework-install-old-Geant4:
     name: Install framework with restG4 on an older reference version of Geant4 (v10.4.3)
-    runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-reference-jun2022
-
     steps:
       - name: Print version of dependencies for image
         run: version.sh
@@ -89,11 +86,7 @@ jobs:
 
   check-installation:
     name: Check framework and restG4 are accessible
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
-    needs: [framework-install]
-
+    needs: [ framework-install ]
     steps:
       - name: Restore cache
         uses: actions/cache@v2
@@ -122,11 +115,7 @@ jobs:
 
   restG4-standalone-install:
     name: Install restG4 as a standalone application using the installed framework
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
-    needs: [framework-install]
-
+    needs: [ framework-install ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
@@ -144,10 +133,7 @@ jobs:
           /rest/restG4-standalone/install/bin/restG4 --help
 
   restG4-examples-01:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
-    needs: [check-installation]
+    needs: [ check-installation ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
@@ -164,11 +150,7 @@ jobs:
           restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
 
   restG4-examples-03:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
-    needs: [check-installation, restG4-examples-01]
-
+    needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
@@ -186,11 +168,7 @@ jobs:
           restRoot -b -q Validate.C'("gamma_fluorescence_analysis.root")'
 
   restG4-examples-04:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
-    needs: [check-installation]
-
+    needs: [ check-installation ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
@@ -211,11 +189,7 @@ jobs:
           restRoot -b -q ValidateCircle.C'("muons_from_circle.root")'
 
   restG4-examples-05:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
-    needs: [check-installation, restG4-examples-01]
-
+    needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
@@ -232,11 +206,7 @@ jobs:
           restRoot -b -q ValidateG4.C'("Xe136bb0n_n2E06.root")'
 
   restG4-examples-06:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
-    needs: [check-installation, restG4-examples-01]
-
+    needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
@@ -253,11 +223,7 @@ jobs:
           restRoot -b -q Validate.C'("Run00001_F20_Recoils.root")'
 
   restG4-examples-07:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
-    needs: [check-installation, restG4-examples-01]
-
+    needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
@@ -279,11 +245,7 @@ jobs:
           restRoot -b -q Validate.C'("Run00002_Be7_SingleChainDecay.root", 1)'
 
   restG4-examples-08:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
-    needs: [check-installation]
-
+    needs: [ check-installation ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
@@ -313,11 +275,7 @@ jobs:
           restRoot -b -q Validate.C
 
   restG4-examples-09:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
-    needs: [check-installation, restG4-examples-01]
-
+    needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
@@ -334,11 +292,7 @@ jobs:
           restRoot -b -q Validate.C'("Run00001_Pb210_Shielding.root")'
 
   restG4-examples-10:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
-    needs: [check-installation, restG4-examples-01]
-
+    needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
@@ -355,11 +309,7 @@ jobs:
           restRoot -b -q Validate.C'("Run00001_Assembly_Assembly.root")'
 
   restG4-examples-11:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
-    needs: [check-installation, restG4-examples-01]
-
+    needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
