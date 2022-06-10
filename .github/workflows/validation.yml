@@ -45,21 +45,12 @@ jobs:
           mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
           cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
           make -j4 install
-      - name: Check restG4
-        run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          source /usr/local/root/install/bin/thisroot.sh
-          restG4 --help
       - name: Cache framework installation
         id: framework-install-restG4-cache
         uses: actions/cache@v3
         with:
           path: ${{ env.REST_PATH }}
           key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
-      - name: Check restG4 again
-        run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          restG4 --help
 
   framework-install-old-Geant4:
     name: Install framework with restG4 on an older reference version of Geant4 (v10.4.3)
@@ -119,12 +110,13 @@ jobs:
           root -b -q
       - name: Check framework
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
+          source ${{ env.REST_PATH }}/thisREST.sh && source /usr/local/root/install/bin/thisroot.sh
+          cat ${{ env.REST_PATH }}/thisREST.sh
           cat ${{ env.REST_PATH }}/bin/rest-config
           rest-config --welcome
       - name: Check restG4
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
+          source ${{ env.REST_PATH }}/thisREST.sh && source /usr/local/root/install/bin/thisroot.sh
           restG4 --help
 
   restG4-standalone-install:
@@ -143,7 +135,7 @@ jobs:
           key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Build as standalone
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
+          source ${{ env.REST_PATH }}/thisREST.sh && source /usr/local/root/install/bin/thisroot.sh
           mkdir -p build-standalone && cd build-standalone
           cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=/rest/restG4-standalone/install
           make -j4 install
@@ -164,7 +156,7 @@ jobs:
           key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
+          source ${{ env.REST_PATH }}/thisREST.sh && source /usr/local/root/install/bin/thisroot.sh
           cd ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/
           restG4 NLDBD.rml -o Run00001_NLDBD_Test.root
           restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
@@ -184,7 +176,7 @@ jobs:
           key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
+          source ${{ env.REST_PATH }}/thisREST.sh && source /usr/local/root/install/bin/thisroot.sh
           cd ${{ env.REST_PATH }}/examples/restG4/03.Fluorescence/
           restG4 gamma.rml -o gamma_fluorescence.root
           restManager --c g4Analysis.rml --f gamma_fluorescence.root -o gamma_fluorescence_analysis.root
@@ -205,7 +197,7 @@ jobs:
           key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
+          source ${{ env.REST_PATH }}/thisREST.sh && source /usr/local/root/install/bin/thisroot.sh
           cd ${{ env.REST_PATH }}/examples/restG4/04.MuonScan/
           restG4 Muon.rml -o muons_from_point.root
           restRoot -b -q Validate.C'("muons_from_point.root")'
@@ -229,7 +221,7 @@ jobs:
           key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
+          source ${{ env.REST_PATH }}/thisREST.sh && source /usr/local/root/install/bin/thisroot.sh
           cd ${{ env.REST_PATH }}/examples/restG4/05.PandaXIII/
           restG4 Xe136bb0n.rml -o Xe136bb0n_n2E06.root
           restRoot -b -q ValidateG4.C'("Xe136bb0n_n2E06.root")'
@@ -249,7 +241,7 @@ jobs:
           key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
+          source ${{ env.REST_PATH }}/thisREST.sh && source /usr/local/root/install/bin/thisroot.sh
           cd ${{ env.REST_PATH }}/examples/restG4/06.IonRecoils/
           restG4 recoils.rml -o Run00001_F20_Recoils.root
           restRoot -b -q Validate.C'("Run00001_F20_Recoils.root")'
@@ -269,7 +261,7 @@ jobs:
           key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
+          source ${{ env.REST_PATH }}/thisREST.sh && source /usr/local/root/install/bin/thisroot.sh
           cd ${{ env.REST_PATH }}/examples/restG4/07.FullChainDecay/
           restG4 fullChain.rml -o Run00001_U238_FullChainDecay.root
           restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 14)'
@@ -294,7 +286,7 @@ jobs:
           key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
+          source ${{ env.REST_PATH }}/thisREST.sh && source /usr/local/root/install/bin/thisroot.sh
           cd ${{ env.REST_PATH }}/examples/restG4/08.Alphas/
           mkdir data
           export REST_ENERGY=5
@@ -327,7 +319,7 @@ jobs:
           key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
+          source ${{ env.REST_PATH }}/thisREST.sh && source /usr/local/root/install/bin/thisroot.sh
           cd ${{ env.REST_PATH }}/examples/restG4/09.Pb210_Shield/
           restG4 Pb210.rml -o Run00001_Pb210_Shielding.root
           restRoot -b -q Validate.C'("Run00001_Pb210_Shielding.root")'
@@ -347,7 +339,7 @@ jobs:
           key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
+          source ${{ env.REST_PATH }}/thisREST.sh && source /usr/local/root/install/bin/thisroot.sh
           cd ${{ env.REST_PATH }}/examples/restG4/10.Geometries/
           restG4 Assembly.rml -o Run00001_Assembly_Assembly.root
           restRoot -b -q Validate.C'("Run00001_Assembly_Assembly.root")'
@@ -367,7 +359,7 @@ jobs:
           key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
+          source ${{ env.REST_PATH }}/thisREST.sh && source /usr/local/root/install/bin/thisroot.sh
           cd ${{ env.REST_PATH }}/examples/restG4/11.Xrays/
           restG4 xrays.rml -o RestG4_xrays_00001_ArgonISO.root
           restManager --c analysis.rml --f RestG4_xrays_00001_ArgonISO.root
