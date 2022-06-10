@@ -89,7 +89,7 @@ jobs:
     name: Check framework and restG4 are accessible
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
     needs: [ framework-install ]
     steps:
       - name: Restore cache
