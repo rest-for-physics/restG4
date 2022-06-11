@@ -1,30 +1,30 @@
 #include "TRestRun.h"
 
-Int_t GetQE(string inputFile) {
-    TRestRun* run = new TRestRun(inputFile);
-    TRestAnalysisTree* aTree = run->GetAnalysisTree();
+Int_t Validate(const char* inputFile) {
+    RestRun run(inputFile);
+    TRestAnalysisTree* aTree = run.GetAnalysisTree();
 
-    TH1D* edepHist = new TH1D("edepHist", "Energy deposited in detector", 150, 0, 15);
+    TH1D* eDepHist = new TH1D("eDepHist", "Energy deposited in detector", 150, 0, 15);
     TH1D* primaryHist = new TH1D("primaryHist", "Energy of generated primary", 150, 0, 15);
 
-    for (int n = 0; n < run->GetEntries(); n++) {
-        run->GetEntry(n);
+    for (int n = 0; n < run.GetEntries(); n++) {
+        run.GetEntry(n);
 
-        Double_t eDep = aTree->GetObservableValue<Double_t>("g4Ana_totalEdep");
+        Double_t eDep = aTree->GetObservableValue<Double_t>("g4Ana_totalEDep");
         Double_t ePrimary = aTree->GetObservableValue<Double_t>("g4Ana_energyPrimary");
 
-        if (eDep > 0) edepHist->Fill(eDep);
+        if (eDep > 0) eDepHist->Fill(eDep);
         primaryHist->Fill(ePrimary);
     }
 
     FILE* f = fopen("output.txt", "wt");
-    for (int n = 0; n < edepHist->GetNbinsX(); n++) {
-        Double_t edepCounts = edepHist->GetBinContent(n + 1);
+    for (int n = 0; n < eDepHist->GetNbinsX(); n++) {
+        Double_t edepCounts = eDepHist->GetBinContent(n + 1);
         Double_t primaryCounts = primaryHist->GetBinContent(n + 1);
 
         Double_t eff = edepCounts / primaryCounts;
         Double_t err = TMath::Sqrt(edepCounts) / primaryCounts;
-        fprintf(f, "%4.2f\t%5.0lf\t%5.0lf\t%4.4lf\t%4.4lf\n", edepHist->GetBinCenter(n + 1), edepCounts,
+        fprintf(f, "%4.2f\t%5.0lf\t%5.0lf\t%4.4lf\t%4.4lf\n", eDepHist->GetBinCenter(n + 1), edepCounts,
                 primaryCounts, eff, err);
     }
     fclose(f);
@@ -47,10 +47,10 @@ Int_t GetQE(string inputFile) {
     // gPad->SetLeftMargin(0.15);
     // gPad->SetBottomMargin(0.15);
 
-    for (int n = 0; n < run->GetEntries(); n++) {
-        run->GetEntry(n);
+    for (int n = 0; n < run.GetEntries(); n++) {
+        run.GetEntry(n);
 
-        Double_t eDep = aTree->GetObservableValue<Double_t>("g4Ana_totalEdep");
+        Double_t eDep = aTree->GetObservableValue<Double_t>("g4Ana_totalEDep");
         Double_t ePrimary = aTree->GetObservableValue<Double_t>("g4Ana_energyPrimary");
 
         if (eDep > 0) matrix_hist->Fill(eDep, ePrimary);
@@ -68,7 +68,7 @@ Int_t GetQE(string inputFile) {
     primaryHist->Draw();
 
     pad1->cd(4);
-    edepHist->Draw();
+    eDepHist->Draw();
 
     //   gPad->cd(3);
     //   matrix_hist->Draw("SURF1");
@@ -77,7 +77,7 @@ Int_t GetQE(string inputFile) {
 
     TH1D* effHisto = new TH1D("Efficiency", "Argon isobutane at 1 bar", 150, 0, 15);
     for (int n = 1; n <= effHisto->GetNbinsX(); n++)
-        effHisto->SetBinContent(n, edepHist->GetBinContent(n) / primaryHist->GetBinContent(n));
+        effHisto->SetBinContent(n, eDepHist->GetBinContent(n) / primaryHist->GetBinContent(n));
 
     TCanvas* c2 = new TCanvas("c2", "Efficiency", 800, 600);
     c2->GetFrame()->SetBorderSize(6);
@@ -88,8 +88,8 @@ Int_t GetQE(string inputFile) {
 
     c2->Print("efficiency.png");
 
-    cout << "Integral: " << edepHist->Integral() << endl;
-    if (edepHist->Integral() < 500) {
+    cout << "Integral: " << eDepHist->Integral() << endl;
+    if (eDepHist->Integral() < 500) {
         cout << "Something went wrong. Number of counts inside deposits integral too low" << endl;
         return 1;
     }
