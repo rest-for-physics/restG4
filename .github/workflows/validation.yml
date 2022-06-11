@@ -117,6 +117,7 @@ jobs:
       - name: Check restG4
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
+          source /usr/local/geant4/install/bin/geant4.sh
           restG4 --help
 
   restG4-standalone-install:
