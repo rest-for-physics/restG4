@@ -264,10 +264,10 @@ jobs:
           source ${{ env.REST_PATH }}/thisREST.sh && source $(root-config --bindir)/thisroot.sh
           cd ${{ env.REST_PATH }}/examples/restG4/07.FullChainDecay/
           restG4 fullChain.rml -o Run00001_U238_FullChainDecay.root
-          restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 14)'
+          restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 16)'
           restG4 singleDecay.rml -o Run00002_U238_SingleChainDecay.root
           restRoot -b -q Validate.C'("Run00002_U238_SingleChainDecay.root", 1)'
-          export REST_ISOTOPE="Be7"
+          export REST_ISOTOPE=Be7
           restG4 singleDecay.rml
           restRoot -b -q Validate.C'("Run00002_Be7_SingleChainDecay.root", 1)'
 
@@ -361,6 +361,6 @@ jobs:
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh && source $(root-config --bindir)/thisroot.sh
           cd ${{ env.REST_PATH }}/examples/restG4/11.Xrays/
-          restG4 xrays.rml -o RestG4_xrays_00001_ArgonISO.root
-          restManager --c analysis.rml --f RestG4_xrays_00001_ArgonISO.root
-          restRoot -b -q Validate.C'("Run_g4Analysis_00001_xrays.root")'
+          restG4 xrays.rml -o xrays_simulation.root
+          restManager --c analysis.rml --f xrays_simulation.root --o xrays_simulation_analysis.root
+          restRoot -b -q Validate.C'("xrays_simulation_analysis.root")'
