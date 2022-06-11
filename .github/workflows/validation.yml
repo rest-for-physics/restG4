@@ -117,6 +117,7 @@ jobs:
       - name: Check restG4
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
+          source /usr/local/geant4/install/bin/geant4.sh
           restG4 --help
 
   restG4-standalone-install:
@@ -124,7 +125,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
-    needs: [ framework-install ]
+    needs: [ framework-install, check-installation ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
