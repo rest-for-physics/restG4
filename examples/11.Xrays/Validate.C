@@ -1,7 +1,7 @@
 #include "TRestRun.h"
 
 Int_t Validate(const char* inputFile) {
-    RestRun run(inputFile);
+    TRestRun run(inputFile);
     TRestAnalysisTree* aTree = run.GetAnalysisTree();
 
     TH1D* eDepHist = new TH1D("eDepHist", "Energy deposited in detector", 150, 0, 15);
