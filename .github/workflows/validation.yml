@@ -364,4 +364,4 @@ jobs:
           cd ${{ env.REST_PATH }}/examples/restG4/11.Xrays/
           restG4 xrays.rml -o xrays_simulation.root
           restManager --c analysis.rml --f xrays_simulation.root --o xrays_simulation_analysis.root
-          restRoot -b -q Validate.C'("xrays_simulation_analysis.root")'
+          restRoot -b -q GetQE.C'("xrays_simulation_analysis.root")'

@@ -1,6 +1,6 @@
 #include "TRestRun.h"
 
-Int_t Validate(const char* inputFile) {
+Int_t GetQE(const char* inputFile) {
     TRestRun run(inputFile);
     TRestAnalysisTree* aTree = run.GetAnalysisTree();
 
@@ -10,7 +10,7 @@ Int_t Validate(const char* inputFile) {
     for (int n = 0; n < run.GetEntries(); n++) {
         run.GetEntry(n);
 
-        Double_t eDep = aTree->GetObservableValue<Double_t>("g4Ana_totalEDep");
+        Double_t eDep = aTree->GetObservableValue<Double_t>("g4Ana_totalEdep");
         Double_t ePrimary = aTree->GetObservableValue<Double_t>("g4Ana_energyPrimary");
 
         if (eDep > 0) eDepHist->Fill(eDep);
@@ -50,7 +50,7 @@ Int_t Validate(const char* inputFile) {
     for (int n = 0; n < run.GetEntries(); n++) {
         run.GetEntry(n);
 
-        Double_t eDep = aTree->GetObservableValue<Double_t>("g4Ana_totalEDep");
+        Double_t eDep = aTree->GetObservableValue<Double_t>("g4Ana_totalEdep");
         Double_t ePrimary = aTree->GetObservableValue<Double_t>("g4Ana_energyPrimary");
 
         if (eDep > 0) matrixHist->Fill(eDep, ePrimary);

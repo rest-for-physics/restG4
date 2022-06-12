@@ -85,5 +85,4 @@ By default REST units are mm, keV and degrees
         <physicsList name="G4EmExtraPhysics"/>
 
     </TRestGeant4PhysicsLists>
-
 </restG4>

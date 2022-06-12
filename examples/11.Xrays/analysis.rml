@@ -24,7 +24,7 @@ internal values are saved.
         <parameter name="user" value="${USER}"/>
         <parameter name="verboseLevel" value="1"/>
         <parameter name="overwrite" value="off"/>
-		<parameter name="outputFileName" value="Run_[fRunType]_[fRunNumber]_[fRunTag].root"/>
+        <parameter name="outputFileName" value="Run_[fRunType]_[fRunNumber]_[fRunTag].root"/>
     </TRestRun>
 
     <TRestProcessRunner name="TemplateEventProcess" verboseLevel="info">
@@ -37,8 +37,8 @@ internal values are saved.
 
         // observable = all will add all NON `custom` observables
         <addProcess type="TRestGeant4AnalysisProcess" name="g4Ana" value="ON">
-			<observable name="energyPrimary" />
-			<observable name="totalEdep" />
+            <observable name="energyPrimary"/>
+            <observable name="totalEdep"/>
         </addProcess>
 
     </TRestProcessRunner>
