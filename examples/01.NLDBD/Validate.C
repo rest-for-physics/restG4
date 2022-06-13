@@ -56,20 +56,20 @@ Int_t Validate(const char* filename) {
     double nEvents = run.GetEntries();
 
     double averageTotalEnergy = 0;
-    const double averageTotalEnergyRef = (!isReferenceGeant4Version) ? 2280.96 : 0;
+    const double averageTotalEnergyRef = (!isReferenceGeant4Version) ? 2280.96 : 2221.55;
 
     double averageSensitiveEnergy = 0;
-    const double averageSensitiveEnergyRef = (!isReferenceGeant4Version) ? 2280.96 : 0;
+    const double averageSensitiveEnergyRef = (!isReferenceGeant4Version) ? 2280.96 : 2221.55;
 
     double averageNumberOfHits = 0;
-    const double averageNumberOfHitsRef = (!isReferenceGeant4Version) ? 3071.17 : 0;
+    const double averageNumberOfHitsRef = (!isReferenceGeant4Version) ? 3071.17 : 342.37;
 
     double averageNumberOfTracks = 0;
-    const double averageNumberOfTracksRef = (!isReferenceGeant4Version) ? 2161.43 : 0;
+    const double averageNumberOfTracksRef = (!isReferenceGeant4Version) ? 2161.43 : 10.11;
 
     TVector3 averagePosition = {};
-    const TVector3 averagePositionRef =
-        (!isReferenceGeant4Version) ? TVector3(-38.8987, 27.5536, 91.3969) : TVector3(0, 0, 0);
+    const TVector3 averagePositionRef = (!isReferenceGeant4Version) ? TVector3(-38.8987, 27.5536, 91.3969)
+                                                                    : TVector3(-17.8046, -32.5019, -31.8353);
 
     const double tolerance = 0.001;
 
