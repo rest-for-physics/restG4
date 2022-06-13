@@ -406,6 +406,28 @@ jobs:
           source ${{ env.REST_PATH }}-reference/thisREST.sh
           restG4 --help
 
+
+  restG4-examples-01-reference:
+    name: "Reference Example 01: NLDBD"
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-reference-jun2022
+    needs: [ framework-install-reference, check-installation-reference ]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Restore cache
+        uses: actions/cache@v3
+        id: framework-install-restG4-cache-reference
+        with:
+          path: ${{ env.REST_PATH }}-reference
+          key: ${{ github.sha }}-reference
+      - name: Run example
+        run: |
+          source ${{ env.REST_PATH }}/thisREST.sh
+          cd ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/
+          restG4 NLDBD.rml -o Run00001_NLDBD_Test.root
+          restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
+
   restG4-examples-07-reference:
     name: "Reference Example 07: Decay"
     runs-on: ubuntu-latest
@@ -413,8 +435,6 @@ jobs:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-reference-jun2022
     needs: [ framework-install-reference, check-installation-reference ]
     steps:
-      - name: Check Geant4 version
-        run: geant4-config --version
       - uses: actions/checkout@v3
       - name: Restore cache
         uses: actions/cache@v3
