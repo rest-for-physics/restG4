@@ -111,7 +111,7 @@ jobs:
           /rest/restG4-standalone/install/bin/restG4 --help
 
   restG4-examples-01:
-    name: "Example 1: NLDBD"
+    name: "Example 01: NLDBD"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
@@ -132,7 +132,7 @@ jobs:
           restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
 
   restG4-examples-03:
-    name: "Example 3: Fluorescence"
+    name: "Example 03: Fluorescence"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
@@ -154,7 +154,7 @@ jobs:
           restRoot -b -q Validate.C'("gamma_fluorescence_analysis.root")'
 
   restG4-examples-04:
-    name: "Example 4: Cosmic Muons"
+    name: "Example 04: Cosmic Muons"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
@@ -179,7 +179,7 @@ jobs:
           restRoot -b -q ValidateCircle.C'("muons_from_circle.root")'
 
   restG4-examples-05:
-    name: "Example 5: PandaX-III"
+    name: "Example 05: PandaX-III"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
@@ -200,7 +200,7 @@ jobs:
           restRoot -b -q ValidateG4.C'("Xe136bb0n_n2E06.root")'
 
   restG4-examples-06:
-    name: "Example 6: Ion recoils"
+    name: "Example 06: Ion recoils"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
@@ -221,7 +221,7 @@ jobs:
           restRoot -b -q Validate.C'("Run00001_F20_Recoils.root")'
 
   restG4-examples-07:
-    name: "Example 7: Decay"
+    name: "Example 07: Decay"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
@@ -247,7 +247,7 @@ jobs:
           restRoot -b -q Validate.C'("Run00002_Be7_SingleChainDecay.root", 1)'
 
   restG4-examples-08:
-    name: "Example 8: Alphas"
+    name: "Example 08: Alphas"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
@@ -281,7 +281,7 @@ jobs:
           restRoot -b -q Validate.C
 
   restG4-examples-09:
-    name: "Example 9: Shielding"
+    name: "Example 09: Shielding"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
@@ -302,7 +302,7 @@ jobs:
           restRoot -b -q Validate.C'("Run00001_Pb210_Shielding.root")'
 
   restG4-examples-10:
-    name: "Example 11: Geometries"
+    name: "Example 10: Geometries"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
@@ -379,37 +379,37 @@ jobs:
           path: ${{ env.REST_PATH }}
           key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}-old-Geant4
 
-check-installation-old:
-  name: Check framework and restG4 are accessible
-  runs-on: ubuntu-latest
-  container:
-    image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-reference-jun2022
-  needs: [ framework-install-old-Geant4 ]
-  steps:
-    - name: Restore cache
-      uses: actions/cache@v3
-      id: framework-install-restG4-cache-old-Geant4
-      with:
-        path: ${{ env.REST_PATH }}
-        key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}-old-Geant4
-    - name: Check root
-      run: |
-        root-config --version
-        root -b -q
-    - name: Check framework
-      run: |
-        source ${{ env.REST_PATH }}/thisREST.sh
-        cat ${{ env.REST_PATH }}/thisREST.sh
-        cat ${{ env.REST_PATH }}/bin/rest-config
-        rest-config --welcome
-    - name: Check restG4
-      run: |
-        source ${{ env.REST_PATH }}/thisREST.sh
-        source /usr/local/geant4/install/bin/geant4.sh
-        restG4 --help
+  check-installation-old:
+    name: Check framework and restG4 are accessible
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-reference-jun2022
+    needs: [ framework-install-old-Geant4 ]
+    steps:
+      - name: Restore cache
+        uses: actions/cache@v3
+        id: framework-install-restG4-cache-old-Geant4
+        with:
+          path: ${{ env.REST_PATH }}
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}-old-Geant4
+      - name: Check root
+        run: |
+          root-config --version
+          root -b -q
+      - name: Check framework
+        run: |
+          source ${{ env.REST_PATH }}/thisREST.sh
+          cat ${{ env.REST_PATH }}/thisREST.sh
+          cat ${{ env.REST_PATH }}/bin/rest-config
+          rest-config --welcome
+      - name: Check restG4
+        run: |
+          source ${{ env.REST_PATH }}/thisREST.sh
+          source /usr/local/geant4/install/bin/geant4.sh
+          restG4 --help
 
   restG4-examples-07-reference:
-    name: "Example 7: Decay"
+    name: "Example 07: Decay"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-reference-jun2022
