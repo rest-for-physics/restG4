@@ -72,7 +72,7 @@ jobs:
         run: |
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           git submodule init source/libraries/geant4 && git submodule update source/libraries/geant4
-          cd source/libraries/geant4/ && ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/scripts/checkoutRemoteBranch.sh ${{ github.sha }}
+          cd source/libraries/geant4/ && ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/scripts/checkoutRemoteBranch.sh ${{ env.BRANCH_NAME }}
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           rm -rf source/packages/restG4/ && cp -r $GITHUB_WORKSPACE source/packages/restG4
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
