@@ -51,7 +51,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
 
   check-installation:
     name: Check framework and restG4 are accessible
@@ -65,7 +65,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Check libraries
         run: |
           echo $LD_LIBRARY_PATH
@@ -100,7 +100,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Build as standalone
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -122,7 +122,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -143,7 +143,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -165,7 +165,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -190,7 +190,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -211,7 +211,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -232,7 +232,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -258,7 +258,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -292,7 +292,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -313,7 +313,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -334,7 +334,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -369,14 +369,14 @@ jobs:
           rm -rf source/packages/restG4/ && cp -r $GITHUB_WORKSPACE source/packages/restG4
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
-          cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}-reference
+          cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
           make -j4 install
       - name: Cache framework installation
         id: framework-install-restG4-cache-old-Geant4
         uses: actions/cache@v3
         with:
-          path: ${{ env.REST_PATH }}-reference
-          key: ${{ github.sha }}-reference
+          path: ${{ env.REST_PATH }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
 
   check-installation-reference:
     name: Check framework and restG4 are accessible
@@ -389,21 +389,21 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache-reference
         with:
-          path: ${{ env.REST_PATH }}-reference
-          key: ${{ github.sha }}-reference
+          path: ${{ env.REST_PATH }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Check root
         run: |
           root-config --version
           root -b -q
       - name: Check framework
         run: |
-          source ${{ env.REST_PATH }}-reference/thisREST.sh
-          cat ${{ env.REST_PATH }}-reference/thisREST.sh
-          cat ${{ env.REST_PATH }}-reference/bin/rest-config
+          source ${{ env.REST_PATH }}/thisREST.sh
+          cat ${{ env.REST_PATH }}/thisREST.sh
+          cat ${{ env.REST_PATH }}/bin/rest-config
           rest-config --welcome
       - name: Check restG4
         run: |
-          source ${{ env.REST_PATH }}-reference/thisREST.sh
+          source ${{ env.REST_PATH }}/thisREST.sh
           restG4 --help
 
 
@@ -419,8 +419,8 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache-reference
         with:
-          path: ${{ env.REST_PATH }}-reference
-          key: ${{ github.sha }}-reference
+          path: ${{ env.REST_PATH }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -440,12 +440,12 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache-reference
         with:
-          path: ${{ env.REST_PATH }}-reference
-          key: ${{ github.sha }}-reference
+          path: ${{ env.REST_PATH }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}-reference/thisREST.sh
-          cd ${{ env.REST_PATH }}-reference/examples/restG4/07.FullChainDecay/
+          source ${{ env.REST_PATH }}/thisREST.sh
+          cd ${{ env.REST_PATH }}/examples/restG4/07.FullChainDecay/
           restG4 fullChain.rml -o Run00001_U238_FullChainDecay.root
           restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 15)'
           restG4 singleDecay.rml -o Run00002_U238_SingleChainDecay.root
