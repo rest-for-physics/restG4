@@ -4,14 +4,16 @@ on:
   workflow_dispatch:
 
   push:
-    branches: [master]
+    branches: [ master ]
   pull_request:
-    branches: [master]
+    branches: [ master ]
+  release:
 
 env:
   CMAKE_BUILD_TYPE: Release
   REST_PATH: /rest/framework/install
   REST_FRAMEWORK_SOURCE_DIR: /rest/framework/source
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 defaults:
   run:
@@ -22,23 +24,22 @@ jobs:
     name: Install framework with restG4
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
     steps:
       - name: Print version of dependencies for image
         run: version.sh
-
       - name: Checkout framework
         run: |
           git clone https://github.com/rest-for-physics/framework.git ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          ./scripts/checkoutRemoteBranch.sh ${{ github.sha }}
+          ./scripts/checkoutRemoteBranch.sh ${{ env.BRANCH_NAME }}
+          git log -1 --stat
       - uses: actions/checkout@v3
       - name: Setup, build and install
         run: |
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           git submodule init source/libraries/geant4 && git submodule update source/libraries/geant4
-          cd source/libraries/geant4/ && ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/scripts/checkoutRemoteBranch.sh ${{ github.sha }}
+          cd source/libraries/geant4/ && ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/scripts/checkoutRemoteBranch.sh ${{ env.BRANCH_NAME }}
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           rm -rf source/packages/restG4/ && cp -r $GITHUB_WORKSPACE source/packages/restG4
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
@@ -47,26 +48,25 @@ jobs:
           make -j4 install
       - name: Cache framework installation
         id: framework-install-restG4-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
 
   framework-install-old-Geant4:
-    name: Install framework with restG4 on an older reference version of Geant4
+    name: Install framework with restG4 on an older reference version of Geant4 (v10.4.3)
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:cpp17_ROOT-v6-26-00_Geant4-v10.4.3_Garfield-4ac1e62f
-
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-reference-jun2022
     steps:
       - name: Print version of dependencies for image
         run: version.sh
-
       - name: Checkout framework
         run: |
           git clone https://github.com/rest-for-physics/framework.git ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          ./scripts/checkoutRemoteBranch.sh ${{ github.sha }}
+          ./scripts/checkoutRemoteBranch.sh ${{ env.BRANCH_NAME }}
+          git log -1 --stat
       - uses: actions/checkout@v3
       - name: Setup, build and install
         run: |
@@ -81,52 +81,60 @@ jobs:
           make -j4 install
       - name: Cache framework installation
         id: framework-install-restG4-cache-old-Geant4
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}-old-Geant4
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}-old-Geant4
 
   check-installation:
     name: Check framework and restG4 are accessible
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-    needs: [framework-install]
-
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+    needs: [ framework-install ]
     steps:
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
-
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
+      - name: Check libraries
+        run: |
+          echo $LD_LIBRARY_PATH
+          ls -lht ${{ env.REST_PATH }}
+          ls -lht ${{ env.REST_PATH }}/lib | grep .so
+          ls -lht ${{ env.REST_PATH }}/bin
+      - name: Check root
+        run: |
+          root-config --version
+          root -b -q
       - name: Check framework
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
-          restRoot -b -q
+          cat ${{ env.REST_PATH }}/thisREST.sh
+          cat ${{ env.REST_PATH }}/bin/rest-config
+          rest-config --welcome
       - name: Check restG4
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
+          source /usr/local/geant4/install/bin/geant4.sh
           restG4 --help
 
   restG4-standalone-install:
     name: Install restG4 as a standalone application using the installed framework
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-    needs: [framework-install]
-
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+    needs: [ framework-install, check-installation ]
     steps:
       - uses: actions/checkout@v3
-
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
-
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Build as standalone
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -138,17 +146,16 @@ jobs:
   restG4-examples-01:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-    needs: [check-installation]
-
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+    needs: [ check-installation ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -159,17 +166,16 @@ jobs:
   restG4-examples-03:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-    needs: [check-installation, restG4-examples-01]
-
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+    needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -181,17 +187,16 @@ jobs:
   restG4-examples-04:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-    needs: [check-installation]
-
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+    needs: [ check-installation ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -206,17 +211,16 @@ jobs:
   restG4-examples-05:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-    needs: [check-installation, restG4-examples-01]
-
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+    needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -227,17 +231,16 @@ jobs:
   restG4-examples-06:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-    needs: [check-installation, restG4-examples-01]
-
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+    needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -248,43 +251,41 @@ jobs:
   restG4-examples-07:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-    needs: [check-installation, restG4-examples-01]
-
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+    needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/07.FullChainDecay/
           restG4 fullChain.rml -o Run00001_U238_FullChainDecay.root
-          restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 14)'
+          restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 16)'
           restG4 singleDecay.rml -o Run00002_U238_SingleChainDecay.root
           restRoot -b -q Validate.C'("Run00002_U238_SingleChainDecay.root", 1)'
-          export REST_ISOTOPE="Be7"
+          export REST_ISOTOPE=Be7
           restG4 singleDecay.rml
           restRoot -b -q Validate.C'("Run00002_Be7_SingleChainDecay.root", 1)'
 
   restG4-examples-08:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-    needs: [check-installation]
-
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+    needs: [ check-installation ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -308,17 +309,16 @@ jobs:
   restG4-examples-09:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-    needs: [check-installation, restG4-examples-01]
-
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+    needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -329,17 +329,16 @@ jobs:
   restG4-examples-10:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-    needs: [check-installation, restG4-examples-01]
-
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+    needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -350,21 +349,20 @@ jobs:
   restG4-examples-11:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-    needs: [check-installation, restG4-examples-01]
-
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+    needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ github.sha }}
+          key: ${{ runner.os }}-${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/11.Xrays/
-          restG4 xrays.rml -o RestG4_xrays_00001_ArgonISO.root
-          restManager --c analysis.rml --f RestG4_xrays_00001_ArgonISO.root
-          restRoot -b -q Validate.C'("Run_g4Analysis_00001_xrays.root")'
+          restG4 xrays.rml -o xrays_simulation.root
+          restManager --c analysis.rml --f xrays_simulation.root --o xrays_simulation_analysis.root
+          restRoot -b -q GetQE.C'("xrays_simulation_analysis.root")'
