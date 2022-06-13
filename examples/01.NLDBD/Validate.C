@@ -69,7 +69,7 @@ Int_t Validate(const char* filename) {
 
     TVector3 averagePosition = {};
     const TVector3 averagePositionRef =
-        (!isReferenceGeant4Version) ? TVector3(-38.8987, 27.5536, 91.3969) : 0;
+        (!isReferenceGeant4Version) ? TVector3(-38.8987, 27.5536, 91.3969) : TVector3(0, 0, 0);
 
     const double tolerance = 0.001;
 
