@@ -60,7 +60,7 @@ TH2D* spatialDistribution[maxBiasingVolumes];
 TH1D initialEnergySpectrum;
 TH1D initialAngularDistribution;
 
-Int_t N_events;
+Int_t nEvents;
 
 int main(int argc, char** argv) {
     auto start_time = chrono::steady_clock::now();
@@ -74,6 +74,12 @@ int main(int argc, char** argv) {
 
     /// Separating relative path and pure RML filename
     char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
+
+    if (!TRestTools::CheckFileIsAccessible(inputConfigFile)) {
+        cout << "Input rml file: " << inputConfigFile << " not found, please check file name" << endl;
+        exit(1);
+    }
+
     const auto [inputRmlPath, inputRmlClean] = TRestTools::SeparatePathAndName(inputConfigFile);
 
     if (!filesystem::path(inputRmlPath).empty()) {
@@ -81,13 +87,11 @@ int main(int argc, char** argv) {
     }
 
     restG4Metadata = new TRestGeant4Metadata(inputRmlClean.c_str());
+    restG4Metadata->SetGeant4Version(TRestTools::Execute("geant4-config --version"));
 
     if (!commandLineParameters.geometryFile.IsNull()) {
         restG4Metadata->SetGdmlFilename(commandLineParameters.geometryFile.Data());
     }
-
-    string geant4Version = TRestTools::Execute("geant4-config --version");
-    restG4Metadata->SetGeant4Version(geant4Version);
 
     // We need to process and generate a new GDML for several reasons.
     // 1. ROOT6 has problem loading math expressions in gdml file
@@ -250,7 +254,7 @@ int main(int argc, char** argv) {
     visManager->Initialize();
 #endif
 
-    N_events = restG4Metadata->GetNumberOfEvents();
+    nEvents = restG4Metadata->GetNumberOfEvents();
     // We pass the volume definition to Stepping action so that it records gammas
     // entering in We pass also the biasing spectrum so that gammas energies
     // entering the volume are recorded
@@ -264,8 +268,8 @@ int main(int argc, char** argv) {
     time_t systime = time(nullptr);
     restRun->SetStartTimeStamp((Double_t)systime);
 
-    cout << "Events : " << N_events << endl;
-    if (N_events > 0)  // batch mode
+    cout << "Number of events : " << nEvents << endl;
+    if (nEvents > 0)  // batch mode
     {
         G4String command = "/tracking/verbose 0";
         UI->ApplyCommand(command);
@@ -273,7 +277,7 @@ int main(int argc, char** argv) {
         UI->ApplyCommand(command);
 
         char tmp[256];
-        sprintf(tmp, "/run/beamOn %d", N_events);
+        sprintf(tmp, "/run/beamOn %d", nEvents);
 
         command = tmp;
         UI->ApplyCommand(command);
@@ -343,7 +347,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    else if (N_events == 0)  // define visualization and UI terminal for interactive mode
+    else if (nEvents == 0)  // define visualization and UI terminal for interactive mode
     {
         cout << "Entering vis mode.." << endl;
 #ifdef G4UI_USE
@@ -357,11 +361,11 @@ int main(int argc, char** argv) {
 #endif
     }
 
-    else  // N_events == -1
+    else  // nEvents == -1
     {
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
         cout << "The number of events to be simulated was not recognized properly!" << endl;
         cout << "Make sure you did not forget the number of events entry in TRestGeant4Metadata." << endl;
         cout << endl;
@@ -369,10 +373,10 @@ int main(int argc, char** argv) {
         cout << endl;
         cout << "It should be something like : " << endl;
         cout << endl;
-        cout << " <parameter name =\"Nevents\" value=\"100\"/>" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
+        cout << " <parameter name =\"nEvents\" value=\"100\"/>" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
         cout << endl;
     }
     restRun->GetOutputFile()->cd();
@@ -410,7 +414,8 @@ int main(int argc, char** argv) {
         // writing the geometry object
         freopen("/dev/null", "w", stdout);
         freopen("/dev/null", "w", stderr);
-        REST_Display_CompatibilityMode = true; 
+
+        REST_Display_CompatibilityMode = true;
 
         // We wait the father process ends properly
         sleep(5);
