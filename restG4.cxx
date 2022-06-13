@@ -87,13 +87,11 @@ int main(int argc, char** argv) {
     }
 
     restG4Metadata = new TRestGeant4Metadata(inputRmlClean.c_str());
+    restG4Metadata->SetGeant4Version(TRestTools::Execute("geant4-config --version"));
 
     if (!commandLineParameters.geometryFile.IsNull()) {
         restG4Metadata->SetGdmlFilename(commandLineParameters.geometryFile.Data());
     }
-
-    string geant4Version = TRestTools::Execute("geant4-config --version");
-    restG4Metadata->SetGeant4Version(geant4Version);
 
     // We need to process and generate a new GDML for several reasons.
     // 1. ROOT6 has problem loading math expressions in gdml file
