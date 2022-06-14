@@ -178,7 +178,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     auto step = (SteppingAction*)G4RunManager::GetRunManager()->GetUserSteppingAction();
 
     auto primaryGenerator =
-            (PrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
+        (PrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
 
     runManager->Initialize();
 
@@ -287,9 +287,9 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     else if (nEvents == 0)  // define visualization and UI terminal for interactive mode
     {
-        cout << "Entering vis mode.." << endl;
 #ifdef G4UI_USE
-        auto ui = new G4UIExecutive(commandLineParameters.argc, commandLineParameters.argv);
+        cout << "Entering vis mode.." << endl;
+        auto ui = new G4UIExecutive(commandLineParameters.cmdArgc, commandLineParameters.cmdArgv);
 #ifdef G4VIS_USE
         cout << "Executing G4 macro : /control/execute macros/vis.mac" << endl;
         UI->ApplyCommand("/control/execute macros/vis.mac");
