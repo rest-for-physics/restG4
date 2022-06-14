@@ -72,7 +72,9 @@ target_sources(${LIBRARY} PUBLIC ${sources})
 target_link_libraries(${LIBRARY} ${LINK_LIBRARIES})
 target_include_directories(${LIBRARY} SYSTEM PUBLIC ${INCLUDE_DIRS})
 
-ADD_LIBRARY_TEST()
+if (NOT ${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+    ADD_LIBRARY_TEST()
+endif ()
 
 # Add the executable
 add_executable(${PROJECT_NAME} main.cxx)
