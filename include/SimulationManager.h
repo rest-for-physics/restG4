@@ -13,11 +13,11 @@ class SimulationManager {
     SimulationManager();
     ~SimulationManager();
 
-    TRestRun* fRestRun;
-    TRestGeant4Track* fRestGeant4Track;
-    TRestGeant4Event *fRestGeant4Event, *fRestGeant4SubEvent;
-    TRestGeant4Metadata* fRestGeant4Metadata;
-    TRestGeant4PhysicsLists* fRestGeant4PhysicsLists;
+    TRestRun* fRestRun = nullptr;
+    TRestGeant4Track* fRestGeant4Track = nullptr;
+    TRestGeant4Event *fRestGeant4Event = nullptr, *fRestGeant4SubEvent = nullptr;
+    TRestGeant4Metadata* fRestGeant4Metadata = nullptr;
+    TRestGeant4PhysicsLists* fRestGeant4PhysicsLists = nullptr;
     Int_t fBiasing = 0;
 
     static const Int_t maxBiasingVolumes = 50;
