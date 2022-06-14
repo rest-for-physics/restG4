@@ -41,9 +41,9 @@ void ActionInitialization::Build() const {
         TH1D* h = (TH1D*)fin.Get(sptName);
 
         if (!h) {
-            cout << "REST ERROR  when trying to find energy spectrum" << endl;
-            cout << "File : " << fileFullPath << endl;
-            cout << "Spectrum name : " << sptName << endl;
+            RESTError << "REST ERROR  when trying to find energy spectrum" << RESTendl;
+            RESTError << "File : " << fileFullPath << RESTendl;
+            RESTError << "Spectrum name : " << sptName << RESTendl;
             exit(1);
         }
 
