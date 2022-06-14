@@ -29,6 +29,9 @@ void CommandLineSetup::ShowUsage() {
 CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv) {
     CommandLineParameters parameters;
 
+    parameters.argc = argc;
+    parameters.argv = argv;
+
     if (argc >= 2) {
         // presumably invoked as `restG4 example.rml` or `restG4 --help`
         TString argument = argv[1];

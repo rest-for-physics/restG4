@@ -16,6 +16,9 @@ class CommandLineParameters {
     bool serialMode = true;    // -s FLAG (NO ARGUMENT) DEFAULT=TRUE OPTIONAL
     int nThreads = 0;          // -t Number of threads, only active if serialMode is set to false OPTIONAL
 
+    int argc{};
+    char** argv = nullptr;
+
     CommandLineParameters() = default;
 };
 

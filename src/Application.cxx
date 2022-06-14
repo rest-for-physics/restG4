@@ -285,7 +285,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     {
         cout << "Entering vis mode.." << endl;
 #ifdef G4UI_USE
-        auto ui = new G4UIExecutive(argc, argv);
+        auto ui = new G4UIExecutive(commandLineParameters.argc, commandLineParameters.argv);
 #ifdef G4VIS_USE
         cout << "Executing G4 macro : /control/execute macros/vis.mac" << endl;
         UI->ApplyCommand("/control/execute macros/vis.mac");
