@@ -21,7 +21,7 @@ class Application {
     ~Application() { delete fSimulationManager; }
 
    private:
-    SimulationManager* fSimulationManager;
+    SimulationManager* fSimulationManager = nullptr;
 };
 
 #endif  // REST_APPLICATION_H

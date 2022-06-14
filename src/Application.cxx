@@ -40,19 +40,20 @@
 using namespace std;
 
 void Application::Run(const CommandLineParameters& commandLineParameters) {
-    auto simulationManager = new SimulationManager();
+    delete fSimulationManager;
+    fSimulationManager = new SimulationManager();
 
-    Int_t& biasing = simulationManager->fBiasing;
+    Int_t& biasing = fSimulationManager->fBiasing;
 
-    auto biasingSpectrum = simulationManager->biasingSpectrum;
-    auto angularDistribution = simulationManager->biasingSpectrum;
-    auto spatialDistribution = simulationManager->spatialDistribution;
+    auto biasingSpectrum = fSimulationManager->biasingSpectrum;
+    auto angularDistribution = fSimulationManager->biasingSpectrum;
+    auto spatialDistribution = fSimulationManager->spatialDistribution;
 
     Bool_t saveAllEvents;
 
     Int_t nEvents;
 
-    auto start_time = chrono::steady_clock::now();
+    auto timeStart = chrono::steady_clock::now();
 
     const auto originalDirectory = filesystem::current_path();
 
@@ -74,11 +75,11 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
         filesystem::current_path(inputRmlPath);
     }
 
-    simulationManager->fRestGeant4Metadata = new TRestGeant4Metadata(inputRmlClean.c_str());
-    simulationManager->fRestGeant4Metadata->SetGeant4Version(TRestTools::Execute("geant4-config --version"));
+    fSimulationManager->fRestGeant4Metadata = new TRestGeant4Metadata(inputRmlClean.c_str());
+    fSimulationManager->fRestGeant4Metadata->SetGeant4Version(TRestTools::Execute("geant4-config --version"));
 
     if (!commandLineParameters.geometryFile.IsNull()) {
-        simulationManager->fRestGeant4Metadata->SetGdmlFilename(commandLineParameters.geometryFile.Data());
+        fSimulationManager->fRestGeant4Metadata->SetGdmlFilename(commandLineParameters.geometryFile.Data());
     }
 
     // We need to process and generate a new GDML for several reasons.
@@ -90,57 +91,58 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     auto gdml = new TRestGDMLParser();
 
     // This call will generate a new single file GDML output
-    gdml->Load((string)simulationManager->fRestGeant4Metadata->GetGdmlFilename());
+    gdml->Load((string)fSimulationManager->fRestGeant4Metadata->GetGdmlFilename());
 
     // We redefine the value of the GDML file to be used in DetectorConstructor.
-    simulationManager->fRestGeant4Metadata->SetGdmlFilename(gdml->GetOutputGDMLFile());
-    simulationManager->fRestGeant4Metadata->SetGeometryPath("");
+    fSimulationManager->fRestGeant4Metadata->SetGdmlFilename(gdml->GetOutputGDMLFile());
+    fSimulationManager->fRestGeant4Metadata->SetGeometryPath("");
 
-    simulationManager->fRestGeant4Metadata->SetGdmlReference(gdml->GetGDMLVersion());
-    simulationManager->fRestGeant4Metadata->SetMaterialsReference(gdml->GetEntityVersion("materials"));
+    fSimulationManager->fRestGeant4Metadata->SetGdmlReference(gdml->GetGDMLVersion());
+    fSimulationManager->fRestGeant4Metadata->SetMaterialsReference(gdml->GetEntityVersion("materials"));
 
-    simulationManager->fRestGeant4PhysicsLists = new TRestGeant4PhysicsLists(inputRmlClean.c_str());
+    fSimulationManager->fRestGeant4PhysicsLists = new TRestGeant4PhysicsLists(inputRmlClean.c_str());
 
-    simulationManager->fRestRun = new TRestRun();
-    simulationManager->fRestRun->LoadConfigFromFile(inputRmlClean);
+    fSimulationManager->fRestRun = new TRestRun();
+    fSimulationManager->fRestRun->LoadConfigFromFile(inputRmlClean);
 
     if (!commandLineParameters.outputFile.IsNull()) {
-        simulationManager->fRestRun->SetOutputFileName(commandLineParameters.outputFile.Data());
+        fSimulationManager->fRestRun->SetOutputFileName(commandLineParameters.outputFile.Data());
     }
 
     filesystem::current_path(originalDirectory);
 
-    TString runTag = simulationManager->fRestRun->GetRunTag();
+    TString runTag = fSimulationManager->fRestRun->GetRunTag();
     if (runTag == "Null" || runTag == "")
-        simulationManager->fRestRun->SetRunTag(simulationManager->fRestGeant4Metadata->GetTitle());
+        fSimulationManager->fRestRun->SetRunTag(fSimulationManager->fRestGeant4Metadata->GetTitle());
 
-    simulationManager->fRestRun->SetRunType("restG4");
+    fSimulationManager->fRestRun->SetRunType("restG4");
 
-    simulationManager->fRestRun->AddMetadata(simulationManager->fRestGeant4Metadata);
-    simulationManager->fRestRun->AddMetadata(simulationManager->fRestGeant4PhysicsLists);
-    simulationManager->fRestRun->PrintMetadata();
+    fSimulationManager->fRestRun->AddMetadata(fSimulationManager->fRestGeant4Metadata);
+    fSimulationManager->fRestRun->AddMetadata(fSimulationManager->fRestGeant4PhysicsLists);
+    fSimulationManager->fRestRun->PrintMetadata();
 
-    simulationManager->fRestRun->FormOutputFile();
+    fSimulationManager->fRestRun->FormOutputFile();
 
-    simulationManager->fRestGeant4Event = new TRestGeant4Event();
-    simulationManager->fRestGeant4SubEvent = new TRestGeant4Event();
-    simulationManager->fRestRun->AddEventBranch(simulationManager->fRestGeant4SubEvent);
+    fSimulationManager->fRestGeant4Event = new TRestGeant4Event();
+    fSimulationManager->fRestGeant4SubEvent = new TRestGeant4Event();
+    fSimulationManager->fRestRun->AddEventBranch(fSimulationManager->fRestGeant4SubEvent);
 
-    simulationManager->fRestGeant4Track = new TRestGeant4Track();
+    fSimulationManager->fRestGeant4Track = new TRestGeant4Track();
 
-    biasing = simulationManager->fRestGeant4Metadata->GetNumberOfBiasingVolumes();
+    biasing = fSimulationManager->fRestGeant4Metadata->GetNumberOfBiasingVolumes();
     for (int i = 0; i < biasing; i++) {
         TString spectrumName = "Bias_Spectrum_" + TString(Form("%d", i));
         TString angDistName = "Bias_Angular_Distribution_" + TString(Form("%d", i));
         TString spatialDistName = "Bias_Spatial_Distribution_" + TString(Form("%d", i));
 
-        Double_t maxEnergy = simulationManager->fRestGeant4Metadata->GetBiasingVolume(i).GetMaxEnergy();
-        Double_t minEnergy = simulationManager->fRestGeant4Metadata->GetBiasingVolume(i).GetMinEnergy();
+        Double_t maxEnergy = fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(i).GetMaxEnergy();
+        Double_t minEnergy = fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(i).GetMinEnergy();
         auto nBins = (Int_t)(maxEnergy - minEnergy);
 
         Double_t biasSize =
-            simulationManager->fRestGeant4Metadata->GetBiasingVolume(i).GetBiasingVolumeSize();
-        TString biasType = simulationManager->fRestGeant4Metadata->GetBiasingVolume(i).GetBiasingVolumeType();
+            fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(i).GetBiasingVolumeSize();
+        TString biasType =
+            fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(i).GetBiasingVolumeType();
 
         cout << "Initializing biasing histogram : " << spectrumName << endl;
         biasingSpectrum[i] = new TH1D(spectrumName, "Biasing gamma spectrum", nBins, minEnergy, maxEnergy);
@@ -161,17 +163,17 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     // choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
-    long seed = simulationManager->fRestGeant4Metadata->GetSeed();
+    long seed = fSimulationManager->fRestGeant4Metadata->GetSeed();
     CLHEP::HepRandom::setTheSeed(seed);
 
     auto runManager = new G4RunManager;
 
-    auto detector = new DetectorConstruction(simulationManager);
+    auto detector = new DetectorConstruction(fSimulationManager);
 
     runManager->SetUserInitialization(detector);
-    runManager->SetUserInitialization(new PhysicsList(simulationManager->fRestGeant4PhysicsLists));
+    runManager->SetUserInitialization(new PhysicsList(fSimulationManager->fRestGeant4PhysicsLists));
 
-    runManager->SetUserInitialization(new ActionInitialization(simulationManager));
+    runManager->SetUserInitialization(new ActionInitialization(fSimulationManager));
 
     auto step = (SteppingAction*)G4RunManager::GetRunManager()->GetUserSteppingAction();
     auto primaryGenerator =
@@ -186,19 +188,19 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     visManager->Initialize();
 #endif
 
-    nEvents = simulationManager->fRestGeant4Metadata->GetNumberOfEvents();
+    nEvents = fSimulationManager->fRestGeant4Metadata->GetNumberOfEvents();
     // We pass the volume definition to Stepping action so that it records gammas
     // entering in We pass also the biasing spectrum so that gammas energies
     // entering the volume are recorded
     if (biasing) {
-        step->SetBiasingVolume(simulationManager->fRestGeant4Metadata->GetBiasingVolume(biasing - 1));
+        step->SetBiasingVolume(fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(biasing - 1));
         step->SetBiasingSpectrum(biasingSpectrum[biasing - 1]);
         step->SetAngularDistribution(angularDistribution[biasing - 1]);
         step->SetSpatialDistribution(spatialDistribution[biasing - 1]);
     }
 
     time_t systime = time(nullptr);
-    simulationManager->fRestRun->SetStartTimeStamp((Double_t)systime);
+    fSimulationManager->fRestRun->SetStartTimeStamp((Double_t)systime);
 
     cout << "Number of events : " << nEvents << endl;
     if (nEvents > 0)  // batch mode
@@ -214,7 +216,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
         command = tmp;
         UI->ApplyCommand(command);
 
-        simulationManager->fRestRun->GetOutputFile()->cd();
+        fSimulationManager->fRestRun->GetOutputFile()->cd();
 
         if (biasing) {
             cout << "Biasing id: " << biasing - 1 << endl;
@@ -226,13 +228,13 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
             biasing--;
         }
         while (biasing) {
-            simulationManager->fRestGeant4Metadata->RemoveParticleSources();
+            fSimulationManager->fRestGeant4Metadata->RemoveParticleSources();
 
             auto src = new TRestGeant4ParticleSource();
             src->SetParticleName("gamma");
             src->SetEnergyDistType("TH1D");
             src->SetAngularDistType("TH1D");
-            simulationManager->fRestGeant4Metadata->AddParticleSource(src);
+            fSimulationManager->fRestGeant4Metadata->AddParticleSource(src);
 
             // We set the spectrum from previous biasing volume inside the primary generator
             primaryGenerator->SetSpectrum(biasingSpectrum[biasing]);
@@ -240,23 +242,23 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
             primaryGenerator->SetAngularDistribution(angularDistribution[biasing]);
 
             // We re-define the generator inside restG4Metadata to be launched from the biasing volume
-            simulationManager->fRestGeant4Metadata->SetGeneratorType(
-                simulationManager->fRestGeant4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeType());
+            fSimulationManager->fRestGeant4Metadata->SetGeneratorType(
+                fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeType());
             double size =
-                simulationManager->fRestGeant4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeSize();
-            simulationManager->fRestGeant4Metadata->SetGeneratorSize(TVector3(size, size, size));
-            // simulationManager->fRestGeant4Metadata->GetBiasingVolume( biasing-1 ).PrintBiasingVolume();
+                fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeSize();
+            fSimulationManager->fRestGeant4Metadata->SetGeneratorSize(TVector3(size, size, size));
+            // fSimulationManager->fRestGeant4Metadata->GetBiasingVolume( biasing-1 ).PrintBiasingVolume();
 
             // Defining biasing the number of event to be re-launched
             Double_t biasingFactor =
-                simulationManager->fRestGeant4Metadata->GetBiasingVolume(biasing - 1).GetBiasingFactor();
+                fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(biasing - 1).GetBiasingFactor();
             cout << "Biasing id: " << biasing - 1 << ", Events to be launched : "
                  << (Int_t)(biasingSpectrum[biasing]->Integral() * biasingFactor) << endl;
 
             sprintf(tmp, "/run/beamOn %d", (Int_t)(biasingSpectrum[biasing]->Integral() * biasingFactor));
             command = tmp;
 
-            simulationManager->fRestRun->GetOutputFile()->cd();
+            fSimulationManager->fRestRun->GetOutputFile()->cd();
 
             biasingSpectrum[biasing]->Write();
             angularDistribution[biasing]->Write();
@@ -266,7 +268,8 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
             // gammas entering in We pass also the biasing spectrum so that gammas
             // energies entering the volume are recorded
             if (biasing) {
-                step->SetBiasingVolume(simulationManager->fRestGeant4Metadata->GetBiasingVolume(biasing - 1));
+                step->SetBiasingVolume(
+                    fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(biasing - 1));
                 step->SetBiasingSpectrum(biasingSpectrum[biasing - 1]);
                 step->SetAngularDistribution(angularDistribution[biasing - 1]);
                 step->SetSpatialDistribution(spatialDistribution[biasing - 1]);
@@ -313,7 +316,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
         cout << "++++++++++ ERROR +++++++++" << endl;
         cout << endl;
     }
-    simulationManager->fRestRun->GetOutputFile()->cd();
+    fSimulationManager->fRestRun->GetOutputFile()->cd();
 
 #ifdef G4VIS_USE
     delete visManager;
@@ -323,12 +326,12 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     delete runManager;
 
     systime = time(nullptr);
-    simulationManager->fRestRun->SetEndTimeStamp((Double_t)systime);
+    fSimulationManager->fRestRun->SetEndTimeStamp((Double_t)systime);
     const TString filename =
-        TRestTools::ToAbsoluteName(simulationManager->fRestRun->GetOutputFileName().Data());
-    simulationManager->fRestRun->UpdateOutputFile();
-    simulationManager->fRestRun->CloseFile();
-    simulationManager->fRestRun->PrintMetadata();
+        TRestTools::ToAbsoluteName(fSimulationManager->fRestRun->GetOutputFileName().Data());
+    fSimulationManager->fRestRun->UpdateOutputFile();
+    fSimulationManager->fRestRun->CloseFile();
+    fSimulationManager->fRestRun->PrintMetadata();
 
     ////////// Writing the geometry in TGeoManager format to the ROOT file
     ////////// Need to fork and do it in child process, to prevent occasional seg.fault
@@ -368,7 +371,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     }
 
     cout << "============== Generated file: " << filename << " ==============" << endl;
-    auto end_time = chrono::steady_clock::now();
-    cout << "Elapsed time: " << chrono::duration_cast<chrono::seconds>(end_time - start_time).count()
+    auto timeEnd = chrono::steady_clock::now();
+    cout << "Elapsed time: " << chrono::duration_cast<chrono::seconds>(timeEnd - timeStart).count()
          << " seconds" << endl;
 }
