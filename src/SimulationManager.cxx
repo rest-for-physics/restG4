@@ -5,19 +5,10 @@
 
 using namespace std;
 
-SimulationManager* SimulationManager::fInstance = nullptr;
-
-SimulationManager* SimulationManager::Instance() {
-    if (!fInstance) {
-        fInstance = new SimulationManager();
-    }
-    return fInstance;
-}
-
 SimulationManager::SimulationManager() {
-    // Master thread should create the SimulationManager, worker threads should spawn after the manager is
-    // created
+    // Only master thread should create the SimulationManager
     if (!G4Threading::IsMasterThread()) {
+        cout << "Only master thread should create the SimulationManager!" << endl;
         exit(1);
     }
 }

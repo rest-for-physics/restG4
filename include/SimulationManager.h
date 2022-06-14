@@ -10,7 +10,7 @@
 
 class SimulationManager {
    public:
-    static SimulationManager* Instance();
+    SimulationManager();
     ~SimulationManager();
 
     TRestRun* fRestRun;
@@ -29,10 +29,6 @@ class SimulationManager {
 
     TH1D initialEnergySpectrum;
     TH1D initialAngularDistribution;
-
-   private:
-    SimulationManager();
-    static SimulationManager* fInstance;
 };
 
 #endif  // REST_SIMULATIONMANAGER_H

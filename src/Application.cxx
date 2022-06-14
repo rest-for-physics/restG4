@@ -40,7 +40,7 @@
 using namespace std;
 
 void Application::Run(int argc, char** argv) {
-    auto simulationManager = SimulationManager::Instance();
+    auto simulationManager = new SimulationManager();
 
     TRestRun* restRun = simulationManager->fRestRun;
     TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
@@ -171,12 +171,12 @@ void Application::Run(int argc, char** argv) {
 
     auto runManager = new G4RunManager;
 
-    auto detector = new DetectorConstruction();
+    auto detector = new DetectorConstruction(simulationManager);
 
     runManager->SetUserInitialization(detector);
     runManager->SetUserInitialization(new PhysicsList(restPhysList));
 
-    runManager->SetUserInitialization(new ActionInitialization(SimulationManager::Instance()));
+    runManager->SetUserInitialization(new ActionInitialization(simulationManager));
 
     auto step = (SteppingAction*)G4RunManager::GetRunManager()->GetUserSteppingAction();
     auto primaryGenerator =

@@ -32,7 +32,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
 
     fGeneratorSpatialDensityFunction = nullptr;
 
-    TRestGeant4Metadata* restG4Metadata = SimulationManager::Instance()->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
     for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
         restG4Metadata->GetParticleSource(i)->SetRndmMethod(GeneratorRndm);
@@ -90,7 +90,7 @@ void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
-    auto simulationManager = SimulationManager::Instance();
+    auto simulationManager = fSimulationManager;
     TRestRun* restRun = simulationManager->fRestRun;
     TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
     TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
@@ -136,7 +136,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
 }
 
 G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRestGeant4Particle p) {
-    auto simulationManager = SimulationManager::Instance();
+    auto simulationManager = fSimulationManager;
     TRestRun* restRun = simulationManager->fRestRun;
     TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
     TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
@@ -187,7 +187,7 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
 }
 
 void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p) {
-    auto simulationManager = SimulationManager::Instance();
+    auto simulationManager = fSimulationManager;
     TRestRun* restRun = simulationManager->fRestRun;
     TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
     TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
@@ -398,7 +398,7 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
 }
 
 void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
-    auto simulationManager = SimulationManager::Instance();
+    auto simulationManager = fSimulationManager;
 
     TRestRun* restRun = simulationManager->fRestRun;
     TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
@@ -486,7 +486,7 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
 }
 
 void PrimaryGeneratorAction::SetParticlePosition() {
-    auto simulationManager = SimulationManager::Instance();
+    auto simulationManager = fSimulationManager;
 
     TRestRun* restRun = simulationManager->fRestRun;
     TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
@@ -664,7 +664,7 @@ void PrimaryGeneratorAction::GenPositionOnGDMLSurface(double& x, double& y, doub
     z = z + fDetector->GetGeneratorTranslation().z();
 }
 void PrimaryGeneratorAction::GenPositionOnBoxVolume(double& x, double& y, double& z) {
-    TRestGeant4Metadata* restG4Metadata = SimulationManager::Instance()->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
     Double_t sidex = restG4Metadata->GetGeneratorSize().X();
     Double_t sidey = restG4Metadata->GetGeneratorSize().Y();
@@ -695,7 +695,7 @@ void PrimaryGeneratorAction::GenPositionOnSphereVolume(double& x, double& y, dou
     abort();
 }
 void PrimaryGeneratorAction::GenPositionOnSphereSurface(double& x, double& y, double& z) {
-    TRestGeant4Metadata* restG4Metadata = SimulationManager::Instance()->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
     G4ThreeVector rndPos = GetIsotropicVector();
 
@@ -712,7 +712,7 @@ void PrimaryGeneratorAction::GenPositionOnCylinderVolume(double& x, double& y, d
     abort();
 }
 void PrimaryGeneratorAction::GenPositionOnCylinderSurface(double& x, double& y, double& z) {
-    TRestGeant4Metadata* restG4Metadata = SimulationManager::Instance()->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
     Double_t angle = 2 * M_PI * G4UniformRand();
 
@@ -736,7 +736,7 @@ void PrimaryGeneratorAction::GenPositionOnCylinderSurface(double& x, double& y, 
     z = rndPos.z() + center.Z();
 }
 void PrimaryGeneratorAction::GenPositionOnPoint(double& x, double& y, double& z) {
-    TRestGeant4Metadata* restG4Metadata = SimulationManager::Instance()->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
     TVector3 position = restG4Metadata->GetGeneratorPosition();
 
@@ -745,7 +745,7 @@ void PrimaryGeneratorAction::GenPositionOnPoint(double& x, double& y, double& z)
     z = position.Z();
 }
 void PrimaryGeneratorAction::GenPositionOnWall(double& x, double& y, double& z) {
-    TRestGeant4Metadata* restG4Metadata = SimulationManager::Instance()->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
     Double_t sidex = restG4Metadata->GetGeneratorSize().X();
     Double_t sidey = restG4Metadata->GetGeneratorSize().Y();
@@ -767,7 +767,7 @@ void PrimaryGeneratorAction::GenPositionOnWall(double& x, double& y, double& z) 
 }
 
 void PrimaryGeneratorAction::GenPositionOnPlate(double& x, double& y, double& z) {
-    TRestGeant4Metadata* restG4Metadata = SimulationManager::Instance()->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
     Double_t radius = restG4Metadata->GetGeneratorSize().X();
 

@@ -17,7 +17,7 @@ EventAction::EventAction(SimulationManager* simulationManager)
     : G4UserEventAction(), fSimulationManager(simulationManager) {
     fTimer.Start();
 
-    TRestGeant4Metadata* restG4Metadata = SimulationManager::Instance()->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
     restG4Metadata->isFullChainActivated();
 }
 
@@ -25,7 +25,7 @@ EventAction::~EventAction() {}
 
 void EventAction::BeginOfEventAction(const G4Event* event) {
     const auto eventID = event->GetEventID();
-    auto simulationManager = SimulationManager::Instance();
+    auto simulationManager = fSimulationManager;
     TRestRun* restRun = simulationManager->fRestRun;
     TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
     TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
@@ -77,7 +77,7 @@ void EventAction::BeginOfEventAction(const G4Event* event) {
 }
 
 void EventAction::EndOfEventAction(const G4Event* event) {
-    auto simulationManager = SimulationManager::Instance();
+    auto simulationManager = fSimulationManager;
     TRestRun* restRun = simulationManager->fRestRun;
     TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
     TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
@@ -186,12 +186,11 @@ void EventAction::EndOfEventAction(const G4Event* event) {
  * number), see if it can be optimised.
  * */
 void EventAction::FillSubEvent(Int_t subId) {
-    auto simulationManager = SimulationManager::Instance();
-    TRestRun* restRun = simulationManager->fRestRun;
-    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
-    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
-    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
-    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+    TRestRun* restRun = fSimulationManager->fRestRun;
+    TRestGeant4Track* restTrack = fSimulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = fSimulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = fSimulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
     subRestG4Event->Initialize();
     subRestG4Event->ClearVolumes();
@@ -236,12 +235,11 @@ void EventAction::FillSubEvent(Int_t subId) {
 }
 
 void EventAction::ReOrderTrackIds(Int_t subId) {
-    auto simulationManager = SimulationManager::Instance();
-    TRestRun* restRun = simulationManager->fRestRun;
-    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
-    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
-    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
-    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+    TRestRun* restRun = fSimulationManager->fRestRun;
+    TRestGeant4Track* restTrack = fSimulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = fSimulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = fSimulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
     // We define as event timestamp the system time.
     // We will be always able to extract the global simulation time from Geant4 tracks.
@@ -300,12 +298,11 @@ void EventAction::ReOrderTrackIds(Int_t subId) {
 }
 
 int EventAction::SetTrackSubEventIDs() {
-    auto simulationManager = SimulationManager::Instance();
-    TRestRun* restRun = simulationManager->fRestRun;
-    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
-    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
-    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
-    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+    TRestRun* restRun = fSimulationManager->fRestRun;
+    TRestGeant4Track* restTrack = fSimulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = fSimulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = fSimulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
     Int_t nTracks = restG4Event->GetNumberOfTracks();
     Double_t timeDelay = restG4Metadata->GetSubEventTimeDelay();  // in unit us
