@@ -10,16 +10,19 @@
 
 class G4Run;
 class PrimaryGeneratorAction;
+class SimulationManager;
 
 class RunAction : public G4UserRunAction {
    public:
-    RunAction();
+    RunAction(SimulationManager*);
     ~RunAction();
 
     virtual void BeginOfRunAction(const G4Run*);
     virtual void EndOfRunAction(const G4Run*);
 
    private:
+    SimulationManager* fSimulationManager;
+
     std::map<G4String, G4int> fParticleCount;
     std::map<G4String, G4double> fEmean;
     std::map<G4String, G4double> fEmin;

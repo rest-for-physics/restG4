@@ -22,12 +22,12 @@ ActionInitialization::ActionInitialization(SimulationManager* simulationManager)
 
 ActionInitialization::~ActionInitialization() = default;
 
-void ActionInitialization::BuildForMaster() const { SetUserAction(new RunAction); }
+void ActionInitialization::BuildForMaster() const { SetUserAction(new RunAction(fSimulationManager)); }
 
 void ActionInitialization::Build() const {
     auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
-    auto primaryGenerator = new PrimaryGeneratorAction(detector);
+    auto primaryGenerator = new PrimaryGeneratorAction(fSimulationManager, detector);
 
     auto restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
@@ -80,14 +80,14 @@ void ActionInitialization::Build() const {
         primaryGenerator->SetAngularDistribution(&(fSimulationManager->initialAngularDistribution));
     }
 
-    auto runAction = new RunAction();
-    auto eventAction = new EventAction();
-    auto trackingAction = new TrackingAction(runAction, eventAction);
+    auto runAction = new RunAction(fSimulationManager);
+    auto eventAction = new EventAction(fSimulationManager);
+    auto trackingAction = new TrackingAction(fSimulationManager, runAction, eventAction);
 
-    SetUserAction(new PrimaryGeneratorAction(detector));
+    SetUserAction(primaryGenerator);
     SetUserAction(runAction);
     SetUserAction(eventAction);
-    SetUserAction(new SteppingAction);
+    SetUserAction(new SteppingAction(fSimulationManager));
     // SetUserAction(new StackingAction);
     SetUserAction(trackingAction);
 

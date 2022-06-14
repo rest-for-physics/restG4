@@ -17,14 +17,15 @@ using namespace std;
 G4double prevTime = 0;
 G4String aux;
 
-TrackingAction::TrackingAction(RunAction* runAction, EventAction* eventAction)
+TrackingAction::TrackingAction(SimulationManager* simulationManager, RunAction* runAction,
+                               EventAction* eventAction)
     : G4UserTrackingAction(),
+      fSimulationManager(simulationManager),
       fRun(runAction),
       fEvent(eventAction)
 
 {
-    auto simulationManager = SimulationManager::Instance();
-    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
     fFullChain = false;
 
@@ -39,14 +40,13 @@ TrackingAction::TrackingAction(RunAction* runAction, EventAction* eventAction)
 TrackingAction::~TrackingAction() {}
 
 void TrackingAction::PreUserTrackingAction(const G4Track* track) {
-    auto simulationManager = SimulationManager::Instance();
-    TRestRun* restRun = simulationManager->fRestRun;
-    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
-    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
-    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
-    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
-    TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
-    Int_t& biasing = simulationManager->fBiasing;
+    TRestRun* restRun = fSimulationManager->fRestRun;
+    TRestGeant4Track* restTrack = fSimulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = fSimulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = fSimulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+    TRestGeant4PhysicsLists* restPhysList = fSimulationManager->fRestGeant4PhysicsLists;
+    Int_t& biasing = fSimulationManager->fBiasing;
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Extreme) {
         if (track->GetTrackID() % 10 == 0) {
@@ -86,9 +86,8 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track) {
 }
 
 void TrackingAction::PostUserTrackingAction(const G4Track* track) {
-    auto simulationManager = SimulationManager::Instance();
-    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
-    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
+    TRestGeant4Track* restTrack = fSimulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = fSimulationManager->fRestGeant4Event;
 
     restTrack->SetTrackTimeLength(track->GetLocalTime() / microsecond);
 

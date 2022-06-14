@@ -12,16 +12,18 @@
 
 class RunAction;
 class EventAction;
+class SimulationManager;
 
 class TrackingAction : public G4UserTrackingAction {
    public:
-    TrackingAction(RunAction*, EventAction*);
+    TrackingAction(SimulationManager*, RunAction*, EventAction*);
     ~TrackingAction();
 
     virtual void PreUserTrackingAction(const G4Track*);
     virtual void PostUserTrackingAction(const G4Track*);
 
    private:
+    SimulationManager* fSimulationManager;
     RunAction* fRun;
     EventAction* fEvent;
 

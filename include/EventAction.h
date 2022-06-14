@@ -11,9 +11,11 @@
 #include <G4UserEventAction.hh>
 #include <globals.hh>
 
+class SimulationManager;
+
 class EventAction : public G4UserEventAction {
    public:
-    EventAction();
+    EventAction(SimulationManager*);
     ~EventAction();
 
    public:
@@ -21,6 +23,7 @@ class EventAction : public G4UserEventAction {
     virtual void EndOfEventAction(const G4Event*);
 
    private:
+    SimulationManager* fSimulationManager;
     TStopwatch fTimer;
 
     Double_t absDouble(Double_t x) {

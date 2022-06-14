@@ -21,8 +21,12 @@ Int_t face = 0;
 
 double GeneratorRndm() { return G4UniformRand(); }
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
-    : G4VUserPrimaryGeneratorAction(), fParticleGun(nullptr), fDetector(pDetector) {
+PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationManager,
+                                               DetectorConstruction* pDetector)
+    : G4VUserPrimaryGeneratorAction(),
+      fSimulationManager(simulationManager),
+      fParticleGun(nullptr),
+      fDetector(pDetector) {
     G4int n_particle = 1;
     fParticleGun = new G4ParticleGun(n_particle);
 

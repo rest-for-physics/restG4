@@ -16,7 +16,8 @@
 
 using namespace std;
 
-RunAction::RunAction() : G4UserRunAction() {}
+RunAction::RunAction(SimulationManager* simulationManager)
+    : G4UserRunAction(), fSimulationManager(simulationManager) {}
 
 RunAction::~RunAction() {}
 
@@ -30,7 +31,7 @@ void RunAction::BeginOfRunAction(const G4Run*) {
 }
 
 void RunAction::EndOfRunAction(const G4Run*) {
-    TRestRun* restRun = SimulationManager::Instance()->fRestRun;
+    TRestRun* restRun = fSimulationManager->fRestRun;
 
     G4cout << "============================= Run Summary =============================" << endl;
     G4cout << restRun->GetEntries() << " events stored out of "

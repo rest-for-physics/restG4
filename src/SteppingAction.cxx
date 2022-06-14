@@ -17,10 +17,9 @@
 
 using namespace std;
 
-SteppingAction::SteppingAction() {
-    auto simulationManager = SimulationManager::Instance();
-    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
-    Int_t& biasing = simulationManager->fBiasing;
+SteppingAction::SteppingAction(SimulationManager* simulationManager) : fSimulationManager(simulationManager) {
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+    Int_t& biasing = fSimulationManager->fBiasing;
 
     if (biasing > 1) restBiasingVolume = restG4Metadata->GetBiasingVolume(biasing - 1);
 }
@@ -28,14 +27,13 @@ SteppingAction::SteppingAction() {
 SteppingAction::~SteppingAction() {}
 
 void SteppingAction::UserSteppingAction(const G4Step* aStep) {
-    auto simulationManager = SimulationManager::Instance();
-    TRestRun* restRun = simulationManager->fRestRun;
-    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
-    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
-    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
-    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
-    TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
-    Int_t& biasing = simulationManager->fBiasing;
+    TRestRun* restRun = fSimulationManager->fRestRun;
+    TRestGeant4Track* restTrack = fSimulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = fSimulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = fSimulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+    TRestGeant4PhysicsLists* restPhysList = fSimulationManager->fRestGeant4PhysicsLists;
+    Int_t& biasing = fSimulationManager->fBiasing;
 
     // Variables that describe a step are taken.
     nom_vol = restG4Metadata->GetGeant4GeometryInfo()->GetAlternativeNameFromGeant4PhysicalName(
@@ -163,7 +161,9 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
 
                 if (isActiveVolume) {
                     volume = volID;
-                    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Extreme) G4cout << "Storing hit" << G4endl;
+                    if (restG4Metadata->GetVerboseLevel() >=
+                        TRestStringOutput::REST_Verbose_Level::REST_Extreme)
+                        G4cout << "Storing hit" << G4endl;
                     restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, pcsID, volID, eKin,
                                         momentumDirection);
                     alreadyStored = true;

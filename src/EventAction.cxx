@@ -13,7 +13,8 @@
 
 using namespace std;
 
-EventAction::EventAction() : G4UserEventAction() {
+EventAction::EventAction(SimulationManager* simulationManager)
+    : G4UserEventAction(), fSimulationManager(simulationManager) {
     fTimer.Start();
 
     TRestGeant4Metadata* restG4Metadata = SimulationManager::Instance()->fRestGeant4Metadata;
