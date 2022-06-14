@@ -39,7 +39,7 @@
 
 using namespace std;
 
-void Application::Run(int argc, char** argv) {
+void Application::Run(const CommandLineParameters& commandLineParameters) {
     auto simulationManager = new SimulationManager();
 
     Int_t& biasing = simulationManager->fBiasing;
@@ -58,7 +58,6 @@ void Application::Run(int argc, char** argv) {
 
     cout << "Current working directory: " << originalDirectory << endl;
 
-    CommandLineParameters commandLineParameters = CommandLineSetup::ProcessParameters(argc, argv);
     CommandLineSetup::Print(commandLineParameters);
 
     /// Separating relative path and pure RML filename
