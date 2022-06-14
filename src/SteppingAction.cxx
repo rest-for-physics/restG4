@@ -13,20 +13,28 @@
 #include <G4UnitsTable.hh>
 #include <globals.hh>
 
+#include "SimulationManager.h"
+
 using namespace std;
 
-extern TRestGeant4Event* restG4Event;
-extern TRestGeant4Metadata* restG4Metadata;
-extern TRestGeant4Track* restTrack;
-extern Int_t biasing;
+SteppingAction::SteppingAction(SimulationManager* simulationManager) : fSimulationManager(simulationManager) {
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+    Int_t& biasing = fSimulationManager->fBiasing;
 
-SteppingAction::SteppingAction() {
     if (biasing > 1) restBiasingVolume = restG4Metadata->GetBiasingVolume(biasing - 1);
 }
 
 SteppingAction::~SteppingAction() {}
 
 void SteppingAction::UserSteppingAction(const G4Step* aStep) {
+    TRestRun* restRun = fSimulationManager->fRestRun;
+    TRestGeant4Track* restTrack = fSimulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = fSimulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = fSimulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+    TRestGeant4PhysicsLists* restPhysList = fSimulationManager->fRestGeant4PhysicsLists;
+    Int_t& biasing = fSimulationManager->fBiasing;
+
     // Variables that describe a step are taken.
     const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
     const auto& volumeName = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(
@@ -157,11 +165,9 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
 
                 if (isActiveVolume) {
                     volume = volID;
-
                     if (restG4Metadata->GetVerboseLevel() >=
-                        TRestStringOutput::REST_Verbose_Level::REST_Extreme) {
+                        TRestStringOutput::REST_Verbose_Level::REST_Extreme)
                         G4cout << "Storing hit" << G4endl;
-                    }
                     restTrack->AddG4Hit(hitPosition, TotalEnergyDeposit / keV, hitGlobalTime, processID,
                                         volID, KineticEnergy, momentumDirection);
                     alreadyStored = true;

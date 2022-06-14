@@ -107,7 +107,7 @@ Load REST Libraries:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/05.PandaXIII/
     - restG4 Xe136bb0n.rml
-    - restRoot -b -q ValidateG4.C'("Xe136bb0n_n2E06.root")'
+    - restRoot -b -q Validate.C'("Xe136bb0n_n2E06.root")'
 
 06.IonRecoils:
   stage: Run Examples
@@ -172,6 +172,6 @@ Load REST Libraries:
   script:
     - . ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/11.Xrays/
-    - restG4 xrays.rml -o xrays_simulation.root
-    - restManager --c analysis.rml --f xrays_simulation.root --o xrays_simulation_analysis.root
-    - restRoot -b -q GetQE.C'("xrays_simulation_analysis.root")'
+    - restG4 xrays.rml
+    - restManager --c analysis.rml --f RestG4_xrays_00001_ArgonISO.root
+    - restRoot -b -q GetQE.C'("Run_g4Analysis_00001_xrays.root")'

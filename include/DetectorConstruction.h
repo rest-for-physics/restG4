@@ -9,8 +9,12 @@
 #include <G4PhysicalVolumeStore.hh>
 #include <G4VUserDetectorConstruction.hh>
 
+class SimulationManager;
+
 class DetectorConstruction : public G4VUserDetectorConstruction {
    private:
+    SimulationManager* fSimulationManager;
+
     G4GDMLParser* parser;
     G4VSolid* generatorSolid;
     G4ThreeVector fGeneratorTranslation;
@@ -34,10 +38,12 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
     Double_t GetBoundingZ_min() { return boundBox_zMin; }
     Double_t GetBoundingZ_max() { return boundBox_zMax; }
 
-    DetectorConstruction();
+    DetectorConstruction(SimulationManager*);
     ~DetectorConstruction();
 
    public:
     G4VPhysicalVolume* Construct();
+
+    friend class TRestGeant4GeometryInfo;
 };
 #endif

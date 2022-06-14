@@ -44,6 +44,8 @@ Int_t Validate(const char* filename) {
     }
     geant4Metadata->PrintMetadata();
 
+    const bool isReferenceGeant4Version = geant4Metadata->GetGeant4Version() == "10.4.3";
+
     if (geant4Metadata->GetNumberOfActiveVolumes() != 1) {
         cout << "The number of registered does not match the reference value of 1" << endl;
         return 7;
@@ -54,21 +56,22 @@ Int_t Validate(const char* filename) {
     double nEvents = run.GetEntries();
 
     double averageTotalEnergy = 0;
-    constexpr double averageTotalEnergyRef = 2280.96;
+    const double averageTotalEnergyRef = (!isReferenceGeant4Version) ? 2280.96 : 2221.55;
 
     double averageSensitiveEnergy = 0;
-    constexpr double averageSensitiveEnergyRef = 2280.96;
+    const double averageSensitiveEnergyRef = (!isReferenceGeant4Version) ? 2280.96 : 2221.55;
 
     double averageNumberOfHits = 0;
-    constexpr double averageNumberOfHitsRef = 3071.17;
+    const double averageNumberOfHitsRef = (!isReferenceGeant4Version) ? 3071.17 : 342.37;
 
     double averageNumberOfTracks = 0;
-    constexpr double averageNumberOfTracksRef = 2161.43;
+    const double averageNumberOfTracksRef = (!isReferenceGeant4Version) ? 2161.43 : 10.11;
 
     TVector3 averagePosition = {};
-    const TVector3 averagePositionRef = {-38.8987, 27.5536, 91.3969};
+    const TVector3 averagePositionRef = (!isReferenceGeant4Version) ? TVector3(-38.8987, 27.5536, 91.3969)
+                                                                    : TVector3(-17.8046, -32.5019, -31.8353);
 
-    constexpr double tolerance = 0.001;
+    const double tolerance = 0.001;
 
     for (size_t i = 0; i < run.GetEntries(); i++) {
         run.GetEntry(i);
@@ -93,8 +96,7 @@ Int_t Validate(const char* filename) {
         return 8;
     }
 
-    if (TMath::Abs(averageNumberOfTracks - averageNumberOfTracksRef) / averageNumberOfTracksRef >
-        tolerance) {
+    if (TMath::Abs(averageNumberOfTracks - averageNumberOfTracksRef) / averageNumberOfTracksRef > tolerance) {
         cout << "The average number of tracks does not match the reference value of "
              << averageNumberOfTracksRef << endl;
         return 9;
@@ -113,8 +115,7 @@ Int_t Validate(const char* filename) {
         return 11;
     }
 
-    if (TMath::Abs(averagePosition.Mag() - averagePositionRef.Mag()) / averagePositionRef.Mag() >
-        tolerance) {
+    if (TMath::Abs(averagePosition.Mag() - averagePositionRef.Mag()) / averagePositionRef.Mag() > tolerance) {
         cout << "The average position does not match the reference value of "
              << "(" << averagePositionRef.x() << ", " << averagePositionRef.y() << ", "
              << averagePositionRef.z() << ") mm" << endl;

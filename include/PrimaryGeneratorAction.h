@@ -18,10 +18,11 @@
 const int nSpct = 3000;
 
 class G4Event;
+class SimulationManager;
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
    public:
-    PrimaryGeneratorAction(DetectorConstruction* pDetector);
+    PrimaryGeneratorAction(SimulationManager*, DetectorConstruction* pDetector);
     ~PrimaryGeneratorAction();
 
    public:
@@ -34,6 +35,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     void SetAngularDistribution(TH1D* ang) { fAngularDistribution = ang; }
 
    private:
+    SimulationManager* fSimulationManager;
+
     std::vector<TRestGeant4Particle> fTempParticles;
 
     G4ParticleGun* fParticleGun;

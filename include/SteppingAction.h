@@ -12,9 +12,11 @@
 #include <globals.hh>
 #include <iostream>
 
+class SimulationManager;
+
 class SteppingAction : public G4UserSteppingAction {
    public:
-    SteppingAction();
+    SteppingAction(SimulationManager*);
     ~SteppingAction();
 
     void SetBiasingVolume(const TRestGeant4BiasingVolume& biasVol) { restBiasingVolume = biasVol; }
@@ -29,6 +31,8 @@ class SteppingAction : public G4UserSteppingAction {
     TH2D* GetSpatialDistribution() { return fSpatialDistribution; }
 
    private:
+    SimulationManager* fSimulationManager;
+
     TH1D* fBiasingSpectrum;
     TH1D* fAngularDistribution;
     TH2D* fSpatialDistribution;
