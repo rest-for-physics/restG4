@@ -13,4 +13,11 @@ SimulationManager::SimulationManager() {
     }
 }
 
-SimulationManager::~SimulationManager() = default;
+SimulationManager::~SimulationManager() {
+    delete fRestRun;
+    delete fRestGeant4Track;
+    delete fRestGeant4Event;
+    delete fRestGeant4SubEvent;
+    delete fRestGeant4Metadata;
+    delete fRestGeant4PhysicsLists;
+}

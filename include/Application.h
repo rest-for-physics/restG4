@@ -17,6 +17,11 @@ class Application {
 
     void Run(const CommandLineParameters& parameters);
     inline void Run(int argc, char** argv) { Run(ProcessCommandLineParameters(argc, argv)); }
+
+    ~Application() { delete fSimulationManager; }
+
+   private:
+    SimulationManager* fSimulationManager;
 };
 
 #endif  // REST_APPLICATION_H

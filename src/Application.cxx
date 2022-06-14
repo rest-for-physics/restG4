@@ -324,16 +324,12 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     systime = time(nullptr);
     simulationManager->fRestRun->SetEndTimeStamp((Double_t)systime);
-    TString filename = TRestTools::ToAbsoluteName(simulationManager->fRestRun->GetOutputFileName().Data());
-
+    const TString filename =
+        TRestTools::ToAbsoluteName(simulationManager->fRestRun->GetOutputFileName().Data());
     simulationManager->fRestRun->UpdateOutputFile();
     simulationManager->fRestRun->CloseFile();
     simulationManager->fRestRun->PrintMetadata();
-    delete simulationManager->fRestRun;
 
-    delete simulationManager->fRestGeant4Event;
-    delete simulationManager->fRestGeant4SubEvent;
-    delete simulationManager->fRestGeant4Track;
     ////////// Writing the geometry in TGeoManager format to the ROOT file
     ////////// Need to fork and do it in child process, to prevent occasional seg.fault
     pid_t pid;
