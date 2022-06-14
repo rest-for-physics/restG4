@@ -38,13 +38,13 @@ By default REST units are mm, keV and degrees
 
     <TRestGeant4Metadata name="DBDsimulation" title="NLDBD">
 
-        <parameter name="gdml_file" value="geometry/mySetupTemplate.gdml"/>
+        <parameter name="gdmlFile" value="geometry/mySetupTemplate.gdml"/>
         <parameter name="subEventTimeDelay" value="100" units="us"/>
 
         <parameter name="seed" value="17021981"/>
 
         <!-- The number of events to be simulated is now defined in TRestGeant4Metadata -->
-        <parameter name="Nevents" value="10"/>
+        <parameter name="nEvents" value="100"/>
 
         ///three types of source definition supported:
         <generator type="volume" from="gas">

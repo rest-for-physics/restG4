@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 
 #include "CommandLineSetup.h"
 #include "DetectorConstruction.h"
@@ -60,31 +61,37 @@ void Application::Run(int argc, char** argv) {
     TH1D initialEnergySpectrum;
     TH1D initialAngularDistribution;
 
-    Int_t N_events;
+    Int_t nEvents;
 
     auto start_time = chrono::steady_clock::now();
 
-    char cwd[kMAXPATHLEN];
-    cout << "Current working directory: " << getcwd(cwd, sizeof(cwd)) << endl;
+    const auto originalDirectory = filesystem::current_path();
+
+    cout << "Current working directory: " << originalDirectory << endl;
 
     CommandLineParameters commandLineParameters = CommandLineSetup::ProcessParameters(argc, argv);
     CommandLineSetup::Print(commandLineParameters);
 
     /// Separating relative path and pure RML filename
     char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
-    std::pair<string, string> pathAndRml = TRestTools::SeparatePathAndName(inputConfigFile);
-    char* inputRMLClean = (char*)pathAndRml.second.data();
 
-    TRestTools::ChangeDirectory(pathAndRml.first);
+    if (!TRestTools::CheckFileIsAccessible(inputConfigFile)) {
+        cout << "Input rml file: " << inputConfigFile << " not found, please check file name" << endl;
+        exit(1);
+    }
 
-    restG4Metadata = new TRestGeant4Metadata(inputRMLClean);
+    const auto [inputRmlPath, inputRmlClean] = TRestTools::SeparatePathAndName(inputConfigFile);
+
+    if (!filesystem::path(inputRmlPath).empty()) {
+        filesystem::current_path(inputRmlPath);
+    }
+
+    restG4Metadata = new TRestGeant4Metadata(inputRmlClean.c_str());
+    restG4Metadata->SetGeant4Version(TRestTools::Execute("geant4-config --version"));
 
     if (!commandLineParameters.geometryFile.IsNull()) {
         restG4Metadata->SetGdmlFilename(commandLineParameters.geometryFile.Data());
     }
-
-    string geant4Version = TRestTools::Execute("geant4-config --version");
-    restG4Metadata->SetGeant4Version(geant4Version);
 
     // We need to process and generate a new GDML for several reasons.
     // 1. ROOT6 has problem loading math expressions in gdml file
@@ -104,16 +111,16 @@ void Application::Run(int argc, char** argv) {
     restG4Metadata->SetGdmlReference(gdml->GetGDMLVersion());
     restG4Metadata->SetMaterialsReference(gdml->GetEntityVersion("materials"));
 
-    restPhysList = new TRestGeant4PhysicsLists(inputRMLClean);
+    restPhysList = new TRestGeant4PhysicsLists(inputRmlClean.c_str());
 
     restRun = new TRestRun();
-    restRun->LoadConfigFromFile(inputRMLClean);
+    restRun->LoadConfigFromFile(inputRmlClean);
 
     if (!commandLineParameters.outputFile.IsNull()) {
         restRun->SetOutputFileName(commandLineParameters.outputFile.Data());
     }
 
-    TRestTools::ReturnToPreviousDirectory();
+    filesystem::current_path(originalDirectory);
 
     TString runTag = restRun->GetRunTag();
     if (runTag == "Null" || runTag == "") restRun->SetRunTag(restG4Metadata->GetTitle());
@@ -247,7 +254,7 @@ void Application::Run(int argc, char** argv) {
     visManager->Initialize();
 #endif
 
-    N_events = restG4Metadata->GetNumberOfEvents();
+    nEvents = restG4Metadata->GetNumberOfEvents();
     // We pass the volume definition to Stepping action so that it records gammas
     // entering in We pass also the biasing spectrum so that gammas energies
     // entering the volume are recorded
@@ -261,8 +268,8 @@ void Application::Run(int argc, char** argv) {
     time_t systime = time(nullptr);
     restRun->SetStartTimeStamp((Double_t)systime);
 
-    cout << "Events : " << N_events << endl;
-    if (N_events > 0)  // batch mode
+    cout << "Number of events : " << nEvents << endl;
+    if (nEvents > 0)  // batch mode
     {
         G4String command = "/tracking/verbose 0";
         UI->ApplyCommand(command);
@@ -270,7 +277,7 @@ void Application::Run(int argc, char** argv) {
         UI->ApplyCommand(command);
 
         char tmp[256];
-        sprintf(tmp, "/run/beamOn %d", N_events);
+        sprintf(tmp, "/run/beamOn %d", nEvents);
 
         command = tmp;
         UI->ApplyCommand(command);
@@ -340,7 +347,7 @@ void Application::Run(int argc, char** argv) {
         }
     }
 
-    else if (N_events == 0)  // define visualization and UI terminal for interactive mode
+    else if (nEvents == 0)  // define visualization and UI terminal for interactive mode
     {
         cout << "Entering vis mode.." << endl;
 #ifdef G4UI_USE
@@ -354,22 +361,22 @@ void Application::Run(int argc, char** argv) {
 #endif
     }
 
-    else  // N_events == -1
+    else  // nEvents == -1
     {
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "The number of events to be simulated was not recongnized properly!" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "The number of events to be simulated was not recognized properly!" << endl;
         cout << "Make sure you did not forget the number of events entry in TRestGeant4Metadata." << endl;
         cout << endl;
         cout << " ... or the parameter is properly constructed/interpreted." << endl;
         cout << endl;
         cout << "It should be something like : " << endl;
         cout << endl;
-        cout << " <parameter name =\"Nevents\" value=\"100\"/>" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
-        cout << "++++++++++ ERRORRRR +++++++++" << endl;
+        cout << " <parameter name =\"nEvents\" value=\"100\"/>" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
+        cout << "++++++++++ ERROR +++++++++" << endl;
         cout << endl;
     }
     restRun->GetOutputFile()->cd();
@@ -383,7 +390,7 @@ void Application::Run(int argc, char** argv) {
 
     systime = time(nullptr);
     restRun->SetEndTimeStamp((Double_t)systime);
-    TString Filename = restRun->GetOutputFileName();
+    TString filename = TRestTools::ToAbsoluteName(restRun->GetOutputFileName().Data());
 
     restRun->UpdateOutputFile();
     restRun->CloseFile();
@@ -407,18 +414,19 @@ void Application::Run(int argc, char** argv) {
         // writing the geometry object
         freopen("/dev/null", "w", stdout);
         freopen("/dev/null", "w", stderr);
-        Console::CompatibilityMode = true;
+
+        REST_Display_CompatibilityMode = true;
 
         // We wait the father process ends properly
         sleep(5);
 
         // Then we just add the geometry
-        auto file = new TFile(Filename, "update");
-        TGeoManager* geo2 = gdml->CreateGeoM();
+        auto file = new TFile(filename, "update");
+        TGeoManager* geoManager = gdml->CreateGeoManager();
 
         file->cd();
-        geo2->SetName("Geometry");
-        geo2->Write();
+        geoManager->SetName("Geometry");
+        geoManager->Write();
         file->Close();
         exit(0);
     }
@@ -430,7 +438,7 @@ void Application::Run(int argc, char** argv) {
         printf("Writing geometry ... \n");
     }
 
-    cout << "============== Generated file: " << Filename << " ==============" << endl;
+    cout << "============== Generated file: " << filename << " ==============" << endl;
     auto end_time = chrono::steady_clock::now();
     cout << "Elapsed time: " << chrono::duration_cast<chrono::seconds>(end_time - start_time).count()
          << " seconds" << endl;

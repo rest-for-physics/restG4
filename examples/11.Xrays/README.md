@@ -2,7 +2,7 @@
 
 **Author:** Javier Galan (javier.galan@unizar.es)
 
-This example uses a x-ray gun with photons in the (0,15)keV range hitting a gas volume filled with Xenon in order to generate an efficiency response matrix.
+This example uses an x-ray gun with photons in the (0,15)keV range hitting a gas volume filled with Xenon in order to generate an efficiency response matrix.
 
 #### Detector geometry
 

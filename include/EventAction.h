@@ -6,6 +6,7 @@
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
 #include <TRestGeant4Track.h>
+#include <TStopwatch.h>
 
 #include <G4UserEventAction.hh>
 #include <globals.hh>
@@ -20,6 +21,8 @@ class EventAction : public G4UserEventAction {
     virtual void EndOfEventAction(const G4Event*);
 
    private:
+    TStopwatch fTimer;
+
     Double_t absDouble(Double_t x) {
         if (x > 0) return x;
         return -x;

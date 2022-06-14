@@ -6,7 +6,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake ${CMAKE_MODULE_PAT
 
 if (${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
     # this will only be accessed when build restG4 as a standalone package, not when building the framework
-    CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+    CMAKE_MINIMUM_REQUIRED(VERSION 3.16)
     find_package(REST REQUIRED)
     string(FIND ${REST_LIBRARIES} "RestGeant4" REST_GEANT4_FOUND)
     If (${REST_GEANT4_FOUND} EQUAL -1)
@@ -24,6 +24,12 @@ message(STATUS "-- Found ROOT version: ${ROOT_VERSION} with compilation flags: $
 find_package(Geant4 REQUIRED ui_all vis_all)
 include(${Geant4_USE_FILE})
 message("-- Found Geant4 version: ${Geant4_VERSION}")
+
+# Check Geant4 C++ standard is correct
+execute_process(COMMAND geant4-config --cxxstd OUTPUT_VARIABLE GEANT4_CXX_STD)
+if (NOT ${GEANT4_CXX_STD} MATCHES "17")
+    message(FATAL_ERROR "Geant4 installation was compiled with C++${GEANT4_CXX_STD} standard, but C++17 is required for REST")
+endif ()
 
 # Fix for older Geant4 versions
 if (${Geant4_VERSION} VERSION_LESS 11.0.0)
@@ -75,7 +81,10 @@ target_link_libraries(
         ${LIBRARY}
 )
 
-# Copy scripts to the build directory
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+        )
+
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/
         DESTINATION ./examples/restG4/
         COMPONENT install
@@ -86,7 +95,6 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/mac
         COMPONENT install
         )
 
-# Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
 if (NOT ${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})

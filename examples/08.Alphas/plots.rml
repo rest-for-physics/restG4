@@ -1,37 +1,35 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 
-<TRestManager name="SpecPlot" title="Example" verboseLevel="info" >
+<TRestManager name="SpecPlot" title="Example" verboseLevel="info">
 
-  <TRestAnalysisPlot name="restplot" title="Basic Plots">
+    <TRestAnalysisPlot name="restplot" title="Basic Plots">
 
-    <parameter name="previewPlot" value="False"/>
+        <parameter name="previewPlot" value="False"/>
 
-	<canvas size="(1000,800)" divide="(1,1)" save="plots.root"/>
+        <canvas size="(1000,800)" divide="(1,1)" save="plots.root"/>
 
-    <plot name="Energy" title="Energy spectrum" xlabel="Energy [keV]" ylabel="Counts" value="ON" stats="OFF" legend="on" xticks="6" >
+        <plot name="Energy" title="Energy spectrum" xlabel="Energy [keV]" ylabel="Counts" value="ON" stats="OFF"
+              legend="on" xticks="6">
 
-      <histo name="1MeV_5um" fillColor="46" lineColor="red">
-        <variable name="g4Ana_totalEdep" range="(0,6000)" nbins="100"/>
-        <classify runTag="1MeV_5um"/>
-      </histo>
+            <histo name="1MeV_5um" fillColor="46" lineColor="red">
+                <variable name="g4Ana_totalEdep" range="(0,6000)" nbins="100"/>
+                <classify runTag="1MeV_5um"/>
+            </histo>
 
-      <histo name="5MeV_5um" fillColor="38" lineColor="blue">
-        <variable name="g4Ana_totalEdep" range="(0,6000)" nbins="100"/>
-        <classify runTag="5MeV_5um"/>
-      </histo>
+            <histo name="5MeV_5um" fillColor="38" lineColor="blue">
+                <variable name="g4Ana_totalEdep" range="(0,6000)" nbins="100"/>
+                <classify runTag="5MeV_5um"/>
+            </histo>
 
-      <histo name="5MeV_1um" fillColor="gray" lineColor="black">
-        <variable name="g4Ana_totalEdep" range="(0,6000)" nbins="100"/>
-        <classify runTag="5MeV_1um"/>
-      </histo>
+            <histo name="5MeV_1um" fillColor="gray" lineColor="black">
+                <variable name="g4Ana_totalEdep" range="(0,6000)" nbins="100"/>
+                <classify runTag="5MeV_1um"/>
+            </histo>
 
-    </plot>
+        </plot>
 
-  </TRestAnalysisPlot>
+    </TRestAnalysisPlot>
 
-  <addTask command="restplot->PlotCombinedCanvas()" value="ON"/>
+    <addTask command="restplot->PlotCombinedCanvas()" value="ON"/>
 
 </TRestManager>
-
-
-<!--paramater here is accessible to all the classes-->

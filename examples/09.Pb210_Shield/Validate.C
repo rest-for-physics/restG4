@@ -1,14 +1,17 @@
 
-Int_t Validate(string fname) {
+Int_t Validate(const char* filename) {
     gSystem->Load("libRestFramework.so");
     gSystem->Load("libRestGeant4.so");
 
-    TRestRun* run = new TRestRun(fname);
+    TRestRun run(filename);
 
-    if (run->GetEntries() != 26) {
-        cout << "Entries: " << run->GetEntries() << endl;
-        cout << "There was a problem simulation Pb210. The number of entries should be 26" << endl;
-        return 10;
+    constexpr double tolerance = 0.001;
+    constexpr int numberOfEntriesRef = 252;
+
+    if (TMath::Abs(run.GetEntries() - numberOfEntriesRef) / numberOfEntriesRef > tolerance) {
+        cout << "Number of entries: " << run.GetEntries() << "does not match the reference value of "
+             << numberOfEntriesRef << endl;
+        return 1;
     }
 
     cout << "All tests passed! [\033[32mOK\033[0m]\n";

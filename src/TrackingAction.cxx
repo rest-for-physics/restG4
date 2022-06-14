@@ -48,10 +48,11 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track) {
     TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
     Int_t& biasing = simulationManager->fBiasing;
 
-    if (restG4Metadata->GetVerboseLevel() >= REST_Extreme)
+    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Extreme) {
         if (track->GetTrackID() % 10 == 0) {
             cout << "EXTREME: Processing track " << track->GetTrackID() << endl;
         }
+    }
     G4ParticleDefinition* particle = track->GetDefinition();
     G4String name = particle->GetParticleName();
     fCharge = particle->GetPDGCharge();
