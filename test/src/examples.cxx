@@ -28,13 +28,13 @@ TEST(restG4, Example_01_NLDBD) {
 
     CommandLineParameters parameters;
     parameters.rmlFile = "NLDBD.rml";
-    parameters.outputFile = "NLDBD_simulation.root";
+    parameters.outputFile =
+        thisExamplePath / "NLDBD_simulation.root";  // TODO: fix not working with local path
 
     Application app;
     app.Run(parameters);
 
-    // Run validation macro TODO: fix
-    /*
+    // Run validation macro
     const TString macro(thisExamplePath / "Validate.C");
     gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
     int error = 0;
@@ -42,6 +42,6 @@ TEST(restG4, Example_01_NLDBD) {
         gROOT->ProcessLine(TString::Format("Validate(\"%s\")", parameters.outputFile.Data()), &error);
     EXPECT_EQ(error, 0);
     EXPECT_EQ(result, 0);
-    */
+
     fs::current_path(originalPath);
 }
