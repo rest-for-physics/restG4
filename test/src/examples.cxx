@@ -1,7 +1,7 @@
 
 #include <Application.h>
 #include <CommandLineSetup.h>
-#include <TRestGeant4Metadata.h>
+#include <TROOT.h>
 #include <gtest/gtest.h>
 
 #include <filesystem>
@@ -22,11 +22,25 @@ TEST(restG4, CheckExampleFiles) {
 
 TEST(restG4, Example_01_NLDBD) {
     // cd into example
-    fs::current_path(examplesPath / "01.NLDBD");
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "01.NLDBD";
+    fs::current_path(thisExamplePath);
 
     CommandLineParameters parameters;
     parameters.rmlFile = "NLDBD.rml";
+    parameters.outputFile = "NLDBD_simulation.root";
 
-    auto app = new Application();
-    app->Run(parameters);
+    Application app;
+    app.Run(parameters);
+
+    // Run validation macro
+    const TString macro(thisExamplePath / "Validate.C");
+    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+    int error = 0;
+    const int result =
+        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", parameters.outputFile.Data()), &error);
+    EXPECT_EQ(error, 0);
+    EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
 }
