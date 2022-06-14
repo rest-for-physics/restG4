@@ -18,6 +18,7 @@
 #include <cstring>
 #include <filesystem>
 
+#include "ActionInitialization.h"
 #include "CommandLineSetup.h"
 #include "DetectorConstruction.h"
 #include "EventAction.h"
@@ -49,17 +50,11 @@ void Application::Run(int argc, char** argv) {
     TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
     Int_t& biasing = simulationManager->fBiasing;
 
+    auto biasingSpectrum = simulationManager->biasingSpectrum;
+    auto angularDistribution = simulationManager->biasingSpectrum;
+    auto spatialDistribution = simulationManager->spatialDistribution;
+
     Bool_t saveAllEvents;
-
-    const Int_t maxBiasingVolumes = 50;
-
-    // These histograms would be better placed inside TRestGeant4BiasingVolume
-    TH1D* biasingSpectrum[maxBiasingVolumes];
-    TH1D* angularDistribution[maxBiasingVolumes];
-    TH2D* spatialDistribution[maxBiasingVolumes];
-
-    TH1D initialEnergySpectrum;
-    TH1D initialAngularDistribution;
 
     Int_t nEvents;
 
@@ -176,74 +171,16 @@ void Application::Run(int argc, char** argv) {
 
     auto runManager = new G4RunManager;
 
-    auto det = new DetectorConstruction();
+    auto detector = new DetectorConstruction();
 
-    runManager->SetUserInitialization(det);
+    runManager->SetUserInitialization(detector);
     runManager->SetUserInitialization(new PhysicsList(restPhysList));
 
-    auto prim = new PrimaryGeneratorAction(det);
+    runManager->SetUserInitialization(new ActionInitialization(SimulationManager::Instance()));
 
-    if (restG4Metadata->GetParticleSource(0)->GetEnergyDistType() == "TH1D") {
-        TString fileFullPath = (TString)restG4Metadata->GetParticleSource(0)->GetSpectrumFilename();
-
-        TFile fin(fileFullPath);
-
-        TString sptName = restG4Metadata->GetParticleSource(0)->GetSpectrumName();
-
-        TH1D* h = (TH1D*)fin.Get(sptName);
-
-        if (!h) {
-            cout << "REST ERROR  when trying to find energy spectrum" << endl;
-            cout << "File : " << fileFullPath << endl;
-            cout << "Spectrum name : " << sptName << endl;
-            exit(1);
-        }
-
-        initialEnergySpectrum = *h;
-
-        Double_t minEnergy = restG4Metadata->GetParticleSource(0)->GetMinEnergy();
-        if (minEnergy < 0) minEnergy = 0;
-
-        Double_t maxEnergy = restG4Metadata->GetParticleSource(0)->GetMaxEnergy();
-        if (maxEnergy < 0) maxEnergy = 0;
-
-        // We set the initial spectrum energy provided from TH1D
-        prim->SetSpectrum(&initialEnergySpectrum, minEnergy, maxEnergy);
-    }
-
-    if (restG4Metadata->GetParticleSource(0)->GetAngularDistType() == "TH1D") {
-        TString fileFullPath = (TString)restG4Metadata->GetParticleSource(0)->GetAngularFilename();
-
-        TFile fin(fileFullPath);
-
-        TString sptName = restG4Metadata->GetParticleSource(0)->GetAngularName();
-        TH1D* h = (TH1D*)fin.Get(sptName);
-
-        if (!h) {
-            cout << "REST ERROR  when trying to find angular spectrum" << endl;
-            cout << "File : " << fileFullPath << endl;
-            cout << "Spectrum name : " << sptName << endl;
-            exit(1);
-        }
-
-        initialAngularDistribution = *h;
-
-        // We set the initial angular distribution provided from TH1D
-        prim->SetAngularDistribution(&initialAngularDistribution);
-    }
-
-    auto run = new RunAction(prim);
-
-    auto event = new EventAction();
-
-    auto track = new TrackingAction(run, event);
-    auto step = new SteppingAction();
-
-    runManager->SetUserAction(run);
-    runManager->SetUserAction(prim);
-    runManager->SetUserAction(event);
-    runManager->SetUserAction(track);
-    runManager->SetUserAction(step);
+    auto step = (SteppingAction*)G4RunManager::GetRunManager()->GetUserSteppingAction();
+    auto primaryGenerator =
+        (PrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
 
     runManager->Initialize();
 
@@ -303,9 +240,9 @@ void Application::Run(int argc, char** argv) {
             restG4Metadata->AddParticleSource(src);
 
             // We set the spectrum from previous biasing volume inside the primary generator
-            prim->SetSpectrum(biasingSpectrum[biasing]);
+            primaryGenerator->SetSpectrum(biasingSpectrum[biasing]);
             // And we set the angular distribution
-            prim->SetAngularDistribution(angularDistribution[biasing]);
+            primaryGenerator->SetAngularDistribution(angularDistribution[biasing]);
 
             // We re-define the generator inside restG4Metadata to be launched from the biasing volume
             restG4Metadata->SetGeneratorType(
@@ -373,7 +310,7 @@ void Application::Run(int argc, char** argv) {
         cout << endl;
         cout << "It should be something like : " << endl;
         cout << endl;
-        cout << " <parameter name =\"nEvents\" value=\"100\"/>" << endl;
+        cout << R"( <parameter name ="nEvents" value="100"/>)" << endl;
         cout << "++++++++++ ERROR +++++++++" << endl;
         cout << "++++++++++ ERROR +++++++++" << endl;
         cout << "++++++++++ ERROR +++++++++" << endl;

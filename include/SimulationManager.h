@@ -20,6 +20,16 @@ class SimulationManager {
     TRestGeant4PhysicsLists* fRestGeant4PhysicsLists;
     Int_t fBiasing = 0;
 
+    static const Int_t maxBiasingVolumes = 50;
+
+    // These histograms would be better placed inside TRestGeant4BiasingVolume
+    TH1D* biasingSpectrum[maxBiasingVolumes];
+    TH1D* angularDistribution[maxBiasingVolumes];
+    TH2D* spatialDistribution[maxBiasingVolumes];
+
+    TH1D initialEnergySpectrum;
+    TH1D initialAngularDistribution;
+
    private:
     SimulationManager();
     static SimulationManager* fInstance;

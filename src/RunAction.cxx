@@ -16,7 +16,7 @@
 
 using namespace std;
 
-RunAction::RunAction(PrimaryGeneratorAction* gen) : G4UserRunAction(), fPrimary(gen) {}
+RunAction::RunAction() : G4UserRunAction() {}
 
 RunAction::~RunAction() {}
 
