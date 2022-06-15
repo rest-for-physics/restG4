@@ -39,7 +39,18 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     // Variables that describe a step are taken.
     nom_vol = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(
         (TString &&) aStep->GetPreStepPoint()->GetPhysicalVolume()->GetName());
-    nom_part = aStep->GetTrack()->GetDefinition()->GetParticleName();
+
+    const auto& particle = aStep->GetTrack()->GetDefinition();
+    const auto& particleID = particle->GetPDGEncoding();
+    const auto& particleName = particle->GetParticleName();
+
+    restG4Metadata->fGeant4PhysicsInfo.InsertParticleName(particleID, particleName);
+
+    const auto process = aStep->GetPostStepPoint()->GetProcessDefinedStep();
+    const auto& processID = process->GetProcessType() * 1000 + process->GetProcessSubType();
+    const auto& processName = process->GetProcessName();
+
+    restG4Metadata->fGeant4PhysicsInfo.InsertProcessName(processID, processName);
 
     ener_dep = aStep->GetTotalEnergyDeposit();
     eKin = aStep->GetTrack()->GetKineticEnergy() / keV;
@@ -68,12 +79,6 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         exit(0);
     }
 
-    const auto process = aStep->GetPostStepPoint()->GetProcessDefinedStep();
-    const auto& processID = process->GetProcessType() * 1000 + process->GetProcessSubType();
-    const auto& processName = process->GetProcessName();
-
-    restG4Metadata->fGeant4PhysicsInfo.InsertProcessName(processID, processName);
-
     G4Track* aTrack = aStep->GetTrack();
     parentID = aTrack->GetParentID();
     trackID = aTrack->GetTrackID();
@@ -88,7 +93,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     if (biasing > 0) {
         // In biasing mode we do not store hits. Just check if we observe a gamma
         // inside the volume
-        if (restBiasingVolume.isInside(x, y, z) && nom_part == "gamma") {
+        if (restBiasingVolume.isInside(x, y, z) && particleName == "gamma") {
             Double_t eKinetic = aStep->GetPreStepPoint()->GetKineticEnergy() / keV;
 
             // we add the gamma energy to the energy spectrum
