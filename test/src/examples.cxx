@@ -185,6 +185,16 @@ TEST(restG4, Example_07_Decay_FullChain) {
     Application app;
     app.Run(parameters);
 
+    // print processes
+    TRestRun run(parameters.outputFile.Data());
+    auto geant4Metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
+    EXPECT_EQ(geant4Metadata != nullptr, true);
+
+    const auto& physicsInfo = geant4Metadata->GetGeant4PhysicsInfo();
+
+    cout << "Printing physics info" << endl;
+    physicsInfo.Print();
+
     // Run validation macro
     const TString macro(thisExamplePath / "Validate.C");
     gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
