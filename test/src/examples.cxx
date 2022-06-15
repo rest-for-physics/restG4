@@ -49,7 +49,7 @@ TEST(restG4, Example_01_NLDBD) {
 
 TEST(restG4, TRestGeant4GeometryInfo_TRestGeant4PhysicsInfo) {
     // Test "TRestGeant4GeometryInfo" and "TRestGeant4PhysicsInfo" even though its from Geant4Lib, we need a
-    // simulation file so we placed
+    // simulation file, so we placed the test here
 
     const auto originalPath = fs::current_path();
     const auto thisExamplePath = examplesPath / "01.NLDBD";
@@ -73,8 +73,8 @@ TEST(restG4, TRestGeant4GeometryInfo_TRestGeant4PhysicsInfo) {
     }
 
     TRestRun run(resultsFile);
-
-    auto geant4Metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
+    // Test `TRestGeant4Metadata::GetUnambiguousGlobalInstance`
+    auto geant4Metadata = TRestGeant4Metadata::GetUnambiguousGlobalInstance("TRestGeant4Metadata");
     EXPECT_EQ(geant4Metadata != nullptr, true);
 
     const auto& geometryInfo = geant4Metadata->GetGeant4GeometryInfo();
