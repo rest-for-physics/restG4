@@ -68,7 +68,11 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         exit(0);
     }
 
-    nom_proc = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+    const auto process = aStep->GetPostStepPoint()->GetProcessDefinedStep();
+    const auto& processID = process->GetProcessType() * 1000 + process->GetProcessSubType();
+    const auto& processName = process->GetProcessName();
+
+    restG4Metadata->fGeant4PhysicsInfo.InsertProcessName(processID, processName);
 
     G4Track* aTrack = aStep->GetTrack();
     parentID = aTrack->GetParentID();
@@ -142,7 +146,6 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         }
 
         TVector3 hitPosition(x, y, z);
-        Int_t pcsID = restTrack->GetProcessID(nom_proc);
         Double_t hit_global_time = aStep->GetPreStepPoint()->GetGlobalTime() / second;
         G4ThreeVector momentum = aStep->GetPreStepPoint()->GetMomentumDirection();
         TVector3 momentumDirection = TVector3(momentum.x(), momentum.y(), momentum.z());  //.Unit();
@@ -164,7 +167,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
                     if (restG4Metadata->GetVerboseLevel() >=
                         TRestStringOutput::REST_Verbose_Level::REST_Extreme)
                         G4cout << "Storing hit" << G4endl;
-                    restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, pcsID, volID, eKin,
+                    restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, processID, volID, eKin,
                                         momentumDirection);
                     alreadyStored = true;
                 }
@@ -173,9 +176,9 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
 
         // See issue #65.
         // If the radioactive decay occurs in a non-active volume then the id will be -1
-        Bool_t isDecay = (nom_proc == (G4String) "RadioactiveDecay");
+        Bool_t isDecay = (processName == (G4String) "RadioactiveDecay");
         if (!alreadyStored && isDecay)
-            restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, pcsID, volume, eKin,
+            restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, processID, volume, eKin,
                                 momentumDirection);
     }
 }

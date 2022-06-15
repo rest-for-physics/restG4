@@ -47,15 +47,16 @@ TEST(restG4, Example_01_NLDBD) {
     fs::current_path(originalPath);
 }
 
-TEST(restG4, TRestGeant4GeometryInfo) {
-    // Test "TRestGeant4GeometryInfo" even though its from Geant4Lib, we need a simulation file so we placed
+TEST(restG4, TRestGeant4GeometryInfo_TRestGeant4PhysicsInfo) {
+    // Test "TRestGeant4GeometryInfo" and "TRestGeant4PhysicsInfo" even though its from Geant4Lib, we need a
+    // simulation file so we placed
 
     const auto originalPath = fs::current_path();
     const auto thisExamplePath = examplesPath / "01.NLDBD";
     const auto resultsFile = thisExamplePath / "NLDBD_simulation.root";
 
     // If previous example was ran we can use generated file, otherwise we generate it again
-    if (!TRestTools::CheckFileIsAccessible(resultsFile)) {
+    if (!TRestTools::CheckFileIsAccessible(resultsFile) || true) {
         cout << "Results file not found, generating file..." << endl;
         fs::current_path(thisExamplePath);
 
@@ -110,6 +111,11 @@ TEST(restG4, TRestGeant4GeometryInfo) {
             exit(1);
         }
     }
+
+    const auto& physicsInfo = geant4Metadata->GetGeant4PhysicsInfo();
+
+    cout << "Printing physics info" << endl;
+    physicsInfo.Print();
 }
 
 TEST(restG4, Example_04_Muons) {
