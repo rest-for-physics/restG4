@@ -13,21 +13,26 @@
 #include <G4UnitsTable.hh>
 #include <Randomize.hh>
 
-using namespace std;
+#include "SimulationManager.h"
 
-extern TRestGeant4Metadata* restG4Metadata;
-extern TRestGeant4Event* restG4Event;
+using namespace std;
 
 Int_t face = 0;
 
 double GeneratorRndm() { return G4UniformRand(); }
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* pDetector)
-    : G4VUserPrimaryGeneratorAction(), fParticleGun(nullptr), fDetector(pDetector) {
+PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationManager,
+                                               DetectorConstruction* pDetector)
+    : G4VUserPrimaryGeneratorAction(),
+      fSimulationManager(simulationManager),
+      fParticleGun(nullptr),
+      fDetector(pDetector) {
     G4int n_particle = 1;
     fParticleGun = new G4ParticleGun(n_particle);
 
     fGeneratorSpatialDensityFunction = nullptr;
+
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
     for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
         restG4Metadata->GetParticleSource(i)->SetRndmMethod(GeneratorRndm);
@@ -84,7 +89,16 @@ void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
     fGeneratorSpatialDensityFunction = new TF3("GeneratorDistFunc", str);
 }
 
-void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
+void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
+    auto simulationManager = fSimulationManager;
+    TRestRun* restRun = simulationManager->fRestRun;
+    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+    TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
+    Int_t& biasing = simulationManager->fBiasing;
+
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         cout << "DEBUG: Primary generation" << endl;
     }
@@ -116,12 +130,21 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* geant4_event) {
 
             SetParticleDirection(i, p);
 
-            fParticleGun->GeneratePrimaryVertex(geant4_event);
+            fParticleGun->GeneratePrimaryVertex(event);
         }
     }
 }
 
 G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRestGeant4Particle p) {
+    auto simulationManager = fSimulationManager;
+    TRestRun* restRun = simulationManager->fRestRun;
+    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+    TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
+    Int_t& biasing = simulationManager->fBiasing;
+
     auto particle_name = (string)p.GetParticleName();
 
     Double_t excited_energy = (double)p.GetExcitationLevel();  // in keV
@@ -164,6 +187,14 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
 }
 
 void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p) {
+    auto simulationManager = fSimulationManager;
+    TRestRun* restRun = simulationManager->fRestRun;
+    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+    Int_t& biasing = simulationManager->fBiasing;
+
     G4ThreeVector direction;
     // TODO: maybe reduce code redundancy by defining some functions?
     // TODO: fix bug when giving TH1D with lowercase (e.g. Th1D). string conversion is OK but integral gives
@@ -367,6 +398,15 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
 }
 
 void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
+    auto simulationManager = fSimulationManager;
+
+    TRestRun* restRun = simulationManager->fRestRun;
+    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+    Int_t& biasing = simulationManager->fBiasing;
+
     Double_t energy = 0;
 
     auto energy_dist_type_name = (string)restG4Metadata->GetParticleSource(n)->GetEnergyDistType();
@@ -446,6 +486,15 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
 }
 
 void PrimaryGeneratorAction::SetParticlePosition() {
+    auto simulationManager = fSimulationManager;
+
+    TRestRun* restRun = simulationManager->fRestRun;
+    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+    Int_t& biasing = simulationManager->fBiasing;
+
     double x = 0, y = 0, z = 0;
     string generator_type_name = (string)restG4Metadata->GetGeneratorType();
     g4_metadata_parameters::generator_types generator_type =
@@ -615,6 +664,8 @@ void PrimaryGeneratorAction::GenPositionOnGDMLSurface(double& x, double& y, doub
     z = z + fDetector->GetGeneratorTranslation().z();
 }
 void PrimaryGeneratorAction::GenPositionOnBoxVolume(double& x, double& y, double& z) {
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+
     Double_t sidex = restG4Metadata->GetGeneratorSize().X();
     Double_t sidey = restG4Metadata->GetGeneratorSize().Y();
     Double_t sidez = restG4Metadata->GetGeneratorSize().Z();
@@ -644,6 +695,8 @@ void PrimaryGeneratorAction::GenPositionOnSphereVolume(double& x, double& y, dou
     abort();
 }
 void PrimaryGeneratorAction::GenPositionOnSphereSurface(double& x, double& y, double& z) {
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+
     G4ThreeVector rndPos = GetIsotropicVector();
 
     Double_t radius = restG4Metadata->GetGeneratorSize().X();
@@ -659,6 +712,8 @@ void PrimaryGeneratorAction::GenPositionOnCylinderVolume(double& x, double& y, d
     abort();
 }
 void PrimaryGeneratorAction::GenPositionOnCylinderSurface(double& x, double& y, double& z) {
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+
     Double_t angle = 2 * M_PI * G4UniformRand();
 
     Double_t radius = restG4Metadata->GetGeneratorSize().x();
@@ -681,6 +736,8 @@ void PrimaryGeneratorAction::GenPositionOnCylinderSurface(double& x, double& y, 
     z = rndPos.z() + center.Z();
 }
 void PrimaryGeneratorAction::GenPositionOnPoint(double& x, double& y, double& z) {
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+
     TVector3 position = restG4Metadata->GetGeneratorPosition();
 
     x = position.X();
@@ -688,6 +745,8 @@ void PrimaryGeneratorAction::GenPositionOnPoint(double& x, double& y, double& z)
     z = position.Z();
 }
 void PrimaryGeneratorAction::GenPositionOnWall(double& x, double& y, double& z) {
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+
     Double_t sidex = restG4Metadata->GetGeneratorSize().X();
     Double_t sidey = restG4Metadata->GetGeneratorSize().Y();
 
@@ -708,6 +767,8 @@ void PrimaryGeneratorAction::GenPositionOnWall(double& x, double& y, double& z) 
 }
 
 void PrimaryGeneratorAction::GenPositionOnPlate(double& x, double& y, double& z) {
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+
     Double_t radius = restG4Metadata->GetGeneratorSize().X();
 
     do {

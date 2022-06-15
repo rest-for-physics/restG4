@@ -10,22 +10,23 @@
 
 #include "EventAction.h"
 #include "RunAction.h"
+#include "SimulationManager.h"
 
 using namespace std;
-
-extern TRestGeant4Metadata* restG4Metadata;
-extern TRestGeant4Event* restG4Event;
-extern TRestGeant4Track* restTrack;
 
 G4double prevTime = 0;
 G4String aux;
 
-TrackingAction::TrackingAction(RunAction* runAction, EventAction* eventAction)
+TrackingAction::TrackingAction(SimulationManager* simulationManager, RunAction* runAction,
+                               EventAction* eventAction)
     : G4UserTrackingAction(),
+      fSimulationManager(simulationManager),
       fRun(runAction),
       fEvent(eventAction)
 
 {
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+
     fFullChain = false;
 
     fFullChain = restG4Metadata->isFullChainActivated();
@@ -39,10 +40,19 @@ TrackingAction::TrackingAction(RunAction* runAction, EventAction* eventAction)
 TrackingAction::~TrackingAction() {}
 
 void TrackingAction::PreUserTrackingAction(const G4Track* track) {
-    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Extreme)
+    TRestRun* restRun = fSimulationManager->fRestRun;
+    TRestGeant4Track* restTrack = fSimulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = fSimulationManager->fRestGeant4Event;
+    TRestGeant4Event* subRestG4Event = fSimulationManager->fRestGeant4SubEvent;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+    TRestGeant4PhysicsLists* restPhysList = fSimulationManager->fRestGeant4PhysicsLists;
+    Int_t& biasing = fSimulationManager->fBiasing;
+
+    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Extreme) {
         if (track->GetTrackID() % 10 == 0) {
             cout << "EXTREME: Processing track " << track->GetTrackID() << endl;
         }
+    }
     G4ParticleDefinition* particle = track->GetDefinition();
     G4String name = particle->GetParticleName();
     fCharge = particle->GetPDGCharge();
@@ -76,6 +86,9 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track) {
 }
 
 void TrackingAction::PostUserTrackingAction(const G4Track* track) {
+    TRestGeant4Track* restTrack = fSimulationManager->fRestGeant4Track;
+    TRestGeant4Event* restG4Event = fSimulationManager->fRestGeant4Event;
+
     restTrack->SetTrackTimeLength(track->GetLocalTime() / microsecond);
 
     //   G4cout << "Storing track : Number of hits : " <<

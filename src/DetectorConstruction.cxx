@@ -8,16 +8,17 @@
 #include <G4Isotope.hh>
 #include <G4MagneticField.hh>
 #include <G4Material.hh>
+#include <G4RunManager.hh>
 #include <G4SystemOfUnits.hh>
 #include <G4UniformMagField.hh>
 #include <G4UserLimits.hh>
 
+#include "SimulationManager.h"
+
 using namespace std;
 
-extern TRestGeant4Event* restG4Event;
-extern TRestGeant4Metadata* restG4Metadata;
-
-DetectorConstruction::DetectorConstruction() {
+DetectorConstruction::DetectorConstruction(SimulationManager* simulationManager)
+    : fSimulationManager(simulationManager) {
     G4cout << "Detector Construction" << G4endl;
     parser = new G4GDMLParser();
 }
@@ -25,6 +26,9 @@ DetectorConstruction::DetectorConstruction() {
 DetectorConstruction::~DetectorConstruction() { delete parser; }
 
 G4VPhysicalVolume* DetectorConstruction::Construct() {
+    TRestGeant4Event* restG4Event = fSimulationManager->fRestGeant4Event;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+
     cout << "Isotope table " << endl;
     cout << *(G4Isotope::GetIsotopeTable()) << endl;
 
@@ -203,6 +207,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
 G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physVolName) {
     G4PhysicalVolumeStore* physVolStore = G4PhysicalVolumeStore::GetInstance();
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
     vector<G4VPhysicalVolume*>::const_iterator physVol;
     for (physVol = physVolStore->begin(); physVol != physVolStore->end(); physVol++) {
@@ -219,6 +224,9 @@ G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physV
 }
 
 void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* world) {
+    auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+    TRestGeant4Metadata* restG4Metadata = detector->fSimulationManager->fRestGeant4Metadata;
+
     const int n = int(world->GetLogicalVolume()->GetNoDaughters());
     for (int i = 0; i < n + 1; i++) {  // world is the + 1
         G4VPhysicalVolume* volume;

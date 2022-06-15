@@ -29,7 +29,7 @@ message("-- Found Geant4 version: ${Geant4_VERSION}")
 execute_process(COMMAND geant4-config --cxxstd OUTPUT_VARIABLE GEANT4_CXX_STD)
 if (NOT ${GEANT4_CXX_STD} MATCHES "17")
     message(FATAL_ERROR "Geant4 installation was compiled with C++${GEANT4_CXX_STD} standard, but C++17 is required for REST")
-endif()
+endif ()
 
 # Fix for older Geant4 versions
 if (${Geant4_VERSION} VERSION_LESS 11.0.0)
@@ -64,10 +64,24 @@ string(STRIP "${LINK_LIBRARIES}" LINK_LIBRARIES)
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cxx)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.h)
 
-# Add the executable, and link it to the Geant4 libraries
-add_executable(${PROJECT_NAME} restG4.cxx ${sources} ${headers})
-target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARIES})
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${INCLUDE_DIRS})
+# Create a library, necessary to enable testing
+set(LIBRARY RestRestG4) # this way the `ADD_LIBRARY_TEST` macro will pick the library name correctly
+add_library(${LIBRARY} SHARED)
+
+target_sources(${LIBRARY} PUBLIC ${sources})
+target_link_libraries(${LIBRARY} ${LINK_LIBRARIES})
+target_include_directories(${LIBRARY} SYSTEM PUBLIC ${INCLUDE_DIRS})
+
+if (NOT ${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+    ADD_LIBRARY_TEST()
+endif ()
+
+# Add the executable
+add_executable(${PROJECT_NAME} main.cxx)
+target_link_libraries(
+        ${PROJECT_NAME} PUBLIC
+        ${LIBRARY}
+)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}

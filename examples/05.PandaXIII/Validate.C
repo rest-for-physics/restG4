@@ -1,5 +1,5 @@
 
-Int_t ValidateG4(string fname) {
+Int_t Validate(string fname) {
     TRestRun* run = new TRestRun(fname);
 
     if (run->GetParentRunNumber() != 0) {
