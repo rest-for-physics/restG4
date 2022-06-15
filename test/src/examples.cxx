@@ -76,29 +76,32 @@ TEST(restG4, TRestGeant4GeometryInfo) {
     auto geant4Metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
     EXPECT_EQ(geant4Metadata != nullptr, true);
 
-    auto geometryInfo = geant4Metadata->GetGeant4GeometryInfo();
+    const auto& geometryInfo = geant4Metadata->GetGeant4GeometryInfo();
 
     cout << "Printing geometry info" << endl;
-    geometryInfo->Print();
+    geometryInfo.Print();
 
-    for (const auto& logicalVolume : geometryInfo->GetAllLogicalVolumes()) {
+    EXPECT_EQ(geometryInfo.GetAllLogicalVolumes().size() == 4, true);
+    EXPECT_EQ(geometryInfo.GetAllPhysicalVolumes().size() == 4, true);
+
+    for (const auto& logicalVolume : geometryInfo.GetAllLogicalVolumes()) {
         if (logicalVolume == "World") {
-            const auto& physicals = geometryInfo->GetAllPhysicalVolumesFromLogical(logicalVolume);
+            const auto& physicals = geometryInfo.GetAllPhysicalVolumesFromLogical(logicalVolume);
             EXPECT_EQ(physicals.size() == 1, true);
             const auto& physical = physicals[0];
             EXPECT_EQ(physical == "World_PV", true);
         } else if (logicalVolume == "gasVolume") {
-            const auto& physicals = geometryInfo->GetAllPhysicalVolumesFromLogical(logicalVolume);
+            const auto& physicals = geometryInfo.GetAllPhysicalVolumesFromLogical(logicalVolume);
             EXPECT_EQ(physicals.size() == 1, true);
             const auto& physical = physicals[0];
             EXPECT_EQ(physical == "gas", true);
         } else if (logicalVolume == "vesselVolume") {
-            const auto& physicals = geometryInfo->GetAllPhysicalVolumesFromLogical(logicalVolume);
+            const auto& physicals = geometryInfo.GetAllPhysicalVolumesFromLogical(logicalVolume);
             EXPECT_EQ(physicals.size() == 1, true);
             const auto& physical = physicals[0];
             EXPECT_EQ(physical == "vessel", true);
         } else if (logicalVolume == "waterTankVolume") {
-            const auto& physicals = geometryInfo->GetAllPhysicalVolumesFromLogical(logicalVolume);
+            const auto& physicals = geometryInfo.GetAllPhysicalVolumesFromLogical(logicalVolume);
             EXPECT_EQ(physicals.size() == 1, true);
             const auto& physical = physicals[0];
             EXPECT_EQ(physical == "waterTank", true);

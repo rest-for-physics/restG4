@@ -35,8 +35,9 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     TRestGeant4PhysicsLists* restPhysList = fSimulationManager->fRestGeant4PhysicsLists;
     Int_t& biasing = fSimulationManager->fBiasing;
 
+    const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
     // Variables that describe a step are taken.
-    nom_vol = restG4Metadata->GetGeant4GeometryInfo()->GetAlternativeNameFromGeant4PhysicalName(
+    nom_vol = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(
         (TString &&) aStep->GetPreStepPoint()->GetPhysicalVolume()->GetName());
     nom_part = aStep->GetTrack()->GetDefinition()->GetParticleName();
 
@@ -44,8 +45,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     eKin = aStep->GetTrack()->GetKineticEnergy() / keV;
 
     auto sensitiveVolumeName =
-        restG4Metadata->GetGeant4GeometryInfo()->GetAlternativeNameFromGeant4PhysicalName(
-            restG4Metadata->GetSensitiveVolume());
+        geometryInfo.GetAlternativeNameFromGeant4PhysicalName(restG4Metadata->GetSensitiveVolume());
 
     if (restTrack->GetParticleName() == "geantino" && sensitiveVolumeName.Data() == nom_vol) {
         restG4Metadata->SetSaveAllEvents(true);
