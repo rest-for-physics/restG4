@@ -37,7 +37,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
 
     const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
     // Variables that describe a step are taken.
-    nom_vol = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(
+    const auto& volumeName = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(
         (TString &&) aStep->GetPreStepPoint()->GetPhysicalVolume()->GetName());
 
     const auto& particle = aStep->GetTrack()->GetDefinition();
@@ -58,7 +58,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     auto sensitiveVolumeName =
         geometryInfo.GetAlternativeNameFromGeant4PhysicalName(restG4Metadata->GetSensitiveVolume());
 
-    if (restTrack->GetParticleName() == "geantino" && sensitiveVolumeName.Data() == nom_vol) {
+    if (restTrack->GetParticleName() == "geantino" && sensitiveVolumeName.Data() == volumeName) {
         restG4Metadata->SetSaveAllEvents(true);
     }
 
@@ -146,7 +146,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         }
 
     } else {
-        if ((G4String)restG4Metadata->GetSensitiveVolume() == nom_vol) {
+        if (restG4Metadata->GetSensitiveVolume() == volumeName) {
             restG4Event->AddEnergyToSensitiveVolume(ener_dep / keV);
         }
 
@@ -160,12 +160,14 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         // We check if the hit must be stored and keep it on restG4Track
         for (int volID = 0; volID < restG4Metadata->GetNumberOfActiveVolumes(); volID++) {
             if (restG4Event->isVolumeStored(volID)) {
-                if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Extreme)
-                    G4cout << "Step volume :" << nom_vol << "::("
+                if (restG4Metadata->GetVerboseLevel() >=
+                    TRestStringOutput::REST_Verbose_Level::REST_Extreme) {
+                    G4cout << "Step volume :" << volumeName << "::("
                            << (G4String)restG4Metadata->GetActiveVolumeName(volID) << ")" << G4endl;
+                }
 
                 // We store the hit if we have activated in the config
-                Bool_t isActiveVolume = (nom_vol == (G4String)restG4Metadata->GetActiveVolumeName(volID));
+                Bool_t isActiveVolume = (volumeName == restG4Metadata->GetActiveVolumeName(volID));
 
                 if (isActiveVolume) {
                     volume = volID;
@@ -175,6 +177,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
                     restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, processID, volID, eKin,
                                         momentumDirection);
                     alreadyStored = true;
+                    restG4Metadata->fGeant4GeometryInfo.InsertVolumeName(volID, volumeName);
                 }
             }
         }
