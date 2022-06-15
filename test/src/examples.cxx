@@ -55,6 +55,8 @@ TEST(restG4, TRestGeant4GeometryInfo_TRestGeant4PhysicsInfo) {
     const auto thisExamplePath = examplesPath / "01.NLDBD";
     const auto resultsFile = thisExamplePath / "NLDBD_simulation.root";
 
+    cout << "results file: " << resultsFile << endl;
+
     // If previous example was ran we can use generated file, otherwise we generate it again
     if (!TRestTools::CheckFileIsAccessible(resultsFile)) {
         cout << "Results file not found, generating file..." << endl;
