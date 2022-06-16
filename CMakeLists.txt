@@ -98,6 +98,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/mac
         )
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+install(TARGETS ${LIBRARY} DESTINATION lib)
 
 if (NOT ${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
     set(package_added "${PROJECT_NAME} ")
