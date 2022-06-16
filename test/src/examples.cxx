@@ -32,17 +32,20 @@ TEST(restG4, Example_01_NLDBD) {
     parameters.outputFile =
         thisExamplePath / "NLDBD_simulation.root";  // TODO: fix not working with local path
 
-    Application app;
-    app.Run(parameters);
+    {  // Run simulation
+        Application app;
+        app.Run(parameters);
+    }
 
-    // Run validation macro
-    const TString macro(thisExamplePath / "Validate.C");
-    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
-    int error = 0;
-    const int result =
-        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", parameters.outputFile.Data()), &error);
-    EXPECT_EQ(error, 0);
-    EXPECT_EQ(result, 0);
+    {  // Run validation macro
+        const TString macro(thisExamplePath / "Validate.C");
+        gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+        int error = 0;
+        const int result =
+            gROOT->ProcessLine(TString::Format("Validate(\"%s\")", parameters.outputFile.Data()), &error);
+        EXPECT_EQ(error, 0);
+        EXPECT_EQ(result, 0);
+    }
 
     fs::current_path(originalPath);
 }
@@ -76,7 +79,7 @@ TEST(restG4, TRestGeant4GeometryInfo_TRestGeant4PhysicsInfo) {
 
     TRestRun run(resultsFile);
     // Test `TRestGeant4Metadata::GetUnambiguousGlobalInstance`
-    auto geant4Metadata = TRestGeant4Metadata::GetUnambiguousGlobalInstance("TRestGeant4Metadata");
+    auto geant4Metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
     EXPECT_EQ(geant4Metadata != nullptr, true);
 
     const auto& geometryInfo = geant4Metadata->GetGeant4GeometryInfo();
