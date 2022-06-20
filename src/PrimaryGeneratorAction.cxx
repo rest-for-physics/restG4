@@ -97,7 +97,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
     TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
-    Int_t& biasing = simulationManager->fBiasing;
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         cout << "DEBUG: Primary generation" << endl;
@@ -143,7 +142,6 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
     TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
     TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
-    Int_t& biasing = simulationManager->fBiasing;
 
     auto particle_name = (string)p.GetParticleName();
 
@@ -193,7 +191,6 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
     TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
     TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
-    Int_t& biasing = simulationManager->fBiasing;
 
     G4ThreeVector direction;
     // TODO: maybe reduce code redundancy by defining some functions?
@@ -405,7 +402,6 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
     TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
     TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
-    Int_t& biasing = simulationManager->fBiasing;
 
     Double_t energy = 0;
 
@@ -493,7 +489,6 @@ void PrimaryGeneratorAction::SetParticlePosition() {
     TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
     TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
-    Int_t& biasing = simulationManager->fBiasing;
 
     double x = 0, y = 0, z = 0;
     string generator_type_name = (string)restG4Metadata->GetGeneratorType();

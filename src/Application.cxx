@@ -43,12 +43,6 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     delete fSimulationManager;
     fSimulationManager = new SimulationManager();
 
-    Int_t& biasing = fSimulationManager->fBiasing;
-
-    auto biasingSpectrum = fSimulationManager->biasingSpectrum;
-    auto angularDistribution = fSimulationManager->biasingSpectrum;
-    auto spatialDistribution = fSimulationManager->spatialDistribution;
-
     Bool_t saveAllEvents;
 
     Int_t nEvents;
@@ -129,38 +123,6 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     fSimulationManager->fRestGeant4Track = new TRestGeant4Track();
 
-    biasing = fSimulationManager->fRestGeant4Metadata->GetNumberOfBiasingVolumes();
-    for (int i = 0; i < biasing; i++) {
-        TString spectrumName = "Bias_Spectrum_" + TString(Form("%d", i));
-        TString angDistName = "Bias_Angular_Distribution_" + TString(Form("%d", i));
-        TString spatialDistName = "Bias_Spatial_Distribution_" + TString(Form("%d", i));
-
-        Double_t maxEnergy = fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(i).GetMaxEnergy();
-        Double_t minEnergy = fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(i).GetMinEnergy();
-        auto nBins = (Int_t)(maxEnergy - minEnergy);
-
-        Double_t biasSize =
-            fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(i).GetBiasingVolumeSize();
-        TString biasType =
-            fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(i).GetBiasingVolumeType();
-
-        cout << "Initializing biasing histogram : " << spectrumName << endl;
-        biasingSpectrum[i] = new TH1D(spectrumName, "Biasing gamma spectrum", nBins, minEnergy, maxEnergy);
-        angularDistribution[i] = new TH1D(angDistName, "Biasing angular distribution", 150, 0, M_PI / 2);
-
-        if (biasType == "virtualSphere")
-            spatialDistribution[i] =
-                new TH2D(spatialDistName, "Biasing spatial (virtualSphere) distribution ", 100, -M_PI, M_PI,
-                         100, 0, M_PI);
-        else if (biasType == "virtualBox")
-            spatialDistribution[i] =
-                new TH2D(spatialDistName, "Biasing spatial (virtualBox) distribution", 100, -biasSize / 2.,
-                         biasSize / 2., 100, -biasSize / 2., biasSize / 2.);
-        else
-            spatialDistribution[i] =
-                new TH2D(spatialDistName, "Biasing spatial distribution", 100, -1, 1, 100, -1, 1);
-    }
-
     // choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
     long seed = fSimulationManager->fRestGeant4Metadata->GetSeed();
@@ -190,15 +152,6 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 #endif
 
     nEvents = fSimulationManager->fRestGeant4Metadata->GetNumberOfEvents();
-    // We pass the volume definition to Stepping action so that it records gammas
-    // entering in We pass also the biasing spectrum so that gammas energies
-    // entering the volume are recorded
-    if (biasing) {
-        step->SetBiasingVolume(fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(biasing - 1));
-        step->SetBiasingSpectrum(biasingSpectrum[biasing - 1]);
-        step->SetAngularDistribution(angularDistribution[biasing - 1]);
-        step->SetSpatialDistribution(spatialDistribution[biasing - 1]);
-    }
 
     time_t systime = time(nullptr);
     fSimulationManager->fRestRun->SetStartTimeStamp((Double_t)systime);
@@ -219,70 +172,6 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
         fSimulationManager->fRestRun->GetOutputFile()->cd();
 
-        if (biasing) {
-            cout << "Biasing id: " << biasing - 1 << endl;
-            step->GetBiasingVolume().PrintBiasingVolume();
-            cout << "Number of events that reached the biasing volume : "
-                 << (Int_t)(biasingSpectrum[biasing - 1]->Integral()) << endl;
-            cout << endl;
-            cout << endl;
-            biasing--;
-        }
-        while (biasing) {
-            fSimulationManager->fRestGeant4Metadata->RemoveParticleSources();
-
-            auto src = new TRestGeant4ParticleSource();
-            src->SetParticleName("gamma");
-            src->SetEnergyDistType("TH1D");
-            src->SetAngularDistType("TH1D");
-            fSimulationManager->fRestGeant4Metadata->AddParticleSource(src);
-
-            // We set the spectrum from previous biasing volume inside the primary generator
-            primaryGenerator->SetSpectrum(biasingSpectrum[biasing]);
-            // And we set the angular distribution
-            primaryGenerator->SetAngularDistribution(angularDistribution[biasing]);
-
-            // We re-define the generator inside restG4Metadata to be launched from the biasing volume
-            fSimulationManager->fRestGeant4Metadata->SetGeneratorType(
-                fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeType());
-            double size =
-                fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(biasing).GetBiasingVolumeSize();
-            fSimulationManager->fRestGeant4Metadata->SetGeneratorSize(TVector3(size, size, size));
-            // fSimulationManager->fRestGeant4Metadata->GetBiasingVolume( biasing-1 ).PrintBiasingVolume();
-
-            // Defining biasing the number of event to be re-launched
-            Double_t biasingFactor =
-                fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(biasing - 1).GetBiasingFactor();
-            cout << "Biasing id: " << biasing - 1 << ", Events to be launched : "
-                 << (Int_t)(biasingSpectrum[biasing]->Integral() * biasingFactor) << endl;
-
-            sprintf(tmp, "/run/beamOn %d", (Int_t)(biasingSpectrum[biasing]->Integral() * biasingFactor));
-            command = tmp;
-
-            fSimulationManager->fRestRun->GetOutputFile()->cd();
-
-            biasingSpectrum[biasing]->Write();
-            angularDistribution[biasing]->Write();
-            spatialDistribution[biasing]->Write();
-
-            // We pass the volume definition to Stepping action so that it records
-            // gammas entering in We pass also the biasing spectrum so that gammas
-            // energies entering the volume are recorded
-            if (biasing) {
-                step->SetBiasingVolume(
-                    fSimulationManager->fRestGeant4Metadata->GetBiasingVolume(biasing - 1));
-                step->SetBiasingSpectrum(biasingSpectrum[biasing - 1]);
-                step->SetAngularDistribution(angularDistribution[biasing - 1]);
-                step->SetSpatialDistribution(spatialDistribution[biasing - 1]);
-            }
-            UI->ApplyCommand(command);
-            step->GetBiasingVolume().PrintBiasingVolume();
-            cout << "Number of events that reached the biasing volume : "
-                 << (Int_t)(biasingSpectrum[biasing - 1]->Integral()) << endl;
-            cout << endl;
-            cout << endl;
-            biasing--;
-        }
     }
 
     else if (nEvents == 0)  // define visualization and UI terminal for interactive mode
