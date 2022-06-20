@@ -24,6 +24,7 @@ class SimulationManager {
     TH1D initialEnergySpectrum;
     TH1D initialAngularDistribution;
 
+    void InitializeOutputManager();
     static OutputManager* GetOutputManager() { return fOutputManager; }
 
     TRestGeant4Event fEvent;  // Branch on EventTree
@@ -35,6 +36,7 @@ class SimulationManager {
 
 class OutputManager {
    public:
+    OutputManager(const SimulationManager*);
     void UpdateEvent();
 
    private:

@@ -22,6 +22,17 @@ SimulationManager::~SimulationManager() {
 }
 
 // OutputManager
+OutputManager::OutputManager(const SimulationManager* simulationManager)
+    : fSimulationManager(simulationManager) {
+    // this class should only exist on the threads performing the simulation
+    if (G4Threading::IsMasterThread() && G4Threading::IsMultithreadedApplication()) {
+        G4cout << "Error in 'OutputManager', this instance should never exist" << endl;
+        exit(1);
+    }
+}
+
+void SimulationManager::InitializeOutputManager() { fOutputManager = new OutputManager(this); }
+
 void OutputManager::UpdateEvent() {
     auto event = G4EventManager::GetEventManager()->GetConstCurrentEvent();
     fEvent = make_unique<TRestGeant4Event>(event, *fSimulationManager->fRestGeant4Metadata);
