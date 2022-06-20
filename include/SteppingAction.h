@@ -33,7 +33,7 @@ class SteppingAction : public G4UserSteppingAction {
    private:
     SimulationManager* fSimulationManager;
 
-    G4String nom_vol, nom_part, nom_proc;
+    G4String nom_part, nom_proc;
     G4double dif_ener, ener_dep, ener, eKin;
     G4int trackID, parentID;
 

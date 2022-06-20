@@ -32,19 +32,95 @@ TEST(restG4, Example_01_NLDBD) {
     parameters.outputFile =
         thisExamplePath / "NLDBD_simulation.root";  // TODO: fix not working with local path
 
-    Application app;
-    app.Run(parameters);
+    {  // Run simulation
+        Application app;
+        app.Run(parameters);
+    }
 
-    // Run validation macro
-    const TString macro(thisExamplePath / "Validate.C");
-    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
-    int error = 0;
-    const int result =
-        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", parameters.outputFile.Data()), &error);
-    EXPECT_EQ(error, 0);
-    EXPECT_EQ(result, 0);
+    {  // Run validation macro
+        const TString macro(thisExamplePath / "Validate.C");
+        gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+        int error = 0;
+        const int result =
+            gROOT->ProcessLine(TString::Format("Validate(\"%s\")", parameters.outputFile.Data()), &error);
+        EXPECT_EQ(error, 0);
+        EXPECT_EQ(result, 0);
+    }
 
     fs::current_path(originalPath);
+}
+
+TEST(restG4, TRestGeant4GeometryInfo_TRestGeant4PhysicsInfo) {
+    // Test "TRestGeant4GeometryInfo" and "TRestGeant4PhysicsInfo" even though its from Geant4Lib, we need a
+    // simulation file, so we placed the test here
+
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "01.NLDBD";
+    const auto resultsFile = thisExamplePath / "NLDBD_simulation.root";
+
+    cout << "results file: " << resultsFile << endl;
+
+    // If previous example was ran we can use generated file, otherwise we generate it again
+    if (!TRestTools::CheckFileIsAccessible(resultsFile)) {
+        cout << "Results file not found, generating file..." << endl;
+        fs::current_path(thisExamplePath);
+
+        CommandLineParameters parameters;
+        parameters.rmlFile = "NLDBD.rml";
+        parameters.outputFile = resultsFile;
+
+        Application app;
+        app.Run(parameters);
+
+        fs::current_path(originalPath);
+    } else {
+        cout << "Results file found, skipping generation" << endl;
+    }
+
+    TRestRun run(resultsFile);
+    // Test `TRestGeant4Metadata::GetUnambiguousGlobalInstance`
+    auto geant4Metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
+    EXPECT_EQ(geant4Metadata != nullptr, true);
+
+    const auto& geometryInfo = geant4Metadata->GetGeant4GeometryInfo();
+
+    cout << "Printing geometry info" << endl;
+    geometryInfo.Print();
+
+    EXPECT_EQ(geometryInfo.GetAllLogicalVolumes().size() == 4, true);
+    EXPECT_EQ(geometryInfo.GetAllPhysicalVolumes().size() == 4, true);
+
+    for (const auto& logicalVolume : geometryInfo.GetAllLogicalVolumes()) {
+        if (logicalVolume == "World") {
+            const auto& physicals = geometryInfo.GetAllPhysicalVolumesFromLogical(logicalVolume);
+            EXPECT_EQ(physicals.size() == 1, true);
+            const auto& physical = physicals[0];
+            EXPECT_EQ(physical == "World_PV", true);
+        } else if (logicalVolume == "gasVolume") {
+            const auto& physicals = geometryInfo.GetAllPhysicalVolumesFromLogical(logicalVolume);
+            EXPECT_EQ(physicals.size() == 1, true);
+            const auto& physical = physicals[0];
+            EXPECT_EQ(physical == "gas", true);
+        } else if (logicalVolume == "vesselVolume") {
+            const auto& physicals = geometryInfo.GetAllPhysicalVolumesFromLogical(logicalVolume);
+            EXPECT_EQ(physicals.size() == 1, true);
+            const auto& physical = physicals[0];
+            EXPECT_EQ(physical == "vessel", true);
+        } else if (logicalVolume == "waterTankVolume") {
+            const auto& physicals = geometryInfo.GetAllPhysicalVolumesFromLogical(logicalVolume);
+            EXPECT_EQ(physicals.size() == 1, true);
+            const auto& physical = physicals[0];
+            EXPECT_EQ(physical == "waterTank", true);
+        } else {
+            cout << "unexpected logical volume found!" << endl;
+            exit(1);
+        }
+    }
+
+    const auto& physicsInfo = geant4Metadata->GetGeant4PhysicsInfo();
+
+    cout << "Printing physics info" << endl;
+    physicsInfo.Print();
 }
 
 TEST(restG4, Example_04_Muons) {
@@ -113,6 +189,16 @@ TEST(restG4, Example_07_Decay_FullChain) {
 
     Application app;
     app.Run(parameters);
+
+    // print processes
+    TRestRun run(parameters.outputFile.Data());
+    auto geant4Metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
+    EXPECT_EQ(geant4Metadata != nullptr, true);
+
+    const auto& physicsInfo = geant4Metadata->GetGeant4PhysicsInfo();
+
+    cout << "Printing physics info" << endl;
+    physicsInfo.Print();
 
     // Run validation macro
     const TString macro(thisExamplePath / "Validate.C");

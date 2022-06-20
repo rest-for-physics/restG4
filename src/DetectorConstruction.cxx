@@ -47,15 +47,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     parser->Read(gdmlToRead, false);
 
-    auto geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
-
-    geometryInfo->PopulateFromGdml(gdmlToRead);
+    restG4Metadata->fGeant4GeometryInfo.PopulateFromGdml(gdmlToRead);
 
     G4VPhysicalVolume* worldVolume = parser->GetWorldVolume();
 
-    geometryInfo->PopulateFromGeant4World(worldVolume);
+    restG4Metadata->fGeant4GeometryInfo.PopulateFromGeant4World(worldVolume);
 
-    geometryInfo->Print();
+    const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
+    geometryInfo.Print();
 
     chdir(originDirectory);
 
@@ -66,9 +65,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     G4VPhysicalVolume* physicalVolume = GetPhysicalVolume(sensitiveVolume);
     if (!physicalVolume) {
         // sensitive volume was not found, perhaps the user specified a logical volume
-        auto physicalVolumes =
-            restG4Metadata->GetGeant4GeometryInfo()->GetAllPhysicalVolumesFromLogical(sensitiveVolume);
-
+        auto physicalVolumes = geometryInfo.GetAllPhysicalVolumesFromLogical(sensitiveVolume);
         if (physicalVolumes.size() == 1) {
             restG4Metadata->SetSensitiveVolume(physicalVolumes[0]);
             sensitiveVolume = (string)restG4Metadata->GetSensitiveVolume();
@@ -208,12 +205,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physVolName) {
     G4PhysicalVolumeStore* physVolStore = G4PhysicalVolumeStore::GetInstance();
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
-
+    const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
     vector<G4VPhysicalVolume*>::const_iterator physVol;
     for (physVol = physVolStore->begin(); physVol != physVolStore->end(); physVol++) {
         auto name = (*physVol)->GetName();
-        auto alternativeName =
-            (G4String)restG4Metadata->GetGeant4GeometryInfo()->GetAlternativeNameFromGeant4PhysicalName(name);
+        auto alternativeName = (G4String)geometryInfo.GetAlternativeNameFromGeant4PhysicalName(name);
 
         if (name == physVolName || alternativeName == physVolName) {
             return *physVol;

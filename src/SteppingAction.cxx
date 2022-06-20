@@ -35,19 +35,30 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     TRestGeant4PhysicsLists* restPhysList = fSimulationManager->fRestGeant4PhysicsLists;
     Int_t& biasing = fSimulationManager->fBiasing;
 
+    const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
     // Variables that describe a step are taken.
-    nom_vol = restG4Metadata->GetGeant4GeometryInfo()->GetAlternativeNameFromGeant4PhysicalName(
+    const auto& volumeName = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(
         (TString &&) aStep->GetPreStepPoint()->GetPhysicalVolume()->GetName());
-    nom_part = aStep->GetTrack()->GetDefinition()->GetParticleName();
+
+    const auto& particle = aStep->GetTrack()->GetDefinition();
+    const auto& particleID = particle->GetPDGEncoding();
+    const auto& particleName = particle->GetParticleName();
+
+    restG4Metadata->fGeant4PhysicsInfo.InsertParticleName(particleID, particleName);
+
+    const auto process = aStep->GetPostStepPoint()->GetProcessDefinedStep();
+    const auto& processID = process->GetProcessType() * 1000 + process->GetProcessSubType();
+    const auto& processName = process->GetProcessName();
+
+    restG4Metadata->fGeant4PhysicsInfo.InsertProcessName(processID, processName);
 
     ener_dep = aStep->GetTotalEnergyDeposit();
     eKin = aStep->GetTrack()->GetKineticEnergy() / keV;
 
     auto sensitiveVolumeName =
-        restG4Metadata->GetGeant4GeometryInfo()->GetAlternativeNameFromGeant4PhysicalName(
-            restG4Metadata->GetSensitiveVolume());
+        geometryInfo.GetAlternativeNameFromGeant4PhysicalName(restG4Metadata->GetSensitiveVolume());
 
-    if (restTrack->GetParticleName() == "geantino" && sensitiveVolumeName.Data() == nom_vol) {
+    if (restTrack->GetParticleName() == "geantino" && sensitiveVolumeName.Data() == volumeName) {
         restG4Metadata->SetSaveAllEvents(true);
     }
 
@@ -68,8 +79,6 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         exit(0);
     }
 
-    nom_proc = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
-
     G4Track* aTrack = aStep->GetTrack();
     parentID = aTrack->GetParentID();
     trackID = aTrack->GetTrackID();
@@ -84,7 +93,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     if (biasing > 0) {
         // In biasing mode we do not store hits. Just check if we observe a gamma
         // inside the volume
-        if (restBiasingVolume.isInside(x, y, z) && nom_part == "gamma") {
+        if (restBiasingVolume.isInside(x, y, z) && particleName == "gamma") {
             Double_t eKinetic = aStep->GetPreStepPoint()->GetKineticEnergy() / keV;
 
             // we add the gamma energy to the energy spectrum
@@ -137,12 +146,11 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         }
 
     } else {
-        if ((G4String)restG4Metadata->GetSensitiveVolume() == nom_vol) {
+        if (restG4Metadata->GetSensitiveVolume() == volumeName) {
             restG4Event->AddEnergyToSensitiveVolume(ener_dep / keV);
         }
 
         TVector3 hitPosition(x, y, z);
-        Int_t pcsID = restTrack->GetProcessID(nom_proc);
         Double_t hit_global_time = aStep->GetPreStepPoint()->GetGlobalTime() / second;
         G4ThreeVector momentum = aStep->GetPreStepPoint()->GetMomentumDirection();
         TVector3 momentumDirection = TVector3(momentum.x(), momentum.y(), momentum.z());  //.Unit();
@@ -152,30 +160,33 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
         // We check if the hit must be stored and keep it on restG4Track
         for (int volID = 0; volID < restG4Metadata->GetNumberOfActiveVolumes(); volID++) {
             if (restG4Event->isVolumeStored(volID)) {
-                if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Extreme)
-                    G4cout << "Step volume :" << nom_vol << "::("
+                if (restG4Metadata->GetVerboseLevel() >=
+                    TRestStringOutput::REST_Verbose_Level::REST_Extreme) {
+                    G4cout << "Step volume :" << volumeName << "::("
                            << (G4String)restG4Metadata->GetActiveVolumeName(volID) << ")" << G4endl;
+                }
 
                 // We store the hit if we have activated in the config
-                Bool_t isActiveVolume = (nom_vol == (G4String)restG4Metadata->GetActiveVolumeName(volID));
+                Bool_t isActiveVolume = (volumeName == restG4Metadata->GetActiveVolumeName(volID));
 
                 if (isActiveVolume) {
                     volume = volID;
                     if (restG4Metadata->GetVerboseLevel() >=
                         TRestStringOutput::REST_Verbose_Level::REST_Extreme)
                         G4cout << "Storing hit" << G4endl;
-                    restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, pcsID, volID, eKin,
+                    restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, processID, volID, eKin,
                                         momentumDirection);
                     alreadyStored = true;
+                    restG4Metadata->fGeant4GeometryInfo.InsertVolumeName(volID, volumeName);
                 }
             }
         }
 
         // See issue #65.
         // If the radioactive decay occurs in a non-active volume then the id will be -1
-        Bool_t isDecay = (nom_proc == (G4String) "RadioactiveDecay");
+        Bool_t isDecay = (processName == (G4String) "RadioactiveDecay");
         if (!alreadyStored && isDecay)
-            restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, pcsID, volume, eKin,
+            restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, processID, volume, eKin,
                                 momentumDirection);
     }
 }
