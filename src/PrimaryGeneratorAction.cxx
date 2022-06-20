@@ -92,9 +92,6 @@ void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     auto simulationManager = fSimulationManager;
     TRestRun* restRun = simulationManager->fRestRun;
-    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
-    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
-    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
     TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
 
@@ -106,7 +103,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     // position inside
     // we should have already written the information from previous event to disk
     // (in endOfEventAction)
-    restG4Event->Initialize();
 
     for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
         restG4Metadata->GetParticleSource(i)->Update();
@@ -120,7 +116,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
 
     for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
         vector<TRestGeant4Particle> particles = restG4Metadata->GetParticleSource(i)->GetParticles();
-        for (auto p : particles) {
+        for (const auto& p : particles) {
             // ParticleDefinition should be always declared first (after position).
             SetParticleDefinition(i, p);
 
@@ -137,9 +133,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
 G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRestGeant4Particle p) {
     auto simulationManager = fSimulationManager;
     TRestRun* restRun = simulationManager->fRestRun;
-    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
-    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
-    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
     TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
 
@@ -179,7 +172,7 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
 
     fParticleGun->SetParticleDefinition(fParticle);
 
-    restG4Event->SetPrimaryEventParticleName(particle_name);
+    // restG4Event->SetPrimaryEventParticleName(particle_name);
 
     return fParticle;
 }
@@ -187,9 +180,6 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
 void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p) {
     auto simulationManager = fSimulationManager;
     TRestRun* restRun = simulationManager->fRestRun;
-    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
-    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
-    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
 
     G4ThreeVector direction;
@@ -234,43 +224,7 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
     }
 
     if (angular_dist_type == g4_metadata_parameters::angular_dist_types::ISOTROPIC) {
-        // if (generator_type == g4_metadata_parameters::generator_types::VIRTUAL_BOX) {
-        //    if (face == 0) direction.set(0, -1, 0);
-        //    if (face == 1) direction.set(0, 1, 0);
-        //    if (face == 2) direction.set(-1, 0, 0);
-        //    if (face == 3) direction.set(1, 0, 0);
-        //    if (face == 4) direction.set(0, 0, -1);
-        //    if (face == 5) direction.set(0, 0, 1);
-
-        //    Double_t theta = GetCosineLowRandomThetaAngle();
-        //    // recording the primaries distribution
-        //    G4ThreeVector referenceOrigin = direction;
-
-        //    // We rotate the origin direction by the angular distribution angle
-        //    G4ThreeVector orthoVector = direction.orthogonal();
-        //    direction.rotate(theta, orthoVector);
-
-        //    // We rotate a random angle along the original direction
-        //    Double_t randomAngle = G4UniformRand() * 2 * M_PI;
-        //    direction.rotate(randomAngle, referenceOrigin);
-        //} else if (generator_type == g4_metadata_parameters::generator_types::VIRTUAL_SPHERE) {
-        //    direction = -fParticleGun->GetParticlePosition().unit();
-
-        //    Double_t theta = GetCosineLowRandomThetaAngle();
-
-        //    G4ThreeVector referenceOrigin = direction;
-
-        //    // We rotate the origin direction by the angular distribution angle
-        //    G4ThreeVector orthoVector = direction.orthogonal();
-        //    direction.rotate(theta, orthoVector);
-
-        //    // We rotate a random angle along the original direction
-        //    Double_t randomAngle = G4UniformRand() * 2 * M_PI;
-        //    direction.rotate(randomAngle, referenceOrigin);
-
-        //} else {
         direction = GetIsotropicVector();
-        //}
     } else if (angular_dist_type == g4_metadata_parameters::angular_dist_types::TH1D) {
         Double_t angle = 0;
         Double_t value = G4UniformRand() * (fAngularDistribution->Integral());
@@ -313,42 +267,6 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
                  << endl;
             direction.set(1, 0, 0);
         }
-
-        // if (generator_type == g4_metadata_parameters::generator_types::VIRTUAL_BOX) {
-        //    if (face == 0) direction.set(0, -1, 0);
-        //    if (face == 1) direction.set(0, 1, 0);
-        //    if (face == 2) direction.set(-1, 0, 0);
-        //    if (face == 3) direction.set(1, 0, 0);
-        //    if (face == 4) direction.set(0, 0, -1);
-        //    if (face == 5) direction.set(0, 0, 1);
-        //}
-
-        // if (generator_type == g4_metadata_parameters::generator_types::VIRTUAL_WALL) {
-        //    /*
-        //    The default plane (virtualWall) is an XY plane so the default normal vector is (0,0,1).
-        //    We will rotate this vector according to the generator rotation so that keeps being normal to the
-        //    plane
-        //    */
-        //    TVector3 normal(0, 0, 1);
-
-        //    normal.RotateX(M_PI * restG4Metadata->GetGeneratorRotation().X() / 180);
-        //    normal.RotateY(M_PI * restG4Metadata->GetGeneratorRotation().Y() / 180);
-        //    normal.RotateZ(M_PI * restG4Metadata->GetGeneratorRotation().Z() / 180);
-
-        //    /*
-        //    Depending on which rotation we chose for the plane the normal vector can now point outwards of
-        //    the detector. We rotate so that it always looks towards the center (0,0,0)
-        //    */
-        //    TVector3 generator_position = restG4Metadata->GetGeneratorPosition().Unit();
-        //    if (generator_position.x() * normal.x() + generator_position.y() * normal.y() +
-        //            generator_position.z() * normal.z() >
-        //        0) {
-        //        normal = (-1) * normal;
-        //    }
-
-        //    direction.set(normal.x(), normal.y(), normal.z());
-        //}
-
         G4ThreeVector referenceOrigin = direction;
 
         // We generate the distribution angle (theta) using a rotation around the orthogonal vector
@@ -369,10 +287,11 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
     } else if (angular_dist_type == g4_metadata_parameters::angular_dist_types::BACK_TO_BACK) {
         // This should never crash. In TRestG4Metadata we have defined that if the
         // first source is backtoback we set it to isotropic
-        TVector3 v = restG4Event->GetPrimaryEventDirection(n - 1);
-        v = v.Unit();
+        // TVector3 v = restG4Event->GetPrimaryEventDirection(n - 1);
+        // v = v.Unit();
 
-        direction.set(-v.X(), -v.Y(), -v.Z());
+        // direction.set(-v.X(), -v.Y(), -v.Z());
+        exit(1);
     } else {
         G4cout << "WARNING: Generator angular distribution was not recognized. "
                   "Launching particle to (1,0,0)"
@@ -381,15 +300,15 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
 
     // storing the direction in TRestG4Event class
     TVector3 eventDirection(direction.x(), direction.y(), direction.z());
-    restG4Event->SetPrimaryEventDirection(eventDirection);
-
-    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
-        cout << "DEBUG: Event direction (normalized): "
-             << "(" << restG4Event->GetPrimaryEventDirection(n).X() << ", "
-             << restG4Event->GetPrimaryEventDirection(n).Y() << ", "
-             << restG4Event->GetPrimaryEventDirection(n).Z() << ")" << endl;
-    }
-
+    // restG4Event->SetPrimaryEventDirection(eventDirection);
+    /*
+        if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
+            cout << "DEBUG: Event direction (normalized): "
+                 << "(" << restG4Event->GetPrimaryEventDirection(n).X() << ", "
+                 << restG4Event->GetPrimaryEventDirection(n).Y() << ", "
+                 << restG4Event->GetPrimaryEventDirection(n).Z() << ")" << endl;
+        }
+    */
     // setting particle direction
     fParticleGun->SetParticleMomentumDirection(direction);
 }
@@ -398,9 +317,6 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
     auto simulationManager = fSimulationManager;
 
     TRestRun* restRun = simulationManager->fRestRun;
-    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
-    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
-    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
 
     Double_t energy = 0;
@@ -475,7 +391,7 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
     if (n == 0) lastEnergy = energy;
     fParticleGun->SetParticleEnergy(energy);
 
-    restG4Event->SetPrimaryEventEnergy(energy / keV);
+    // restG4Event->SetPrimaryEventEnergy(energy / keV);
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug)
         cout << "DEBUG: Particle energy: " << energy / keV << " keV" << endl;
@@ -485,9 +401,6 @@ void PrimaryGeneratorAction::SetParticlePosition() {
     auto simulationManager = fSimulationManager;
 
     TRestRun* restRun = simulationManager->fRestRun;
-    TRestGeant4Track* restTrack = simulationManager->fRestGeant4Track;
-    TRestGeant4Event* restG4Event = simulationManager->fRestGeant4Event;
-    TRestGeant4Event* subRestG4Event = simulationManager->fRestGeant4SubEvent;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
 
     double x = 0, y = 0, z = 0;
@@ -500,7 +413,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
         g4_metadata_parameters::generator_shapes_map[g4_metadata_parameters::CleanString(
             generator_shape_name)];
 
-    while (1) {
+    while (true) {
         if (generator_type == g4_metadata_parameters::generator_types::POINT) {
             GenPositionOnPoint(x, y, z);
         } else if (generator_type == g4_metadata_parameters::generator_types::SURFACE) {
@@ -553,8 +466,8 @@ void PrimaryGeneratorAction::SetParticlePosition() {
 
     // storing the direction in TRestG4Event class
     TVector3 eventPosition(x, y, z);
-    restG4Event->SetPrimaryEventOrigin(eventPosition);
-
+    // restG4Event->SetPrimaryEventOrigin(eventPosition);
+    /*
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         cout << "DEBUG: Event origin: "
              << "(" << restG4Event->GetPrimaryEventOrigin().X() << ", "
@@ -562,28 +475,10 @@ void PrimaryGeneratorAction::SetParticlePosition() {
              << ")"
              << " mm" << endl;
     }
-
+    */
     // setting particle position
     fParticleGun->SetParticlePosition(G4ThreeVector(x, y, z));
 }
-
-////_____________________________________________________________________________
-// void PrimaryGeneratorAction::SetParticlePosition(int n) {
-//    // Storing particle's position to that retrieved from TRestG4Particle
-//    TVector3 pos = p.GetOrigin();
-//    restG4Event->SetPrimaryEventOrigin(pos);
-//
-//    if (restG4Metadata->GetVerboseLevel() >= REST_Debug) {
-//        cout << "DEBUG: Event origin: "
-//             << "(" << restG4Event->GetPrimaryEventOrigin().X() << ", "
-//             << restG4Event->GetPrimaryEventOrigin().Y() << ", " << restG4Event->GetPrimaryEventOrigin().Z()
-//             << ")"
-//             << " mm" << endl;
-//    }
-//
-//    // Setting particle position
-//    fParticleGun->SetParticlePosition(G4ThreeVector(pos.X(), pos.Y(), pos.Z()));
-//}
 
 G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() {
     G4double a, b, c;

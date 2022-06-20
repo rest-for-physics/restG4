@@ -8,19 +8,61 @@
 #include <TRestGeant4Track.h>
 #include <TRestRun.h>
 
+#include <queue>
+
+class OutputManager;
+
 class SimulationManager {
    public:
     SimulationManager();
     ~SimulationManager();
 
     TRestRun* fRestRun = nullptr;
-    TRestGeant4Track* fRestGeant4Track = nullptr;
-    TRestGeant4Event *fRestGeant4Event = nullptr, *fRestGeant4SubEvent = nullptr;
-    TRestGeant4Metadata* fRestGeant4Metadata = nullptr;
     TRestGeant4PhysicsLists* fRestGeant4PhysicsLists = nullptr;
+    TRestGeant4Metadata* fRestGeant4Metadata = nullptr;
 
     TH1D initialEnergySpectrum;
     TH1D initialAngularDistribution;
+
+    void InitializeOutputManager();
+    static OutputManager* GetOutputManager() { return fOutputManager; }
+
+    TRestGeant4Event fEvent;  // Branch on EventTree
+
+    size_t InsertEvent(std::unique_ptr<TRestGeant4Event>& event);
+
+    void WriteEvents();
+    void WriteEventsAndCloseFile();
+
+   private:
+    static thread_local OutputManager* fOutputManager;
+    std::mutex fEventContainerMutex;
+    std::queue<std::unique_ptr<TRestGeant4Event> > fEventContainer;
+};
+
+class OutputManager {
+   public:
+    OutputManager(const SimulationManager*);
+    void UpdateEvent();
+    void FinishAndSubmitEvent();
+
+    bool IsEmptyEvent() const;
+
+    bool IsValidEvent() const;
+    bool IsValidTrack(const G4Track*) const; // TODO
+    bool IsValidStep(const G4Step*) const; // TODO
+
+    void RecordTrack(const G4Track*);
+    void UpdateTrack(const G4Track*);
+
+    void RecordStep(const G4Step*);
+
+
+   private:
+    std::unique_ptr<TRestGeant4Event> fEvent{};
+    SimulationManager* fSimulationManager = nullptr;
+
+    friend class StackingAction;
 };
 
 #endif  // REST_SIMULATIONMANAGER_H

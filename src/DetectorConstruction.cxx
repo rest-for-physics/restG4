@@ -26,7 +26,6 @@ DetectorConstruction::DetectorConstruction(SimulationManager* simulationManager)
 DetectorConstruction::~DetectorConstruction() { delete parser; }
 
 G4VPhysicalVolume* DetectorConstruction::Construct() {
-    TRestGeant4Event* restG4Event = fSimulationManager->fRestGeant4Event;
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
     cout << "Isotope table " << endl;
@@ -189,7 +188,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         }
 
         cout << "Activating volume : " << actVolName << endl;
-        restG4Event->AddActiveVolume((string)actVolName);
+        // restG4Event->AddActiveVolume((string)actVolName);
         if (!pVol) {
             cout << "DetectorConstruction. Volume " << actVolName << " is not defined in the geometry"
                  << endl;

@@ -26,6 +26,8 @@ void RunAction::BeginOfRunAction(const G4Run*) {
     G4cout << G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed() << " events to be simulated"
            << endl;
     G4cout << "=======================================================================" << endl;
+
+    fSimulationManager->InitializeOutputManager();
     // inform the runManager to save random number seed
     G4RunManager::GetRunManager()->SetRandomNumberStore(false);
 }

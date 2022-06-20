@@ -16,7 +16,7 @@ class SimulationManager;
 
 class TrackingAction : public G4UserTrackingAction {
    public:
-    TrackingAction(SimulationManager*, RunAction*, EventAction*);
+    TrackingAction(SimulationManager*);
     ~TrackingAction();
 
     virtual void PreUserTrackingAction(const G4Track*);
@@ -24,14 +24,6 @@ class TrackingAction : public G4UserTrackingAction {
 
    private:
     SimulationManager* fSimulationManager;
-    RunAction* fRun;
-    EventAction* fEvent;
-
-    G4double fCharge, fMass;
-
-    G4bool fFullChain;
-
-    Double_t fGlobalTime;
 };
 
 #endif
