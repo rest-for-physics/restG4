@@ -26,11 +26,6 @@ class EventAction : public G4UserEventAction {
     SimulationManager* fSimulationManager;
     TStopwatch fTimer;
 
-    Double_t absDouble(Double_t x) {
-        if (x > 0) return x;
-        return -x;
-    }
-
     int SetTrackSubEventIDs();
     void FillSubEvent(Int_t subId);
     // old method `FillSubEvent` has been split into `FillSubEvent` and `ReOrderTrackIds` for speed

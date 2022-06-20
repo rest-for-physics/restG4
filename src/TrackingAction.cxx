@@ -31,10 +31,11 @@ TrackingAction::TrackingAction(SimulationManager* simulationManager, RunAction* 
 
     fFullChain = restG4Metadata->isFullChainActivated();
 
-    if (fFullChain)
+    if (fFullChain) {
         G4cout << "Full chain is active" << G4endl;
-    else
+    } else {
         G4cout << "Full chain is NOT active" << G4endl;
+    }
 }
 
 TrackingAction::~TrackingAction() {}

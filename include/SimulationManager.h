@@ -29,8 +29,14 @@ class SimulationManager {
 
     TRestGeant4Event fEvent;  // Branch on EventTree
 
+    size_t InsertEvent(std::unique_ptr<TRestGeant4Event>& event);
+
+    void WriteEvents();
+    void WriteEventsAndCloseFile();
+
    private:
     static thread_local OutputManager* fOutputManager;
+    std::mutex fEventContainerMutex;
     std::queue<std::unique_ptr<TRestGeant4Event> > fEventContainer;
 };
 
@@ -38,10 +44,15 @@ class OutputManager {
    public:
     OutputManager(const SimulationManager*);
     void UpdateEvent();
+    void FinishAndSubmitEvent();
+    bool IsEmptyEvent() const;
+    bool IsValidEvent() const;
 
    private:
     std::unique_ptr<TRestGeant4Event> fEvent{};
-    const SimulationManager* fSimulationManager = nullptr;
+    SimulationManager* fSimulationManager = nullptr;
+
+    friend class StackingAction;
 };
 
 #endif  // REST_SIMULATIONMANAGER_H

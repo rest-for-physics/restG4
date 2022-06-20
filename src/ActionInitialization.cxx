@@ -10,6 +10,7 @@
 #include "RunAction.h"
 #include "SimulationManager.h"
 // #include "StackingAction.h"
+#include "StackingAction.h"
 #include "SteppingAction.h"
 // #include "SteppingVerbose.h"
 #include "G4RunManager.hh"
@@ -88,7 +89,7 @@ void ActionInitialization::Build() const {
     SetUserAction(runAction);
     SetUserAction(eventAction);
     SetUserAction(new SteppingAction(fSimulationManager));
-    // SetUserAction(new StackingAction);
+    SetUserAction(new StackingAction(fSimulationManager));
     SetUserAction(trackingAction);
 
     /*
