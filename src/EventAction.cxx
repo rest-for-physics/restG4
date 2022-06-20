@@ -55,25 +55,7 @@ void EventAction::BeginOfEventAction(const G4Event* event) {
 
     restTrack->Initialize();
 
-    restG4Event->SetID(eventID);
-    restG4Event->SetOK(true);
-    time_t system_time = time(nullptr);
 
-    restG4Event->SetTime((Double_t)system_time);
-
-    // Defining if the hits in a given volume will be stored
-    for (int i = 0; i < restG4Metadata->GetNumberOfActiveVolumes(); i++) {
-        if (restG4Metadata->GetStorageChance(i) >= 1.00) {
-            restG4Event->ActivateVolumeForStorage(i);
-        } else {
-            Double_t randomNumber = G4UniformRand();
-            if (restG4Metadata->GetStorageChance(i) >= randomNumber) {
-                restG4Event->ActivateVolumeForStorage(i);
-            } else {
-                restG4Event->DisableVolumeForStorage(i);
-            }
-        }
-    }
 }
 
 void EventAction::EndOfEventAction(const G4Event* event) {

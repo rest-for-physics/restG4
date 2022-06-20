@@ -8,19 +8,38 @@
 #include <TRestGeant4Track.h>
 #include <TRestRun.h>
 
+#include <queue>
+
+class OutputManager;
+
 class SimulationManager {
    public:
     SimulationManager();
     ~SimulationManager();
 
     TRestRun* fRestRun = nullptr;
-    TRestGeant4Track* fRestGeant4Track = nullptr;
-    TRestGeant4Event *fRestGeant4Event = nullptr, *fRestGeant4SubEvent = nullptr;
-    TRestGeant4Metadata* fRestGeant4Metadata = nullptr;
     TRestGeant4PhysicsLists* fRestGeant4PhysicsLists = nullptr;
+    TRestGeant4Metadata* fRestGeant4Metadata = nullptr;
 
     TH1D initialEnergySpectrum;
     TH1D initialAngularDistribution;
+
+    static OutputManager* GetOutputManager() { return fOutputManager; }
+
+    TRestGeant4Event fEvent;  // Branch on EventTree
+
+   private:
+    static thread_local OutputManager* fOutputManager;
+    std::queue<std::unique_ptr<TRestGeant4Event> > fEventContainer;
+};
+
+class OutputManager {
+   public:
+    void UpdateEvent();
+
+   private:
+    std::unique_ptr<TRestGeant4Event> fEvent{};
+    const SimulationManager* fSimulationManager = nullptr;
 };
 
 #endif  // REST_SIMULATIONMANAGER_H
