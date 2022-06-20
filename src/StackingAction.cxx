@@ -11,6 +11,8 @@
 #include "SimulationManager.h"
 
 StackingAction::StackingAction(SimulationManager* simulationManager) : fSimulationManager(simulationManager) {
+    fMaxAllowedLifetime = 100;  // TODO: update this
+
     fMaxAllowedLifetimeWithUnit = G4BestUnit(fMaxAllowedLifetime, "Time");
 
     fParticlesToIgnore = {

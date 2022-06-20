@@ -7,6 +7,8 @@
 #include <globals.hh>
 #include <set>
 
+#include "SimulationManager.h"
+
 class OutputManager;
 class SimulationManager;
 
@@ -25,8 +27,7 @@ class StackingAction : public G4UserStackingAction {
 
    private:
     SimulationManager* fSimulationManager;
-
-    const G4double fMaxAllowedLifetime;
+    double fMaxAllowedLifetime;
     G4String fMaxAllowedLifetimeWithUnit;
 
     std::set<const G4ParticleDefinition*> fParticlesToIgnore;

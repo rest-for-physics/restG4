@@ -81,16 +81,12 @@ void ActionInitialization::Build() const {
         primaryGenerator->SetAngularDistribution(&(fSimulationManager->initialAngularDistribution));
     }
 
-    auto runAction = new RunAction(fSimulationManager);
-    auto eventAction = new EventAction(fSimulationManager);
-    auto trackingAction = new TrackingAction(fSimulationManager, runAction, eventAction);
-
     SetUserAction(primaryGenerator);
-    SetUserAction(runAction);
-    SetUserAction(eventAction);
+    SetUserAction(new RunAction(fSimulationManager));
+    SetUserAction(new EventAction(fSimulationManager));
     SetUserAction(new SteppingAction(fSimulationManager));
     SetUserAction(new StackingAction(fSimulationManager));
-    SetUserAction(trackingAction);
+    SetUserAction(new TrackingAction(fSimulationManager));
 
     /*
     G4EventManager::GetEventManager()->SetNumberOfAdditionalWaitingStacks(1);  // optical stack

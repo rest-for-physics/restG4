@@ -117,11 +117,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     fSimulationManager->fRestRun->FormOutputFile();
 
-    fSimulationManager->fRestGeant4Event = new TRestGeant4Event();
-    fSimulationManager->fRestGeant4SubEvent = new TRestGeant4Event();
     fSimulationManager->fRestRun->AddEventBranch(&fSimulationManager->fEvent);
-
-    fSimulationManager->fRestGeant4Track = new TRestGeant4Track();
 
     // choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
