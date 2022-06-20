@@ -13,6 +13,7 @@
 
 #include <G4RunManager.hh>
 #include <G4UImanager.hh>
+#include <G4VSteppingVerbose.hh>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -27,6 +28,7 @@
 #include "RunAction.h"
 #include "SimulationManager.h"
 #include "SteppingAction.h"
+#include "SteppingVerbose.h"
 #include "TrackingAction.h"
 
 #ifdef G4VIS_USE
@@ -123,6 +125,8 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
     long seed = fSimulationManager->fRestGeant4Metadata->GetSeed();
     CLHEP::HepRandom::setTheSeed(seed);
+
+    G4VSteppingVerbose::SetInstance(new SteppingVerbose(fSimulationManager));
 
     auto runManager = new G4RunManager;
 

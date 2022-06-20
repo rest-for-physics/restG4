@@ -16,7 +16,7 @@ class ActionInitialization : public G4VUserActionInitialization {
     virtual void BuildForMaster() const;
     virtual void Build() const;
 
-    // virtual G4VSteppingVerbose* InitializeSteppingVerbose() const;
+    virtual G4VSteppingVerbose* InitializeSteppingVerbose() const;
 
    private:
     SimulationManager* fSimulationManager;

@@ -6,14 +6,13 @@
 
 #include "DetectorConstruction.h"
 #include "EventAction.h"
+#include "G4RunManager.hh"
 #include "PrimaryGeneratorAction.h"
 #include "RunAction.h"
 #include "SimulationManager.h"
-// #include "StackingAction.h"
 #include "StackingAction.h"
 #include "SteppingAction.h"
-// #include "SteppingVerbose.h"
-#include "G4RunManager.hh"
+#include "SteppingVerbose.h"
 #include "TrackingAction.h"
 
 using namespace std;
@@ -93,4 +92,6 @@ void ActionInitialization::Build() const {
      */
 }
 
-// G4VSteppingVerbose* ActionInitialization::InitializeSteppingVerbose() const { return new SteppingVerbose; }
+G4VSteppingVerbose* ActionInitialization::InitializeSteppingVerbose() const {
+    return new SteppingVerbose(fSimulationManager);
+}

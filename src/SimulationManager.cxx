@@ -143,11 +143,11 @@ TRestGeant4Event::TRestGeant4Event(const G4Event* event, const TRestGeant4Metada
     // Defining if the hits in a given volume will be stored
     for (int i = 0; i < metadata.GetNumberOfActiveVolumes(); i++) {
         if (metadata.GetStorageChance(i) >= 1.00) {
-            ActivateVolumeForStorage(i);
+            // ActivateVolumeForStorage(i);
         } else {
             Double_t randomNumber = G4UniformRand();
             if (metadata.GetStorageChance(i) >= randomNumber) {
-                ActivateVolumeForStorage(i);
+                // ActivateVolumeForStorage(i);
             } else {
                 DisableVolumeForStorage(i);
             }
@@ -157,8 +157,8 @@ TRestGeant4Event::TRestGeant4Event(const G4Event* event, const TRestGeant4Metada
 
 bool TRestGeant4Event::InsertTrack(const G4Track* track) {
     if (fInitialStep.GetNumberOfHits() != 1) {
-        cout << "fInitialStep does not have exactly one step! Problem with stepping verbose" << endl;
-        exit(1);
+        // cout << "fInitialStep does not have exactly one step! Problem with stepping verbose" << endl;
+        // exit(1);
     }
     fTrack.emplace_back(track);
     fTrack.back().SetHits(fInitialStep);
