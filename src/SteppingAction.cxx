@@ -3,6 +3,7 @@
 
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
+#include <TRestGeant4PhysicsInfo.h>
 #include <TRestGeant4Track.h>
 
 #include <G4DynamicParticle.hh>
@@ -47,7 +48,7 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
     restG4Metadata->fGeant4PhysicsInfo.InsertParticleName(particleID, particleName);
 
     const auto process = aStep->GetPostStepPoint()->GetProcessDefinedStep();
-    const auto& processID = process->GetProcessType() * 1000 + process->GetProcessSubType();
+    const auto& processID = TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(process);
     const auto& processName = process->GetProcessName();
 
     restG4Metadata->fGeant4PhysicsInfo.InsertProcessName(processID, processName);
@@ -189,4 +190,9 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep) {
             restTrack->AddG4Hit(hitPosition, ener_dep / keV, hit_global_time, processID, volume, eKin,
                                 momentumDirection);
     }
+}
+
+Int_t TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(const G4VProcess* process) {
+    // This method should return a unique ID for each process
+    return process->GetProcessType() * 1000 + process->GetProcessSubType();
 }
