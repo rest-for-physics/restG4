@@ -46,7 +46,6 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track) {
     TRestGeant4Event* subRestG4Event = fSimulationManager->fRestGeant4SubEvent;
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
     TRestGeant4PhysicsLists* restPhysList = fSimulationManager->fRestGeant4PhysicsLists;
-    Int_t& biasing = fSimulationManager->fBiasing;
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Extreme) {
         if (track->GetTrackID() % 10 == 0) {
