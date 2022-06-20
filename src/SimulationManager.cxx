@@ -157,8 +157,8 @@ TRestGeant4Event::TRestGeant4Event(const G4Event* event, const TRestGeant4Metada
 
 bool TRestGeant4Event::InsertTrack(const G4Track* track) {
     if (fInitialStep.GetNumberOfHits() != 1) {
-        // cout << "fInitialStep does not have exactly one step! Problem with stepping verbose" << endl;
-        // exit(1);
+        cout << "fInitialStep does not have exactly one step! Problem with stepping verbose" << endl;
+        exit(1);
     }
     fTrack.emplace_back(track);
     fTrack.back().SetHits(fInitialStep);
@@ -256,8 +256,15 @@ void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metada
     metadata.fGeant4PhysicsInfo.InsertParticleName(particleID, particleName);
 
     const auto process = step->GetPostStepPoint()->GetProcessDefinedStep();
-    const auto& processID = process->GetProcessType() * 1000 + process->GetProcessSubType();
-    const auto& processName = process->GetProcessName();
+    G4String processName = "Init";
+    G4String processTypeName = "Init";
+    G4int processID = -1;
+    if (track->GetCurrentStepNumber() !=
+        0) {  // 0 = Init step (G4SteppingVerbose) process is not defined for this step
+        processName = process->GetProcessName();
+        processTypeName = G4VProcess::GetProcessTypeName(process->GetProcessType());
+        processID = process->GetProcessType() * 1000 + process->GetProcessSubType();
+    }
 
     metadata.fGeant4PhysicsInfo.InsertProcessName(processID, processName);
 
@@ -269,23 +276,6 @@ void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metada
 
     if (particle->GetParticleName() == "geantino" && sensitiveVolumeName.Data() == volumeName) {
         metadata.SetSaveAllEvents(true);
-    }
-
-    if (!step->GetPostStepPoint()->GetProcessDefinedStep()) {
-        G4cout << endl;
-        G4cout << endl;
-        G4cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        G4cout << "An ERROR was detected on the G4Step process definition." << endl;
-        G4cout << "This is a sign of problem in the restG4 particle definition" << endl;
-        G4cout << endl;
-        G4cout << "E.g. A definition of a gamma with 0keV energy" << endl;
-        G4cout << endl;
-        G4cout << "Please, review your TRestGeant4Metadata RML definition" << endl;
-        G4cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        G4cout << endl;
-        G4cout << endl;
-
-        exit(0);
     }
 
     G4Track* aTrack = step->GetTrack();
@@ -301,5 +291,26 @@ void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metada
     const TVector3 hitPosition(x, y, z);
     const Double_t hitGlobalTime = step->GetPreStepPoint()->GetGlobalTime() / CLHEP::second;
     const G4ThreeVector& momentum = step->GetPreStepPoint()->GetMomentumDirection();
-    const TVector3 momentumDirection = TVector3(momentum.x(), momentum.y(), momentum.z());  //.Unit();
+    const TVector3 momentumDirection = TVector3(momentum.x(), momentum.y(), momentum.z()).Unit();
+
+    // -------
+    AddHit(hitPosition, totalEnergyDeposit, hitGlobalTime);  // this increases fNHits
+
+    fProcessID.Set(fNHits);
+    fProcessID[fNHits - 1] = processID;
+
+    fVolumeID.Set(fNHits);
+    fVolumeID[fNHits - 1] = 0;
+
+    fKineticEnergy.Set(fNHits);
+    fKineticEnergy[fNHits - 1] = 0;
+
+    fMomentumDirectionX.Set(fNHits);
+    fMomentumDirectionX[fNHits - 1] = momentumDirection.X();
+
+    fMomentumDirectionY.Set(fNHits);
+    fMomentumDirectionY[fNHits - 1] = momentumDirection.Y();
+
+    fMomentumDirectionZ.Set(fNHits);
+    fMomentumDirectionZ[fNHits - 1] = momentumDirection.Z();
 }
