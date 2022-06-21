@@ -91,6 +91,7 @@ void OutputManager::FinishAndSubmitEvent() {
 
     if (IsValidEvent()) {
         size_t numberOfInsertedEvents = fSimulationManager->InsertEvent(fEvent);
+        cout << "inserted event: " << numberOfInsertedEvents << endl;
     }
     UpdateEvent();
 }
@@ -128,6 +129,14 @@ void OutputManager::UpdateTrack(const G4Track* track) {
 
 void OutputManager::RecordStep(const G4Step* step) {
     fEvent->InsertStep(step, *fSimulationManager->fRestGeant4Metadata);
+}
+
+void OutputManager::AddSensitiveEnergy(Double_t energy, const char* physicalVolumeName) {
+    fEvent->AddEnergyToSensitiveVolume(energy);
+    /*
+        const TString physicalVolumeNameNew = fSimulationManager->fRestGeant4Metadata->GetGeant4GeometryInfo()
+                                                  .GetAlternativeNameFromGeant4PhysicalName(physicalVolumeName);
+                                                  */
 }
 
 // Geant4Lib

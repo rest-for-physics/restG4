@@ -49,14 +49,15 @@ class OutputManager {
     bool IsEmptyEvent() const;
 
     bool IsValidEvent() const;
-    bool IsValidTrack(const G4Track*) const; // TODO
-    bool IsValidStep(const G4Step*) const; // TODO
+    bool IsValidTrack(const G4Track*) const;  // TODO
+    bool IsValidStep(const G4Step*) const;    // TODO
 
     void RecordTrack(const G4Track*);
     void UpdateTrack(const G4Track*);
 
     void RecordStep(const G4Step*);
 
+    void AddSensitiveEnergy(Double_t energy, const char* physicalVolumeName);
 
    private:
     std::unique_ptr<TRestGeant4Event> fEvent{};

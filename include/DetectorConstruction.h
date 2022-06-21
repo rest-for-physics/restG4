@@ -42,7 +42,8 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
     ~DetectorConstruction();
 
    public:
-    G4VPhysicalVolume* Construct();
+    G4VPhysicalVolume* Construct() override;
+    void ConstructSDandField() override;
 
     friend class TRestGeant4GeometryInfo;
 };

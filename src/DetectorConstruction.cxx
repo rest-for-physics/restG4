@@ -1,14 +1,17 @@
 
 #include "DetectorConstruction.h"
 
+#include <SensitiveDetector.h>
 #include <TRestGeant4GeometryInfo.h>
 
 #include <G4FieldManager.hh>
 #include <G4IonTable.hh>
 #include <G4Isotope.hh>
+#include <G4LogicalVolumeStore.hh>
 #include <G4MagneticField.hh>
 #include <G4Material.hh>
 #include <G4RunManager.hh>
+#include <G4SDManager.hh>
 #include <G4SystemOfUnits.hh>
 #include <G4UniformMagField.hh>
 #include <G4UserLimits.hh>
@@ -216,6 +219,60 @@ G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physV
     }
 
     return nullptr;
+}
+
+void DetectorConstruction::ConstructSDandField() {
+    const TRestGeant4Metadata& metadata = *fSimulationManager->fRestGeant4Metadata;
+    vector<string>
+        sensitiveVolumes;  // user submitted sensitive volumes, may not exist or not be physical (be logical)
+    for (const auto& volume : {metadata.GetSensitiveVolume()}) {
+        sensitiveVolumes.emplace_back(volume);
+    }
+
+    if (sensitiveVolumes.empty()) {
+        return;
+    }
+
+    set<G4LogicalVolume*> logicalVolumesSelected;
+    for (const auto& userSensitiveVolume : sensitiveVolumes) {
+        G4LogicalVolume* logicalVolume = nullptr;
+        G4VPhysicalVolume* physicalVolume =
+            G4PhysicalVolumeStore::GetInstance()->GetVolume(userSensitiveVolume, false);
+        if (!physicalVolume) {
+            // perhaps user selected a logical volume with this name
+            logicalVolume = G4LogicalVolumeStore::GetInstance()->GetVolume(userSensitiveVolume, false);
+        } else {
+            logicalVolume = physicalVolume->GetLogicalVolume();
+        }
+        if (logicalVolume == nullptr) {
+            auto logicalVolumes =
+                metadata.GetGeant4GeometryInfo().GetAllLogicalVolumesMatchingExpression(userSensitiveVolume);
+            if (logicalVolumes.empty()) {
+                cout << "Error on sensitive detector setup" << endl;
+                exit(1);
+            } else {
+                for (const auto& logicalVolumeName : logicalVolumes) {
+                    auto logicalVolumeRegex =
+                        G4LogicalVolumeStore::GetInstance()->GetVolume(logicalVolumeName.Data(), false);
+                    logicalVolumesSelected.insert(logicalVolume);
+                }
+                continue;
+            }
+        }
+        logicalVolumesSelected.insert(logicalVolume);
+    }
+
+    G4SDManager* SDManager = G4SDManager::GetSDMpointer();
+
+    for (G4LogicalVolume* logicalVolume : logicalVolumesSelected) {
+        auto name = logicalVolume->GetName();
+        G4VSensitiveDetector* sensitiveDetector = new SensitiveDetector(fSimulationManager, name);
+        SDManager->AddNewDetector(sensitiveDetector);
+        logicalVolume->SetSensitiveDetector(sensitiveDetector);
+
+        auto region = new G4Region(name);
+        logicalVolume->SetRegion(region);
+    }
 }
 
 void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* world) {
