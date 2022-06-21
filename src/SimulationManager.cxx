@@ -138,6 +138,18 @@ void OutputManager::AddSensitiveEnergy(Double_t energy, const char* physicalVolu
                                                   */
 }
 
+void OutputManager::AddEnergyToVolumeForProcess(Double_t energy, const char* volumeName,
+                                                const char* processName) {
+    if (energy <= 0) {
+        return;
+    }
+    fEvent->fTotalDepositedEnergy += energy;
+    if (fEvent->fEnergyInVolumePerProcess[volumeName].count(processName) == 0) {
+        fEvent->fEnergyInVolumePerProcess[volumeName][processName] = 0;
+    }
+    fEvent->fEnergyInVolumePerProcess[volumeName][processName] += energy;
+}
+
 // Geant4Lib
 
 TRestGeant4Event::TRestGeant4Event(const G4Event* event, const TRestGeant4Metadata& metadata)
@@ -276,7 +288,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metada
 
     metadata.fGeant4PhysicsInfo.InsertProcessName(processID, processName);
 
-    const auto totalEnergyDeposit = step->GetTotalEnergyDeposit() / CLHEP::keV;
+    const auto energy = step->GetTotalEnergyDeposit() / CLHEP::keV;
     const auto trackKineticEnergy = step->GetTrack()->GetKineticEnergy() / CLHEP::keV;
 
     auto sensitiveVolumeName =
@@ -293,7 +305,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metada
     Double_t z = aTrack->GetPosition().z() / CLHEP::mm;
 
     if (metadata.GetSensitiveVolume() == volumeName) {
-        // restG4Event->AddEnergyToSensitiveVolume(totalEnergyDeposit);
+        // restG4Event->AddEnergyToSensitiveVolume(energy);
     }
 
     const TVector3 hitPosition(x, y, z);
@@ -302,7 +314,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metada
     const TVector3 momentumDirection = TVector3(momentum.x(), momentum.y(), momentum.z()).Unit();
 
     // -------
-    AddHit(hitPosition, totalEnergyDeposit, hitGlobalTime);  // this increases fNHits
+    AddHit(hitPosition, energy, hitGlobalTime);  // this increases fNHits
 
     fProcessID.Set(fNHits);
     fProcessID[fNHits - 1] = processID;
@@ -321,4 +333,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metada
 
     fMomentumDirectionZ.Set(fNHits);
     fMomentumDirectionZ[fNHits - 1] = momentumDirection.Z();
+
+    // -----
+    SimulationManager::GetOutputManager()->AddEnergyToVolumeForProcess(energy, volumeName, processName);
 }

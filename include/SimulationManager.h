@@ -58,6 +58,7 @@ class OutputManager {
     void RecordStep(const G4Step*);
 
     void AddSensitiveEnergy(Double_t energy, const char* physicalVolumeName);
+    void AddEnergyToVolumeForProcess(Double_t energy, const char* volumeName, const char* processName);
 
    private:
     std::unique_ptr<TRestGeant4Event> fEvent{};
