@@ -180,24 +180,17 @@ bool TRestGeant4Event::InsertTrack(const G4Track* track) {
         cout << "fInitialStep does not have exactly one step! Problem with stepping verbose" << endl;
         exit(1);
     }
+
+    if (fTrack.empty() && fSubEventID > 0) {
+        // Add decay particle name as subevent tag
+        fSubEventTag = track->GetParticleDefinition()->GetParticleName();
+    }
+
     fTrack.emplace_back(track);
     fTrack.back().SetHits(fInitialStep);
 
     fTrackIDToTrackIndex[track->GetTrackID()] = fTrack.size() - 1;
 
-    if (fTrack.empty()) {
-        /*
-        // primary for the sub-event
-        fSubEventPrimaryParticleName = track->GetParticleDefinition()->GetParticleName();
-        fSubEventPrimaryEnergy = track->GetKineticEnergy() / CLHEP::keV;
-        const auto& position = track->GetPosition();
-        fSubEventPrimaryPosition =
-            TVector3(position.x() / CLHEP::mm, position.y() / CLHEP::mm, position.z() / CLHEP::mm);
-        const auto& momentum = track->GetMomentumDirection();
-        fSubEventPrimaryMomentum =
-            TVector3(momentum.x() / CLHEP::mm, momentum.y() / CLHEP::mm, momentum.z() / CLHEP::mm);
-            */
-    }
     return true;
 }
 

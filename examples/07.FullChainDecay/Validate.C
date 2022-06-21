@@ -10,7 +10,11 @@ Int_t Validate(const char* filename, Int_t nDaughters) {
     std::set<string> eventTagsUnique;
     for (int n = 0; n < run.GetEntries(); n++) {
         run.GetEntry(n);
-        eventTagsUnique.insert((string)event->GetSubEventTag());
+        const string tag = event->GetSubEventTag().Data();
+        if (tag.empty()) {
+            continue;
+        }
+        eventTagsUnique.insert(tag);
     }
 
     cout << "Daughter isotopes: " << eventTagsUnique.size() << endl;
