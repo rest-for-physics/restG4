@@ -25,7 +25,7 @@ jobs:
     name: Build and run tests
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
     steps:
       - name: Checkout framework
         run: |
@@ -55,7 +55,7 @@ jobs:
     name: Install framework with restG4
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
     steps:
       - name: Print version of dependencies for image
         run: version.sh
@@ -88,7 +88,7 @@ jobs:
     name: Check framework and restG4 are accessible
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
     needs: [ framework-install ]
     steps:
       - name: Restore cache
@@ -122,7 +122,7 @@ jobs:
     name: Install restG4 as a standalone application using the installed framework
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
     needs: [ framework-install, check-installation ]
     steps:
       - uses: actions/checkout@v3
@@ -144,7 +144,7 @@ jobs:
     name: "Example 01: NLDBD"
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
     needs: [ check-installation ]
     steps:
       - uses: actions/checkout@v3
@@ -165,7 +165,7 @@ jobs:
     name: "Example 03: Fluorescence"
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
     needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
@@ -187,7 +187,7 @@ jobs:
     name: "Example 04: Cosmic Muons"
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
     needs: [ check-installation ]
     steps:
       - uses: actions/checkout@v3
@@ -212,7 +212,7 @@ jobs:
     name: "Example 05: PandaX-III"
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
     needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
@@ -233,7 +233,7 @@ jobs:
     name: "Example 06: Ion recoils"
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
     needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
@@ -254,7 +254,7 @@ jobs:
     name: "Example 07: Decay"
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
     needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
@@ -280,7 +280,7 @@ jobs:
     name: "Example 08: Alphas"
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
     needs: [ check-installation ]
     steps:
       - uses: actions/checkout@v3
@@ -314,7 +314,7 @@ jobs:
     name: "Example 09: Shielding"
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
     needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
@@ -335,7 +335,7 @@ jobs:
     name: "Example 10: Geometries"
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
     needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
@@ -356,7 +356,7 @@ jobs:
     name: "Example 11: X-Rays"
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
     needs: [ check-installation, restG4-examples-01 ]
     steps:
       - uses: actions/checkout@v3
