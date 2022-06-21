@@ -181,9 +181,18 @@ bool TRestGeant4Event::InsertTrack(const G4Track* track) {
         exit(1);
     }
 
-    if (fTrack.empty() && fSubEventID > 0) {
-        // Add decay particle name as subevent tag
-        fSubEventTag = track->GetParticleDefinition()->GetParticleName();
+    if (fTrack.empty()) {
+        // First track of event (primary)
+        fPrimaryParticleName.emplace_back(track->GetParticleDefinition()->GetParticleName());
+        fPrimaryEventEnergy.emplace_back(track->GetKineticEnergy() / CLHEP::keV);
+        const auto& position = track->GetPosition();
+        fPrimaryEventOrigin = {position.x() / CLHEP::mm, position.y() / CLHEP::mm, position.z() / CLHEP::mm};
+        const auto& momentum = track->GetMomentumDirection();
+        fPrimaryEventDirection.emplace_back(momentum.x() / CLHEP::mm, momentum.y() / CLHEP::mm,
+                                            momentum.z() / CLHEP::mm);
+        if (fSubEventID > 0) {
+            fSubEventTag = track->GetParticleDefinition()->GetParticleName();
+        }
     }
 
     fTrack.emplace_back(track);
