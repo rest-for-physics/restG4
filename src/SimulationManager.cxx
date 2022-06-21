@@ -91,7 +91,6 @@ void OutputManager::FinishAndSubmitEvent() {
 
     if (IsValidEvent()) {
         size_t numberOfInsertedEvents = fSimulationManager->InsertEvent(fEvent);
-        cout << "inserted event: " << numberOfInsertedEvents << endl;
     }
     UpdateEvent();
 }
