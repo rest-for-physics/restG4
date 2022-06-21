@@ -87,8 +87,8 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
         )
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples
-        DESTINATION examples/restG4/
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/
+        DESTINATION ./examples/restG4/
         COMPONENT install
         )
 
