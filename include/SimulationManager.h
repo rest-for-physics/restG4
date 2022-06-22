@@ -60,9 +60,12 @@ class OutputManager {
     void AddSensitiveEnergy(Double_t energy, const char* physicalVolumeName);
     void AddEnergyToVolumeForProcess(Double_t energy, const char* volumeName, const char* processName);
 
+    inline bool IsActiveVolume(const char* volumeName) const { return fActiveVolumes.count(volumeName) > 0; }
+
    private:
     std::unique_ptr<TRestGeant4Event> fEvent{};
     SimulationManager* fSimulationManager = nullptr;
+    std::set<std::string> fActiveVolumes = {};
 
     friend class StackingAction;
 };

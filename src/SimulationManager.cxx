@@ -70,6 +70,12 @@ OutputManager::OutputManager(const SimulationManager* simulationManager)
         G4cout << "Error in 'OutputManager', this instance should never exist" << endl;
         exit(1);
     }
+
+    // initialize active volume lookup set
+    for (size_t i = 0; i < fSimulationManager->fRestGeant4Metadata->GetNumberOfActiveVolumes(); i++) {
+        const TString& activeVolume = fSimulationManager->fRestGeant4Metadata->GetActiveVolumeName(i);
+        fActiveVolumes.insert(activeVolume.Data());
+    }
 }
 
 void OutputManager::UpdateEvent() {
@@ -143,11 +149,12 @@ void OutputManager::AddEnergyToVolumeForProcess(Double_t energy, const char* vol
     if (energy <= 0) {
         return;
     }
-    fEvent->fTotalDepositedEnergy += energy;
     if (fEvent->fEnergyInVolumePerProcess[volumeName].count(processName) == 0) {
         fEvent->fEnergyInVolumePerProcess[volumeName][processName] = 0;
     }
     fEvent->fEnergyInVolumePerProcess[volumeName][processName] += energy;
+
+    fEvent->fTotalDepositedEnergy += energy;
 }
 
 // Geant4Lib
@@ -270,6 +277,12 @@ void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metada
     // Variables that describe a step are taken.
     const auto& volumeName = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(
         (TString &&) step->GetPreStepPoint()->GetPhysicalVolume()->GetName());
+
+    if (!SimulationManager::GetOutputManager()->IsActiveVolume(volumeName) &&
+        step->GetTrack()->GetCurrentStepNumber() != 0) {
+        // we always store the first step
+        return;
+    }
 
     const auto& particle = step->GetTrack()->GetDefinition();
     const auto& particleID = particle->GetPDGEncoding();
