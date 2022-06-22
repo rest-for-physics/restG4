@@ -25,6 +25,8 @@ StackingAction::StackingAction(SimulationManager* simulationManager) : fSimulati
 }
 
 G4ClassificationOfNewTrack StackingAction::ClassifyNewTrack(const G4Track* track) {
+    const G4ClassificationOfNewTrack decayClassification =
+        fSimulationManager->fRestGeant4Metadata->isFullChainActivated() ? fWaiting : fKill;
     if (track->GetParentID() <= 0) {
         // always process the first track regardless
         return fUrgent;
@@ -45,10 +47,10 @@ G4ClassificationOfNewTrack StackingAction::ClassifyNewTrack(const G4Track* track
         if (particle->GetPDGLifeTime() > fMaxAllowedLifetime) {
             G4String energy = G4BestUnit(track->GetKineticEnergy(), "Energy");
             G4String lifeTime = G4BestUnit(particle->GetPDGLifeTime(), "Time");
-
-            return fSimulationManager->fRestGeant4Metadata->isFullChainActivated() ? fWaiting : fKill;
+            return decayClassification;
         }
     }
+
     return fUrgent;
 }
 
