@@ -177,6 +177,31 @@ TEST(restG4, Example_05_PandaX) {
     fs::current_path(originalPath);
 }
 
+TEST(restG4, Example_06_IonRecoils) {
+    // cd into example
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "06.IonRecoils";
+    fs::current_path(thisExamplePath);
+
+    CommandLineParameters parameters;
+    parameters.rmlFile = "recoils.rml";
+    parameters.outputFile = thisExamplePath / "recoils.root";
+
+    Application app;
+    app.Run(parameters);
+
+    // Run validation macro
+    const TString macro(thisExamplePath / "Validate.C");
+    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+    int error = 0;
+    const int result =
+        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", parameters.outputFile.Data()), &error);
+    EXPECT_EQ(error, 0);
+    EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
+}
+
 TEST(restG4, Example_07_Decay_FullChain) {
     // cd into example
     const auto originalPath = fs::current_path();
