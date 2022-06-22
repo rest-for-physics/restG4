@@ -62,14 +62,14 @@ Int_t Validate(const char* filename) {
     const double averageSensitiveEnergyRef = (!isReferenceGeant4Version) ? 2280.96 : 2221.55;
 
     double averageNumberOfHits = 0;
-    const double averageNumberOfHitsRef = (!isReferenceGeant4Version) ? 5371.17 : 361.33;
+    const double averageNumberOfHitsRef = (!isReferenceGeant4Version) ? 5371.17 : 353.2;
 
     double averageNumberOfTracks = 0;
     const double averageNumberOfTracksRef = (!isReferenceGeant4Version) ? 2300 : 10.83;
 
     TVector3 averagePosition = {};
     const TVector3 averagePositionRef = (!isReferenceGeant4Version) ? TVector3(-38.8987, 27.5536, 91.3969)
-                                                                    : TVector3(-22.0472, -32.7535, -33.8159);
+                                                                    : TVector3(-17.8046, -32.5019, -31.8353);
 
     const double tolerance = 0.001;
 
