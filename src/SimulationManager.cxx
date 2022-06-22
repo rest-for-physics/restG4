@@ -280,7 +280,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metada
     const auto process = step->GetPostStepPoint()->GetProcessDefinedStep();
     G4String processName = "Init";
     G4String processTypeName = "Init";
-    G4int processID = -1;
+    Int_t processID = 0;
     if (track->GetCurrentStepNumber() !=
         0) {  // 0 = Init step (G4SteppingVerbose) process is not defined for this step
         processName = process->GetProcessName();
@@ -306,10 +306,6 @@ void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metada
     Double_t y = aTrack->GetPosition().y() / CLHEP::mm;
     Double_t z = aTrack->GetPosition().z() / CLHEP::mm;
 
-    if (metadata.GetSensitiveVolume() == volumeName) {
-        // restG4Event->AddEnergyToSensitiveVolume(energy);
-    }
-
     const TVector3 hitPosition(x, y, z);
     const Double_t hitGlobalTime = step->GetPreStepPoint()->GetGlobalTime() / CLHEP::second;
     const G4ThreeVector& momentum = step->GetPreStepPoint()->GetMomentumDirection();
@@ -318,14 +314,9 @@ void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metada
     // -------
     AddHit(hitPosition, energy, hitGlobalTime);  // this increases fNHits
 
-    fProcessID.Set(fNHits);
-    fProcessID[fNHits - 1] = processID;
-
-    fVolumeID.Set(fNHits);
-    fVolumeID[fNHits - 1] = 0;
-
-    fKineticEnergy.Set(fNHits);
-    fKineticEnergy[fNHits - 1] = 0;
+    fProcessID.emplace_back(processID);
+    fVolumeID.emplace_back(geometryInfo.GetIDFromVolume(volumeName));
+    fKineticEnergy.emplace_back(step->GetPreStepPoint()->GetKineticEnergy() / CLHEP::keV);
 
     fMomentumDirectionX.Set(fNHits);
     fMomentumDirectionX[fNHits - 1] = momentumDirection.X();

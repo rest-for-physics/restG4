@@ -68,7 +68,7 @@ Int_t Validate(const char* filename) {
     const double averageNumberOfTracksRef = (!isReferenceGeant4Version) ? 2300 : 10.83;
 
     TVector3 averagePosition = {};
-    const TVector3 averagePositionRef = (!isReferenceGeant4Version) ? TVector3(-41.4266, 28.2394, 89.3622)
+    const TVector3 averagePositionRef = (!isReferenceGeant4Version) ? TVector3(-38.8987, 27.5536, 91.3969)
                                                                     : TVector3(-22.0472, -32.7535, -33.8159);
 
     const double tolerance = 0.001;
