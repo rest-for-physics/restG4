@@ -119,10 +119,14 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     fSimulationManager->fRestGeant4Event = new TRestGeant4Event();
     fSimulationManager->fRestGeant4SubEvent = new TRestGeant4Event();
+
+    fSimulationManager->fRestGeant4Event->InitializeReferences(fSimulationManager->fRestRun);
+    fSimulationManager->fRestGeant4SubEvent->InitializeReferences(fSimulationManager->fRestRun);
+
     fSimulationManager->fRestRun->AddEventBranch(fSimulationManager->fRestGeant4SubEvent);
 
     fSimulationManager->fRestGeant4Track = new TRestGeant4Track();
-
+    fSimulationManager->fRestGeant4Track->SetEvent(fSimulationManager->fRestGeant4SubEvent);
     // choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
     long seed = fSimulationManager->fRestGeant4Metadata->GetSeed();

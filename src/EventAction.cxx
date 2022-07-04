@@ -250,7 +250,7 @@ void EventAction::ReOrderTrackIds(Int_t subId) {
         for (int n = 0; n < restG4Event->GetNumberOfTracks(); n++) {
             const auto& track = restG4Event->GetTrack(n);
             if (track.GetSubEventID() == subId - 1) {
-                if (track.ContainsProcess(6210) /* Decay, verified on v11.0.2 */) {
+                if (track.ContainsProcess("RadioactiveDecay") /* Decay, verified on v11.0.2 */) {
                     subRestG4Event->SetSubEventTag(track.GetParticleName());
                 }
             }
