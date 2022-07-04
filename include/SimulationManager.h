@@ -18,14 +18,6 @@ class SimulationManager {
     TRestGeant4Event *fRestGeant4Event = nullptr, *fRestGeant4SubEvent = nullptr;
     TRestGeant4Metadata* fRestGeant4Metadata = nullptr;
     TRestGeant4PhysicsLists* fRestGeant4PhysicsLists = nullptr;
-    Int_t fBiasing = 0;
-
-    static const Int_t maxBiasingVolumes = 50;
-
-    // These histograms would be better placed inside TRestGeant4BiasingVolume
-    TH1D* biasingSpectrum[maxBiasingVolumes];
-    TH1D* angularDistribution[maxBiasingVolumes];
-    TH2D* spatialDistribution[maxBiasingVolumes];
 
     TH1D initialEnergySpectrum;
     TH1D initialAngularDistribution;
