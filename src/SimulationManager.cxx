@@ -81,6 +81,7 @@ OutputManager::OutputManager(const SimulationManager* simulationManager)
 void OutputManager::UpdateEvent() {
     auto event = G4EventManager::GetEventManager()->GetConstCurrentEvent();
     fEvent = make_unique<TRestGeant4Event>(event, *fSimulationManager->fRestGeant4Metadata);
+    fEvent->InitializeReferences(fSimulationManager->fRestRun);
 }
 
 bool OutputManager::IsEmptyEvent() const { return !fEvent || fEvent->fTrack.empty(); }
@@ -206,6 +207,8 @@ bool TRestGeant4Event::InsertTrack(const G4Track* track) {
     fTrack.back().SetHits(fInitialStep);
 
     fTrackIDToTrackIndex[track->GetTrackID()] = fTrack.size() - 1;
+
+    fTrack.back().SetEvent(this);
 
     return true;
 }
