@@ -64,6 +64,12 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track) {
     restTrack->SetParticleName(name);
     restTrack->SetGlobalTrackTime(track->GetGlobalTime() / second);
 
+    TString creatorProcessName = "PrimaryGenerator";
+    if (track->GetCreatorProcess() != nullptr) {
+        creatorProcessName = track->GetCreatorProcess()->GetProcessName();
+    }
+    restTrack->SetCreatorProcess(creatorProcessName);
+
     G4ThreeVector trkOrigin = track->GetPosition();
     restTrack->SetTrackOrigin(trkOrigin.x(), trkOrigin.y(), trkOrigin.z());
 
