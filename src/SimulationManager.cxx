@@ -273,6 +273,10 @@ void TRestGeant4Track::UpdateTrack(const G4Track* track) {
     // fNumberOfSecondaries = (int)secondaries->size();
 }
 
+Int_t TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(const G4VProcess* process) {
+    return process->GetProcessType() * 1000 + process->GetProcessSubType();
+}
+
 void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metadata) {
     const G4Track* track = step->GetTrack();
 
@@ -301,7 +305,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metada
         0) {  // 0 = Init step (G4SteppingVerbose) process is not defined for this step
         processName = process->GetProcessName();
         processTypeName = G4VProcess::GetProcessTypeName(process->GetProcessType());
-        processID = process->GetProcessType() * 1000 + process->GetProcessSubType();
+        processID = TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(process);
     }
 
     metadata.fGeant4PhysicsInfo.InsertProcessName(processID, processName);
