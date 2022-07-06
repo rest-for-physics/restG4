@@ -84,7 +84,7 @@ void OutputManager::UpdateEvent() {
     fEvent->InitializeReferences(fSimulationManager->fRestRun);
 }
 
-bool OutputManager::IsEmptyEvent() const { return !fEvent || fEvent->fTrack.empty(); }
+bool OutputManager::IsEmptyEvent() const { return !fEvent || fEvent->fTracks.empty(); }
 
 bool OutputManager::IsValidEvent() const {
     if (IsEmptyEvent()) return false;
@@ -109,7 +109,7 @@ void OutputManager::RecordTrack(const G4Track* track) {
     fEvent->InsertTrack(track);
 
     if (fEvent->fSubEventID > 0) {
-        const auto& lastTrack = fEvent->fTrack.back();
+        const auto& lastTrack = fEvent->fTracks.back();
         assert(lastTrack.GetTrackID() == track->GetTrackID());
         // TODO
         /*
@@ -168,6 +168,17 @@ TRestGeant4Event::TRestGeant4Event(const G4Event* event, const TRestGeant4Metada
 
     SetTime((Double_t)system_time);
 
+    auto primaryVertex = event->GetPrimaryVertex();
+    const auto& position = primaryVertex->GetPosition();
+    fPrimaryPosition = {position.x() / CLHEP::mm, position.y() / CLHEP::mm, position.z() / CLHEP::mm};
+    for (int i = 0; i < primaryVertex->GetNumberOfParticle(); i++) {
+        const auto& primaryParticle = primaryVertex->GetPrimary(i);
+        fPrimaryParticleNames.emplace_back(primaryParticle->GetParticleDefinition()->GetParticleName());
+        fPrimaryEnergies.emplace_back(primaryParticle->GetKineticEnergy() / CLHEP::keV);
+        const auto& momentum = primaryParticle->GetMomentumDirection();
+        fPrimaryDirections.emplace_back(momentum.x(), momentum.y(), momentum.z());
+    }
+
     // Defining if the hits in a given volume will be stored
     for (int i = 0; i < metadata.GetNumberOfActiveVolumes(); i++) {
         if (metadata.GetStorageChance(i) >= 1.00) {
@@ -189,31 +200,28 @@ bool TRestGeant4Event::InsertTrack(const G4Track* track) {
         exit(1);
     }
 
-    if (fTrack.empty()) {
-        // First track of event (primary)
-        fPrimaryParticleName.emplace_back(track->GetParticleDefinition()->GetParticleName());
-        fPrimaryEventEnergy.emplace_back(track->GetKineticEnergy() / CLHEP::keV);
+    if (fTracks.empty() && IsSubEvent()) {
+        // First track of sub-event (primary)
+        fSubEventPrimaryParticleName = track->GetParticleDefinition()->GetParticleName();
+        fSubEventPrimaryEnergy = track->GetKineticEnergy() / CLHEP::keV;
         const auto& position = track->GetPosition();
-        fPrimaryEventOrigin = {position.x() / CLHEP::mm, position.y() / CLHEP::mm, position.z() / CLHEP::mm};
+        fSubEventPrimaryPosition = {position.x() / CLHEP::mm, position.y() / CLHEP::mm,
+                                    position.z() / CLHEP::mm};
         const auto& momentum = track->GetMomentumDirection();
-        fPrimaryEventDirection.emplace_back(momentum.x() / CLHEP::mm, momentum.y() / CLHEP::mm,
-                                            momentum.z() / CLHEP::mm);
-        if (fSubEventID > 0) {
-            fSubEventTag = track->GetParticleDefinition()->GetParticleName();
-        }
+        fSubEventPrimaryDirection = {momentum.x(), momentum.y(), momentum.z()};
     }
 
-    fTrack.emplace_back(track);
-    fTrack.back().SetHits(fInitialStep);
+    fTracks.emplace_back(track);
+    fTracks.back().SetHits(fInitialStep);
 
-    fTrackIDToTrackIndex[track->GetTrackID()] = fTrack.size() - 1;
+    fTrackIDToTrackIndex[track->GetTrackID()] = fTracks.size() - 1;
 
-    fTrack.back().SetEvent(this);
+    fTracks.back().SetEvent(this);
 
     return true;
 }
 
-void TRestGeant4Event::UpdateTrack(const G4Track* track) { fTrack.back().UpdateTrack(track); }
+void TRestGeant4Event::UpdateTrack(const G4Track* track) { fTracks.back().UpdateTrack(track); }
 
 void TRestGeant4Event::InsertStep(const G4Step* step, TRestGeant4Metadata& metadata) {
     if (step->GetTrack()->GetCurrentStepNumber() == 0) {
@@ -221,7 +229,7 @@ void TRestGeant4Event::InsertStep(const G4Step* step, TRestGeant4Metadata& metad
         fInitialStep = TRestGeant4Hits();
         fInitialStep.InsertStep(step, metadata);
     } else {
-        fTrack.back().InsertStep(step, metadata);
+        fTracks.back().InsertStep(step, metadata);
     }
 }
 
@@ -329,7 +337,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metada
     const TVector3 hitPosition(x, y, z);
     const Double_t hitGlobalTime = step->GetPreStepPoint()->GetGlobalTime() / CLHEP::second;
     const G4ThreeVector& momentum = step->GetPreStepPoint()->GetMomentumDirection();
-    const TVector3 momentumDirection = TVector3(momentum.x(), momentum.y(), momentum.z()).Unit();
+    const TVector3 momentumDirection = TVector3(momentum.x(), momentum.y(), momentum.z());
 
     // -------
     AddHit(hitPosition, energy, hitGlobalTime);  // this increases fNHits
