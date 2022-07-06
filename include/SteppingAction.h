@@ -22,10 +22,5 @@ class SteppingAction : public G4UserSteppingAction {
 
    private:
     SimulationManager* fSimulationManager;
-
-    G4String nom_vol, nom_part, nom_proc;
-    G4double ener_dep, eKin;
-
-    G4ThreeVector previousDirection;
 };
 #endif

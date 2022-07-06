@@ -51,8 +51,6 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     Int_t endEnergyBin;
     Double_t fSpectrumIntegral;
 
-    Int_t nBiasingVolumes;
-
     Double_t energyFactor;
 
     Double_t lastEnergy;
