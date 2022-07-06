@@ -80,7 +80,7 @@ OutputManager::OutputManager(const SimulationManager* simulationManager)
 
 void OutputManager::UpdateEvent() {
     auto event = G4EventManager::GetEventManager()->GetConstCurrentEvent();
-    fEvent = make_unique<TRestGeant4Event>(event, *fSimulationManager->fRestGeant4Metadata);
+    fEvent = make_unique<TRestGeant4Event>(event);
     fEvent->InitializeReferences(fSimulationManager->fRestRun);
 }
 
@@ -133,9 +133,7 @@ void OutputManager::UpdateTrack(const G4Track* track) {
     fEvent->UpdateTrack(track);
 }
 
-void OutputManager::RecordStep(const G4Step* step) {
-    fEvent->InsertStep(step, *fSimulationManager->fRestGeant4Metadata);
-}
+void OutputManager::RecordStep(const G4Step* step) { fEvent->InsertStep(step); }
 
 void OutputManager::AddSensitiveEnergy(Double_t energy, const char* physicalVolumeName) {
     fEvent->AddEnergyToSensitiveVolume(energy);
@@ -160,8 +158,7 @@ void OutputManager::AddEnergyToVolumeForProcess(Double_t energy, const char* vol
 
 // Geant4Lib
 
-TRestGeant4Event::TRestGeant4Event(const G4Event* event, const TRestGeant4Metadata& metadata)
-    : TRestGeant4Event() {
+TRestGeant4Event::TRestGeant4Event(const G4Event* event) : TRestGeant4Event() {
     SetID(event->GetEventID());
     SetOK(true);
     time_t system_time = time(nullptr);
@@ -179,13 +176,17 @@ TRestGeant4Event::TRestGeant4Event(const G4Event* event, const TRestGeant4Metada
         fPrimaryDirections.emplace_back(momentum.x(), momentum.y(), momentum.z());
     }
 
+    return;
+
+    // TODO: move this
     // Defining if the hits in a given volume will be stored
-    for (int i = 0; i < metadata.GetNumberOfActiveVolumes(); i++) {
-        if (metadata.GetStorageChance(i) >= 1.00) {
+    const auto metadata = GetGeant4Metadata();
+    for (int i = 0; i < metadata->GetNumberOfActiveVolumes(); i++) {
+        if (metadata->GetStorageChance(i) >= 1.00) {
             // ActivateVolumeForStorage(i);
         } else {
             Double_t randomNumber = G4UniformRand();
-            if (metadata.GetStorageChance(i) >= randomNumber) {
+            if (metadata->GetStorageChance(i) >= randomNumber) {
                 // ActivateVolumeForStorage(i);
             } else {
                 DisableVolumeForStorage(i);
@@ -213,23 +214,23 @@ bool TRestGeant4Event::InsertTrack(const G4Track* track) {
 
     fTracks.emplace_back(track);
     fTracks.back().SetHits(fInitialStep);
+    fTracks.back().SetEvent(this);
 
     fTrackIDToTrackIndex[track->GetTrackID()] = fTracks.size() - 1;
-
-    fTracks.back().SetEvent(this);
 
     return true;
 }
 
 void TRestGeant4Event::UpdateTrack(const G4Track* track) { fTracks.back().UpdateTrack(track); }
 
-void TRestGeant4Event::InsertStep(const G4Step* step, TRestGeant4Metadata& metadata) {
+void TRestGeant4Event::InsertStep(const G4Step* step) {
     if (step->GetTrack()->GetCurrentStepNumber() == 0) {
         // initial step (from SteppingVerbose) is generated before TrackingAction can insert the first track
         fInitialStep = TRestGeant4Hits();
-        fInitialStep.InsertStep(step, metadata);
+        fInitialStep.SetEvent(this);
+        fInitialStep.InsertStep(step);
     } else {
-        fTracks.back().InsertStep(step, metadata);
+        fTracks.back().InsertStep(step);
     }
 }
 
@@ -264,9 +265,7 @@ TRestGeant4Track::TRestGeant4Track(const G4Track* track) : TRestGeant4Track() {
     fTrackOrigin = {trackOrigin.x(), trackOrigin.y(), trackOrigin.z()};
 }
 
-void TRestGeant4Track::InsertStep(const G4Step* step, TRestGeant4Metadata& metadata) {
-    fHits.InsertStep(step, metadata);
-}
+void TRestGeant4Track::InsertStep(const G4Step* step) { fHits.InsertStep(step); }
 
 void TRestGeant4Track::UpdateTrack(const G4Track* track) {
     if (track->GetTrackID() != fTrackID) {
@@ -285,10 +284,16 @@ Int_t TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(const G4VProcess* pr
     return process->GetProcessType() * 1000 + process->GetProcessSubType();
 }
 
-void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metadata) {
+void TRestGeant4Hits::InsertStep(const G4Step* step) {
     const G4Track* track = step->GetTrack();
 
-    const auto& geometryInfo = metadata.GetGeant4GeometryInfo();
+    TRestGeant4Metadata* metadata = GetGeant4Metadata();
+    if (metadata == nullptr) {
+        cout << "ERROR METADATA IS NULL!" << endl;
+        exit(1);
+    }
+    const auto& geometryInfo = metadata->GetGeant4GeometryInfo();
+
     // Variables that describe a step are taken.
     const auto& volumeName = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(
         (TString &&) step->GetPreStepPoint()->GetPhysicalVolume()->GetName());
@@ -303,7 +308,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metada
     const auto& particleID = particle->GetPDGEncoding();
     const auto& particleName = particle->GetParticleName();
 
-    metadata.fGeant4PhysicsInfo.InsertParticleName(particleID, particleName);
+    metadata->fGeant4PhysicsInfo.InsertParticleName(particleID, particleName);
 
     const auto process = step->GetPostStepPoint()->GetProcessDefinedStep();
     G4String processName = "Init";
@@ -316,16 +321,16 @@ void TRestGeant4Hits::InsertStep(const G4Step* step, TRestGeant4Metadata& metada
         processID = TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(process);
     }
 
-    metadata.fGeant4PhysicsInfo.InsertProcessName(processID, processName);
+    metadata->fGeant4PhysicsInfo.InsertProcessName(processID, processName);
 
     const auto energy = step->GetTotalEnergyDeposit() / CLHEP::keV;
     const auto trackKineticEnergy = step->GetTrack()->GetKineticEnergy() / CLHEP::keV;
 
     auto sensitiveVolumeName =
-        geometryInfo.GetAlternativeNameFromGeant4PhysicalName(metadata.GetSensitiveVolume());
+        geometryInfo.GetAlternativeNameFromGeant4PhysicalName(metadata->GetSensitiveVolume());
 
     if (particle->GetParticleName() == "geantino" && sensitiveVolumeName.Data() == volumeName) {
-        metadata.SetSaveAllEvents(true);
+        metadata->SetSaveAllEvents(true);
     }
 
     G4Track* aTrack = step->GetTrack();
