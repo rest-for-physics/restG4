@@ -7,23 +7,24 @@ Int_t Validate(const char* filename, Int_t nDaughters) {
 
     TRestGeant4Event* event = run.GetInputEvent<TRestGeant4Event>();
 
-    std::set<string> uniqueSubEventPrimaryParticleNames;
+    std::set<string> uniqueDecayingParticleNames;
     for (int n = 0; n < run.GetEntries(); n++) {
         run.GetEntry(n);
         if (!event->IsSubEvent()) {
-            continue;
+            uniqueDecayingParticleNames.insert(event->GetPrimaryEventParticleName().Data());
+        } else {
+            uniqueDecayingParticleNames.insert(event->GetSubEventPrimaryEventParticleName().Data());
         }
-        uniqueSubEventPrimaryParticleNames.insert(event->GetSubEventPrimaryEventParticleName().Data());
     }
 
-    cout << "Daughter isotopes: " << uniqueSubEventPrimaryParticleNames.size() << endl;
-    for (const auto& primary : uniqueSubEventPrimaryParticleNames) {
+    cout << "Decaying isotopes: " << uniqueDecayingParticleNames.size() << endl;
+    for (const auto& primary : uniqueDecayingParticleNames) {
         cout << primary << " ";
     }
     cout << endl;
 
-    if (uniqueSubEventPrimaryParticleNames.size() != nDaughters) {
-        cout << "Wrong number of isotopes found! " << uniqueSubEventPrimaryParticleNames.size()
+    if (uniqueDecayingParticleNames.size() != nDaughters) {
+        cout << "Wrong number of isotopes found! " << uniqueDecayingParticleNames.size()
              << " vs. reference value of " << nDaughters << endl;
         return 1;
     }
