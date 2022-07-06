@@ -240,10 +240,10 @@ TRestGeant4Track::TRestGeant4Track(const G4Track* track) : TRestGeant4Track() {
     fParticleType = particle->GetParticleType();
     fParticleSubType = particle->GetParticleSubType();
     */
-    if (track->GetCreatorProcess()) {
+    if (track->GetCreatorProcess() != nullptr) {
         fCreatorProcess = track->GetCreatorProcess()->GetProcessName();
     } else {
-        fCreatorProcess = "IsPrimaryParticle";
+        fCreatorProcess = "PrimaryGenerator";
     }
 
     fKineticEnergy = track->GetKineticEnergy() / CLHEP::keV;
