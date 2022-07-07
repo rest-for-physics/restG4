@@ -342,24 +342,13 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     const TVector3 hitPosition(x, y, z);
     const Double_t hitGlobalTime = step->GetPreStepPoint()->GetGlobalTime() / CLHEP::second;
     const G4ThreeVector& momentum = step->GetPreStepPoint()->GetMomentumDirection();
-    const TVector3 momentumDirection = TVector3(momentum.x(), momentum.y(), momentum.z());
 
-    // -------
     AddHit(hitPosition, energy, hitGlobalTime);  // this increases fNHits
 
     fProcessID.emplace_back(processID);
     fVolumeID.emplace_back(geometryInfo.GetIDFromVolume(volumeName));
     fKineticEnergy.emplace_back(step->GetPreStepPoint()->GetKineticEnergy() / CLHEP::keV);
+    fMomentumDirection.emplace_back(momentum.x(), momentum.y(), momentum.z());
 
-    fMomentumDirectionX.Set(fNHits);
-    fMomentumDirectionX[fNHits - 1] = momentumDirection.X();
-
-    fMomentumDirectionY.Set(fNHits);
-    fMomentumDirectionY[fNHits - 1] = momentumDirection.Y();
-
-    fMomentumDirectionZ.Set(fNHits);
-    fMomentumDirectionZ[fNHits - 1] = momentumDirection.Z();
-
-    // -----
     SimulationManager::GetOutputManager()->AddEnergyToVolumeForProcess(energy, volumeName, processName);
 }
