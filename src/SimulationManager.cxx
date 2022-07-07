@@ -279,10 +279,8 @@ void TRestGeant4Track::UpdateTrack(const G4Track* track) {
 
     auto steppingAction = (SteppingAction*)G4EventManager::GetEventManager()->GetUserSteppingAction();
     const auto secondaries = steppingAction->GetSecondaries();
-    if (secondaries != nullptr) {
-        for (const auto& track : *secondaries) {
-            fSecondaryTrackIDs.emplace_back(track->GetTrackID());
-        }
+    for (const auto& track : *secondaries) {
+        fSecondaryTrackIDs.emplace_back(track->GetTrackID());
     }
 }
 
@@ -353,7 +351,9 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     fKineticEnergy.emplace_back(step->GetPreStepPoint()->GetKineticEnergy() / CLHEP::keV);
     fMomentumDirection.emplace_back(momentum.x(), momentum.y(), momentum.z());
 
-    fTrack->IncreaseTrackLength(step->GetStepLength() / CLHEP::mm);
+    if (fTrack != nullptr) {
+        fTrack->IncreaseTrackLength(step->GetStepLength() / CLHEP::mm);
+    }
 
     SimulationManager::GetOutputManager()->AddEnergyToVolumeForProcess(energy, volumeName, processName);
 }
