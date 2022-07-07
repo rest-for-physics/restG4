@@ -52,7 +52,7 @@ void EventAction::BeginOfEventAction(const G4Event* event) {
     }
 }
 
-void EventAction::EndOfEventAction(const G4Event* event) {
+void EventAction::EndOfEventAction(const G4Event*) {
     fSimulationManager->GetOutputManager()->FinishAndSubmitEvent();
 
     if (!G4Threading::IsMultithreadedApplication() ||  //

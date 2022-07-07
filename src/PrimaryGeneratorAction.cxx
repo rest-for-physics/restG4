@@ -91,9 +91,7 @@ void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     auto simulationManager = fSimulationManager;
-    TRestRun* restRun = simulationManager->fRestRun;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
-    TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         cout << "DEBUG: Primary generation" << endl;
@@ -132,9 +130,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
 
 G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRestGeant4Particle p) {
     auto simulationManager = fSimulationManager;
-    TRestRun* restRun = simulationManager->fRestRun;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
-    TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
 
     auto particle_name = (string)p.GetParticleName();
 

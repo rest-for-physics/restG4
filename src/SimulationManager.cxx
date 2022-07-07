@@ -279,8 +279,8 @@ void TRestGeant4Track::UpdateTrack(const G4Track* track) {
 
     auto steppingAction = (SteppingAction*)G4EventManager::GetEventManager()->GetUserSteppingAction();
     const auto secondaries = steppingAction->GetSecondaries();
-    for (const auto& track : *secondaries) {
-        fSecondaryTrackIDs.emplace_back(track->GetTrackID());
+    for (const auto& secondaryTrack : *secondaries) {
+        fSecondaryTrackIDs.emplace_back(secondaryTrack->GetTrackID());
     }
 }
 

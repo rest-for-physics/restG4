@@ -158,11 +158,6 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     runManager->SetUserInitialization(new ActionInitialization(fSimulationManager));
 
-    auto step = (SteppingAction*)G4RunManager::GetRunManager()->GetUserSteppingAction();
-
-    auto primaryGenerator =
-        (PrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
-
     runManager->Initialize();
 
     G4UImanager* UI = G4UImanager::GetUIpointer();
