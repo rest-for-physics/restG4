@@ -351,9 +351,5 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     fKineticEnergy.emplace_back(step->GetPreStepPoint()->GetKineticEnergy() / CLHEP::keV);
     fMomentumDirection.emplace_back(momentum.x(), momentum.y(), momentum.z());
 
-    if (fTrack != nullptr) {
-        fTrack->IncreaseTrackLength(step->GetStepLength() / CLHEP::mm);
-    }
-
     SimulationManager::GetOutputManager()->AddEnergyToVolumeForProcess(energy, volumeName, processName);
 }
