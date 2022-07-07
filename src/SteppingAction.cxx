@@ -25,3 +25,8 @@ SteppingAction::~SteppingAction() {}
 void SteppingAction::UserSteppingAction(const G4Step* step) {
     fSimulationManager->GetOutputManager()->RecordStep(step);
 }
+
+vector<G4Track*>* SteppingAction::GetSecondaries() const {
+    G4SteppingManager* steppingManager = fpSteppingManager;
+    return steppingManager->GetfSecondary();
+}

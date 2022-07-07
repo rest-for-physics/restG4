@@ -7,6 +7,8 @@
 #include <G4Nucleus.hh>
 #include <G4Threading.hh>
 
+#include "SteppingAction.h"
+
 using namespace std;
 
 thread_local OutputManager* SimulationManager::fOutputManager = nullptr;
@@ -275,9 +277,12 @@ void TRestGeant4Track::UpdateTrack(const G4Track* track) {
 
     fTrackLength = track->GetTrackLength() / CLHEP::mm;
 
-    // auto steppingAction = (SteppingAction*)G4EventManager::GetEventManager()->GetUserSteppingAction();
-    // auto secondaries = steppingAction->GetfSecondary();
-    // fNumberOfSecondaries = (int)secondaries->size();
+    auto steppingAction = (SteppingAction*)G4EventManager::GetEventManager()->GetUserSteppingAction();
+    const auto secondaries = steppingAction->GetSecondaries();
+
+    for (const auto& track : *secondaries) {
+        fSecondaryTrackIDs.emplace_back(track->GetTrackID());
+    }
 }
 
 Int_t TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(const G4VProcess* process) {
@@ -288,10 +293,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     const G4Track* track = step->GetTrack();
 
     TRestGeant4Metadata* metadata = GetGeant4Metadata();
-    if (metadata == nullptr) {
-        cout << "ERROR METADATA IS NULL!" << endl;
-        exit(1);
-    }
+
     const auto& geometryInfo = metadata->GetGeant4GeometryInfo();
 
     // Variables that describe a step are taken.
@@ -314,8 +316,8 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     G4String processName = "Init";
     G4String processTypeName = "Init";
     Int_t processID = 0;
-    if (track->GetCurrentStepNumber() !=
-        0) {  // 0 = Init step (G4SteppingVerbose) process is not defined for this step
+    if (track->GetCurrentStepNumber() != 0) {
+        // 0 = Init step (G4SteppingVerbose) process is not defined for this step
         processName = process->GetProcessName();
         processTypeName = G4VProcess::GetProcessTypeName(process->GetProcessType());
         processID = TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(process);
