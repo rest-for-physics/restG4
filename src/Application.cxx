@@ -12,6 +12,7 @@
 #include <TRestRun.h>
 
 #include <G4RunManager.hh>
+#include <G4RunManagerFactory.hh>
 #include <G4UImanager.hh>
 #include <G4VSteppingVerbose.hh>
 #include <cstdio>
@@ -128,7 +129,16 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     G4VSteppingVerbose::SetInstance(new SteppingVerbose(fSimulationManager));
 
-    auto runManager = new G4RunManager;
+    auto runManagerType = G4RunManagerType::Default;
+    if (commandLineParameters.serialMode) {
+        runManagerType = G4RunManagerType::SerialOnly;
+        cout << "Using serial run manager" << endl;
+    } else {
+        runManagerType = G4RunManagerType::MTOnly;
+        cout << "Using MT run manager" << endl;
+    }
+
+    auto runManager = G4RunManagerFactory::CreateRunManager(runManagerType);
 
     auto detector = new DetectorConstruction(fSimulationManager);
 
