@@ -49,9 +49,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     Bool_t saveAllEvents;
 
-    Int_t nEvents;
-
-    auto timeStart = chrono::steady_clock::now();
+    const auto timeStart = chrono::steady_clock::now();
 
     const auto originalDirectory = filesystem::current_path();
 
@@ -60,7 +58,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     CommandLineSetup::Print(commandLineParameters);
 
     /// Separating relative path and pure RML filename
-    char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
+    const char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
 
     if (!TRestTools::CheckFileIsAccessible(inputConfigFile)) {
         cout << "Input rml file: " << inputConfigFile << " not found, please check file name" << endl;
@@ -167,27 +165,22 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     visManager->Initialize();
 #endif
 
-    nEvents = fSimulationManager->fRestGeant4Metadata->GetNumberOfEvents();
+    const auto nEvents = fSimulationManager->fRestGeant4Metadata->GetNumberOfEvents();
+    if (nEvents < 0) {
+        cout << "Error: \"nEvents\" parameter value (" << nEvents << ") is not valid." << endl;
+        exit(1);
+    }
 
     time_t systime = time(nullptr);
     fSimulationManager->fRestRun->SetStartTimeStamp((Double_t)systime);
 
-    cout << "Number of events : " << nEvents << endl;
+    cout << "Number of events: " << nEvents << endl;
     if (nEvents > 0)  // batch mode
     {
-        G4String command = "/tracking/verbose 0";
-        UI->ApplyCommand(command);
-        command = "/run/initialize";
-        UI->ApplyCommand(command);
-
-        char tmp[256];
-        sprintf(tmp, "/run/beamOn %d", nEvents);
-
-        command = tmp;
-        UI->ApplyCommand(command);
-
+        UI->ApplyCommand("/tracking/verbose 0");
+        UI->ApplyCommand("/run/initialize");
+        UI->ApplyCommand("/run/beamOn " + to_string(nEvents));
         fSimulationManager->fRestRun->GetOutputFile()->cd();
-
     }
 
     else if (nEvents == 0)  // define visualization and UI terminal for interactive mode
@@ -204,24 +197,6 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 #endif
     }
 
-    else  // nEvents == -1
-    {
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << "The number of events to be simulated was not recognized properly!" << endl;
-        cout << "Make sure you did not forget the number of events entry in TRestGeant4Metadata." << endl;
-        cout << endl;
-        cout << " ... or the parameter is properly constructed/interpreted." << endl;
-        cout << endl;
-        cout << "It should be something like : " << endl;
-        cout << endl;
-        cout << R"( <parameter name ="nEvents" value="100"/>)" << endl;
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << endl;
-    }
     fSimulationManager->fRestRun->GetOutputFile()->cd();
 
 #ifdef G4VIS_USE
