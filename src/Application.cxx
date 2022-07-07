@@ -4,6 +4,7 @@
 #include <TGeoVolume.h>
 #include <TH1D.h>
 #include <TH2D.h>
+#include <TROOT.h>
 #include <TRestGDMLParser.h>
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
@@ -130,15 +131,20 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     G4VSteppingVerbose::SetInstance(new SteppingVerbose(fSimulationManager));
 
     auto runManagerType = G4RunManagerType::Default;
-    if (commandLineParameters.serialMode) {
+    if (!commandLineParameters.serialMode) {
+        runManagerType = G4RunManagerType::MTOnly;
+        cout << "Using MT run manager with " << commandLineParameters.nThreads << " threads" << endl;
+    } else {
         runManagerType = G4RunManagerType::SerialOnly;
         cout << "Using serial run manager" << endl;
-    } else {
-        runManagerType = G4RunManagerType::MTOnly;
-        cout << "Using MT run manager" << endl;
     }
 
     auto runManager = G4RunManagerFactory::CreateRunManager(runManagerType);
+
+    if (!commandLineParameters.serialMode) {
+        ROOT::EnableThreadSafety();
+        runManager->SetNumberOfThreads(commandLineParameters.nThreads);
+    }
 
     auto detector = new DetectorConstruction(fSimulationManager);
 
