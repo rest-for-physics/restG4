@@ -38,8 +38,11 @@ void RunAction::BeginOfRunAction(const G4Run*) {
 void RunAction::EndOfRunAction(const G4Run*) {
     TRestRun* restRun = fSimulationManager->fRestRun;
 
-    G4cout << "============================= Run Summary =============================" << endl;
-    G4cout << restRun->GetEntries() << " events stored out of "
-           << G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed() << " simulated events" << endl;
-    G4cout << "=======================================================================" << endl;
+    if (G4Threading::IsMasterThread() || !G4Threading::IsMultithreadedApplication()) {
+        G4cout << "============================= Run Summary =============================" << endl;
+        G4cout << restRun->GetEntries() << " events stored out of "
+               << G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed() << " simulated events"
+               << endl;
+        G4cout << "=======================================================================" << endl;
+    }
 }
