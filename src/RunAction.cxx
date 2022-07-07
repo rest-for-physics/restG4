@@ -31,7 +31,6 @@ void RunAction::BeginOfRunAction(const G4Run*) {
     auto steppingVerbose = ((SteppingVerbose*)G4VSteppingVerbose::GetInstance());
     steppingVerbose->SetSteppingVerbose(1);
 
-    fSimulationManager->InitializeOutputManager();
     // inform the runManager to save random number seed
     G4RunManager::GetRunManager()->SetRandomNumberStore(false);
 }

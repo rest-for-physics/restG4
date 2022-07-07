@@ -80,6 +80,8 @@ void ActionInitialization::Build() const {
         primaryGenerator->SetAngularDistribution(&(fSimulationManager->initialAngularDistribution));
     }
 
+    fSimulationManager->InitializeOutputManager();
+
     SetUserAction(primaryGenerator);
     SetUserAction(new RunAction(fSimulationManager));
     SetUserAction(new EventAction(fSimulationManager));
