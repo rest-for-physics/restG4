@@ -179,7 +179,6 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
 
 void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p) {
     auto simulationManager = fSimulationManager;
-    TRestRun* restRun = simulationManager->fRestRun;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
 
     G4ThreeVector direction;
@@ -316,7 +315,6 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
 void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
     auto simulationManager = fSimulationManager;
 
-    TRestRun* restRun = simulationManager->fRestRun;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
 
     Double_t energy = 0;
@@ -400,7 +398,6 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
 void PrimaryGeneratorAction::SetParticlePosition() {
     auto simulationManager = fSimulationManager;
 
-    TRestRun* restRun = simulationManager->fRestRun;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
 
     double x = 0, y = 0, z = 0;
@@ -497,7 +494,6 @@ G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() {
     return G4ThreeVector(a, b, c);
 }
 
-//
 Double_t PrimaryGeneratorAction::GetAngle(G4ThreeVector x, G4ThreeVector y) {
     Double_t angle = y.angle(x);
 
@@ -538,6 +534,7 @@ void PrimaryGeneratorAction::GenPositionOnGDMLVolume(double& x, double& y, doubl
     y = y + fDetector->GetGeneratorTranslation().y();
     z = z + fDetector->GetGeneratorTranslation().z();
 }
+
 void PrimaryGeneratorAction::GenPositionOnGDMLSurface(double& x, double& y, double& z) {
     // TODO there is a problem, probably with G4 function GetPointOnSurface
     // It produces a point on the surface but it is not uniformly distributed
@@ -553,6 +550,7 @@ void PrimaryGeneratorAction::GenPositionOnGDMLSurface(double& x, double& y, doub
     y = y + fDetector->GetGeneratorTranslation().y();
     z = z + fDetector->GetGeneratorTranslation().z();
 }
+
 void PrimaryGeneratorAction::GenPositionOnBoxVolume(double& x, double& y, double& z) {
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
@@ -576,14 +574,17 @@ void PrimaryGeneratorAction::GenPositionOnBoxVolume(double& x, double& y, double
     y = rndPos.y() + center.Y();
     z = rndPos.z() + center.Z();
 }
+
 void PrimaryGeneratorAction::GenPositionOnBoxSurface(double& x, double& y, double& z) {
     cout << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
     abort();
 }
+
 void PrimaryGeneratorAction::GenPositionOnSphereVolume(double& x, double& y, double& z) {
     cout << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
     abort();
 }
+
 void PrimaryGeneratorAction::GenPositionOnSphereSurface(double& x, double& y, double& z) {
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
@@ -597,10 +598,12 @@ void PrimaryGeneratorAction::GenPositionOnSphereSurface(double& x, double& y, do
     y = radius * rndPos.y() + center.Y();
     z = radius * rndPos.z() + center.Z();
 }
+
 void PrimaryGeneratorAction::GenPositionOnCylinderVolume(double& x, double& y, double& z) {
     cout << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
     abort();
 }
+
 void PrimaryGeneratorAction::GenPositionOnCylinderSurface(double& x, double& y, double& z) {
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
@@ -625,6 +628,7 @@ void PrimaryGeneratorAction::GenPositionOnCylinderSurface(double& x, double& y, 
     y = rndPos.y() + center.Y();
     z = rndPos.z() + center.Z();
 }
+
 void PrimaryGeneratorAction::GenPositionOnPoint(double& x, double& y, double& z) {
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
@@ -634,6 +638,7 @@ void PrimaryGeneratorAction::GenPositionOnPoint(double& x, double& y, double& z)
     y = position.Y();
     z = position.Z();
 }
+
 void PrimaryGeneratorAction::GenPositionOnWall(double& x, double& y, double& z) {
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
