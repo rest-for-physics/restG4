@@ -13,7 +13,9 @@
 #include <TRestRun.h>
 
 #include <G4RunManager.hh>
+#ifndef GEANT4_WITHOUT_G4RunManagerFactory
 #include <G4RunManagerFactory.hh>
+#endif
 #include <G4UImanager.hh>
 #include <G4VSteppingVerbose.hh>
 #include <cstdio>
@@ -128,6 +130,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     G4VSteppingVerbose::SetInstance(new SteppingVerbose(fSimulationManager));
 
+#ifndef GEANT4_WITHOUT_G4RunManagerFactory
     auto runManagerType = G4RunManagerType::Default;
     if (!commandLineParameters.serialMode) {
         runManagerType = G4RunManagerType::MTOnly;
@@ -143,6 +146,10 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
         ROOT::EnableThreadSafety();
         runManager->SetNumberOfThreads(commandLineParameters.nThreads);
     }
+#else
+    cout << "Using serial run manager" << endl;
+    auto runManager = new G4RunManager();
+#endif
 
     auto detector = new DetectorConstruction(fSimulationManager);
 
