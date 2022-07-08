@@ -9,6 +9,7 @@
 #include <G4IonTable.hh>
 #include <G4ParticleDefinition.hh>
 #include <G4ParticleTable.hh>
+#include <G4RunManager.hh>
 #include <G4SystemOfUnits.hh>
 #include <G4UnitsTable.hh>
 #include <Randomize.hh>
@@ -17,19 +18,10 @@
 
 using namespace std;
 
-Int_t face = 0;
-
 double GeneratorRndm() { return G4UniformRand(); }
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationManager,
-                                               DetectorConstruction* pDetector)
-    : G4VUserPrimaryGeneratorAction(),
-      fSimulationManager(simulationManager),
-      fParticleGun(nullptr),
-      fDetector(pDetector) {
-    G4int n_particle = 1;
-    fParticleGun = new G4ParticleGun(n_particle);
-
+PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationManager)
+    : G4VUserPrimaryGeneratorAction(), fSimulationManager(simulationManager) {
     fGeneratorSpatialDensityFunction = nullptr;
 
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
@@ -37,9 +29,58 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
     for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
         restG4Metadata->GetParticleSource(i)->SetRndmMethod(GeneratorRndm);
     }
+
+    if (restG4Metadata->GetParticleSource(0)->GetEnergyDistType() == "TH1D") {
+        TString fileFullPath = (TString)restG4Metadata->GetParticleSource(0)->GetSpectrumFilename();
+
+        TFile fin(fileFullPath);
+
+        TString sptName = restG4Metadata->GetParticleSource(0)->GetSpectrumName();
+
+        TH1D* h = (TH1D*)fin.Get(sptName);
+
+        if (!h) {
+            RESTError << "REST ERROR  when trying to find energy spectrum" << RESTendl;
+            RESTError << "File : " << fileFullPath << RESTendl;
+            RESTError << "Spectrum name : " << sptName << RESTendl;
+            exit(1);
+        }
+
+        fSimulationManager->initialEnergySpectrum = *h;
+
+        Double_t minEnergy = restG4Metadata->GetParticleSource(0)->GetMinEnergy();
+        if (minEnergy < 0) minEnergy = 0;
+
+        Double_t maxEnergy = restG4Metadata->GetParticleSource(0)->GetMaxEnergy();
+        if (maxEnergy < 0) maxEnergy = 0;
+
+        // We set the initial spectrum energy provided from TH1D
+        SetSpectrum(&(fSimulationManager->initialEnergySpectrum), minEnergy, maxEnergy);
+    }
+
+    if (restG4Metadata->GetParticleSource(0)->GetAngularDistType() == "TH1D") {
+        TString fileFullPath = (TString)restG4Metadata->GetParticleSource(0)->GetAngularFilename();
+
+        TFile fin(fileFullPath);
+
+        TString sptName = restG4Metadata->GetParticleSource(0)->GetAngularName();
+        TH1D* h = (TH1D*)fin.Get(sptName);
+
+        if (!h) {
+            cout << "REST ERROR  when trying to find angular spectrum" << endl;
+            cout << "File : " << fileFullPath << endl;
+            cout << "Spectrum name : " << sptName << endl;
+            exit(1);
+        }
+
+        fSimulationManager->initialAngularDistribution = *h;
+
+        // We set the initial angular distribution provided from TH1D
+        SetAngularDistribution(&(fSimulationManager->initialAngularDistribution));
+    }
 }
 
-PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
+PrimaryGeneratorAction::~PrimaryGeneratorAction() = default;
 
 void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
     auto xLabel = (TString)spt->GetXaxis()->GetTitle();
@@ -123,7 +164,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
 
             SetParticleDirection(i, p);
 
-            fParticleGun->GeneratePrimaryVertex(event);
+            fParticleGun.GeneratePrimaryVertex(event);
         }
     }
 }
@@ -149,16 +190,16 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
         fParticle = particleTable->FindParticle(particle_name);
 
         // There might be a better way to do this
-        for (int Z = 1; Z <= 110; Z++)
+        for (int Z = 1; Z <= 110; Z++) {
             for (int A = 2 * Z - 1; A <= 3 * Z; A++) {
                 if (particle_name == G4IonTable::GetIonTable()->GetIonName(Z, A)) {
                     // excited energy is in rest units keV, when input to geant4, we shall convert to MeV
                     fParticle = G4IonTable::GetIonTable()->GetIon(Z, A, excited_energy / 1000);
                     particle_name = G4IonTable::GetIonTable()->GetIonName(Z, A, excited_energy / 1000);
-                    fParticleGun->SetParticleCharge(charge);
+                    fParticleGun.SetParticleCharge(charge);
                 }
             }
-        // }
+        }
 
         if (!fParticle) {
             cout << "Particle definition : " << particle_name << " not found!" << endl;
@@ -166,9 +207,7 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
         }
     }
 
-    fParticleGun->SetParticleDefinition(fParticle);
-
-    // restG4Event->SetPrimaryEventParticleName(particle_name);
+    fParticleGun.SetParticleDefinition(fParticle);
 
     return fParticle;
 }
@@ -305,7 +344,7 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
         }
     */
     // setting particle direction
-    fParticleGun->SetParticleMomentumDirection(direction);
+    fParticleGun.SetParticleMomentumDirection(direction);
 }
 
 void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
@@ -383,7 +422,7 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
     }
 
     if (n == 0) lastEnergy = energy;
-    fParticleGun->SetParticleEnergy(energy);
+    fParticleGun.SetParticleEnergy(energy);
 
     // restG4Event->SetPrimaryEventEnergy(energy / keV);
 
@@ -440,7 +479,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
                    << G4endl;
         }
 
-        // use the density funciton. If the density is small, then val2 is small, we are more
+        // use the density function. If the density is small, then val2 is small, we are more
         // likely to regenerate the particle position
         if (fGeneratorSpatialDensityFunction) {
             double val1 = G4UniformRand();
@@ -470,7 +509,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
     }
     */
     // setting particle position
-    fParticleGun->SetParticlePosition(G4ThreeVector(x, y, z));
+    fParticleGun.SetParticlePosition(G4ThreeVector(x, y, z));
 }
 
 G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() {
@@ -487,7 +526,7 @@ G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() {
     a /= n;
     b /= n;
     c /= n;
-    return G4ThreeVector(a, b, c);
+    return {a, b, c};
 }
 
 Double_t PrimaryGeneratorAction::GetAngle(G4ThreeVector x, G4ThreeVector y) {
@@ -513,38 +552,41 @@ Double_t PrimaryGeneratorAction::GetCosineLowRandomThetaAngle() {
 }
 
 void PrimaryGeneratorAction::GenPositionOnGDMLVolume(double& x, double& y, double& z) {
-    double xMin = fDetector->GetBoundingX_min();
-    double xMax = fDetector->GetBoundingX_max();
-    double yMin = fDetector->GetBoundingY_min();
-    double yMax = fDetector->GetBoundingY_max();
-    double zMin = fDetector->GetBoundingZ_min();
-    double zMax = fDetector->GetBoundingZ_max();
+    auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+
+    double xMin = detector->GetBoundingX_min();
+    double xMax = detector->GetBoundingX_max();
+    double yMin = detector->GetBoundingY_min();
+    double yMax = detector->GetBoundingY_max();
+    double zMin = detector->GetBoundingZ_min();
+    double zMax = detector->GetBoundingZ_max();
 
     do {
         x = xMin + (xMax - xMin) * G4UniformRand();
         y = yMin + (yMax - yMin) * G4UniformRand();
         z = zMin + (zMax - zMin) * G4UniformRand();
-    } while (fDetector->GetGeneratorSolid()->Inside(G4ThreeVector(x, y, z)) != kInside);
+    } while (detector->GetGeneratorSolid()->Inside(G4ThreeVector(x, y, z)) != kInside);
 
-    x = x + fDetector->GetGeneratorTranslation().x();
-    y = y + fDetector->GetGeneratorTranslation().y();
-    z = z + fDetector->GetGeneratorTranslation().z();
+    x = x + detector->GetGeneratorTranslation().x();
+    y = y + detector->GetGeneratorTranslation().y();
+    z = z + detector->GetGeneratorTranslation().z();
 }
 
 void PrimaryGeneratorAction::GenPositionOnGDMLSurface(double& x, double& y, double& z) {
     // TODO there is a problem, probably with G4 function GetPointOnSurface
     // It produces a point on the surface but it is not uniformly distributed
     // May be it is just an OPENGL drawing issue?
+    auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
-    G4ThreeVector position = fDetector->GetGeneratorSolid()->GetPointOnSurface();
+    G4ThreeVector position = detector->GetGeneratorSolid()->GetPointOnSurface();
 
     x = position.x();
     y = position.y();
     z = position.z();
 
-    x = x + fDetector->GetGeneratorTranslation().x();
-    y = y + fDetector->GetGeneratorTranslation().y();
-    z = z + fDetector->GetGeneratorTranslation().z();
+    x = x + detector->GetGeneratorTranslation().x();
+    y = y + detector->GetGeneratorTranslation().y();
+    z = z + detector->GetGeneratorTranslation().z();
 }
 
 void PrimaryGeneratorAction::GenPositionOnBoxVolume(double& x, double& y, double& z) {

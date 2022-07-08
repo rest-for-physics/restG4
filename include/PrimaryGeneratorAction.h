@@ -4,6 +4,7 @@
 
 #include <TF3.h>
 #include <TH1D.h>
+#include <TRestGeant4Particle.h>
 
 #include <G4IonTable.hh>
 #include <G4ParticleGun.hh>
@@ -13,21 +14,17 @@
 #include <iostream>
 
 #include "DetectorConstruction.h"
-#include "TRestGeant4Particle.h"
-
-const int nSpct = 3000;
 
 class G4Event;
 class SimulationManager;
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
    public:
-    PrimaryGeneratorAction(SimulationManager*, DetectorConstruction* pDetector);
+    PrimaryGeneratorAction(SimulationManager*);
     ~PrimaryGeneratorAction();
 
    public:
     virtual void GeneratePrimaries(G4Event*);
-    G4ParticleGun* GetParticleGun() { return fParticleGun; };
 
     void SetSpectrum(TH1D* spt, double eMin = 0, double eMax = 0);
     void SetGeneratorSpatialDensity(TString str);
@@ -39,8 +36,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
 
     std::vector<TRestGeant4Particle> fTempParticles;
 
-    G4ParticleGun* fParticleGun;
-    DetectorConstruction* fDetector;
+    G4ParticleGun fParticleGun;
     G4ParticleDefinition* fParticle = nullptr;
 
     TH1D* fSpectrum;
@@ -78,14 +74,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
 
     G4String fParType;
     G4String fGenType;
-    G4double fParEnergy;
-    G4double fParGenerator;
 
     G4String fSpctFilename;
-
-    G4int gammaSpectrum[nSpct];
-
-    G4int nCollections;
 };
 
 #endif
