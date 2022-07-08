@@ -216,45 +216,16 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     // fSimulationManager->fRestRun->UpdateOutputFile(); // TODO: this line gives segfault when using MT, why?
 
+    TGeoManager* geoManager = gdml->CreateGeoManager();
+    if (geoManager) {
+        geoManager->Write("Geometry");
+        delete geoManager;
+    } else {
+        cout << "Error: could not create geometry" << endl;
+    }
+
     fSimulationManager->fRestRun->CloseFile();
     fSimulationManager->fRestRun->PrintMetadata();
-
-    ////////// Writing the geometry in TGeoManager format to the ROOT file
-    ////////// Need to fork and do it in child process, to prevent occasional seg.fault
-    pid_t pid;
-    pid = fork();
-    if (pid < 0) {
-        perror("fork error:");
-        exit(1);
-    }
-    // child process
-    if (pid == 0) {
-        // writing the geometry object
-        freopen("/dev/null", "w", stdout);
-        freopen("/dev/null", "w", stderr);
-
-        REST_Display_CompatibilityMode = true;
-
-        // We wait the father process ends properly
-        sleep(5);
-
-        // Then we just add the geometry
-        auto file = new TFile(filename, "update");
-        TGeoManager* geoManager = gdml->CreateGeoManager();
-
-        file->cd();
-        geoManager->SetName("Geometry");
-        geoManager->Write();
-        file->Close();
-        exit(0);
-    }
-    // father process
-    else {
-        int stat_val = 0;
-        pid_t child_pid;
-
-        printf("Writing geometry ... \n");
-    }
 
     cout << "============== Generated file: " << filename << " ==============" << endl;
     auto timeEnd = chrono::steady_clock::now();
