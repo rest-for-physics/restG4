@@ -26,10 +26,10 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
    public:
     virtual void GeneratePrimaries(G4Event*);
 
-    void SetSpectrum(TH1D* spt, double eMin = 0, double eMax = 0);
-    void SetGeneratorSpatialDensity(TString str);
+    void SetEnergyDistributionHistogram(const TH1D* h, double eMin = 0, double eMax = 0);
+    inline void SetAngularDistributionHistogram(const TH1D* h) { fAngularDistributionHistogram = h; }
 
-    void SetAngularDistribution(TH1D* ang) { fAngularDistribution = ang; }
+    void SetGeneratorSpatialDensity(TString str);
 
    private:
     SimulationManager* fSimulationManager;
@@ -39,8 +39,9 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     G4ParticleGun fParticleGun;
     G4ParticleDefinition* fParticle = nullptr;
 
-    TH1D* fSpectrum;
-    TH1D* fAngularDistribution;
+    const TH1D* fEnergyDistributionHistogram = nullptr;
+    const TH1D* fAngularDistributionHistogram = nullptr;
+
     TF3* fGeneratorSpatialDensityFunction;
 
     Int_t startEnergyBin;
@@ -74,8 +75,6 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
 
     G4String fParType;
     G4String fGenType;
-
-    G4String fSpctFilename;
 };
 
 #endif

@@ -6,6 +6,7 @@
 #include <G4HadronicProcess.hh>
 #include <G4Nucleus.hh>
 #include <G4Threading.hh>
+#include <Randomize.hh>
 
 #include "SteppingAction.h"
 
@@ -61,6 +62,46 @@ void SimulationManager::WriteEvents() {
         }
 
         fEventContainer.pop();
+    }
+}
+
+void SimulationManager::InitializeUserDistributions() {
+    auto random = []() { return (double)G4UniformRand(); };  // OK: return type is int
+
+    for (int i = 0; i < fRestGeant4Metadata->GetNumberOfSources(); i++) {
+        fRestGeant4Metadata->GetParticleSource(i)->SetRndmMethod(random);
+    }
+
+    TRestGeant4ParticleSource* source = fRestGeant4Metadata->GetParticleSource(0);
+
+    if (source->GetEnergyDistType() == "TH1D") {
+        TFile file(source->GetSpectrumFilename());
+
+        auto distribution = (TH1D*)file.Get(source->GetSpectrumName());
+
+        if (!distribution) {
+            RESTError << "Error when trying to find energy spectrum" << RESTendl;
+            RESTError << "File: " << source->GetSpectrumFilename() << RESTendl;
+            RESTError << "Spectrum name: " << source->GetSpectrumName() << RESTendl;
+            exit(1);
+        }
+
+        fPrimaryEnergyDistribution = *distribution;
+    }
+
+    if (source->GetEnergyDistType() == "TH1D") {
+        TFile file(source->GetAngularFilename());
+
+        auto distribution = (TH1D*)file.Get(source->GetAngularName());
+
+        if (!distribution) {
+            RESTError << "Error when trying to find angular spectrum" << RESTendl;
+            RESTError << "File: " << source->GetAngularFilename() << RESTendl;
+            RESTError << "Spectrum name: " << source->GetAngularName() << RESTendl;
+            exit(1);
+        }
+
+        fPrimaryAngularDistribution = *distribution;
     }
 }
 

@@ -153,6 +153,8 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     auto detector = new DetectorConstruction(fSimulationManager);
 
+    fSimulationManager->InitializeUserDistributions();
+
     runManager->SetUserInitialization(detector);
     runManager->SetUserInitialization(new PhysicsList(fSimulationManager->fRestGeant4PhysicsLists));
 

@@ -21,9 +21,6 @@ class SimulationManager {
     TRestGeant4PhysicsLists* fRestGeant4PhysicsLists = nullptr;
     TRestGeant4Metadata* fRestGeant4Metadata = nullptr;
 
-    TH1D initialEnergySpectrum;
-    TH1D initialAngularDistribution;
-
     void InitializeOutputManager();
     static OutputManager* GetOutputManager() { return fOutputManager; }
 
@@ -38,6 +35,16 @@ class SimulationManager {
     static thread_local OutputManager* fOutputManager;
     std::mutex fEventContainerMutex;
     std::queue<std::unique_ptr<TRestGeant4Event> > fEventContainer;
+
+    /* Primary generation */
+   public:
+    void InitializeUserDistributions();
+    inline const TH1D* GetPrimaryEnergyDistribution() const { return &fPrimaryEnergyDistribution; }
+    inline const TH1D* GetPrimaryAngularDistribution() const { return &fPrimaryAngularDistribution; }
+
+   private:
+    TH1D fPrimaryEnergyDistribution;
+    TH1D fPrimaryAngularDistribution;
 };
 
 class OutputManager {

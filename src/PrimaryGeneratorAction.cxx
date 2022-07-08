@@ -18,72 +18,35 @@
 
 using namespace std;
 
-double GeneratorRndm() { return G4UniformRand(); }
-
 PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationManager)
     : G4VUserPrimaryGeneratorAction(), fSimulationManager(simulationManager) {
     fGeneratorSpatialDensityFunction = nullptr;
 
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+    TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
 
-    for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
-        restG4Metadata->GetParticleSource(i)->SetRndmMethod(GeneratorRndm);
-    }
-
-    if (restG4Metadata->GetParticleSource(0)->GetEnergyDistType() == "TH1D") {
-        TString fileFullPath = (TString)restG4Metadata->GetParticleSource(0)->GetSpectrumFilename();
-
-        TFile fin(fileFullPath);
-
-        TString sptName = restG4Metadata->GetParticleSource(0)->GetSpectrumName();
-
-        TH1D* h = (TH1D*)fin.Get(sptName);
-
-        if (!h) {
-            RESTError << "REST ERROR  when trying to find energy spectrum" << RESTendl;
-            RESTError << "File : " << fileFullPath << RESTendl;
-            RESTError << "Spectrum name : " << sptName << RESTendl;
-            exit(1);
-        }
-
-        fSimulationManager->initialEnergySpectrum = *h;
-
-        Double_t minEnergy = restG4Metadata->GetParticleSource(0)->GetMinEnergy();
+    if (source->GetEnergyDistType() == "TH1D") {
+        Double_t minEnergy = source->GetMinEnergy();
         if (minEnergy < 0) minEnergy = 0;
 
-        Double_t maxEnergy = restG4Metadata->GetParticleSource(0)->GetMaxEnergy();
+        Double_t maxEnergy = source->GetMaxEnergy();
         if (maxEnergy < 0) maxEnergy = 0;
 
         // We set the initial spectrum energy provided from TH1D
-        SetSpectrum(&(fSimulationManager->initialEnergySpectrum), minEnergy, maxEnergy);
+        SetEnergyDistributionHistogram(fSimulationManager->GetPrimaryEnergyDistribution(), minEnergy,
+                                       maxEnergy);
     }
 
-    if (restG4Metadata->GetParticleSource(0)->GetAngularDistType() == "TH1D") {
-        TString fileFullPath = (TString)restG4Metadata->GetParticleSource(0)->GetAngularFilename();
-
-        TFile fin(fileFullPath);
-
-        TString sptName = restG4Metadata->GetParticleSource(0)->GetAngularName();
-        TH1D* h = (TH1D*)fin.Get(sptName);
-
-        if (!h) {
-            cout << "REST ERROR  when trying to find angular spectrum" << endl;
-            cout << "File : " << fileFullPath << endl;
-            cout << "Spectrum name : " << sptName << endl;
-            exit(1);
-        }
-
-        fSimulationManager->initialAngularDistribution = *h;
-
+    if (source->GetAngularDistType() == "TH1D") {
         // We set the initial angular distribution provided from TH1D
-        SetAngularDistribution(&(fSimulationManager->initialAngularDistribution));
+        SetAngularDistributionHistogram(fSimulationManager->GetPrimaryAngularDistribution());
     }
 }
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction() = default;
 
-void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
-    auto xLabel = (TString)spt->GetXaxis()->GetTitle();
+void PrimaryGeneratorAction::SetEnergyDistributionHistogram(const TH1D* h, double eMin, double eMax) {
+    auto xLabel = (TString)h->GetXaxis()->GetTitle();
 
     if (xLabel.Contains("MeV")) {
         energyFactor = 1.e3;
@@ -93,15 +56,15 @@ void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
         energyFactor = 1.;
     }
 
-    fSpectrum = spt;
-    fSpectrumIntegral = fSpectrum->Integral();
+    fEnergyDistributionHistogram = h;
+    fSpectrumIntegral = fEnergyDistributionHistogram->Integral();
 
     startEnergyBin = 1;
-    endEnergyBin = fSpectrum->GetNbinsX();
+    endEnergyBin = fEnergyDistributionHistogram->GetNbinsX();
 
     if (eMin > 0) {
         for (int i = startEnergyBin; i <= endEnergyBin; i++) {
-            if (fSpectrum->GetBinCenter(i) > eMin) {
+            if (fEnergyDistributionHistogram->GetBinCenter(i) > eMin) {
                 startEnergyBin = i;
                 break;
             }
@@ -110,14 +73,14 @@ void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
 
     if (eMax > 0) {
         for (int i = startEnergyBin; i <= endEnergyBin; i++) {
-            if (fSpectrum->GetBinCenter(i) > eMax) {
+            if (fEnergyDistributionHistogram->GetBinCenter(i) > eMax) {
                 endEnergyBin = i;
                 break;
             }
         }
     }
 
-    fSpectrumIntegral = fSpectrum->Integral(startEnergyBin, endEnergyBin);
+    fSpectrumIntegral = fEnergyDistributionHistogram->Integral(startEnergyBin, endEnergyBin);
 }
 
 void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
@@ -261,18 +224,20 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
         direction = GetIsotropicVector();
     } else if (angular_dist_type == g4_metadata_parameters::angular_dist_types::TH1D) {
         Double_t angle = 0;
-        Double_t value = G4UniformRand() * (fAngularDistribution->Integral());
+        Double_t value = G4UniformRand() * (fAngularDistributionHistogram->Integral());
         Double_t sum = 0;
         // deltaAngle is the constant x distance between bins
-        Double_t deltaAngle = fAngularDistribution->GetBinCenter(2) - fAngularDistribution->GetBinCenter(1);
+        Double_t deltaAngle =
+            fAngularDistributionHistogram->GetBinCenter(2) - fAngularDistributionHistogram->GetBinCenter(1);
         // we sample the CDF (uniform between 0 and the distribution integral which should be equal to 1)
         // the inverse of CDF of the uniformly sampled value will follow a distribution given by the PDF, we
         // compute this inverse
-        for (int bin = 1; bin <= fAngularDistribution->GetNbinsX(); bin++) {
-            sum += fAngularDistribution->GetBinContent(bin);
+        for (int bin = 1; bin <= fAngularDistributionHistogram->GetNbinsX(); bin++) {
+            sum += fAngularDistributionHistogram->GetBinContent(bin);
 
             if (sum >= value) {
-                angle = fAngularDistribution->GetBinCenter(bin) + deltaAngle * (0.5 - G4UniformRand());
+                angle =
+                    fAngularDistributionHistogram->GetBinCenter(bin) + deltaAngle * (0.5 - G4UniformRand());
                 break;
             }
         }
@@ -394,13 +359,15 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle part
     } else if (energy_dist_type == g4_metadata_parameters::energy_dist_types::TH1D) {
         Double_t value = G4UniformRand() * fSpectrumIntegral;
         Double_t sum = 0;
-        Double_t deltaEnergy = fSpectrum->GetBinCenter(2) - fSpectrum->GetBinCenter(1);
+        Double_t deltaEnergy =
+            fEnergyDistributionHistogram->GetBinCenter(2) - fEnergyDistributionHistogram->GetBinCenter(1);
         for (int bin = startEnergyBin; bin <= endEnergyBin; bin++) {
-            sum += fSpectrum->GetBinContent(bin);
+            sum += fEnergyDistributionHistogram->GetBinContent(bin);
 
             if (sum > value) {
                 energy = energyFactor *
-                         (Double_t)(fSpectrum->GetBinCenter(bin) + deltaEnergy * (0.5 - G4UniformRand())) *
+                         (Double_t)(fEnergyDistributionHistogram->GetBinCenter(bin) +
+                                    deltaEnergy * (0.5 - G4UniformRand())) *
                          keV;
                 break;
             }

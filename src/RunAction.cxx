@@ -23,10 +23,12 @@ RunAction::RunAction(SimulationManager* simulationManager)
 RunAction::~RunAction() {}
 
 void RunAction::BeginOfRunAction(const G4Run*) {
-    G4cout << "========================== Begin of Run Action ========================" << endl;
-    G4cout << G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed() << " events to be simulated"
-           << endl;
-    G4cout << "=======================================================================" << endl;
+    if (G4Threading::IsMasterThread() || !G4Threading::IsMultithreadedApplication()) {
+        G4cout << "========================== Begin of Run Action ========================" << endl;
+        G4cout << G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed() << " events to be simulated"
+               << endl;
+        G4cout << "=======================================================================" << endl;
+    }
 
     auto steppingVerbose = ((SteppingVerbose*)G4VSteppingVerbose::GetInstance());
     steppingVerbose->SetSteppingVerbose(1);
