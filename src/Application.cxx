@@ -213,7 +213,9 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     fSimulationManager->fRestRun->SetEndTimeStamp((Double_t)systime);
     const TString filename =
         TRestTools::ToAbsoluteName(fSimulationManager->fRestRun->GetOutputFileName().Data());
-    fSimulationManager->fRestRun->UpdateOutputFile();
+
+    // fSimulationManager->fRestRun->UpdateOutputFile(); // TODO: this line gives segfault when using MT, why?
+
     fSimulationManager->fRestRun->CloseFile();
     fSimulationManager->fRestRun->PrintMetadata();
 
