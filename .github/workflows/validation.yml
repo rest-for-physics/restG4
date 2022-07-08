@@ -461,7 +461,7 @@ jobs:
 
 
   restG4-examples-06-reference:
-    name: "Example 06: Ion recoils"
+    name: "Reference Example 06: Ion recoils"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-reference-jun2022
