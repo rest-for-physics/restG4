@@ -20,8 +20,6 @@ class SteppingAction : public G4UserSteppingAction {
 
     void UserSteppingAction(const G4Step*) override;
 
-    std::vector<G4Track*>* GetSecondaries() const;
-
    private:
     SimulationManager* fSimulationManager;
 };

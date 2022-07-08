@@ -214,11 +214,19 @@ bool TRestGeant4Event::InsertTrack(const G4Track* track) {
         fSubEventPrimaryDirection = {momentum.x(), momentum.y(), momentum.z()};
     }
 
-    fTracks.emplace_back(track);
-    fTracks.back().SetHits(fInitialStep);
-    fTracks.back().SetEvent(this);
+    fTrackIDToTrackIndex[track->GetTrackID()] = fTracks.size();  // before insertion
 
-    fTrackIDToTrackIndex[track->GetTrackID()] = fTracks.size() - 1;
+    fTracks.emplace_back(track);
+
+    auto& insertedTrack = fTracks.back();
+
+    insertedTrack.SetHits(fInitialStep);
+    insertedTrack.SetEvent(this);
+
+    TRestGeant4Track* parentTrack = GetTrackByID(track->GetParentID());
+    if (parentTrack) {
+        parentTrack->AddSecondaryTrackID(track->GetTrackID());
+    }
 
     return true;
 }
@@ -276,12 +284,6 @@ void TRestGeant4Track::UpdateTrack(const G4Track* track) {
     }
 
     fTrackLength = track->GetTrackLength() / CLHEP::mm;
-
-    auto steppingAction = (SteppingAction*)G4EventManager::GetEventManager()->GetUserSteppingAction();
-    const auto secondaries = steppingAction->GetSecondaries();
-    for (const auto& secondaryTrack : *secondaries) {
-        fSecondaryTrackIDs.emplace_back(secondaryTrack->GetTrackID());
-    }
 }
 
 Int_t TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(const G4VProcess* process) {
