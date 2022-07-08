@@ -184,7 +184,6 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
         UI->ApplyCommand("/tracking/verbose 0");
         UI->ApplyCommand("/run/initialize");
         UI->ApplyCommand("/run/beamOn " + to_string(nEvents));
-        fSimulationManager->fRestRun->GetOutputFile()->cd();
     }
 
     else if (nEvents == 0)  // define visualization and UI terminal for interactive mode
