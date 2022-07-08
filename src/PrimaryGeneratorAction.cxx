@@ -169,40 +169,40 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     }
 }
 
-G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRestGeant4Particle p) {
+G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRestGeant4Particle particle) {
     auto simulationManager = fSimulationManager;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
 
-    auto particle_name = (string)p.GetParticleName();
+    auto particleName = (string)particle.GetParticleName();
 
-    Double_t excited_energy = (double)p.GetExcitationLevel();  // in keV
+    Double_t excitedEnergy = (double)particle.GetExcitationLevel();  // in keV
 
-    Int_t charge = p.GetParticleCharge();
+    Int_t charge = particle.GetParticleCharge();
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
-        cout << "DEBUG: Particle name: " << particle_name << endl;
+        cout << "DEBUG: Particle name: " << particleName << endl;
         // cout << "DEBUG: Particle charge: " << charge << endl;
-        cout << "DEBUG: Particle excited energy: " << excited_energy << " keV" << endl;
+        cout << "DEBUG: Particle excited energy: " << excitedEnergy << " keV" << endl;
     }
 
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
     if (!fParticle) {
-        fParticle = particleTable->FindParticle(particle_name);
+        fParticle = particleTable->FindParticle(particleName);
 
         // There might be a better way to do this
         for (int Z = 1; Z <= 110; Z++) {
             for (int A = 2 * Z - 1; A <= 3 * Z; A++) {
-                if (particle_name == G4IonTable::GetIonTable()->GetIonName(Z, A)) {
+                if (particleName == G4IonTable::GetIonTable()->GetIonName(Z, A)) {
                     // excited energy is in rest units keV, when input to geant4, we shall convert to MeV
-                    fParticle = G4IonTable::GetIonTable()->GetIon(Z, A, excited_energy / 1000);
-                    particle_name = G4IonTable::GetIonTable()->GetIonName(Z, A, excited_energy / 1000);
+                    fParticle = G4IonTable::GetIonTable()->GetIon(Z, A, excitedEnergy / 1000);
+                    particleName = G4IonTable::GetIonTable()->GetIonName(Z, A, excitedEnergy / 1000);
                     fParticleGun.SetParticleCharge(charge);
                 }
             }
         }
 
         if (!fParticle) {
-            cout << "Particle definition : " << particle_name << " not found!" << endl;
+            cout << "Particle definition : " << particleName << " not found!" << endl;
             exit(1);
         }
     }
@@ -212,7 +212,7 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
     return fParticle;
 }
 
-void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p) {
+void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle particle) {
     auto simulationManager = fSimulationManager;
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
 
@@ -312,7 +312,7 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
         direction.rotate(randomAngle, referenceOrigin);
 
     } else if (angular_dist_type == g4_metadata_parameters::angular_dist_types::FLUX) {
-        TVector3 v = p.GetMomentumDirection();
+        TVector3 v = particle.GetMomentumDirection();
 
         v = v.Unit();
 
@@ -347,7 +347,7 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
     fParticleGun.SetParticleMomentumDirection(direction);
 }
 
-void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
+void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle particle) {
     auto simulationManager = fSimulationManager;
 
     TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
@@ -381,7 +381,7 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
     }
 
     if (energy_dist_type == g4_metadata_parameters::energy_dist_types::MONO) {
-        energy = p.GetEnergy() * keV;
+        energy = particle.GetEnergy() * keV;
     } else if (energy_dist_type == g4_metadata_parameters::energy_dist_types::FLAT) {
         TVector2 enRange = restG4Metadata->GetParticleSource(n)->GetEnergyRange();
         energy = ((enRange.Y() - enRange.X()) * G4UniformRand() + enRange.X()) * keV;
@@ -554,12 +554,12 @@ Double_t PrimaryGeneratorAction::GetCosineLowRandomThetaAngle() {
 void PrimaryGeneratorAction::GenPositionOnGDMLVolume(double& x, double& y, double& z) {
     auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
-    double xMin = detector->GetBoundingX_min();
-    double xMax = detector->GetBoundingX_max();
-    double yMin = detector->GetBoundingY_min();
-    double yMax = detector->GetBoundingY_max();
-    double zMin = detector->GetBoundingZ_min();
-    double zMax = detector->GetBoundingZ_max();
+    double xMin = detector->GetBoundBoxXMin();
+    double xMax = detector->GetBoundBoxXMax();
+    double yMin = detector->GetBoundBoxYMin();
+    double yMax = detector->GetBoundBoxYMax();
+    double zMin = detector->GetBoundBoxZMin();
+    double zMax = detector->GetBoundBoxZMax();
 
     do {
         x = xMin + (xMax - xMin) * G4UniformRand();

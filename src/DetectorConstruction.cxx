@@ -23,10 +23,10 @@ using namespace std;
 DetectorConstruction::DetectorConstruction(SimulationManager* simulationManager)
     : fSimulationManager(simulationManager) {
     G4cout << "Detector Construction" << G4endl;
-    parser = new G4GDMLParser();
+    fGdmlParser = new G4GDMLParser();
 }
 
-DetectorConstruction::~DetectorConstruction() { delete parser; }
+DetectorConstruction::~DetectorConstruction() { delete fGdmlParser; }
 
 G4VPhysicalVolume* DetectorConstruction::Construct() {
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
@@ -47,11 +47,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     string gdmlToRead = separatePathAndName.second;
     G4cout << "gdmlToRead: " << gdmlToRead << G4endl;
 
-    parser->Read(gdmlToRead, false);
+    fGdmlParser->Read(gdmlToRead, false);
 
     restG4Metadata->fGeant4GeometryInfo.PopulateFromGdml(gdmlToRead);
 
-    G4VPhysicalVolume* worldVolume = parser->GetWorldVolume();
+    G4VPhysicalVolume* worldVolume = fGdmlParser->GetWorldVolume();
 
     restG4Metadata->fGeant4GeometryInfo.PopulateFromGeant4World(worldVolume);
 
@@ -135,7 +135,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
                                                  fGeneratorTranslation.z());
         }
 
-        generatorSolid = pVol->GetLogicalVolume()->GetSolid();
+        fGeneratorSolid = pVol->GetLogicalVolume()->GetSolid();
 
         // while ( fDetector->GetGeneratorSolid()->Inside( G4ThreeVector( x, y, z) )
         // != kInside );
@@ -144,37 +144,37 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         // The code below returns a value bigger than expected
         // If we try with a cylinder the maximum distance should be sqrt(R*R+L*L)
         // But the value returned by this is bigger TODO check this
-        boundBox_xMax = -1.e30;
-        boundBox_yMax = -1.e30;
-        boundBox_zMax = -1.e30;
-        boundBox_xMin = 1.e30;
-        boundBox_yMin = 1.e30;
-        boundBox_zMin = 1.e30;
+        fBoundBoxXMax = -1.e30;
+        fBoundBoxYMax = -1.e30;
+        fBoundBoxZMax = -1.e30;
+        fBoundBoxXMin = 1.e30;
+        fBoundBoxYMin = 1.e30;
+        fBoundBoxZMin = 1.e30;
         if (type == "volume") {
             cout << "Optimizing REST volume generation (Please wait. This might take "
                     "few minutes depending on geometry complexity) "
                  << flush;
 
             for (int n = 0; n < 100000; n++) {
-                G4ThreeVector point = generatorSolid->GetPointOnSurface();
+                G4ThreeVector point = fGeneratorSolid->GetPointOnSurface();
 
-                if (point.x() > boundBox_xMax) boundBox_xMax = point.x();
-                if (point.y() > boundBox_yMax) boundBox_yMax = point.y();
-                if (point.z() > boundBox_zMax) boundBox_zMax = point.z();
+                if (point.x() > fBoundBoxXMax) fBoundBoxXMax = point.x();
+                if (point.y() > fBoundBoxYMax) fBoundBoxYMax = point.y();
+                if (point.z() > fBoundBoxZMax) fBoundBoxZMax = point.z();
 
-                if (point.x() < boundBox_xMin) boundBox_xMin = point.x();
-                if (point.y() < boundBox_yMin) boundBox_yMin = point.y();
-                if (point.z() < boundBox_zMin) boundBox_zMin = point.z();
+                if (point.x() < fBoundBoxXMin) fBoundBoxXMin = point.x();
+                if (point.y() < fBoundBoxYMin) fBoundBoxYMin = point.y();
+                if (point.z() < fBoundBoxZMin) fBoundBoxZMin = point.z();
             }
 
-            boundBox_xMin = boundBox_xMin * 1.1;
-            boundBox_xMax = boundBox_xMax * 1.1;
+            fBoundBoxXMin = fBoundBoxXMin * 1.1;
+            fBoundBoxXMax = fBoundBoxXMax * 1.1;
 
-            boundBox_yMin = boundBox_yMin * 1.1;
-            boundBox_yMax = boundBox_yMax * 1.1;
+            fBoundBoxYMin = fBoundBoxYMin * 1.1;
+            fBoundBoxYMax = fBoundBoxYMax * 1.1;
 
-            boundBox_zMin = boundBox_zMin * 1.1;
-            boundBox_zMax = boundBox_zMax * 1.1;
+            fBoundBoxZMin = fBoundBoxZMin * 1.1;
+            fBoundBoxZMax = fBoundBoxZMax * 1.1;
         }
     }
 
@@ -204,7 +204,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     return worldVolume;
 }
 
-G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physVolName) {
+G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physVolName) const {
     G4PhysicalVolumeStore* physVolStore = G4PhysicalVolumeStore::GetInstance();
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
     const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
