@@ -265,14 +265,14 @@ TRestGeant4Track::TRestGeant4Track(const G4Track* track) : TRestGeant4Track() {
         fCreatorProcess = "PrimaryGenerator";
     }
 
-    fKineticEnergy = track->GetKineticEnergy() / CLHEP::keV;
+    fInitialKineticEnergy = track->GetKineticEnergy() / CLHEP::keV;
 
     fWeight = track->GetWeight();
 
     fGlobalTimestamp = track->GetGlobalTime() / CLHEP::second;
 
     const G4ThreeVector& trackOrigin = track->GetPosition();
-    fTrackOrigin = {trackOrigin.x(), trackOrigin.y(), trackOrigin.z()};
+    fInitialPosition = {trackOrigin.x(), trackOrigin.y(), trackOrigin.z()};
 }
 
 void TRestGeant4Track::InsertStep(const G4Step* step) { fHits.InsertStep(step); }
@@ -283,7 +283,8 @@ void TRestGeant4Track::UpdateTrack(const G4Track* track) {
         exit(1);
     }
 
-    fTrackLength = track->GetTrackLength() / CLHEP::mm;
+    fLength = track->GetTrackLength() / CLHEP::mm;
+    fTimeLength = track->GetGlobalTime() / CLHEP::second - fGlobalTimestamp;
 }
 
 Int_t TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(const G4VProcess* process) {
