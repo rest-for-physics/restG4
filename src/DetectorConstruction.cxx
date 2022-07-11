@@ -29,7 +29,7 @@ DetectorConstruction::DetectorConstruction(SimulationManager* simulationManager)
 DetectorConstruction::~DetectorConstruction() { delete fGdmlParser; }
 
 G4VPhysicalVolume* DetectorConstruction::Construct() {
-    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
 
     cout << "Isotope table " << endl;
     cout << *(G4Isotope::GetIsotopeTable()) << endl;
@@ -206,7 +206,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
 G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physVolName) const {
     G4PhysicalVolumeStore* physVolStore = G4PhysicalVolumeStore::GetInstance();
-    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
     const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
     vector<G4VPhysicalVolume*>::const_iterator physVol;
     for (physVol = physVolStore->begin(); physVol != physVolStore->end(); physVol++) {
@@ -222,7 +222,7 @@ G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physV
 }
 
 void DetectorConstruction::ConstructSDandField() {
-    const TRestGeant4Metadata& metadata = *fSimulationManager->fRestGeant4Metadata;
+    const TRestGeant4Metadata& metadata = *fSimulationManager->GetRestMetadata();
     vector<string>
         sensitiveVolumes;  // user submitted sensitive volumes, may not exist or not be physical (be logical)
     for (const auto& volume : {metadata.GetSensitiveVolume()}) {
@@ -277,7 +277,7 @@ void DetectorConstruction::ConstructSDandField() {
 
 void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* world) {
     auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
-    TRestGeant4Metadata* restG4Metadata = detector->fSimulationManager->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = detector->fSimulationManager->GetRestMetadata();
 
     const int n = int(world->GetLogicalVolume()->GetNoDaughters());
     for (int i = 0; i < n + 1; i++) {  // world is the + 1

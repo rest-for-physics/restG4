@@ -38,7 +38,7 @@ void RunAction::BeginOfRunAction(const G4Run*) {
 }
 
 void RunAction::EndOfRunAction(const G4Run*) {
-    TRestRun* restRun = fSimulationManager->fRestRun;
+    TRestRun* restRun = fSimulationManager->GetRestRun();
 
     if (G4Threading::IsMasterThread() || !G4Threading::IsMultithreadedApplication()) {
         G4cout << "============================= Run Summary =============================" << endl;

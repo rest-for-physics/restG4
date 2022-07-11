@@ -16,9 +16,6 @@ using namespace std;
 EventAction::EventAction(SimulationManager* simulationManager)
     : G4UserEventAction(), fSimulationManager(simulationManager) {
     fTimer.Start();
-
-    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
-    restG4Metadata->isFullChainActivated();
 }
 
 EventAction::~EventAction() {}
@@ -27,8 +24,8 @@ void EventAction::BeginOfEventAction(const G4Event* event) {
     fSimulationManager->GetOutputManager()->UpdateEvent();
 
     const auto eventID = event->GetEventID();
-    TRestRun* restRun = fSimulationManager->fRestRun;
-    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+    TRestRun* restRun = fSimulationManager->GetRestRun();
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         G4cout << "DEBUG: Start of event ID " << eventID << " (" << eventID + 1 << " of "

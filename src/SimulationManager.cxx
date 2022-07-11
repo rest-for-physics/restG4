@@ -115,8 +115,9 @@ OutputManager::OutputManager(const SimulationManager* simulationManager)
     }
 
     // initialize active volume lookup set
-    for (size_t i = 0; i < fSimulationManager->fRestGeant4Metadata->GetNumberOfActiveVolumes(); i++) {
-        const TString& activeVolume = fSimulationManager->fRestGeant4Metadata->GetActiveVolumeName(i);
+    const auto metadata = fSimulationManager->GetRestMetadata();
+    for (size_t i = 0; i < metadata->GetNumberOfActiveVolumes(); i++) {
+        const TString& activeVolume = metadata->GetActiveVolumeName(i);
         fActiveVolumes.insert(activeVolume.Data());
     }
 }
@@ -124,14 +125,14 @@ OutputManager::OutputManager(const SimulationManager* simulationManager)
 void OutputManager::UpdateEvent() {
     auto event = G4EventManager::GetEventManager()->GetConstCurrentEvent();
     fEvent = make_unique<TRestGeant4Event>(event);
-    fEvent->InitializeReferences(fSimulationManager->fRestRun);
+    fEvent->InitializeReferences(fSimulationManager->GetRestRun());
 }
 
 bool OutputManager::IsEmptyEvent() const { return !fEvent || fEvent->fTracks.empty(); }
 
 bool OutputManager::IsValidEvent() const {
     if (IsEmptyEvent()) return false;
-    if (fSimulationManager->fRestGeant4Metadata->GetSaveAllEvents()) return true;
+    if (fSimulationManager->GetRestMetadata()->GetSaveAllEvents()) return true;
     if (fEvent->GetSensitiveVolumeEnergy() <= 0) return false;
     return true;
 }
@@ -181,7 +182,7 @@ void OutputManager::RecordStep(const G4Step* step) { fEvent->InsertStep(step); }
 void OutputManager::AddSensitiveEnergy(Double_t energy, const char* physicalVolumeName) {
     fEvent->AddEnergyToSensitiveVolume(energy);
     /*
-        const TString physicalVolumeNameNew = fSimulationManager->fRestGeant4Metadata->GetGeant4GeometryInfo()
+        const TString physicalVolumeNameNew = fSimulationManager->GetRestMetadata()->GetGeant4GeometryInfo()
                                                   .GetAlternativeNameFromGeant4PhysicalName(physicalVolumeName);
                                                   */
 }

@@ -17,10 +17,6 @@ class SimulationManager {
     SimulationManager();
     ~SimulationManager();
 
-    TRestRun* fRestRun = nullptr;
-    TRestGeant4PhysicsLists* fRestGeant4PhysicsLists = nullptr;
-    TRestGeant4Metadata* fRestGeant4Metadata = nullptr;
-
     void InitializeOutputManager();
     static OutputManager* GetOutputManager() { return fOutputManager; }
 
@@ -31,10 +27,25 @@ class SimulationManager {
     void WriteEvents();
     void WriteEventsAndCloseFile();
 
+   public:
+    inline TRestRun* GetRestRun() const { return fRestRun; }
+    inline TRestGeant4Metadata* GetRestMetadata() const { return fRestGeant4Metadata; }
+    inline TRestGeant4PhysicsLists* GetRestPhysicsLists() const { return fRestGeant4PhysicsLists; }
+
+    inline void SetRestRun(TRestRun* run) { fRestRun = run; }
+    inline void SetRestMetadata(TRestGeant4Metadata* metadata) { fRestGeant4Metadata = metadata; }
+    inline void SetRestPhysicsLists(TRestGeant4PhysicsLists* physicsLists) {
+        fRestGeant4PhysicsLists = physicsLists;
+    }
+
    private:
     static thread_local OutputManager* fOutputManager;
     std::mutex fEventContainerMutex;
     std::queue<std::unique_ptr<TRestGeant4Event> > fEventContainer;
+
+    TRestRun* fRestRun = nullptr;
+    TRestGeant4PhysicsLists* fRestGeant4PhysicsLists = nullptr;
+    TRestGeant4Metadata* fRestGeant4Metadata = nullptr;
 
     /* Primary generation */
    public:
