@@ -163,8 +163,6 @@ TEST(restG4, Example_04_Muons) {
 }
 
 TEST(restG4, Example_04_Muons_MT) {
-    GTEST_SKIP_("Multithreading needs to be implemented");
-
     // cd into example
     const auto originalPath = fs::current_path();
     const auto thisExamplePath = examplesPath / "04.MuonScan";
