@@ -1,6 +1,7 @@
 
 #include <Application.h>
 #include <CommandLineSetup.h>
+#include <TGeoManager.h>
 #include <TROOT.h>
 #include <TRestRun.h>
 #include <gtest/gtest.h>
@@ -50,7 +51,7 @@ TEST(restG4, Example_01_NLDBD) {
     fs::current_path(originalPath);
 }
 
-TEST(restG4, TRestGeant4GeometryInfo_TRestGeant4PhysicsInfo) {
+TEST(restG4, Metadata) {
     // Test "TRestGeant4GeometryInfo" and "TRestGeant4PhysicsInfo" even though its from Geant4Lib, we need a
     // simulation file, so we placed the test here
 
@@ -78,6 +79,12 @@ TEST(restG4, TRestGeant4GeometryInfo_TRestGeant4PhysicsInfo) {
     }
 
     TRestRun run(resultsFile);
+
+    /* Check TGeoManager is present on file */
+    const TGeoManager* geometry = run.GetInputFile()->Get<TGeoManager>("Geometry");
+    EXPECT_EQ(geometry != nullptr, true);
+    delete geometry;
+
     // Test `TRestGeant4Metadata::GetUnambiguousGlobalInstance`
     auto geant4Metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
     EXPECT_EQ(geant4Metadata != nullptr, true);
