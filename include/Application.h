@@ -9,6 +9,8 @@ class G4VisManager;
 class G4UIExecutive;
 class G4RunManager;
 
+class TGeoManager;
+
 class Application {
    public:
     inline static CommandLineParameters ProcessCommandLineParameters(int argc, char** argv) {
@@ -22,6 +24,8 @@ class Application {
 
    private:
     SimulationManager* fSimulationManager = nullptr;
+
+    void WriteGeometry(TGeoManager* geometry, const char* filename, const char* option = "UPDATE");
 };
 
 #endif  // REST_APPLICATION_H

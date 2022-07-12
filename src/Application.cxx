@@ -1,6 +1,7 @@
 
 #include "Application.h"
 
+#include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TH1D.h>
 #include <TH2D.h>
@@ -129,16 +130,6 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     run->GetOutputFile()->cd();
 
-    cout << "Writing geometry into output file" << endl;
-    TGeoManager* geoManager = gdml->CreateGeoManager();
-    if (geoManager) {
-        geoManager->Write("Geometry");
-        // delete geoManager;
-    } else {
-        cout << "Error: could not save geometry" << endl;
-        exit(1);
-    }
-
     run->AddEventBranch(&fSimulationManager->fEvent);
 
     // choose the Random engine
@@ -236,8 +227,25 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     run->CloseFile();
     run->PrintMetadata();
 
+    auto geometry = gdml->CreateGeoManager();
+    WriteGeometry(geometry, run->GetOutputFileName());
+    delete geometry;
+
     cout << "============== Generated file: " << filename << " ==============" << endl;
     auto timeEnd = chrono::steady_clock::now();
     cout << "Elapsed time: " << chrono::duration_cast<chrono::seconds>(timeEnd - timeStart).count()
          << " seconds" << endl;
+}
+
+void Application::WriteGeometry(TGeoManager* geometry, const char* filename, const char* option) {
+    auto file = TFile::Open(filename, option);
+    file->cd();
+    cout << "Application::WriteGeometry - Writing geometry into '" << filename << "'" << endl;
+    if (!geometry) {
+        cout << "Application::WriteGeometry - Error - Unable to write geometry into file" << endl;
+        exit(1);
+    }
+    geometry->Write("Geometry");
+
+    file->Close();
 }
