@@ -222,8 +222,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     run->SetEndTimeStamp((Double_t)systime);
     const TString filename = TRestTools::ToAbsoluteName(run->GetOutputFileName().Data());
 
-    // run->UpdateOutputFile(); // TODO: this line gives segfault when using MT, why?
-
+    run->UpdateOutputFile();
     run->CloseFile();
     run->PrintMetadata();
 
