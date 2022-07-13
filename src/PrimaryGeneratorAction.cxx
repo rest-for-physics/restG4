@@ -94,6 +94,8 @@ void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
+    std::lock_guard<std::mutex> lock(fMutex);  // TODO: remove this lock after fixing problems
+
     auto simulationManager = fSimulationManager;
     TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
 
@@ -132,7 +134,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     }
 }
 
-G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRestGeant4Particle particle) {
+G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t particleSourceIndex,
+                                                                    TRestGeant4Particle particle) {
     auto simulationManager = fSimulationManager;
     TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
 
@@ -175,7 +178,7 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRe
     return fParticle;
 }
 
-void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle particle) {
+void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex, TRestGeant4Particle particle) {
     auto simulationManager = fSimulationManager;
     TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
 
@@ -183,7 +186,8 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
     // TODO: maybe reduce code redundancy by defining some functions?
     // TODO: fix bug when giving TH1D with lowercase (e.g. Th1D). string conversion is OK but integral gives
     // exception.
-    string angular_dist_type_name = (string)restG4Metadata->GetParticleSource(n)->GetAngularDistType();
+    string angular_dist_type_name =
+        (string)restG4Metadata->GetParticleSource(particleSourceIndex)->GetAngularDistType();
     angular_dist_type_name = g4_metadata_parameters::CleanString(angular_dist_type_name);
     g4_metadata_parameters::angular_dist_types angular_dist_type;
 
@@ -243,7 +247,7 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
         }
 
         // Recovering the direction provided at angularDist
-        TVector3 dirROOT = restG4Metadata->GetParticleSource(n)->GetDirection();
+        TVector3 dirROOT = restG4Metadata->GetParticleSource(particleSourceIndex)->GetDirection();
         direction.set(dirROOT.X(), dirROOT.Y(), dirROOT.Z());
 
         if (direction.x() == 0 && direction.y() == 0 && direction.z() == 0) {
@@ -286,7 +290,7 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
     } else if (angular_dist_type == g4_metadata_parameters::angular_dist_types::BACK_TO_BACK) {
         // This should never crash. In TRestG4Metadata we have defined that if the
         // first source is backtoback we set it to isotropic
-        // TVector3 v = restG4Event->GetPrimaryEventDirection(n - 1);
+        // TVector3 v = restG4Event->GetPrimaryEventDirection(particleSourceIndex - 1);
         // v = v.Unit();
 
         // direction.set(-v.X(), -v.Y(), -v.Z());
@@ -303,23 +307,24 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p
     /*
         if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
             cout << "DEBUG: Event direction (normalized): "
-                 << "(" << restG4Event->GetPrimaryEventDirection(n).X() << ", "
-                 << restG4Event->GetPrimaryEventDirection(n).Y() << ", "
-                 << restG4Event->GetPrimaryEventDirection(n).Z() << ")" << endl;
+                 << "(" << restG4Event->GetPrimaryEventDirection(particleSourceIndex).X() << ", "
+                 << restG4Event->GetPrimaryEventDirection(particleSourceIndex).Y() << ", "
+                 << restG4Event->GetPrimaryEventDirection(particleSourceIndex).Z() << ")" << endl;
         }
     */
     // setting particle direction
     fParticleGun.SetParticleMomentumDirection(direction);
 }
 
-void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle particle) {
+void PrimaryGeneratorAction::SetParticleEnergy(Int_t particleSourceIndex, TRestGeant4Particle particle) {
     auto simulationManager = fSimulationManager;
 
     TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
 
     Double_t energy = 0;
 
-    auto energy_dist_type_name = (string)restG4Metadata->GetParticleSource(n)->GetEnergyDistType();
+    auto energy_dist_type_name =
+        (string)restG4Metadata->GetParticleSource(particleSourceIndex)->GetEnergyDistType();
     energy_dist_type_name = g4_metadata_parameters::CleanString(energy_dist_type_name);
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
@@ -348,10 +353,10 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle part
     if (energy_dist_type == g4_metadata_parameters::energy_dist_types::MONO) {
         energy = particle.GetEnergy() * keV;
     } else if (energy_dist_type == g4_metadata_parameters::energy_dist_types::FLAT) {
-        TVector2 enRange = restG4Metadata->GetParticleSource(n)->GetEnergyRange();
+        TVector2 enRange = restG4Metadata->GetParticleSource(particleSourceIndex)->GetEnergyRange();
         energy = ((enRange.Y() - enRange.X()) * G4UniformRand() + enRange.X()) * keV;
     } else if (energy_dist_type == g4_metadata_parameters::energy_dist_types::LOG) {
-        TVector2 enRange = restG4Metadata->GetParticleSource(n)->GetEnergyRange();
+        TVector2 enRange = restG4Metadata->GetParticleSource(particleSourceIndex)->GetEnergyRange();
         auto max_energy = enRange.Y() * keV;
         auto min_energy = enRange.X() * keV;
         energy = exp((log(max_energy) - log(min_energy)) * G4UniformRand() + log(min_energy));
@@ -379,16 +384,18 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle part
         energy = 1 * keV;
     }
 
-    string angular_dist_type_name = (string)restG4Metadata->GetParticleSource(n)->GetAngularDistType();
+    string angular_dist_type_name =
+        (string)restG4Metadata->GetParticleSource(particleSourceIndex)->GetAngularDistType();
     angular_dist_type_name = g4_metadata_parameters::CleanString(angular_dist_type_name);
     g4_metadata_parameters::angular_dist_types angular_dist_type;
     if (g4_metadata_parameters::angular_dist_types_map.count(angular_dist_type_name)) {
         angular_dist_type = g4_metadata_parameters::angular_dist_types_map[angular_dist_type_name];
-        if (n > 0 && angular_dist_type == g4_metadata_parameters::angular_dist_types::BACK_TO_BACK)
+        if (particleSourceIndex > 0 &&
+            angular_dist_type == g4_metadata_parameters::angular_dist_types::BACK_TO_BACK)
             energy = lastEnergy;
     }
 
-    if (n == 0) lastEnergy = energy;
+    if (particleSourceIndex == 0) lastEnergy = energy;
     fParticleGun.SetParticleEnergy(energy);
 
     // restG4Event->SetPrimaryEventEnergy(energy / keV);

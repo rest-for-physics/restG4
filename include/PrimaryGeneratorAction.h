@@ -12,6 +12,7 @@
 #include <fstream>
 #include <globals.hh>
 #include <iostream>
+#include <mutex>
 
 #include "DetectorConstruction.h"
 
@@ -33,6 +34,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
 
    private:
     SimulationManager* fSimulationManager;
+    std::mutex fMutex;
 
     std::vector<TRestGeant4Particle> fTempParticles;
 
@@ -53,9 +55,9 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     Double_t lastEnergy;
 
     void SetParticlePosition();
-    G4ParticleDefinition* SetParticleDefinition(Int_t particlesourceindex, TRestGeant4Particle particle);
-    void SetParticleEnergy(Int_t particlesourceindex, TRestGeant4Particle particle);
-    void SetParticleDirection(Int_t particlesourceindex, TRestGeant4Particle particle);
+    G4ParticleDefinition* SetParticleDefinition(Int_t particleSourceIndex, TRestGeant4Particle particle);
+    void SetParticleEnergy(Int_t particleSourceIndex, TRestGeant4Particle particle);
+    void SetParticleDirection(Int_t particleSourceIndex, TRestGeant4Particle particle);
 
     G4ThreeVector GetIsotropicVector();
     Double_t GetAngle(G4ThreeVector x, G4ThreeVector y);
