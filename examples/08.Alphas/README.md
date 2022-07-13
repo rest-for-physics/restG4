@@ -28,7 +28,7 @@ restG4 alphas.rml
 Execute the following to launch the processing of the generated events and produce few observables inside the analysis tree.
 
 ```
-restG4 --c analysis.rml --f data/FileGenerated.root
+restManager --c analysis.rml --f data/FileGenerated.root
 ```
 
 See also `../../.gitlab-ci.yml` and `Validation.C` for validation routines executed in the pipeline. The following plot showing the energy spectrum is generated using the pipeline.
