@@ -15,6 +15,7 @@
 #include <G4SystemOfUnits.hh>
 #include <G4UniformMagField.hh>
 #include <G4UserLimits.hh>
+#include <filesystem>
 
 #include "SimulationManager.h"
 
@@ -39,26 +40,24 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     // Reading the geometry
     TString geometryFile = restG4Metadata->GetGdmlFilename();
 
-    char originDirectory[256];
-    sprintf(originDirectory, "%s", getenv("PWD"));
-    auto separatePathAndName = TRestTools::SeparatePathAndName((string)restG4Metadata->GetGdmlFilename());
-    chdir(separatePathAndName.first.c_str());
+    const auto startingPath = filesystem::current_path();
 
-    string gdmlToRead = separatePathAndName.second;
+    const auto [gdmlPath, gdmlToRead] =
+        TRestTools::SeparatePathAndName((string)restG4Metadata->GetGdmlFilename());
+    filesystem::current_path(gdmlPath);
+
     G4cout << "gdmlToRead: " << gdmlToRead << G4endl;
 
     fGdmlParser->Read(gdmlToRead, false);
-
-    restG4Metadata->fGeant4GeometryInfo.PopulateFromGdml(gdmlToRead);
-
     G4VPhysicalVolume* worldVolume = fGdmlParser->GetWorldVolume();
 
+    restG4Metadata->fGeant4GeometryInfo.PopulateFromGdml(gdmlToRead);
     restG4Metadata->fGeant4GeometryInfo.PopulateFromGeant4World(worldVolume);
 
     const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
     geometryInfo.Print();
 
-    chdir(originDirectory);
+    filesystem::current_path(startingPath);
 
     // TODO : Take the name of the sensitive volume and use it here to define its
     // StepSize
