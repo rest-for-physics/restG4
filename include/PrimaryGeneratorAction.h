@@ -60,7 +60,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     void SetParticleEnergy(Int_t particleSourceIndex, const TRestGeant4Particle& particle);
     void SetParticleDirection(Int_t particleSourceIndex, const TRestGeant4Particle& particle);
 
-    G4ThreeVector GetIsotropicVector();
+    G4ThreeVector GetIsotropicVector() const;
     Double_t GetAngle(G4ThreeVector x, G4ThreeVector y);
     Double_t GetCosineLowRandomThetaAngle();
 

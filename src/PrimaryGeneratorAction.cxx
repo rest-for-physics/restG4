@@ -333,22 +333,15 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t particleSourceIndex,
         energy = 1 * keV;
     }
 
-    /*
-     * TODO: take a look into this
-    if (g4_metadata_parameters::angular_dist_types_map.count(angular_dist_type_name)) {
-        angular_dist_type = g4_metadata_parameters::angular_dist_types_map[angular_dist_type_name];
-        if (particleSourceIndex > 0 &&
-            angular_dist_type == g4_metadata_parameters::angular_dist_types::BACK_TO_BACK)
-            energy = lastEnergy;
+    if (particleSourceIndex > 0 &&
+        angularDistTypeEnum == TRestGeant4PrimaryGeneratorTypes::AngularDistributionTypes::BACK_TO_BACK) {
+        energy = lastEnergy;
     }
-    */
 
     if (particleSourceIndex == 0) {
         lastEnergy = energy;
     }
     fParticleGun.SetParticleEnergy(energy);
-
-    // restG4Event->SetPrimaryEventEnergy(energy / keV);
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug)
         cout << "DEBUG: Particle energy: " << energy / keV << " keV" << endl;
@@ -422,7 +415,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
     fParticleGun.SetParticlePosition(G4ThreeVector(x, y, z));
 }
 
-G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() {
+G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() const {
     G4double a, b, c;
     G4double n;
     do {
