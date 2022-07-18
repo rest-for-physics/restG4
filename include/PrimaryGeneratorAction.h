@@ -55,9 +55,10 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     Double_t lastEnergy;
 
     void SetParticlePosition();
-    G4ParticleDefinition* SetParticleDefinition(Int_t particleSourceIndex, TRestGeant4Particle particle);
-    void SetParticleEnergy(Int_t particleSourceIndex, TRestGeant4Particle particle);
-    void SetParticleDirection(Int_t particleSourceIndex, TRestGeant4Particle particle);
+    G4ParticleDefinition* SetParticleDefinition(Int_t particleSourceIndex,
+                                                const TRestGeant4Particle& particle);
+    void SetParticleEnergy(Int_t particleSourceIndex, const TRestGeant4Particle& particle);
+    void SetParticleDirection(Int_t particleSourceIndex, const TRestGeant4Particle& particle);
 
     G4ThreeVector GetIsotropicVector();
     Double_t GetAngle(G4ThreeVector x, G4ThreeVector y);

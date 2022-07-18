@@ -20,6 +20,7 @@
 #include "SimulationManager.h"
 
 using namespace std;
+using namespace TRestGeant4PrimaryGeneratorTypes;
 
 DetectorConstruction::DetectorConstruction(SimulationManager* simulationManager)
     : fSimulationManager(simulationManager) {
@@ -113,27 +114,23 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     cout << "Generated from volume : " << primaryGeneratorInfo.GetSpatialGeneratorFrom() << endl;
     cout << "Generator type : " << primaryGeneratorInfo.GetSpatialGeneratorType() << endl;
 
+    const auto spatialGeneratorTypeEnum =
+        StringToSpatialGeneratorTypes(primaryGeneratorInfo.GetSpatialGeneratorType().Data());
+
     // TODO if we do not find the volume given in the config inside the geometry
     // we should RETURN error
-    if (primaryGeneratorInfo.GetSpatialGeneratorType() ==
-            TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::VOLUME &&
+    if (spatialGeneratorTypeEnum == TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::VOLUME &&
         primaryGeneratorInfo.GetSpatialGeneratorFrom() != "Not defined") {
-        G4VPhysicalVolume* pVol = GetPhysicalVolume(primaryGeneratorInfo.GetSpatialGeneratorFrom());
+        G4VPhysicalVolume* pVol = GetPhysicalVolume(primaryGeneratorInfo.GetSpatialGeneratorFrom().Data());
         if (pVol == nullptr) {
-            cout << "ERROR : The generator volume was not found in the geometry" << endl;
+            cout << "ERROR: The generator volume was not found in the geometry" << endl;
             exit(1);
             return worldVolume;
         }
 
         fGeneratorTranslation = pVol->GetTranslation();
-
-        // We set in TRestGeant4Metadata the center of the generator. If it is a point
-        // we just want the value from the config file.
-        // TODO : make this kind of keyword comparisons case insensitive?
-        if (primaryGeneratorInfo.GetSpatialGeneratorType() ==
-                TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::SURFACE ||
-            primaryGeneratorInfo.GetSpatialGeneratorType() ==
-                TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::VOLUME) {
+        if (spatialGeneratorTypeEnum == TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::SURFACE ||
+            spatialGeneratorTypeEnum == TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::VOLUME) {
             restG4Metadata->fGeant4PrimaryGeneratorInfo.fSpatialGeneratorPosition = {
                 fGeneratorTranslation.x(), fGeneratorTranslation.y(), fGeneratorTranslation.z()};
         }
@@ -146,8 +143,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         fBoundBoxXMin = 1.e30;
         fBoundBoxYMin = 1.e30;
         fBoundBoxZMin = 1.e30;
-        if (primaryGeneratorInfo.GetSpatialGeneratorType() ==
-            TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::VOLUME) {
+        if (spatialGeneratorTypeEnum == TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::VOLUME) {
             cout << "Optimizing REST volume generation (Please wait. This might take "
                     "few minutes depending on geometry complexity) "
                  << flush;
