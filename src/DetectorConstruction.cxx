@@ -108,16 +108,17 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         cout << "ERROR : Logical volume for sensitive \"" << sensitiveVolume << "\" not found!" << endl;
     }
 
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
     // Getting generation volume
-    string GenVol = (string)restG4Metadata->GetGeneratedFrom();
-    cout << "Generated from volume : " << GenVol << endl;
-    string type = (string)restG4Metadata->GetGeneratorType();
-    cout << "Generator type : " << type << endl;
+    cout << "Generated from volume : " << primaryGeneratorInfo.GetSpatialGeneratorFrom() << endl;
+    cout << "Generator type : " << primaryGeneratorInfo.GetSpatialGeneratorType() << endl;
 
     // TODO if we do not find the volume given in the config inside the geometry
     // we should RETURN error
-    if (type == "volume" && GenVol != "Not defined") {
-        G4VPhysicalVolume* pVol = GetPhysicalVolume(GenVol);
+    if (primaryGeneratorInfo.GetSpatialGeneratorType() ==
+            TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::VOLUME &&
+        primaryGeneratorInfo.GetSpatialGeneratorFrom() != "Not defined") {
+        G4VPhysicalVolume* pVol = GetPhysicalVolume(primaryGeneratorInfo.GetSpatialGeneratorFrom());
         if (pVol == nullptr) {
             cout << "ERROR : The generator volume was not found in the geometry" << endl;
             exit(1);
@@ -129,27 +130,24 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         // We set in TRestGeant4Metadata the center of the generator. If it is a point
         // we just want the value from the config file.
         // TODO : make this kind of keyword comparisons case insensitive?
-        if (type == "surface" || type == "volume") {
-            restG4Metadata->SetGeneratorPosition(fGeneratorTranslation.x(), fGeneratorTranslation.y(),
-                                                 fGeneratorTranslation.z());
+        if (primaryGeneratorInfo.GetSpatialGeneratorType() ==
+                TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::SURFACE ||
+            primaryGeneratorInfo.GetSpatialGeneratorType() ==
+                TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::VOLUME) {
+            restG4Metadata->fGeant4PrimaryGeneratorInfo.fSpatialGeneratorPosition = {
+                fGeneratorTranslation.x(), fGeneratorTranslation.y(), fGeneratorTranslation.z()};
         }
 
         fGeneratorSolid = pVol->GetLogicalVolume()->GetSolid();
 
-        // while ( fDetector->GetGeneratorSolid()->Inside( G4ThreeVector( x, y, z) )
-        // != kInside );
-
-        // We estimate the maximum distance of our volume
-        // The code below returns a value bigger than expected
-        // If we try with a cylinder the maximum distance should be sqrt(R*R+L*L)
-        // But the value returned by this is bigger TODO check this
         fBoundBoxXMax = -1.e30;
         fBoundBoxYMax = -1.e30;
         fBoundBoxZMax = -1.e30;
         fBoundBoxXMin = 1.e30;
         fBoundBoxYMin = 1.e30;
         fBoundBoxZMin = 1.e30;
-        if (type == "volume") {
+        if (primaryGeneratorInfo.GetSpatialGeneratorType() ==
+            TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::VOLUME) {
             cout << "Optimizing REST volume generation (Please wait. This might take "
                     "few minutes depending on geometry complexity) "
                  << flush;
@@ -178,21 +176,21 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     }
 
     for (int id = 0; id < restG4Metadata->GetNumberOfActiveVolumes(); id++) {
-        TString actVolName = restG4Metadata->GetActiveVolumeName(id);
-        G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)actVolName);
+        TString activeVolumeName = restG4Metadata->GetActiveVolumeName(id);
+        G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)activeVolumeName);
         if (pVol) {
             G4LogicalVolume* lVol = pVol->GetLogicalVolume();
-            if (restG4Metadata->GetMaxStepSize(actVolName) > 0) {
-                G4cout << "Setting maxStepSize = " << restG4Metadata->GetMaxStepSize(actVolName)
-                       << "mm for volume : " << actVolName << G4endl;
-                lVol->SetUserLimits(new G4UserLimits(restG4Metadata->GetMaxStepSize(actVolName) * mm));
+            if (restG4Metadata->GetMaxStepSize(activeVolumeName) > 0) {
+                G4cout << "Setting maxStepSize = " << restG4Metadata->GetMaxStepSize(activeVolumeName)
+                       << "mm for volume : " << activeVolumeName << G4endl;
+                lVol->SetUserLimits(new G4UserLimits(restG4Metadata->GetMaxStepSize(activeVolumeName) * mm));
             }
         }
 
-        cout << "Activating volume : " << actVolName << endl;
-        // restG4Event->AddActiveVolume((string)actVolName);
+        cout << "Activating volume : " << activeVolumeName << endl;
+        // restG4Event->AddActiveVolume((string)activeVolumeName);
         if (!pVol) {
-            cout << "DetectorConstruction. Volume " << actVolName << " is not defined in the geometry"
+            cout << "DetectorConstruction. Volume " << activeVolumeName << " is not defined in the geometry"
                  << endl;
             exit(1);
         }
