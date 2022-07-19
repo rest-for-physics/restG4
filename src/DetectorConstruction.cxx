@@ -117,13 +117,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     const auto spatialGeneratorTypeEnum =
         StringToSpatialGeneratorTypes(primaryGeneratorInfo.GetSpatialGeneratorType().Data());
 
-    // TODO if we do not find the volume given in the config inside the geometry
-    // we should RETURN error
     if (spatialGeneratorTypeEnum == TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::VOLUME &&
         primaryGeneratorInfo.GetSpatialGeneratorFrom() != "Not defined") {
         G4VPhysicalVolume* pVol = GetPhysicalVolume(primaryGeneratorInfo.GetSpatialGeneratorFrom().Data());
         if (pVol == nullptr) {
-            cout << "ERROR: The generator volume was not found in the geometry" << endl;
+            cout << "ERROR: The generator volume '" << primaryGeneratorInfo.GetSpatialGeneratorFrom()
+                 << "'was not found in the geometry" << endl;
             exit(1);
             return worldVolume;
         }
