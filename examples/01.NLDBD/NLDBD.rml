@@ -56,8 +56,8 @@ By default REST units are mm, keV and degrees
 
             ///3. geant4 internal
             <!--<source use="geant4" particle="Na22" excitedLevel="0.0" fullChain="on">
-              <angularDist type="isotropic" />
-              <energyDist type="mono" energy="0.0" units="MeV" />
+              <angular type="isotropic" />
+              <energy type="mono" energy="0.0" units="MeV" />
             </source>-->
         </generator>
 

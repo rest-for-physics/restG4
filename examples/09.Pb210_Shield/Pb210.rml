@@ -42,8 +42,8 @@ By default REST units are mm, keV and degrees
 
         <generator type="volume" from="lead">
             <source particle="Pb210" fullChain="on">
-                <angularDist type="isotropic"/>
-                <energyDist type="mono" energy="0keV"/>
+                <angular type="isotropic"/>
+                <energy type="mono" energy="0keV"/>
             </source>
         </generator>
 

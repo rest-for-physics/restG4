@@ -29,8 +29,8 @@
                    position="(0,100,0)mm" size="(400,0,0)mm"
                    rotationAngle="90deg" rotationAxis="(1,0,0)">
             <source particle="mu-" excitedLevel="0.0" fullChain="on">
-                <energyDist type="TH1D" file="Muons.root" spctName="cosmicmuon"/>
-                <angularDist type="TH1D" file="CosmicAngles.root" spctName="Theta2" direction="(0,-1,0)"/>
+                <energy type="TH1D" file="Muons.root" name="cosmicmuon"/>
+                <angular type="formula" name="Cos2" direction="(0,0,-1)"/>
             </source>
         </generator>
 
