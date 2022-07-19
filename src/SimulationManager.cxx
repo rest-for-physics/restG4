@@ -66,38 +66,36 @@ void SimulationManager::WriteEvents() {
 }
 
 void SimulationManager::InitializeUserDistributions() {
-    auto random = []() { return (double)G4UniformRand(); };  // OK: return type is int
+    auto random = []() { return (double)G4UniformRand(); };
 
     for (int i = 0; i < fRestGeant4Metadata->GetNumberOfSources(); i++) {
-        fRestGeant4Metadata->GetParticleSource(i)->setRandomMethod(random);
+        fRestGeant4Metadata->GetParticleSource(i)->SetRandomMethod(random);
     }
 
     TRestGeant4ParticleSource* source = fRestGeant4Metadata->GetParticleSource(0);
 
-    if (source->GetEnergyDistType() == "TH1D") {
-        TFile file(source->GetSpectrumFilename());
-
-        auto distribution = (TH1D*)file.Get(source->GetSpectrumName());
+    if (source->GetEnergyDistributionType() == "TH1D") {
+        TFile file(source->GetEnergyDistributionFilename());
+        auto distribution = (TH1D*)file.Get(source->GetEnergyDistributionNameInFile());
 
         if (!distribution) {
             RESTError << "Error when trying to find energy spectrum" << RESTendl;
-            RESTError << "File: " << source->GetSpectrumFilename() << RESTendl;
-            RESTError << "Spectrum name: " << source->GetSpectrumName() << RESTendl;
+            RESTError << "File: " << source->GetEnergyDistributionFilename() << RESTendl;
+            RESTError << "Spectrum name: " << source->GetEnergyDistributionNameInFile() << RESTendl;
             exit(1);
         }
 
         fPrimaryEnergyDistribution = *distribution;
     }
 
-    if (source->GetEnergyDistType() == "TH1D") {
-        TFile file(source->GetAngularFilename());
-
-        auto distribution = (TH1D*)file.Get(source->GetAngularName());
+    if (source->GetEnergyDistributionType() == "TH1D") {
+        TFile file(source->GetAngularDistributionFilename());
+        auto distribution = (TH1D*)file.Get(source->GetAngularDistributionNameInFile());
 
         if (!distribution) {
             RESTError << "Error when trying to find angular spectrum" << RESTendl;
-            RESTError << "File: " << source->GetAngularFilename() << RESTendl;
-            RESTError << "Spectrum name: " << source->GetAngularName() << RESTendl;
+            RESTError << "File: " << source->GetAngularDistributionFilename() << RESTendl;
+            RESTError << "Spectrum name: " << source->GetAngularDistributionNameInFile() << RESTendl;
             exit(1);
         }
 

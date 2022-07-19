@@ -27,11 +27,11 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
     TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
 
-    if (source->GetEnergyDistType() == "TH1D") {
-        Double_t minEnergy = source->GetMinEnergy();
+    if (source->GetEnergyDistributionType() == "TH1D") {
+        Double_t minEnergy = source->GetEnergyDistributionRangeMin();
         if (minEnergy < 0) minEnergy = 0;
 
-        Double_t maxEnergy = source->GetMaxEnergy();
+        Double_t maxEnergy = source->GetEnergyDistributionRangeMax();
         if (maxEnergy < 0) maxEnergy = 0;
 
         // We set the initial spectrum energy provided from TH1D
@@ -39,7 +39,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
                                        maxEnergy);
     }
 
-    if (source->GetAngularDistType() == "TH1D") {
+    if (source->GetAngularDistributionType() == "TH1D") {
         // We set the initial angular distribution provided from TH1D
         SetAngularDistributionHistogram(fSimulationManager->GetPrimaryAngularDistribution());
     }
@@ -188,7 +188,7 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
 
     G4ThreeVector direction;
     const string angularDistTypeName =
-        (string)restG4Metadata->GetParticleSource(particleSourceIndex)->GetAngularDistType();
+        (string)restG4Metadata->GetParticleSource(particleSourceIndex)->GetAngularDistributionType();
     const auto angularDistTypeEnum = StringToAngularDistributionTypes(angularDistTypeName);
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
@@ -286,11 +286,11 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t particleSourceIndex,
     const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
 
     const string angularDistTypeName =
-        restG4Metadata->GetParticleSource(particleSourceIndex)->GetAngularDistType().Data();
+        restG4Metadata->GetParticleSource(particleSourceIndex)->GetAngularDistributionType().Data();
     const auto angularDistTypeEnum = StringToAngularDistributionTypes(angularDistTypeName);
 
     const string energyDistTypeName =
-        restG4Metadata->GetParticleSource(particleSourceIndex)->GetEnergyDistType().Data();
+        restG4Metadata->GetParticleSource(particleSourceIndex)->GetEnergyDistributionType().Data();
     const auto energyDistTypeEnum = StringToEnergyDistributionTypes(energyDistTypeName);
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
@@ -302,10 +302,12 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t particleSourceIndex,
     if (energyDistTypeEnum == EnergyDistributionTypes::MONO) {
         energy = particle.GetEnergy() * keV;
     } else if (energyDistTypeEnum == EnergyDistributionTypes::FLAT) {
-        TVector2 enRange = restG4Metadata->GetParticleSource(particleSourceIndex)->GetEnergyRange();
+        TVector2 enRange =
+            restG4Metadata->GetParticleSource(particleSourceIndex)->GetEnergyDistributionRange();
         energy = ((enRange.Y() - enRange.X()) * G4UniformRand() + enRange.X()) * keV;
     } else if (energyDistTypeEnum == EnergyDistributionTypes::LOG) {
-        TVector2 enRange = restG4Metadata->GetParticleSource(particleSourceIndex)->GetEnergyRange();
+        TVector2 enRange =
+            restG4Metadata->GetParticleSource(particleSourceIndex)->GetEnergyDistributionRange();
         auto max_energy = enRange.Y() * keV;
         auto min_energy = enRange.X() * keV;
         energy = exp((log(max_energy) - log(min_energy)) * G4UniformRand() + log(min_energy));
@@ -343,8 +345,9 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t particleSourceIndex,
     }
     fParticleGun.SetParticleEnergy(energy);
 
-    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug)
+    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         cout << "DEBUG: Particle energy: " << energy / keV << " keV" << endl;
+    }
 }
 
 void PrimaryGeneratorAction::SetParticlePosition() {
