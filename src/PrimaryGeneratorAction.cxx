@@ -1,6 +1,7 @@
 
 #include "PrimaryGeneratorAction.h"
 
+#include <TF1.h>
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
 #include <TRestGeant4PrimaryGeneratorInfo.h>
@@ -125,12 +126,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         for (const auto& p : particles) {
             // ParticleDefinition should be always declared first (after position).
             SetParticleDefinition(i, p);
-
             // Particle Direction must be always set before energy
             SetParticleEnergy(i, p);
-
             SetParticleDirection(i, p);
-
             fParticleGun.GeneratePrimaryVertex(event);
         }
     }
@@ -149,7 +147,6 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t partic
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         cout << "DEBUG: Particle name: " << particleName << endl;
-        // cout << "DEBUG: Particle charge: " << charge << endl;
         cout << "DEBUG: Particle excited energy: " << excitedEnergy << " keV" << endl;
     }
 
@@ -184,11 +181,14 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
                                                   const TRestGeant4Particle& particle) {
     auto simulationManager = fSimulationManager;
     TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
+    TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
+
     const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
 
-    G4ThreeVector direction;
-    const string angularDistTypeName =
-        (string)restG4Metadata->GetParticleSource(particleSourceIndex)->GetAngularDistributionType();
+    G4ThreeVector direction = {source->GetDirection().X(), source->GetDirection().Y(),
+                               source->GetDirection().Z()};
+
+    const string angularDistTypeName = source->GetAngularDistributionType().Data();
     const auto angularDistTypeEnum = StringToAngularDistributionTypes(angularDistTypeName);
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
@@ -216,7 +216,6 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
         // compute this inverse
         for (int bin = 1; bin <= fAngularDistributionHistogram->GetNbinsX(); bin++) {
             sum += fAngularDistributionHistogram->GetBinContent(bin);
-
             if (sum >= value) {
                 angle =
                     fAngularDistributionHistogram->GetBinCenter(bin) + deltaAngle * (0.5 - G4UniformRand());
@@ -224,41 +223,32 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
             }
         }
 
-        // Recovering the direction provided at angularDist
-        const TVector3& dirROOT = restG4Metadata->GetParticleSource(particleSourceIndex)->GetDirection();
-        direction.set(dirROOT.X(), dirROOT.Y(), dirROOT.Z());
-
-        if (direction.x() == 0 && direction.y() == 0 && direction.z() == 0) {
-            cout << "---------------------------------------------------------------------" << endl;
-            cout << "REST WARNING : Particle being launched from the ORIGIN!! Wrong "
-                    "momentum direction!"
-                 << endl;
-            cout << "Setting direction to (1,0,0)" << endl;
-            cout << "REST angular distribution is just implemented for virtualBox "
-                    "and virtualSphere"
-                 << endl;
-            cout << "Other spatial distributions can be set but it will launch the "
-                    "event\n with a distribution direction to the origin of "
-                    "coordinates"
-                 << endl;
-            cout << "---------------------------------------------------------------------" << endl;
-            direction.set(1, 0, 0);
-        }
         G4ThreeVector referenceOrigin = direction;
 
         // We generate the distribution angle (theta) using a rotation around the orthogonal vector
-        G4ThreeVector orthoVector = direction.orthogonal();
-        direction.rotate(angle, orthoVector);
+        direction.rotate(angle, direction.orthogonal());
 
         // We rotate a full-2PI random angle along the original direction to generate a cone
-        Double_t randomAngle = G4UniformRand() * 2 * M_PI;
-        direction.rotate(randomAngle, referenceOrigin);
+        direction.rotate(G4UniformRand() * 2 * M_PI, referenceOrigin);
+
+    } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA) {
+        auto formulaEnum =
+            StringToAngularDistributionFormulas(source->GetAngularDistributionFormulaString().Data());
+        TF1 function = AngularDistributionFormulasToRootFormula(formulaEnum);
+
+        G4ThreeVector referenceOrigin = direction;
+
+        if (fRandom == nullptr) {
+            fRandom = new TRandom(restG4Metadata->GetSeed() + G4Threading::G4GetThreadId());
+        }
+        // We generate the distribution angle (theta) using a rotation around the orthogonal vector
+        direction.rotate(function.GetRandom(fRandom), direction.orthogonal());
+
+        // We rotate a full-2PI random angle along the original direction to generate a cone
+        direction.rotate(G4UniformRand() * 2 * M_PI, referenceOrigin);
 
     } else if (angularDistTypeEnum == AngularDistributionTypes::FLUX) {
-        TVector3 v = particle.GetMomentumDirection();
-
-        v = v.Unit();
-
+        const TVector3& v = particle.GetMomentumDirection().Unit();
         direction.set(v.X(), v.Y(), v.Z());
 
     } else if (angularDistTypeEnum == AngularDistributionTypes::BACK_TO_BACK) {
@@ -270,9 +260,8 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
         // direction.set(-v.X(), -v.Y(), -v.Z());
         exit(1);
     } else {
-        G4cout << "WARNING: Generator angular distribution was not recognized. "
-                  "Launching particle to (1,0,0)"
-               << G4endl;
+        G4cout << "WARNING: Generator angular distribution was not recognized. Particle direction set to ("
+               << direction.x() << ", " << direction.y() << ", " << direction.z() << ")" << G4endl;
     }
 
     fParticleGun.SetParticleMomentumDirection(direction);

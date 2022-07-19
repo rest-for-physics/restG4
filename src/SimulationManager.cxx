@@ -74,7 +74,9 @@ void SimulationManager::InitializeUserDistributions() {
 
     TRestGeant4ParticleSource* source = fRestGeant4Metadata->GetParticleSource(0);
 
-    if (source->GetEnergyDistributionType() == "TH1D") {
+    if (TRestGeant4PrimaryGeneratorTypes::StringToEnergyDistributionTypes(
+            source->GetEnergyDistributionType().Data()) ==
+        TRestGeant4PrimaryGeneratorTypes::EnergyDistributionTypes::TH1D) {
         TFile file(source->GetEnergyDistributionFilename());
         auto distribution = (TH1D*)file.Get(source->GetEnergyDistributionNameInFile());
 
@@ -88,7 +90,9 @@ void SimulationManager::InitializeUserDistributions() {
         fPrimaryEnergyDistribution = *distribution;
     }
 
-    if (source->GetEnergyDistributionType() == "TH1D") {
+    if (TRestGeant4PrimaryGeneratorTypes::StringToAngularDistributionTypes(
+            source->GetAngularDistributionType().Data()) ==
+        TRestGeant4PrimaryGeneratorTypes::AngularDistributionTypes::TH1D) {
         TFile file(source->GetAngularDistributionFilename());
         auto distribution = (TH1D*)file.Get(source->GetAngularDistributionNameInFile());
 

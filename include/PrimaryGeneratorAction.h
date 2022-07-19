@@ -4,6 +4,7 @@
 
 #include <TF3.h>
 #include <TH1D.h>
+#include <TRandom.h>
 #include <TRestGeant4Particle.h>
 
 #include <G4IonTable.hh>
@@ -53,6 +54,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     Double_t energyFactor;
 
     Double_t lastEnergy;
+
+    TRandom* fRandom = nullptr;
 
     void SetParticlePosition();
     G4ParticleDefinition* SetParticleDefinition(Int_t particleSourceIndex,
