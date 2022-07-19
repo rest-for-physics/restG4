@@ -69,7 +69,7 @@ void SimulationManager::InitializeUserDistributions() {
     auto random = []() { return (double)G4UniformRand(); };  // OK: return type is int
 
     for (int i = 0; i < fRestGeant4Metadata->GetNumberOfSources(); i++) {
-        fRestGeant4Metadata->GetParticleSource(i)->SetRndmMethod(random);
+        fRestGeant4Metadata->GetParticleSource(i)->setRandomMethod(random);
     }
 
     TRestGeant4ParticleSource* source = fRestGeant4Metadata->GetParticleSource(0);
