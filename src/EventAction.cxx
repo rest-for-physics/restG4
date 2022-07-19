@@ -30,7 +30,7 @@ void EventAction::BeginOfEventAction(const G4Event* event) {
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         G4cout << "DEBUG: Start of event ID " << eventID << " (" << eventID + 1 << " of "
                << G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed() << "). "
-               << restRun->GetEntries() << " Events stored." << endl;
+               << restRun->GetEntries() << " Events stored" << endl;
     } else {
         const int numberOfEventsToBePercent =
             G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed() / 100;
