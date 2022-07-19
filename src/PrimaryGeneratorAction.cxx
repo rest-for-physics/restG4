@@ -28,19 +28,24 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
     TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
 
-    if (source->GetEnergyDistributionType() == "TH1D") {
-        Double_t minEnergy = source->GetEnergyDistributionRangeMin();
-        if (minEnergy < 0) minEnergy = 0;
+    const string angularDistTypeName = source->GetAngularDistributionType().Data();
+    const auto angularDistTypeEnum = StringToAngularDistributionTypes(angularDistTypeName);
 
+    const string energyDistTypeName = source->GetEnergyDistributionType().Data();
+    const auto energyDistTypeEnum = StringToEnergyDistributionTypes(energyDistTypeName);
+
+    fRandom = new TRandom(restG4Metadata->GetSeed() + TRandom(G4Threading::G4GetThreadId()).Integer(1E9));
+
+    if (energyDistTypeEnum == EnergyDistributionTypes::TH1D) {
+        Double_t minEnergy = source->GetEnergyDistributionRangeMin();
         Double_t maxEnergy = source->GetEnergyDistributionRangeMax();
-        if (maxEnergy < 0) maxEnergy = 0;
 
         // We set the initial spectrum energy provided from TH1D
         SetEnergyDistributionHistogram(fSimulationManager->GetPrimaryEnergyDistribution(), minEnergy,
                                        maxEnergy);
     }
 
-    if (source->GetAngularDistributionType() == "TH1D") {
+    if (angularDistTypeEnum == AngularDistributionTypes::TH1D) {
         // We set the initial angular distribution provided from TH1D
         SetAngularDistributionHistogram(fSimulationManager->GetPrimaryAngularDistribution());
     }
@@ -238,9 +243,6 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
 
         G4ThreeVector referenceOrigin = direction;
 
-        if (fRandom == nullptr) {
-            fRandom = new TRandom(restG4Metadata->GetSeed() + G4Threading::G4GetThreadId());
-        }
         // We generate the distribution angle (theta) using a rotation around the orthogonal vector
         direction.rotate(function.GetRandom(fRandom), direction.orthogonal());
 
@@ -272,6 +274,7 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t particleSourceIndex,
     auto simulationManager = fSimulationManager;
 
     TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
+    TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
     const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
 
     const string angularDistTypeName =
@@ -317,6 +320,14 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t particleSourceIndex,
                 break;
             }
         }
+    } else if (energyDistTypeEnum == EnergyDistributionTypes::FORMULA) {
+        auto formulaEnum =
+            StringToEnergyDistributionFormulas(source->GetEnergyDistributionFormulaString().Data());
+        TF1 function = EnergyDistributionFormulasToRootFormula(formulaEnum);
+
+        energy = function.GetRandom(source->GetEnergyDistributionRangeMin(),
+                                    source->GetEnergyDistributionRangeMax(), fRandom) *
+                 keV;
     } else {
         G4cout << "WARNING! Energy distribution type was not recognized. Setting "
                   "energy to 1keV"
