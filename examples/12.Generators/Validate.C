@@ -23,14 +23,49 @@ Int_t Validate(const char* filename) {
     cout << "original source direction: (" << sourceDirection.X() << ", " << sourceDirection.Y() << ", "
          << sourceDirection.Z() << ")" << endl;
 
+    double radiusAverage = 0, radiusMin = TMath::Infinity(), radiusMax = 0;
+    constexpr double radiusAverageRef = 2.67045, radiusMinRef = 0.0, radiusMaxRef = 4.0;
+    constexpr double tolerance = 0.01;
+
     TH1D thetaHist("thetaHist", "Theta angle from source direction", 100, 0, TMath::Pi());
     for (int i = 0; i < run.GetEntries(); i++) {
         run.GetEntry(i);
         TVector3 direction = event->GetPrimaryEventDirection();
         const auto theta = sourceDirection.Angle(direction);
         thetaHist.Fill(theta);
+
+        Double_t x = event->GetPrimaryEventOrigin().X();
+        Double_t z = event->GetPrimaryEventOrigin().Z();
+        const auto r = TMath::Sqrt(x * x + z * z) / 100;  // cm
+        radiusAverage += r / run.GetEntries();
+        if (r < radiusMin) {
+            radiusMin = r;
+        }
+        if (r > radiusMax) {
+            radiusMax = r;
+        }
     }
     thetaHist.Scale(1. / thetaHist.Integral(), "width");
+
+    cout << "Average radius (cm): " << radiusAverage << endl;
+    cout << "Minimum radius (cm): " << radiusMin << endl;
+    cout << "Maximum radius (cm): " << radiusMax << endl;
+
+    if (TMath::Abs(radiusAverage - radiusAverageRef) > tolerance) {
+        cout << "The average radius of the distribution is wrong!" << endl;
+        cout << "radiusAverage (cm): " << radiusAverage << endl;
+        return 3;
+    }
+    if (TMath::Abs(radiusMin - radiusMinRef) > tolerance) {
+        cout << "The average radius of the distribution is wrong!" << endl;
+        cout << "radiusMin (cm): " << radiusMin << endl;
+        return 4;
+    }
+    if (TMath::Abs(radiusMax - radiusMaxRef) > tolerance) {
+        cout << "The average radius of the distribution is wrong!" << endl;
+        cout << "radiusMax (cm): " << radiusMax << endl;
+        return 5;
+    }
 
     auto cos2Lambda = [](double* xs, double* ps) {
         if (xs[0] >= 0 && xs[0] <= TMath::Pi() / 2) {
@@ -55,7 +90,7 @@ Int_t Validate(const char* filename) {
     cout << "Computed difference from reference function: " << diff << endl;
     if (diff > 0.01) {
         cout << "The computed difference from reference function is too large!" << endl;
-        return 3;
+        return 6;
     }
 
     cout << "All tests passed! [\033[32mOK\033[0m]\n";
