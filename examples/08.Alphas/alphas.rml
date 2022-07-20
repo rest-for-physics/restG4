@@ -42,8 +42,8 @@ By default REST units are mm, keV and degrees
 
         <generator type="volume" from="source">
             <source particle="alpha">
-                <angularDist type="isotropic"/>
-                <energyDist type="mono" energy="${REST_ENERGY}" units="MeV"/>
+                <angular type="isotropic"/>
+                <energy type="mono" energy="${REST_ENERGY}" units="MeV"/>
             </source>
         </generator>
 

@@ -24,8 +24,8 @@
 
         <generator type="point" position="(0,0,-50)cm">
             <source particle="mu-" excitedLevel="0.0">
-                <energyDist type="mono" energy="100GeV"/>
-                <angularDist type="flux" direction="(0,0,1)"/>
+                <energy type="mono" energy="100GeV"/>
+                <angular type="flux" direction="(0,0,1)"/>
             </source>
         </generator>
 

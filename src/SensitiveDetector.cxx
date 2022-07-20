@@ -12,7 +12,7 @@
 using namespace std;
 
 SensitiveDetector::SensitiveDetector(SimulationManager* simulationManager, const G4String& name)
-    : fSimulationManager(simulationManager), G4VSensitiveDetector(name) {}
+    : G4VSensitiveDetector(name), fSimulationManager(simulationManager) {}
 
 G4bool SensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*) {
     // return value will always be ignored, its present for backwards compatibility (I guess)

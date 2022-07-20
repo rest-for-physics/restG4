@@ -1,6 +1,7 @@
 
 #include <Application.h>
 #include <CommandLineSetup.h>
+#include <TGeoManager.h>
 #include <TROOT.h>
 #include <TRestRun.h>
 #include <gtest/gtest.h>
@@ -50,7 +51,7 @@ TEST(restG4, Example_01_NLDBD) {
     fs::current_path(originalPath);
 }
 
-TEST(restG4, TRestGeant4GeometryInfo_TRestGeant4PhysicsInfo) {
+TEST(restG4, Metadata) {
     // Test "TRestGeant4GeometryInfo" and "TRestGeant4PhysicsInfo" even though its from Geant4Lib, we need a
     // simulation file, so we placed the test here
 
@@ -78,6 +79,12 @@ TEST(restG4, TRestGeant4GeometryInfo_TRestGeant4PhysicsInfo) {
     }
 
     TRestRun run(resultsFile);
+
+    /* Check TGeoManager is present on file */
+    const TGeoManager* geometry = run.GetInputFile()->Get<TGeoManager>("Geometry");
+    EXPECT_EQ(geometry != nullptr, true);
+    delete geometry;
+
     // Test `TRestGeant4Metadata::GetUnambiguousGlobalInstance`
     auto geant4Metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
     EXPECT_EQ(geant4Metadata != nullptr, true);
@@ -142,6 +149,38 @@ TEST(restG4, Example_04_Muons) {
     CommandLineParameters parameters;
     parameters.rmlFile = "CosmicMuonsFromWall.rml";
     parameters.outputFile = thisExamplePath / "muons.root";  // TODO: fix not working with local path
+
+    Application app;
+    app.Run(parameters);
+
+    // Run validation macro
+    const TString macro(thisExamplePath / "ValidateWall.C");
+    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+    int error = 0;
+    const int result =
+        gROOT->ProcessLine(TString::Format("ValidateWall(\"%s\")", parameters.outputFile.Data()), &error);
+    EXPECT_EQ(error, 0);
+    EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
+
+    // use output file to check additional things
+    TRestRun run(parameters.outputFile.Data());
+    cout << "Number of entries: " << run.GetEntries() << endl;
+}
+
+TEST(restG4, Example_04_Muons_MT) {
+    // cd into example
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "04.MuonScan";
+    fs::current_path(thisExamplePath);
+
+    CommandLineParameters parameters;
+    parameters.rmlFile = "CosmicMuonsFromWall.rml";
+    parameters.outputFile = thisExamplePath / "muons.root";  // TODO: fix not working with local path
+
+    parameters.nThreads = 4;
+    parameters.serialMode = false;
 
     Application app;
     app.Run(parameters);

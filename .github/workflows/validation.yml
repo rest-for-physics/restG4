@@ -459,6 +459,28 @@ jobs:
           restG4 NLDBD.rml -o Run00001_NLDBD_Test.root
           restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
 
+
+  restG4-examples-06-reference:
+    name: "Reference Example 06: Ion recoils"
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-reference-jun2022
+    needs: [ framework-install-reference, check-installation-reference ]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Restore cache
+        uses: actions/cache@v3
+        id: framework-install-restG4-cache-reference
+        with:
+          path: ${{ env.REST_PATH }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
+      - name: Run example
+        run: |
+          source ${{ env.REST_PATH }}/thisREST.sh
+          cd ${{ env.REST_PATH }}/examples/restG4/06.IonRecoils/
+          restG4 recoils.rml -o Run00001_F20_Recoils.root
+          restRoot -b -q Validate.C'("Run00001_F20_Recoils.root")'
+
   restG4-examples-07-reference:
     name: "Reference Example 07: Decay"
     runs-on: ubuntu-latest

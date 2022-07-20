@@ -41,8 +41,8 @@ By default REST units are mm, keV and degrees
 
         <generator type="point" position="(0,0,-100)" units="mm">
             <source particle="gamma">
-                <angularDist type="flux" direction="(0,0,1)"/>
-                <energyDist type="flat" range="(0,15)keV"/>
+                <angular type="flux" direction="(0,0,1)"/>
+                <energy type="flat" range="(0,15)keV"/>
             </source>
         </generator>
 

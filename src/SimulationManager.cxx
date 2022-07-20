@@ -6,6 +6,9 @@
 #include <G4HadronicProcess.hh>
 #include <G4Nucleus.hh>
 #include <G4Threading.hh>
+#include <Randomize.hh>
+
+#include "SteppingAction.h"
 
 using namespace std;
 
@@ -62,6 +65,48 @@ void SimulationManager::WriteEvents() {
     }
 }
 
+void SimulationManager::InitializeUserDistributions() {
+    auto random = []() { return (double)G4UniformRand(); };
+
+    for (int i = 0; i < fRestGeant4Metadata->GetNumberOfSources(); i++) {
+        fRestGeant4Metadata->GetParticleSource(i)->SetRandomMethod(random);
+    }
+
+    TRestGeant4ParticleSource* source = fRestGeant4Metadata->GetParticleSource(0);
+
+    if (TRestGeant4PrimaryGeneratorTypes::StringToEnergyDistributionTypes(
+            source->GetEnergyDistributionType().Data()) ==
+        TRestGeant4PrimaryGeneratorTypes::EnergyDistributionTypes::TH1D) {
+        TFile file(source->GetEnergyDistributionFilename());
+        auto distribution = (TH1D*)file.Get(source->GetEnergyDistributionNameInFile());
+
+        if (!distribution) {
+            RESTError << "Error when trying to find energy spectrum" << RESTendl;
+            RESTError << "File: " << source->GetEnergyDistributionFilename() << RESTendl;
+            RESTError << "Spectrum name: " << source->GetEnergyDistributionNameInFile() << RESTendl;
+            exit(1);
+        }
+
+        fPrimaryEnergyDistribution = *distribution;
+    }
+
+    if (TRestGeant4PrimaryGeneratorTypes::StringToAngularDistributionTypes(
+            source->GetAngularDistributionType().Data()) ==
+        TRestGeant4PrimaryGeneratorTypes::AngularDistributionTypes::TH1D) {
+        TFile file(source->GetAngularDistributionFilename());
+        auto distribution = (TH1D*)file.Get(source->GetAngularDistributionNameInFile());
+
+        if (!distribution) {
+            RESTError << "Error when trying to find angular spectrum" << RESTendl;
+            RESTError << "File: " << source->GetAngularDistributionFilename() << RESTendl;
+            RESTError << "Spectrum name: " << source->GetAngularDistributionNameInFile() << RESTendl;
+            exit(1);
+        }
+
+        fPrimaryAngularDistribution = *distribution;
+    }
+}
+
 // OutputManager
 OutputManager::OutputManager(const SimulationManager* simulationManager)
     : fSimulationManager(const_cast<SimulationManager*>(simulationManager)) {
@@ -72,8 +117,9 @@ OutputManager::OutputManager(const SimulationManager* simulationManager)
     }
 
     // initialize active volume lookup set
-    for (size_t i = 0; i < fSimulationManager->fRestGeant4Metadata->GetNumberOfActiveVolumes(); i++) {
-        const TString& activeVolume = fSimulationManager->fRestGeant4Metadata->GetActiveVolumeName(i);
+    const auto metadata = fSimulationManager->GetRestMetadata();
+    for (size_t i = 0; i < metadata->GetNumberOfActiveVolumes(); i++) {
+        const TString& activeVolume = metadata->GetActiveVolumeName(i);
         fActiveVolumes.insert(activeVolume.Data());
     }
 }
@@ -81,14 +127,14 @@ OutputManager::OutputManager(const SimulationManager* simulationManager)
 void OutputManager::UpdateEvent() {
     auto event = G4EventManager::GetEventManager()->GetConstCurrentEvent();
     fEvent = make_unique<TRestGeant4Event>(event);
-    fEvent->InitializeReferences(fSimulationManager->fRestRun);
+    fEvent->InitializeReferences(fSimulationManager->GetRestRun());
 }
 
 bool OutputManager::IsEmptyEvent() const { return !fEvent || fEvent->fTracks.empty(); }
 
 bool OutputManager::IsValidEvent() const {
     if (IsEmptyEvent()) return false;
-    if (fSimulationManager->fRestGeant4Metadata->GetSaveAllEvents()) return true;
+    if (fSimulationManager->GetRestMetadata()->GetSaveAllEvents()) return true;
     if (fEvent->GetSensitiveVolumeEnergy() <= 0) return false;
     return true;
 }
@@ -138,7 +184,7 @@ void OutputManager::RecordStep(const G4Step* step) { fEvent->InsertStep(step); }
 void OutputManager::AddSensitiveEnergy(Double_t energy, const char* physicalVolumeName) {
     fEvent->AddEnergyToSensitiveVolume(energy);
     /*
-        const TString physicalVolumeNameNew = fSimulationManager->fRestGeant4Metadata->GetGeant4GeometryInfo()
+        const TString physicalVolumeNameNew = fSimulationManager->GetRestMetadata()->GetGeant4GeometryInfo()
                                                   .GetAlternativeNameFromGeant4PhysicalName(physicalVolumeName);
                                                   */
 }
@@ -212,11 +258,19 @@ bool TRestGeant4Event::InsertTrack(const G4Track* track) {
         fSubEventPrimaryDirection = {momentum.x(), momentum.y(), momentum.z()};
     }
 
-    fTracks.emplace_back(track);
-    fTracks.back().SetHits(fInitialStep);
-    fTracks.back().SetEvent(this);
+    fTrackIDToTrackIndex[track->GetTrackID()] = fTracks.size();  // before insertion
 
-    fTrackIDToTrackIndex[track->GetTrackID()] = fTracks.size() - 1;
+    fTracks.emplace_back(track);
+
+    auto& insertedTrack = fTracks.back();
+
+    insertedTrack.SetHits(fInitialStep);
+    insertedTrack.SetEvent(this);
+
+    TRestGeant4Track* parentTrack = GetTrackByID(track->GetParentID());
+    if (parentTrack) {
+        parentTrack->AddSecondaryTrackID(track->GetTrackID());
+    }
 
     return true;
 }
@@ -255,14 +309,14 @@ TRestGeant4Track::TRestGeant4Track(const G4Track* track) : TRestGeant4Track() {
         fCreatorProcess = "PrimaryGenerator";
     }
 
-    fKineticEnergy = track->GetKineticEnergy() / CLHEP::keV;
+    fInitialKineticEnergy = track->GetKineticEnergy() / CLHEP::keV;
 
     fWeight = track->GetWeight();
 
     fGlobalTimestamp = track->GetGlobalTime() / CLHEP::second;
 
     const G4ThreeVector& trackOrigin = track->GetPosition();
-    fTrackOrigin = {trackOrigin.x(), trackOrigin.y(), trackOrigin.z()};
+    fInitialPosition = {trackOrigin.x(), trackOrigin.y(), trackOrigin.z()};
 }
 
 void TRestGeant4Track::InsertStep(const G4Step* step) { fHits.InsertStep(step); }
@@ -273,11 +327,8 @@ void TRestGeant4Track::UpdateTrack(const G4Track* track) {
         exit(1);
     }
 
-    fTrackLength = track->GetTrackLength() / CLHEP::mm;
-
-    // auto steppingAction = (SteppingAction*)G4EventManager::GetEventManager()->GetUserSteppingAction();
-    // auto secondaries = steppingAction->GetfSecondary();
-    // fNumberOfSecondaries = (int)secondaries->size();
+    fLength = track->GetTrackLength() / CLHEP::mm;
+    fTimeLength = track->GetGlobalTime() / CLHEP::second - fGlobalTimestamp;
 }
 
 Int_t TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(const G4VProcess* process) {
@@ -288,10 +339,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     const G4Track* track = step->GetTrack();
 
     TRestGeant4Metadata* metadata = GetGeant4Metadata();
-    if (metadata == nullptr) {
-        cout << "ERROR METADATA IS NULL!" << endl;
-        exit(1);
-    }
+
     const auto& geometryInfo = metadata->GetGeant4GeometryInfo();
 
     // Variables that describe a step are taken.
@@ -314,8 +362,8 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     G4String processName = "Init";
     G4String processTypeName = "Init";
     Int_t processID = 0;
-    if (track->GetCurrentStepNumber() !=
-        0) {  // 0 = Init step (G4SteppingVerbose) process is not defined for this step
+    if (track->GetCurrentStepNumber() != 0) {
+        // 0 = Init step (G4SteppingVerbose) process is not defined for this step
         processName = process->GetProcessName();
         processTypeName = G4VProcess::GetProcessTypeName(process->GetProcessType());
         processID = TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(process);
@@ -342,24 +390,13 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     const TVector3 hitPosition(x, y, z);
     const Double_t hitGlobalTime = step->GetPreStepPoint()->GetGlobalTime() / CLHEP::second;
     const G4ThreeVector& momentum = step->GetPreStepPoint()->GetMomentumDirection();
-    const TVector3 momentumDirection = TVector3(momentum.x(), momentum.y(), momentum.z());
 
-    // -------
     AddHit(hitPosition, energy, hitGlobalTime);  // this increases fNHits
 
     fProcessID.emplace_back(processID);
     fVolumeID.emplace_back(geometryInfo.GetIDFromVolume(volumeName));
     fKineticEnergy.emplace_back(step->GetPreStepPoint()->GetKineticEnergy() / CLHEP::keV);
+    fMomentumDirection.emplace_back(momentum.x(), momentum.y(), momentum.z());
 
-    fMomentumDirectionX.Set(fNHits);
-    fMomentumDirectionX[fNHits - 1] = momentumDirection.X();
-
-    fMomentumDirectionY.Set(fNHits);
-    fMomentumDirectionY[fNHits - 1] = momentumDirection.Y();
-
-    fMomentumDirectionZ.Set(fNHits);
-    fMomentumDirectionZ[fNHits - 1] = momentumDirection.Z();
-
-    // -----
     SimulationManager::GetOutputManager()->AddEnergyToVolumeForProcess(energy, volumeName, processName);
 }

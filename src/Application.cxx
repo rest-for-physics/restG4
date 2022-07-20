@@ -1,9 +1,11 @@
 
 #include "Application.h"
 
+#include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TH1D.h>
 #include <TH2D.h>
+#include <TROOT.h>
 #include <TRestGDMLParser.h>
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
@@ -12,6 +14,9 @@
 #include <TRestRun.h>
 
 #include <G4RunManager.hh>
+#ifndef GEANT4_WITHOUT_G4RunManagerFactory
+#include <G4RunManagerFactory.hh>
+#endif
 #include <G4UImanager.hh>
 #include <G4VSteppingVerbose.hh>
 #include <cstdio>
@@ -47,9 +52,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     Bool_t saveAllEvents;
 
-    Int_t nEvents;
-
-    auto timeStart = chrono::steady_clock::now();
+    const auto timeStart = chrono::steady_clock::now();
 
     const auto originalDirectory = filesystem::current_path();
 
@@ -58,7 +61,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     CommandLineSetup::Print(commandLineParameters);
 
     /// Separating relative path and pure RML filename
-    char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
+    const char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
 
     if (!TRestTools::CheckFileIsAccessible(inputConfigFile)) {
         cout << "Input rml file: " << inputConfigFile << " not found, please check file name" << endl;
@@ -71,11 +74,13 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
         filesystem::current_path(inputRmlPath);
     }
 
-    fSimulationManager->fRestGeant4Metadata = new TRestGeant4Metadata(inputRmlClean.c_str());
-    fSimulationManager->fRestGeant4Metadata->SetGeant4Version(TRestTools::Execute("geant4-config --version"));
+    auto metadata = new TRestGeant4Metadata(inputRmlClean.c_str());
+    fSimulationManager->SetRestMetadata(metadata);
+
+    metadata->SetGeant4Version(TRestTools::Execute("geant4-config --version"));
 
     if (!commandLineParameters.geometryFile.IsNull()) {
-        fSimulationManager->fRestGeant4Metadata->SetGdmlFilename(commandLineParameters.geometryFile.Data());
+        metadata->SetGdmlFilename(commandLineParameters.geometryFile.Data());
     }
 
     // We need to process and generate a new GDML for several reasons.
@@ -87,60 +92,82 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     auto gdml = new TRestGDMLParser();
 
     // This call will generate a new single file GDML output
-    gdml->Load((string)fSimulationManager->fRestGeant4Metadata->GetGdmlFilename());
+    gdml->Load((string)metadata->GetGdmlFilename());
 
     // We redefine the value of the GDML file to be used in DetectorConstructor.
-    fSimulationManager->fRestGeant4Metadata->SetGdmlFilename(gdml->GetOutputGDMLFile());
-    fSimulationManager->fRestGeant4Metadata->SetGeometryPath("");
+    metadata->SetGdmlFilename(gdml->GetOutputGDMLFile());
+    metadata->SetGeometryPath("");
 
-    fSimulationManager->fRestGeant4Metadata->SetGdmlReference(gdml->GetGDMLVersion());
-    fSimulationManager->fRestGeant4Metadata->SetMaterialsReference(gdml->GetEntityVersion("materials"));
+    metadata->SetGdmlReference(gdml->GetGDMLVersion());
+    metadata->SetMaterialsReference(gdml->GetEntityVersion("materials"));
 
-    fSimulationManager->fRestGeant4PhysicsLists = new TRestGeant4PhysicsLists(inputRmlClean.c_str());
+    auto physicsLists = new TRestGeant4PhysicsLists(inputRmlClean.c_str());
+    fSimulationManager->SetRestPhysicsLists(physicsLists);
 
-    fSimulationManager->fRestRun = new TRestRun();
-    fSimulationManager->fRestRun->LoadConfigFromFile(inputRmlClean);
+    auto run = new TRestRun();
+    fSimulationManager->SetRestRun(run);
+
+    run->LoadConfigFromFile(inputRmlClean);
 
     if (!commandLineParameters.outputFile.IsNull()) {
-        fSimulationManager->fRestRun->SetOutputFileName(commandLineParameters.outputFile.Data());
+        run->SetOutputFileName(commandLineParameters.outputFile.Data());
     }
 
     filesystem::current_path(originalDirectory);
 
-    TString runTag = fSimulationManager->fRestRun->GetRunTag();
-    if (runTag == "Null" || runTag == "")
-        fSimulationManager->fRestRun->SetRunTag(fSimulationManager->fRestGeant4Metadata->GetTitle());
+    TString runTag = run->GetRunTag();
+    if (runTag == "Null" || runTag == "") {
+        run->SetRunTag(metadata->GetTitle());
+    }
 
-    fSimulationManager->fRestRun->SetRunType("restG4");
+    run->SetRunType("restG4");
 
-    fSimulationManager->fRestRun->AddMetadata(fSimulationManager->fRestGeant4Metadata);
-    fSimulationManager->fRestRun->AddMetadata(fSimulationManager->fRestGeant4PhysicsLists);
-    fSimulationManager->fRestRun->PrintMetadata();
+    run->AddMetadata(fSimulationManager->GetRestMetadata());
+    run->AddMetadata(fSimulationManager->GetRestPhysicsLists());
+    run->PrintMetadata();
 
-    fSimulationManager->fRestRun->FormOutputFile();
+    run->FormOutputFile();
 
-    fSimulationManager->fRestRun->AddEventBranch(&fSimulationManager->fEvent);
+    run->GetOutputFile()->cd();
+
+    run->AddEventBranch(&fSimulationManager->fEvent);
 
     // choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
-    long seed = fSimulationManager->fRestGeant4Metadata->GetSeed();
+    long seed = metadata->GetSeed();
     CLHEP::HepRandom::setTheSeed(seed);
 
     G4VSteppingVerbose::SetInstance(new SteppingVerbose(fSimulationManager));
 
-    auto runManager = new G4RunManager;
+#ifndef GEANT4_WITHOUT_G4RunManagerFactory
+    auto runManagerType = G4RunManagerType::Default;
+    if (!commandLineParameters.serialMode) {
+        runManagerType = G4RunManagerType::MTOnly;
+        cout << "Using MT run manager with " << commandLineParameters.nThreads << " threads" << endl;
+    } else {
+        runManagerType = G4RunManagerType::SerialOnly;
+        cout << "Using serial run manager" << endl;
+    }
+
+    auto runManager = G4RunManagerFactory::CreateRunManager(runManagerType);
+
+    if (!commandLineParameters.serialMode) {
+        ROOT::EnableThreadSafety();
+        runManager->SetNumberOfThreads(commandLineParameters.nThreads);
+    }
+#else
+    cout << "Using serial run manager" << endl;
+    auto runManager = new G4RunManager();
+#endif
 
     auto detector = new DetectorConstruction(fSimulationManager);
 
+    fSimulationManager->InitializeUserDistributions();
+
     runManager->SetUserInitialization(detector);
-    runManager->SetUserInitialization(new PhysicsList(fSimulationManager->fRestGeant4PhysicsLists));
+    runManager->SetUserInitialization(new PhysicsList(fSimulationManager->GetRestPhysicsLists()));
 
     runManager->SetUserInitialization(new ActionInitialization(fSimulationManager));
-
-    auto step = (SteppingAction*)G4RunManager::GetRunManager()->GetUserSteppingAction();
-
-    auto primaryGenerator =
-        (PrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
 
     runManager->Initialize();
 
@@ -151,27 +178,21 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     visManager->Initialize();
 #endif
 
-    nEvents = fSimulationManager->fRestGeant4Metadata->GetNumberOfEvents();
+    const auto nEvents = metadata->GetNumberOfEvents();
+    if (nEvents < 0) {
+        cout << "Error: \"nEvents\" parameter value (" << nEvents << ") is not valid." << endl;
+        exit(1);
+    }
 
     time_t systime = time(nullptr);
-    fSimulationManager->fRestRun->SetStartTimeStamp((Double_t)systime);
+    run->SetStartTimeStamp((Double_t)systime);
 
-    cout << "Number of events : " << nEvents << endl;
+    cout << "Number of events: " << nEvents << endl;
     if (nEvents > 0)  // batch mode
     {
-        G4String command = "/tracking/verbose 0";
-        UI->ApplyCommand(command);
-        command = "/run/initialize";
-        UI->ApplyCommand(command);
-
-        char tmp[256];
-        sprintf(tmp, "/run/beamOn %d", nEvents);
-
-        command = tmp;
-        UI->ApplyCommand(command);
-
-        fSimulationManager->fRestRun->GetOutputFile()->cd();
-
+        UI->ApplyCommand("/tracking/verbose 0");
+        UI->ApplyCommand("/run/initialize");
+        UI->ApplyCommand("/run/beamOn " + to_string(nEvents));
     }
 
     else if (nEvents == 0)  // define visualization and UI terminal for interactive mode
@@ -188,25 +209,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 #endif
     }
 
-    else  // nEvents == -1
-    {
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << "The number of events to be simulated was not recognized properly!" << endl;
-        cout << "Make sure you did not forget the number of events entry in TRestGeant4Metadata." << endl;
-        cout << endl;
-        cout << " ... or the parameter is properly constructed/interpreted." << endl;
-        cout << endl;
-        cout << "It should be something like : " << endl;
-        cout << endl;
-        cout << R"( <parameter name ="nEvents" value="100"/>)" << endl;
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << endl;
-    }
-    fSimulationManager->fRestRun->GetOutputFile()->cd();
+    run->GetOutputFile()->cd();
 
 #ifdef G4VIS_USE
     delete visManager;
@@ -216,52 +219,32 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     delete runManager;
 
     systime = time(nullptr);
-    fSimulationManager->fRestRun->SetEndTimeStamp((Double_t)systime);
-    const TString filename =
-        TRestTools::ToAbsoluteName(fSimulationManager->fRestRun->GetOutputFileName().Data());
-    fSimulationManager->fRestRun->UpdateOutputFile();
-    fSimulationManager->fRestRun->CloseFile();
-    fSimulationManager->fRestRun->PrintMetadata();
+    run->SetEndTimeStamp((Double_t)systime);
+    const TString filename = TRestTools::ToAbsoluteName(run->GetOutputFileName().Data());
 
-    ////////// Writing the geometry in TGeoManager format to the ROOT file
-    ////////// Need to fork and do it in child process, to prevent occasional seg.fault
-    pid_t pid;
-    pid = fork();
-    if (pid < 0) {
-        perror("fork error:");
-        exit(1);
-    }
-    // child process
-    if (pid == 0) {
-        // writing the geometry object
-        freopen("/dev/null", "w", stdout);
-        freopen("/dev/null", "w", stderr);
+    run->UpdateOutputFile();
+    run->CloseFile();
+    run->PrintMetadata();
 
-        REST_Display_CompatibilityMode = true;
-
-        // We wait the father process ends properly
-        sleep(5);
-
-        // Then we just add the geometry
-        auto file = new TFile(filename, "update");
-        TGeoManager* geoManager = gdml->CreateGeoManager();
-
-        file->cd();
-        geoManager->SetName("Geometry");
-        geoManager->Write();
-        file->Close();
-        exit(0);
-    }
-    // father process
-    else {
-        int stat_val = 0;
-        pid_t child_pid;
-
-        printf("Writing geometry ... \n");
-    }
+    auto geometry = gdml->CreateGeoManager();
+    WriteGeometry(geometry, run->GetOutputFileName());
+    delete geometry;
 
     cout << "============== Generated file: " << filename << " ==============" << endl;
     auto timeEnd = chrono::steady_clock::now();
     cout << "Elapsed time: " << chrono::duration_cast<chrono::seconds>(timeEnd - timeStart).count()
          << " seconds" << endl;
+}
+
+void Application::WriteGeometry(TGeoManager* geometry, const char* filename, const char* option) {
+    auto file = TFile::Open(filename, option);
+    file->cd();
+    cout << "Application::WriteGeometry - Writing geometry into '" << filename << "'" << endl;
+    if (!geometry) {
+        cout << "Application::WriteGeometry - Error - Unable to write geometry into file" << endl;
+        exit(1);
+    }
+    geometry->Write("Geometry");
+
+    file->Close();
 }

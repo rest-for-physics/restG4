@@ -31,8 +31,8 @@
 
     <generator type="virtualCylinder" size="${REST_RADIUS}mm" length="${REST_LENGTH}m" >
       <source particle="${REST_ISOTOPE}" fullChain="${REST_FULLCHAIN}">
-        <angularDist type="isotropic" />
-        <energyDist type="mono" energy="0" units="keV" />
+        <angular type="isotropic" />
+        <energy type="mono" energy="0" units="keV" />
       </source>
     </generator>
 

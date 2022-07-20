@@ -1,14 +1,17 @@
 
 #include "PrimaryGeneratorAction.h"
 
+#include <TF1.h>
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
+#include <TRestGeant4PrimaryGeneratorInfo.h>
 
 #include <G4Event.hh>
 #include <G4Geantino.hh>
 #include <G4IonTable.hh>
 #include <G4ParticleDefinition.hh>
 #include <G4ParticleTable.hh>
+#include <G4RunManager.hh>
 #include <G4SystemOfUnits.hh>
 #include <G4UnitsTable.hh>
 #include <Randomize.hh>
@@ -16,33 +19,42 @@
 #include "SimulationManager.h"
 
 using namespace std;
+using namespace TRestGeant4PrimaryGeneratorTypes;
 
-Int_t face = 0;
-
-double GeneratorRndm() { return G4UniformRand(); }
-
-PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationManager,
-                                               DetectorConstruction* pDetector)
-    : G4VUserPrimaryGeneratorAction(),
-      fSimulationManager(simulationManager),
-      fParticleGun(nullptr),
-      fDetector(pDetector) {
-    G4int n_particle = 1;
-    fParticleGun = new G4ParticleGun(n_particle);
-
+PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationManager)
+    : G4VUserPrimaryGeneratorAction(), fSimulationManager(simulationManager) {
     fGeneratorSpatialDensityFunction = nullptr;
 
-    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
+    TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
 
-    for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
-        restG4Metadata->GetParticleSource(i)->SetRndmMethod(GeneratorRndm);
+    const string angularDistTypeName = source->GetAngularDistributionType().Data();
+    const auto angularDistTypeEnum = StringToAngularDistributionTypes(angularDistTypeName);
+
+    const string energyDistTypeName = source->GetEnergyDistributionType().Data();
+    const auto energyDistTypeEnum = StringToEnergyDistributionTypes(energyDistTypeName);
+
+    fRandom = new TRandom(restG4Metadata->GetSeed() + TRandom(G4Threading::G4GetThreadId()).Integer(1E9));
+
+    if (energyDistTypeEnum == EnergyDistributionTypes::TH1D) {
+        Double_t minEnergy = source->GetEnergyDistributionRangeMin();
+        Double_t maxEnergy = source->GetEnergyDistributionRangeMax();
+
+        // We set the initial spectrum energy provided from TH1D
+        SetEnergyDistributionHistogram(fSimulationManager->GetPrimaryEnergyDistribution(), minEnergy,
+                                       maxEnergy);
+    }
+
+    if (angularDistTypeEnum == AngularDistributionTypes::TH1D) {
+        // We set the initial angular distribution provided from TH1D
+        SetAngularDistributionHistogram(fSimulationManager->GetPrimaryAngularDistribution());
     }
 }
 
-PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
+PrimaryGeneratorAction::~PrimaryGeneratorAction() = default;
 
-void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
-    auto xLabel = (TString)spt->GetXaxis()->GetTitle();
+void PrimaryGeneratorAction::SetEnergyDistributionHistogram(const TH1D* h, double eMin, double eMax) {
+    auto xLabel = (TString)h->GetXaxis()->GetTitle();
 
     if (xLabel.Contains("MeV")) {
         energyFactor = 1.e3;
@@ -52,15 +64,15 @@ void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
         energyFactor = 1.;
     }
 
-    fSpectrum = spt;
-    fSpectrumIntegral = fSpectrum->Integral();
+    fEnergyDistributionHistogram = h;
+    fSpectrumIntegral = fEnergyDistributionHistogram->Integral();
 
     startEnergyBin = 1;
-    endEnergyBin = fSpectrum->GetNbinsX();
+    endEnergyBin = fEnergyDistributionHistogram->GetNbinsX();
 
     if (eMin > 0) {
         for (int i = startEnergyBin; i <= endEnergyBin; i++) {
-            if (fSpectrum->GetBinCenter(i) > eMin) {
+            if (fEnergyDistributionHistogram->GetBinCenter(i) > eMin) {
                 startEnergyBin = i;
                 break;
             }
@@ -69,14 +81,14 @@ void PrimaryGeneratorAction::SetSpectrum(TH1D* spt, double eMin, double eMax) {
 
     if (eMax > 0) {
         for (int i = startEnergyBin; i <= endEnergyBin; i++) {
-            if (fSpectrum->GetBinCenter(i) > eMax) {
+            if (fEnergyDistributionHistogram->GetBinCenter(i) > eMax) {
                 endEnergyBin = i;
                 break;
             }
         }
     }
 
-    fSpectrumIntegral = fSpectrum->Integral(startEnergyBin, endEnergyBin);
+    fSpectrumIntegral = fEnergyDistributionHistogram->Integral(startEnergyBin, endEnergyBin);
 }
 
 void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
@@ -90,10 +102,10 @@ void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
+    std::lock_guard<std::mutex> lock(fMutex);  // TODO: remove this lock after fixing problems
+
     auto simulationManager = fSimulationManager;
-    TRestRun* restRun = simulationManager->fRestRun;
-    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
-    TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         cout << "DEBUG: Primary generation" << endl;
@@ -119,259 +131,203 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         for (const auto& p : particles) {
             // ParticleDefinition should be always declared first (after position).
             SetParticleDefinition(i, p);
-
             // Particle Direction must be always set before energy
             SetParticleEnergy(i, p);
-
             SetParticleDirection(i, p);
-
-            fParticleGun->GeneratePrimaryVertex(event);
+            fParticleGun.GeneratePrimaryVertex(event);
         }
     }
 }
 
-G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t n, TRestGeant4Particle p) {
+G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t particleSourceIndex,
+                                                                    const TRestGeant4Particle& particle) {
     auto simulationManager = fSimulationManager;
-    TRestRun* restRun = simulationManager->fRestRun;
-    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
-    TRestGeant4PhysicsLists* restPhysList = simulationManager->fRestGeant4PhysicsLists;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
 
-    auto particle_name = (string)p.GetParticleName();
+    auto particleName = (string)particle.GetParticleName();
 
-    Double_t excited_energy = (double)p.GetExcitationLevel();  // in keV
+    Double_t excitedEnergy = (double)particle.GetExcitationLevel();  // in keV
 
-    Int_t charge = p.GetParticleCharge();
+    Int_t charge = particle.GetParticleCharge();
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
-        cout << "DEBUG: Particle name: " << particle_name << endl;
-        // cout << "DEBUG: Particle charge: " << charge << endl;
-        cout << "DEBUG: Particle excited energy: " << excited_energy << " keV" << endl;
+        cout << "DEBUG: Particle name: " << particleName << endl;
+        cout << "DEBUG: Particle excited energy: " << excitedEnergy << " keV" << endl;
     }
 
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
     if (!fParticle) {
-        fParticle = particleTable->FindParticle(particle_name);
+        fParticle = particleTable->FindParticle(particleName);
 
         // There might be a better way to do this
-        for (int Z = 1; Z <= 110; Z++)
+        for (int Z = 1; Z <= 110; Z++) {
             for (int A = 2 * Z - 1; A <= 3 * Z; A++) {
-                if (particle_name == G4IonTable::GetIonTable()->GetIonName(Z, A)) {
+                if (particleName == G4IonTable::GetIonTable()->GetIonName(Z, A)) {
                     // excited energy is in rest units keV, when input to geant4, we shall convert to MeV
-                    fParticle = G4IonTable::GetIonTable()->GetIon(Z, A, excited_energy / 1000);
-                    particle_name = G4IonTable::GetIonTable()->GetIonName(Z, A, excited_energy / 1000);
-                    fParticleGun->SetParticleCharge(charge);
+                    fParticle = G4IonTable::GetIonTable()->GetIon(Z, A, excitedEnergy / 1000);
+                    particleName = G4IonTable::GetIonTable()->GetIonName(Z, A, excitedEnergy / 1000);
+                    fParticleGun.SetParticleCharge(charge);
                 }
             }
-        // }
+        }
 
         if (!fParticle) {
-            cout << "Particle definition : " << particle_name << " not found!" << endl;
+            cout << "Particle definition : " << particleName << " not found!" << endl;
             exit(1);
         }
     }
 
-    fParticleGun->SetParticleDefinition(fParticle);
-
-    // restG4Event->SetPrimaryEventParticleName(particle_name);
+    fParticleGun.SetParticleDefinition(fParticle);
 
     return fParticle;
 }
 
-void PrimaryGeneratorAction::SetParticleDirection(Int_t n, TRestGeant4Particle p) {
+void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
+                                                  const TRestGeant4Particle& particle) {
     auto simulationManager = fSimulationManager;
-    TRestRun* restRun = simulationManager->fRestRun;
-    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
+    TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
 
-    G4ThreeVector direction;
-    // TODO: maybe reduce code redundancy by defining some functions?
-    // TODO: fix bug when giving TH1D with lowercase (e.g. Th1D). string conversion is OK but integral gives
-    // exception.
-    string angular_dist_type_name = (string)restG4Metadata->GetParticleSource(n)->GetAngularDistType();
-    angular_dist_type_name = g4_metadata_parameters::CleanString(angular_dist_type_name);
-    g4_metadata_parameters::angular_dist_types angular_dist_type;
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
+
+    G4ThreeVector direction = {source->GetDirection().X(), source->GetDirection().Y(),
+                               source->GetDirection().Z()};
+
+    const string angularDistTypeName = source->GetAngularDistributionType().Data();
+    const auto angularDistTypeEnum = StringToAngularDistributionTypes(angularDistTypeName);
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
-        cout << "DEBUG: Angular distribution: " << angular_dist_type_name << endl;
-    }
-    // we first check if it is a valid parameter
-    if (g4_metadata_parameters::angular_dist_types_map.count(angular_dist_type_name)) {
-        angular_dist_type = g4_metadata_parameters::angular_dist_types_map[angular_dist_type_name];
-    } else {
-        // if we get here it means the parameter is not valid, we can either assign a default value or stop
-        // execution default value
-        cout << "Invalid angular distribution (" + angular_dist_type_name + ") valid values are: ";
-        for (const auto& pair : g4_metadata_parameters::angular_dist_types_map) {
-            cout << pair.first << ", ";
-        }
-        cout << endl;
-        throw "Invalid angular distribution";
-    }
-    // generator type
-    string generator_type_name = (string)restG4Metadata->GetGeneratorType();
-    generator_type_name = g4_metadata_parameters::CleanString(generator_type_name);
-    g4_metadata_parameters::generator_types generator_type;
-    if (g4_metadata_parameters::generator_types_map.count(generator_type_name)) {
-        generator_type = g4_metadata_parameters::generator_types_map[generator_type_name];
-    } else {
-        // if we get here it means the parameter is not valid, we can either assign a default value or stop
-        // execution default value
-        cout << "Invalid generator type (" + generator_type_name + ") valid values are: ";
-        for (const auto& pair : g4_metadata_parameters::generator_types_map) {
-            cout << pair.first << ", ";
-        }
-        cout << endl;
-        throw "Invalid generator type";
+        cout << "DEBUG: Angular distribution: " << angularDistTypeName << endl;
     }
 
-    if (angular_dist_type == g4_metadata_parameters::angular_dist_types::ISOTROPIC) {
+    // generator type
+    const string& spatialGeneratorTypeName = primaryGeneratorInfo.GetSpatialGeneratorType().Data();
+    const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
+
+    const string& spatialGeneratorShapeName = primaryGeneratorInfo.GetSpatialGeneratorShape().Data();
+    const auto spatialGeneratorShapeEnum = StringToSpatialGeneratorShapes(spatialGeneratorShapeName);
+
+    if (angularDistTypeEnum == AngularDistributionTypes::ISOTROPIC) {
         direction = GetIsotropicVector();
-    } else if (angular_dist_type == g4_metadata_parameters::angular_dist_types::TH1D) {
+    } else if (angularDistTypeEnum == AngularDistributionTypes::TH1D) {
         Double_t angle = 0;
-        Double_t value = G4UniformRand() * (fAngularDistribution->Integral());
+        Double_t value = G4UniformRand() * fAngularDistributionHistogram->Integral();
         Double_t sum = 0;
         // deltaAngle is the constant x distance between bins
-        Double_t deltaAngle = fAngularDistribution->GetBinCenter(2) - fAngularDistribution->GetBinCenter(1);
+        Double_t deltaAngle =
+            fAngularDistributionHistogram->GetBinCenter(2) - fAngularDistributionHistogram->GetBinCenter(1);
         // we sample the CDF (uniform between 0 and the distribution integral which should be equal to 1)
         // the inverse of CDF of the uniformly sampled value will follow a distribution given by the PDF, we
         // compute this inverse
-        for (int bin = 1; bin <= fAngularDistribution->GetNbinsX(); bin++) {
-            sum += fAngularDistribution->GetBinContent(bin);
-
+        for (int bin = 1; bin <= fAngularDistributionHistogram->GetNbinsX(); bin++) {
+            sum += fAngularDistributionHistogram->GetBinContent(bin);
             if (sum >= value) {
-                angle = fAngularDistribution->GetBinCenter(bin) + deltaAngle * (0.5 - G4UniformRand());
+                angle =
+                    fAngularDistributionHistogram->GetBinCenter(bin) + deltaAngle * (0.5 - G4UniformRand());
                 break;
             }
         }
 
-        // Recovering the direction provided at angularDist
-        TVector3 dirROOT = restG4Metadata->GetParticleSource(n)->GetDirection();
-        direction.set(dirROOT.X(), dirROOT.Y(), dirROOT.Z());
-
-        if (direction.x() == 0 && direction.y() == 0 && direction.z() == 0) {
-            cout << "----------------------------------------------------------------"
-                    "-----"
-                 << endl;
-            cout << "REST WARNNING : Particle being launched from the ORIGIN!! Wrong "
-                    "momentum direction!"
-                 << endl;
-            cout << "Setting direction to (1,0,0)" << endl;
-            cout << "REST angular distribution is just implemented for virtualBox "
-                    "and virtualSphere"
-                 << endl;
-            cout << "Other spatial distributions can be set but it will launch the "
-                    "event\n with a distribution direction to the origin of "
-                    "coordinates"
-                 << endl;
-            cout << "----------------------------------------------------------------"
-                    "-----"
-                 << endl;
-            direction.set(1, 0, 0);
-        }
         G4ThreeVector referenceOrigin = direction;
 
         // We generate the distribution angle (theta) using a rotation around the orthogonal vector
-        G4ThreeVector orthoVector = direction.orthogonal();
-        direction.rotate(angle, orthoVector);
+        direction.rotate(angle, direction.orthogonal());
 
         // We rotate a full-2PI random angle along the original direction to generate a cone
-        Double_t randomAngle = G4UniformRand() * 2 * M_PI;
-        direction.rotate(randomAngle, referenceOrigin);
+        direction.rotate(G4UniformRand() * 2 * M_PI, referenceOrigin);
 
-    } else if (angular_dist_type == g4_metadata_parameters::angular_dist_types::FLUX) {
-        TVector3 v = p.GetMomentumDirection();
+    } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA) {
+        auto formulaEnum =
+            StringToAngularDistributionFormulas(source->GetAngularDistributionFormulaString().Data());
+        TF1 function = AngularDistributionFormulasToRootFormula(formulaEnum);
 
-        v = v.Unit();
+        G4ThreeVector referenceOrigin = direction;
 
+        // We generate the distribution angle (theta) using a rotation around the orthogonal vector
+        direction.rotate(function.GetRandom(fRandom), direction.orthogonal());
+
+        // We rotate a full-2PI random angle along the original direction to generate a cone
+        direction.rotate(G4UniformRand() * 2 * M_PI, referenceOrigin);
+
+    } else if (angularDistTypeEnum == AngularDistributionTypes::FLUX) {
+        const TVector3& v = particle.GetMomentumDirection().Unit();
         direction.set(v.X(), v.Y(), v.Z());
 
-    } else if (angular_dist_type == g4_metadata_parameters::angular_dist_types::BACK_TO_BACK) {
+    } else if (angularDistTypeEnum == AngularDistributionTypes::BACK_TO_BACK) {
         // This should never crash. In TRestG4Metadata we have defined that if the
-        // first source is backtoback we set it to isotropic
-        // TVector3 v = restG4Event->GetPrimaryEventDirection(n - 1);
+        // first source is back to back we set it to isotropic
+        // TVector3 v = restG4Event->GetPrimaryEventDirection(particleSourceIndex - 1);
         // v = v.Unit();
 
         // direction.set(-v.X(), -v.Y(), -v.Z());
         exit(1);
     } else {
-        G4cout << "WARNING: Generator angular distribution was not recognized. "
-                  "Launching particle to (1,0,0)"
-               << G4endl;
+        G4cout << "WARNING: Generator angular distribution was not recognized. Particle direction set to ("
+               << direction.x() << ", " << direction.y() << ", " << direction.z() << ")" << G4endl;
     }
 
-    // storing the direction in TRestG4Event class
-    TVector3 eventDirection(direction.x(), direction.y(), direction.z());
-    // restG4Event->SetPrimaryEventDirection(eventDirection);
-    /*
-        if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
-            cout << "DEBUG: Event direction (normalized): "
-                 << "(" << restG4Event->GetPrimaryEventDirection(n).X() << ", "
-                 << restG4Event->GetPrimaryEventDirection(n).Y() << ", "
-                 << restG4Event->GetPrimaryEventDirection(n).Z() << ")" << endl;
-        }
-    */
-    // setting particle direction
-    fParticleGun->SetParticleMomentumDirection(direction);
+    fParticleGun.SetParticleMomentumDirection(direction);
 }
 
-void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
+void PrimaryGeneratorAction::SetParticleEnergy(Int_t particleSourceIndex,
+                                               const TRestGeant4Particle& particle) {
     auto simulationManager = fSimulationManager;
 
-    TRestRun* restRun = simulationManager->fRestRun;
-    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
+    TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
 
-    Double_t energy = 0;
+    const string angularDistTypeName =
+        restG4Metadata->GetParticleSource(particleSourceIndex)->GetAngularDistributionType().Data();
+    const auto angularDistTypeEnum = StringToAngularDistributionTypes(angularDistTypeName);
 
-    auto energy_dist_type_name = (string)restG4Metadata->GetParticleSource(n)->GetEnergyDistType();
-    energy_dist_type_name = g4_metadata_parameters::CleanString(energy_dist_type_name);
+    const string energyDistTypeName =
+        restG4Metadata->GetParticleSource(particleSourceIndex)->GetEnergyDistributionType().Data();
+    const auto energyDistTypeEnum = StringToEnergyDistributionTypes(energyDistTypeName);
 
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
-        cout << "DEBUG: Energy distribution: " << energy_dist_type_name << endl;
+        cout << "DEBUG: Energy distribution: " << energyDistTypeName << endl;
     }
 
-    g4_metadata_parameters::energy_dist_types energy_dist_type;
-    if (g4_metadata_parameters::energy_dist_types_map.count(energy_dist_type_name)) {
-        energy_dist_type = g4_metadata_parameters::energy_dist_types_map[energy_dist_type_name];
-    } else {
-        // if we get here it means the parameter is not valid, we can either assign a default value or stop
-        // execution default value in this case is 1 keV
-        cout << "Invalid energy distribution (" + energy_dist_type_name + ") valid values are: ";
-        for (const auto& pair : g4_metadata_parameters::energy_dist_types_map) {
-            cout << pair.first << ", ";
-        }
-        cout << endl;
-        G4cout << "WARNING! Energy distribution type was not recognized. Setting "
-                  "energy to 1keV"
-               << G4endl;
-        energy = 1 * keV;
-        // maybe it would be better to set type as mono and change energy of particle, or define the default
-        // energy there throw "Invalid energy distribution type";
-    }
+    Double_t energy = 1 * keV;
 
-    if (energy_dist_type == g4_metadata_parameters::energy_dist_types::MONO) {
-        energy = p.GetEnergy() * keV;
-    } else if (energy_dist_type == g4_metadata_parameters::energy_dist_types::FLAT) {
-        TVector2 enRange = restG4Metadata->GetParticleSource(n)->GetEnergyRange();
+    if (energyDistTypeEnum == EnergyDistributionTypes::MONO) {
+        energy = particle.GetEnergy() * keV;
+    } else if (energyDistTypeEnum == EnergyDistributionTypes::FLAT) {
+        TVector2 enRange =
+            restG4Metadata->GetParticleSource(particleSourceIndex)->GetEnergyDistributionRange();
         energy = ((enRange.Y() - enRange.X()) * G4UniformRand() + enRange.X()) * keV;
-    } else if (energy_dist_type == g4_metadata_parameters::energy_dist_types::LOG) {
-        TVector2 enRange = restG4Metadata->GetParticleSource(n)->GetEnergyRange();
+    } else if (energyDistTypeEnum == EnergyDistributionTypes::LOG) {
+        TVector2 enRange =
+            restG4Metadata->GetParticleSource(particleSourceIndex)->GetEnergyDistributionRange();
         auto max_energy = enRange.Y() * keV;
         auto min_energy = enRange.X() * keV;
         energy = exp((log(max_energy) - log(min_energy)) * G4UniformRand() + log(min_energy));
 
-    } else if (energy_dist_type == g4_metadata_parameters::energy_dist_types::TH1D) {
+    } else if (energyDistTypeEnum == EnergyDistributionTypes::TH1D) {
         Double_t value = G4UniformRand() * fSpectrumIntegral;
         Double_t sum = 0;
-        Double_t deltaEnergy = fSpectrum->GetBinCenter(2) - fSpectrum->GetBinCenter(1);
+        Double_t deltaEnergy =
+            fEnergyDistributionHistogram->GetBinCenter(2) - fEnergyDistributionHistogram->GetBinCenter(1);
         for (int bin = startEnergyBin; bin <= endEnergyBin; bin++) {
-            sum += fSpectrum->GetBinContent(bin);
+            sum += fEnergyDistributionHistogram->GetBinContent(bin);
 
             if (sum > value) {
                 energy = energyFactor *
-                         (Double_t)(fSpectrum->GetBinCenter(bin) + deltaEnergy * (0.5 - G4UniformRand())) *
+                         (Double_t)(fEnergyDistributionHistogram->GetBinCenter(bin) +
+                                    deltaEnergy * (0.5 - G4UniformRand())) *
                          keV;
                 break;
             }
         }
+    } else if (energyDistTypeEnum == EnergyDistributionTypes::FORMULA) {
+        auto formulaEnum =
+            StringToEnergyDistributionFormulas(source->GetEnergyDistributionFormulaString().Data());
+        TF1 function = EnergyDistributionFormulasToRootFormula(formulaEnum);
+
+        energy = function.GetRandom(source->GetEnergyDistributionRangeMin(),
+                                    source->GetEnergyDistributionRangeMax(), fRandom) *
+                 keV;
     } else {
         G4cout << "WARNING! Energy distribution type was not recognized. Setting "
                   "energy to 1keV"
@@ -379,75 +335,70 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t n, TRestGeant4Particle p) {
         energy = 1 * keV;
     }
 
-    string angular_dist_type_name = (string)restG4Metadata->GetParticleSource(n)->GetAngularDistType();
-    angular_dist_type_name = g4_metadata_parameters::CleanString(angular_dist_type_name);
-    g4_metadata_parameters::angular_dist_types angular_dist_type;
-    if (g4_metadata_parameters::angular_dist_types_map.count(angular_dist_type_name)) {
-        angular_dist_type = g4_metadata_parameters::angular_dist_types_map[angular_dist_type_name];
-        if (n > 0 && angular_dist_type == g4_metadata_parameters::angular_dist_types::BACK_TO_BACK)
-            energy = lastEnergy;
+    if (particleSourceIndex > 0 &&
+        angularDistTypeEnum == TRestGeant4PrimaryGeneratorTypes::AngularDistributionTypes::BACK_TO_BACK) {
+        energy = lastEnergy;
     }
 
-    if (n == 0) lastEnergy = energy;
-    fParticleGun->SetParticleEnergy(energy);
+    if (particleSourceIndex == 0) {
+        lastEnergy = energy;
+    }
+    fParticleGun.SetParticleEnergy(energy);
 
-    // restG4Event->SetPrimaryEventEnergy(energy / keV);
-
-    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug)
+    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         cout << "DEBUG: Particle energy: " << energy / keV << " keV" << endl;
+    }
 }
 
 void PrimaryGeneratorAction::SetParticlePosition() {
     auto simulationManager = fSimulationManager;
 
-    TRestRun* restRun = simulationManager->fRestRun;
-    TRestGeant4Metadata* restG4Metadata = simulationManager->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
+
+    const string& spatialGeneratorTypeName = primaryGeneratorInfo.GetSpatialGeneratorType().Data();
+    const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
+
+    const string& spatialGeneratorShapeName = primaryGeneratorInfo.GetSpatialGeneratorShape().Data();
+    const auto spatialGeneratorShapeEnum = StringToSpatialGeneratorShapes(spatialGeneratorShapeName);
 
     double x = 0, y = 0, z = 0;
-    string generator_type_name = (string)restG4Metadata->GetGeneratorType();
-    g4_metadata_parameters::generator_types generator_type =
-        g4_metadata_parameters::generator_types_map[g4_metadata_parameters::CleanString(generator_type_name)];
-
-    string generator_shape_name = (string)restG4Metadata->GetGeneratorShape();
-    g4_metadata_parameters::generator_shapes generator_shape =
-        g4_metadata_parameters::generator_shapes_map[g4_metadata_parameters::CleanString(
-            generator_shape_name)];
 
     while (true) {
-        if (generator_type == g4_metadata_parameters::generator_types::POINT) {
+        if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::POINT) {
             GenPositionOnPoint(x, y, z);
-        } else if (generator_type == g4_metadata_parameters::generator_types::SURFACE) {
-            if (generator_shape == g4_metadata_parameters::generator_shapes::GDML) {
+        } else if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::SURFACE) {
+            if (spatialGeneratorShapeEnum == SpatialGeneratorShapes::GDML) {
                 GenPositionOnGDMLSurface(x, y, z);
-            } else if (generator_shape == g4_metadata_parameters::generator_shapes::BOX) {
+            } else if (spatialGeneratorShapeEnum == SpatialGeneratorShapes::BOX) {
                 GenPositionOnBoxSurface(x, y, z);
-            } else if (generator_shape == g4_metadata_parameters::generator_shapes::CYLINDER) {
+            } else if (spatialGeneratorShapeEnum == SpatialGeneratorShapes::CYLINDER) {
                 GenPositionOnCylinderSurface(x, y, z);
-            } else if (generator_shape == g4_metadata_parameters::generator_shapes::SPHERE) {
+            } else if (spatialGeneratorShapeEnum == SpatialGeneratorShapes::SPHERE) {
                 GenPositionOnSphereSurface(x, y, z);
-            } else if (generator_shape == g4_metadata_parameters::generator_shapes::CIRCLE) {
+            } else if (spatialGeneratorShapeEnum == SpatialGeneratorShapes::CIRCLE) {
                 GenPositionOnPlate(x, y, z);
-            } else if (generator_shape == g4_metadata_parameters::generator_shapes::WALL) {
+            } else if (spatialGeneratorShapeEnum == SpatialGeneratorShapes::WALL) {
                 GenPositionOnWall(x, y, z);
             }
-        } else if (generator_type == g4_metadata_parameters::generator_types::VOLUME) {
-            if (generator_shape == g4_metadata_parameters::generator_shapes::GDML) {
+        } else if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::VOLUME) {
+            if (spatialGeneratorShapeEnum == SpatialGeneratorShapes::GDML) {
                 GenPositionOnGDMLVolume(x, y, z);
-            } else if (generator_shape == g4_metadata_parameters::generator_shapes::BOX) {
+            } else if (spatialGeneratorShapeEnum == SpatialGeneratorShapes::BOX) {
                 GenPositionOnBoxVolume(x, y, z);
-            } else if (generator_shape == g4_metadata_parameters::generator_shapes::CYLINDER) {
+            } else if (spatialGeneratorShapeEnum == SpatialGeneratorShapes::CYLINDER) {
                 GenPositionOnCylinderVolume(x, y, z);
-            } else if (generator_shape == g4_metadata_parameters::generator_shapes::SPHERE) {
+            } else if (spatialGeneratorShapeEnum == SpatialGeneratorShapes::SPHERE) {
                 GenPositionOnSphereVolume(x, y, z);
             }
         } else {
-            G4cout << "WARNING! Generator type \"" << restG4Metadata->GetGeneratorType()
+            G4cout << "WARNING! Generator type \"" << spatialGeneratorTypeName
                    << "\" was not recognized. Launching particle "
                       "from origin (0,0,0)"
                    << G4endl;
         }
 
-        // use the density funciton. If the density is small, then val2 is small, we are more
+        // use the density function. If the density is small, then val2 is small, we are more
         // likely to regenerate the particle position
         if (fGeneratorSpatialDensityFunction) {
             double val1 = G4UniformRand();
@@ -455,7 +406,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
             if (val2 > 1) {
                 cout << "error! Generator density function > 1 at position (" << x << ", " << y << ", " << z
                      << "), check your definition!" << endl;
-                abort();
+                exit(1);
             }
             if (val1 > val2) {
                 continue;
@@ -464,23 +415,10 @@ void PrimaryGeneratorAction::SetParticlePosition() {
         break;
     }
 
-    // storing the direction in TRestG4Event class
-    TVector3 eventPosition(x, y, z);
-    // restG4Event->SetPrimaryEventOrigin(eventPosition);
-    /*
-    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
-        cout << "DEBUG: Event origin: "
-             << "(" << restG4Event->GetPrimaryEventOrigin().X() << ", "
-             << restG4Event->GetPrimaryEventOrigin().Y() << ", " << restG4Event->GetPrimaryEventOrigin().Z()
-             << ")"
-             << " mm" << endl;
-    }
-    */
-    // setting particle position
-    fParticleGun->SetParticlePosition(G4ThreeVector(x, y, z));
+    fParticleGun.SetParticlePosition(G4ThreeVector(x, y, z));
 }
 
-G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() {
+G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() const {
     G4double a, b, c;
     G4double n;
     do {
@@ -494,10 +432,9 @@ G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() {
     a /= n;
     b /= n;
     c /= n;
-    return G4ThreeVector(a, b, c);
+    return {a, b, c};
 }
 
-//
 Double_t PrimaryGeneratorAction::GetAngle(G4ThreeVector x, G4ThreeVector y) {
     Double_t angle = y.angle(x);
 
@@ -521,161 +458,178 @@ Double_t PrimaryGeneratorAction::GetCosineLowRandomThetaAngle() {
 }
 
 void PrimaryGeneratorAction::GenPositionOnGDMLVolume(double& x, double& y, double& z) {
-    double xMin = fDetector->GetBoundingX_min();
-    double xMax = fDetector->GetBoundingX_max();
-    double yMin = fDetector->GetBoundingY_min();
-    double yMax = fDetector->GetBoundingY_max();
-    double zMin = fDetector->GetBoundingZ_min();
-    double zMax = fDetector->GetBoundingZ_max();
+    auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+
+    double xMin = detector->GetBoundBoxXMin();
+    double xMax = detector->GetBoundBoxXMax();
+    double yMin = detector->GetBoundBoxYMin();
+    double yMax = detector->GetBoundBoxYMax();
+    double zMin = detector->GetBoundBoxZMin();
+    double zMax = detector->GetBoundBoxZMax();
 
     do {
         x = xMin + (xMax - xMin) * G4UniformRand();
         y = yMin + (yMax - yMin) * G4UniformRand();
         z = zMin + (zMax - zMin) * G4UniformRand();
-    } while (fDetector->GetGeneratorSolid()->Inside(G4ThreeVector(x, y, z)) != kInside);
+    } while (detector->GetGeneratorSolid()->Inside(G4ThreeVector(x, y, z)) != kInside);
 
-    x = x + fDetector->GetGeneratorTranslation().x();
-    y = y + fDetector->GetGeneratorTranslation().y();
-    z = z + fDetector->GetGeneratorTranslation().z();
+    x = x + detector->GetGeneratorTranslation().x();
+    y = y + detector->GetGeneratorTranslation().y();
+    z = z + detector->GetGeneratorTranslation().z();
 }
+
 void PrimaryGeneratorAction::GenPositionOnGDMLSurface(double& x, double& y, double& z) {
     // TODO there is a problem, probably with G4 function GetPointOnSurface
     // It produces a point on the surface but it is not uniformly distributed
     // May be it is just an OPENGL drawing issue?
+    auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
-    G4ThreeVector position = fDetector->GetGeneratorSolid()->GetPointOnSurface();
+    G4ThreeVector position = detector->GetGeneratorSolid()->GetPointOnSurface();
 
     x = position.x();
     y = position.y();
     z = position.z();
 
-    x = x + fDetector->GetGeneratorTranslation().x();
-    y = y + fDetector->GetGeneratorTranslation().y();
-    z = z + fDetector->GetGeneratorTranslation().z();
+    x = x + detector->GetGeneratorTranslation().x();
+    y = y + detector->GetGeneratorTranslation().y();
+    z = z + detector->GetGeneratorTranslation().z();
 }
+
 void PrimaryGeneratorAction::GenPositionOnBoxVolume(double& x, double& y, double& z) {
-    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
 
-    Double_t sidex = restG4Metadata->GetGeneratorSize().X();
-    Double_t sidey = restG4Metadata->GetGeneratorSize().Y();
-    Double_t sidez = restG4Metadata->GetGeneratorSize().Z();
+    Double_t sizeX = primaryGeneratorInfo.GetSpatialGeneratorSize().X();
+    Double_t sizeY = primaryGeneratorInfo.GetSpatialGeneratorSize().Y();
+    Double_t sizeZ = primaryGeneratorInfo.GetSpatialGeneratorSize().Z();
 
-    x = sidex * (G4UniformRand() - 0.5);
-    y = sidey * (G4UniformRand() - 0.5);
-    z = sidez * (G4UniformRand() - 0.5);
+    x = sizeX * (G4UniformRand() - 0.5);
+    y = sizeY * (G4UniformRand() - 0.5);
+    z = sizeZ * (G4UniformRand() - 0.5);
 
-    G4ThreeVector rndPos = G4ThreeVector(x, y, z);
+    G4ThreeVector position = G4ThreeVector(x, y, z);
 
-    TVector3 rotaxis = restG4Metadata->GetGeneratorRotationAxis();
-    G4ThreeVector rotaxisG4 = G4ThreeVector(rotaxis.x(), rotaxis.y(), rotaxis.z());
-    rndPos.rotate(rotaxisG4, restG4Metadata->GetGeneratorRotationDegree());
+    const TVector3& rotationAxis = primaryGeneratorInfo.GetSpatialGeneratorRotationAxis();
+    G4ThreeVector rotationAxisG4 = G4ThreeVector(rotationAxis.x(), rotationAxis.y(), rotationAxis.z());
+    position.rotate(rotationAxisG4, primaryGeneratorInfo.GetSpatialGeneratorRotationValue());
 
-    TVector3 center = restG4Metadata->GetGeneratorPosition();
+    const TVector3& center = primaryGeneratorInfo.GetSpatialGeneratorPosition();
 
-    x = rndPos.x() + center.X();
-    y = rndPos.y() + center.Y();
-    z = rndPos.z() + center.Z();
+    x = position.x() + center.X();
+    y = position.y() + center.Y();
+    z = position.z() + center.Z();
 }
+
 void PrimaryGeneratorAction::GenPositionOnBoxSurface(double& x, double& y, double& z) {
     cout << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
-    abort();
+    exit(1);
 }
+
 void PrimaryGeneratorAction::GenPositionOnSphereVolume(double& x, double& y, double& z) {
     cout << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
-    abort();
+    exit(1);
 }
+
 void PrimaryGeneratorAction::GenPositionOnSphereSurface(double& x, double& y, double& z) {
-    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
 
-    G4ThreeVector rndPos = GetIsotropicVector();
+    G4ThreeVector position = GetIsotropicVector();
 
-    Double_t radius = restG4Metadata->GetGeneratorSize().X();
+    const Double_t radius = primaryGeneratorInfo.GetSpatialGeneratorSize().X();
 
-    TVector3 center = restG4Metadata->GetGeneratorPosition();
+    const TVector3& center = primaryGeneratorInfo.GetSpatialGeneratorPosition();
 
-    x = radius * rndPos.x() + center.X();
-    y = radius * rndPos.y() + center.Y();
-    z = radius * rndPos.z() + center.Z();
+    x = radius * position.x() + center.X();
+    y = radius * position.y() + center.Y();
+    z = radius * position.z() + center.Z();
 }
+
 void PrimaryGeneratorAction::GenPositionOnCylinderVolume(double& x, double& y, double& z) {
     cout << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
-    abort();
+    exit(1);
 }
+
 void PrimaryGeneratorAction::GenPositionOnCylinderSurface(double& x, double& y, double& z) {
-    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
 
     Double_t angle = 2 * M_PI * G4UniformRand();
 
-    Double_t radius = restG4Metadata->GetGeneratorSize().x();
-    Double_t length = restG4Metadata->GetGeneratorSize().y();
+    const Double_t radius = primaryGeneratorInfo.GetSpatialGeneratorSize().X();
+    const Double_t length = primaryGeneratorInfo.GetSpatialGeneratorSize().Y();
 
     x = radius * cos(angle);
     y = radius * sin(angle);
     z = length * (G4UniformRand() - 0.5);
 
-    G4ThreeVector rndPos = G4ThreeVector(x, y, z);
+    G4ThreeVector position = G4ThreeVector(x, y, z);
 
-    TVector3 rotaxis = restG4Metadata->GetGeneratorRotationAxis();
-    G4ThreeVector rotaxisG4 = G4ThreeVector(rotaxis.x(), rotaxis.y(), rotaxis.z());
-    rndPos.rotate(rotaxisG4, restG4Metadata->GetGeneratorRotationDegree());
+    const TVector3& rotationAxis = primaryGeneratorInfo.GetSpatialGeneratorRotationAxis();
+    G4ThreeVector rotationAxisG4 = G4ThreeVector(rotationAxis.x(), rotationAxis.y(), rotationAxis.z());
+    position.rotate(rotationAxisG4, primaryGeneratorInfo.GetSpatialGeneratorRotationValue());
 
-    TVector3 center = restG4Metadata->GetGeneratorPosition();
+    const TVector3& center = primaryGeneratorInfo.GetSpatialGeneratorPosition();
 
-    x = rndPos.x() + center.X();
-    y = rndPos.y() + center.Y();
-    z = rndPos.z() + center.Z();
+    x = position.x() + center.X();
+    y = position.y() + center.Y();
+    z = position.z() + center.Z();
 }
-void PrimaryGeneratorAction::GenPositionOnPoint(double& x, double& y, double& z) {
-    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
 
-    TVector3 position = restG4Metadata->GetGeneratorPosition();
+void PrimaryGeneratorAction::GenPositionOnPoint(double& x, double& y, double& z) {
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
+
+    const TVector3& position = primaryGeneratorInfo.GetSpatialGeneratorPosition();
 
     x = position.X();
     y = position.Y();
     z = position.Z();
 }
+
 void PrimaryGeneratorAction::GenPositionOnWall(double& x, double& y, double& z) {
-    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
 
-    Double_t sidex = restG4Metadata->GetGeneratorSize().X();
-    Double_t sidey = restG4Metadata->GetGeneratorSize().Y();
+    const Double_t sizeX = primaryGeneratorInfo.GetSpatialGeneratorSize().X();
+    const Double_t sizeY = primaryGeneratorInfo.GetSpatialGeneratorSize().Y();
 
-    x = sidex * (G4UniformRand() - 0.5);
-    y = sidey * (G4UniformRand() - 0.5);
+    x = sizeX * (G4UniformRand() - 0.5);
+    y = sizeY * (G4UniformRand() - 0.5);
 
-    G4ThreeVector rndPos = G4ThreeVector(x, y, 0);
+    G4ThreeVector position = G4ThreeVector(x, y, 0);
 
-    TVector3 rotaxis = restG4Metadata->GetGeneratorRotationAxis();
-    G4ThreeVector rotaxisG4 = G4ThreeVector(rotaxis.x(), rotaxis.y(), rotaxis.z());
-    rndPos.rotate(rotaxisG4, restG4Metadata->GetGeneratorRotationDegree());
+    const TVector3& rotationAxis = primaryGeneratorInfo.GetSpatialGeneratorRotationAxis();
+    G4ThreeVector rotationAxisG4 = G4ThreeVector(rotationAxis.x(), rotationAxis.y(), rotationAxis.z());
+    position.rotate(rotationAxisG4, primaryGeneratorInfo.GetSpatialGeneratorRotationValue());
 
-    TVector3 center = restG4Metadata->GetGeneratorPosition();
+    const TVector3& center = primaryGeneratorInfo.GetSpatialGeneratorPosition();
 
-    x = rndPos.x() + center.X();
-    y = rndPos.y() + center.Y();
-    z = rndPos.z() + center.Z();
+    x = position.x() + center.X();
+    y = position.y() + center.Y();
+    z = position.z() + center.Z();
 }
 
 void PrimaryGeneratorAction::GenPositionOnPlate(double& x, double& y, double& z) {
-    TRestGeant4Metadata* restG4Metadata = fSimulationManager->fRestGeant4Metadata;
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
 
-    Double_t radius = restG4Metadata->GetGeneratorSize().X();
+    const Double_t radius = primaryGeneratorInfo.GetSpatialGeneratorSize().X();
 
     do {
         x = 2 * radius * (G4UniformRand() - 0.5);
         y = 2 * radius * (G4UniformRand() - 0.5);
-        //       cout << "x : " << x << " y : " << y << endl;
     } while (x * x + y * y > radius * radius);
 
-    G4ThreeVector rndPos = G4ThreeVector(x, y, 0);
+    G4ThreeVector position = G4ThreeVector(x, y, 0);
 
-    TVector3 rotaxis = restG4Metadata->GetGeneratorRotationAxis();
-    G4ThreeVector rotaxisG4 = G4ThreeVector(rotaxis.x(), rotaxis.y(), rotaxis.z());
-    rndPos.rotate(rotaxisG4, restG4Metadata->GetGeneratorRotationDegree());
+    const TVector3& rotationAxis = primaryGeneratorInfo.GetSpatialGeneratorRotationAxis();
+    G4ThreeVector rotationAxisG4 = G4ThreeVector(rotationAxis.x(), rotationAxis.y(), rotationAxis.z());
+    position.rotate(rotationAxisG4, primaryGeneratorInfo.GetSpatialGeneratorRotationValue());
 
-    TVector3 center = restG4Metadata->GetGeneratorPosition();
+    const TVector3& center = primaryGeneratorInfo.GetSpatialGeneratorPosition();
 
-    x = rndPos.x() + center.X();
-    y = rndPos.y() + center.Y();
-    z = rndPos.z() + center.Z();
+    x = position.x() + center.X();
+    y = position.y() + center.Y();
+    z = position.z() + center.Z();
 }

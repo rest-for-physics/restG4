@@ -41,8 +41,8 @@ By default REST units are mm, keV and degrees
 
         <generator type="point" position="(0,0,0)">
             <source particle="geantino">
-                <angularDist type="isotropic"/>
-                <energyDist type="mono" energy="1keV"/>
+                <angular type="isotropic"/>
+                <energy type="mono" energy="1keV"/>
             </source>
         </generator>
 

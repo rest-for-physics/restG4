@@ -32,8 +32,8 @@
 
     <generator type="point" position="(${REST_X},${REST_Y},${REST_Z})" units="mm" >
       <source particle="${REST_ISOTOPE}" fullChain="${REST_FULLCHAIN}">
-        <angularDist type="isotropic" />
-        <energyDist type="mono" energy="0" units="keV" />
+        <angular type="isotropic" />
+        <energy type="mono" energy="0" units="keV" />
       </source>
     </generator>
 

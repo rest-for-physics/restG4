@@ -43,8 +43,8 @@ By default REST units are mm, keV and degrees
 
         <generator type="point" position="(0,0,0)" units="mm">
             <source particle="${REST_ISOTOPE}" fullChain="on">
-                <angularDist type="isotropic"/>
-                <energyDist type="mono" energy="0keV"/>
+                <angular type="isotropic"/>
+                <energy type="mono" energy="0keV"/>
             </source>
         </generator>
 
