@@ -133,9 +133,21 @@ void OutputManager::UpdateEvent() {
 bool OutputManager::IsEmptyEvent() const { return !fEvent || fEvent->fTracks.empty(); }
 
 bool OutputManager::IsValidEvent() const {
-    if (IsEmptyEvent()) return false;
-    if (fSimulationManager->GetRestMetadata()->GetSaveAllEvents()) return true;
-    if (fEvent->GetSensitiveVolumeEnergy() <= 0) return false;
+    if (IsEmptyEvent()) {
+        return false;
+    }
+    if (fSimulationManager->GetRestMetadata()->GetSaveAllEvents()) {
+        return true;
+    }
+    if (fEvent->GetSensitiveVolumeEnergy() <= 0) {
+        return false;
+    }
+    if (fEvent->GetSensitiveVolumeEnergy() <
+            fSimulationManager->GetRestMetadata()->GetMinimumEnergyStored() ||
+        fEvent->GetSensitiveVolumeEnergy() >
+            fSimulationManager->GetRestMetadata()->GetMaximumEnergyStored()) {
+        return false;
+    }
     return true;
 }
 
