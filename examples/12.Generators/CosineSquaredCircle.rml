@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+
+<restG4>
+    <globals>
+        <parameter name="mainDataPath" value=""/>
+        <parameter name="verboseLevel" value="essential"/>
+    </globals>
+
+    <TRestRun name="CosineSquaredCircle" title="CosineSquaredCircle">
+        <parameter name="experimentName" value="CosineSquaredCircle"/>
+        <parameter name="runType" value="simulation"/>
+        <parameter name="runNumber" value="1"/>
+        <parameter name="runTag" value="CosineSquaredCircle"/>
+        <parameter name="outputFileName" value="CosineSquaredCircle.root"/>
+        <parameter name="runDescription" value=""/>
+        <parameter name="user" value="${USER}"/>
+        <parameter name="overwrite" value="off"/>
+        <parameter name="readOnly" value="false"/>
+    </TRestRun>
+
+    <TRestGeant4Metadata name="cosine" title="CosineSquaredCircle">
+        <parameter name="gdmlFile" value="geometry/setup.gdml"/>
+        <parameter name="seed" value="171981"/>
+        <parameter name="nEvents" value="200000"/>
+        <parameter name="saveAllEvents" value="true"/>
+        <generator type="point" position="(0,0,0)">
+            <source particle="geantino">
+                <angular type="TH1D" file="CosmicAngles.root" spctName="Theta2" direction="(0,-1,0)"/>
+                <energy type="mono" energy="1MeV"/>
+            </source>
+        </generator>
+        <storage sensitiveVolume="gasVolume">
+            <parameter name="energyRange" value="(0,10)" units="GeV"/>
+            <activeVolume name="gasVolume" chance="1" maxStepSize="1mm"/>
+        </storage>
+    </TRestGeant4Metadata>
+
+    <TRestGeant4PhysicsLists name="default" title="First physics list implementation"/>
+</restG4>

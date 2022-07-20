@@ -313,3 +313,30 @@ TEST(restG4, Example_09_Pb210_Shield) {
 
     fs::current_path(originalPath);
 }
+
+TEST(restG4, Example_12_Generators) {
+    //  cd into example
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "12.Generators";
+    fs::current_path(thisExamplePath);
+
+    CommandLineParameters parameters;
+    parameters.rmlFile = "CosineSquaredCircle.rml";
+    parameters.outputFile = thisExamplePath / "cosine.root";
+
+    Application app;
+    app.Run(parameters);
+
+    TRestRun run(parameters.outputFile.Data());
+
+    // Run validation macro
+    const TString macro(thisExamplePath / "Validate.C");
+    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+    int error = 0;
+    const int result =
+        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", parameters.outputFile.Data()), &error);
+    EXPECT_EQ(error, 0);
+    EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
+}
