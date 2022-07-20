@@ -54,22 +54,22 @@ Int_t Validate(const char* filename) {
     double nEvents = run.GetEntries();
 
     double averageTotalEnergy = 0;
-    constexpr double averageTotalEnergyRef = 18.0321;
+    constexpr double averageTotalEnergyRef = 18.8645;
 
     double averageSensitiveEnergy = 0;
-    constexpr double averageSensitiveEnergyRef = 8.78066;
+    constexpr double averageSensitiveEnergyRef = 9.01081;
 
     double averageNumberOfTracks = 0;
-    constexpr double averageNumberOfTracksRef = 4.924;
+    constexpr double averageNumberOfTracksRef = 1388.56;
 
     double averageNumberOfHitsVolume0 = 0;
-    constexpr double averageNumberOfHitsVolume0Ref = 60.712;
+    constexpr double averageNumberOfHitsVolume0Ref = 74.095;
 
     double averageNumberOfHitsVolume1 = 0;
-    constexpr double averageNumberOfHitsVolume1Ref = 68.061;
+    constexpr double averageNumberOfHitsVolume1Ref = 64.182;
 
     TVector3 averagePosition = {};
-    const TVector3 averagePositionRef = {-0.0305454, -0.384008, -299.54};
+    const TVector3 averagePositionRef = {0.100946, -0.26358, 300.348};
 
     constexpr double tolerance = 0.001;
 
@@ -92,8 +92,7 @@ Int_t Validate(const char* filename) {
     cout << "Average position: (" << averagePosition.x() << ", " << averagePosition.y() << ", "
          << averagePosition.z() << ") mm" << endl;
 
-    if (TMath::Abs(averageNumberOfTracks - averageNumberOfTracksRef) / averageNumberOfTracksRef >
-        tolerance) {
+    if (TMath::Abs(averageNumberOfTracks - averageNumberOfTracksRef) / averageNumberOfTracksRef > tolerance) {
         cout << "The average number of tracks does not match the reference value of "
              << averageNumberOfTracksRef << endl;
         return 8;
@@ -128,8 +127,7 @@ Int_t Validate(const char* filename) {
         return 12;
     }
 
-    if (TMath::Abs(averagePosition.Mag() - averagePositionRef.Mag()) / averagePositionRef.Mag() >
-        tolerance) {
+    if (TMath::Abs(averagePosition.Mag() - averagePositionRef.Mag()) / averagePositionRef.Mag() > tolerance) {
         cout << "The average position does not match the reference value of "
              << "(" << averagePositionRef.x() << ", " << averagePositionRef.y() << ", "
              << averagePositionRef.z() << ") mm" << endl;
