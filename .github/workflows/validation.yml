@@ -374,6 +374,27 @@ jobs:
           restManager --c analysis.rml --f xrays_simulation.root --o xrays_simulation_analysis.root
           restRoot -b -q GetQE.C'("xrays_simulation_analysis.root")'
 
+  restG4-examples-12:
+    name: "Example 12: Generators"
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
+    needs: [ check-installation, restG4-examples-01 ]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Restore cache
+        uses: actions/cache@v3
+        id: framework-install-restG4-cache
+        with:
+          path: ${{ env.REST_PATH }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
+      - name: Run example
+        run: |
+          source ${{ env.REST_PATH }}/thisREST.sh
+          cd ${{ env.REST_PATH }}/examples/restG4/12.Generators/
+          restG4 CosineSquaredCircle.rml -o CosineSquaredCircle.root
+          restRoot -b -q Validate.C'("CosineSquaredCircle.root")'
+
   # Reference version of Geant4
 
   framework-install-reference:
