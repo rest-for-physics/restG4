@@ -12,48 +12,46 @@ Int_t ValidateCircle(const char* filename) {
         return 1;
     }
 
-    Double_t rMean = 0;
-    Double_t rMin = TMath::Infinity();
-    Double_t rMax = 0;
+    double radiusAverage = 0, radiusMin = TMath::Infinity(), radiusMax = 0;
+    constexpr double radiusAverageRef = 2.92, radiusMinRef = 0.0, radiusMaxRef = 4.0;
+    constexpr double tolerance = 0.1;
+
     for (Int_t n = 0; n < run.GetEntries(); n++) {
         run.GetEntry(n);
         Double_t x = event->GetPrimaryEventOrigin().X();
         Double_t z = event->GetPrimaryEventOrigin().Z();
         const auto r = TMath::Sqrt(x * x + z * z) / 100;  // cm
-        rMean += r / run.GetEntries();
-        if (r < rMin) {
-            rMin = r;
+        radiusAverage += r / run.GetEntries();
+        if (r < radiusMin) {
+            radiusMin = r;
         }
-        if (r > rMax) {
-            rMax = r;
+        if (r > radiusMax) {
+            radiusMax = r;
         }
     }
 
-    cout << "Number of entries: " << run.GetEntries() << endl;
-    cout << "Mean radius (cm): " << rMean << endl;
-    cout << "Minimum radius (cm): " << rMin << endl;
-    cout << "Maximum radius (cm): " << rMax << endl;
+    cout << "Average radius (cm): " << radiusAverage << endl;
+    cout << "Minimum radius (cm): " << radiusMin << endl;
+    cout << "Maximum radius (cm): " << radiusMax << endl;
 
-    if (rMean < 2.75 || rMean > 3.25) {
+    if (TMath::Abs(radiusAverage - radiusAverageRef) > tolerance) {
         cout << "The average radius of the distribution is wrong!" << endl;
-        cout << "R_mean (cm): " << rMean << endl;
-        return 2;
-    }
-
-    if (rMin > 0.5) {
-        cout << "The minimum radius of the distribution is wrong!" << endl;
-        cout << "R_min (cm): " << rMin << endl;
+        cout << "radiusAverage (cm): " << radiusAverage << endl;
         return 3;
     }
-
-    if (rMax > 4.0 || rMax < 3.75) {
-        cout << "The maximum radius of the distribution is wrong!" << endl;
-        cout << "R_max (cm): " << rMax << endl;
+    if (TMath::Abs(radiusMin - radiusMinRef) > tolerance) {
+        cout << "The average radius of the distribution is wrong!" << endl;
+        cout << "radiusMin (cm): " << radiusMin << endl;
         return 4;
+    }
+    if (TMath::Abs(radiusMax - radiusMaxRef) > tolerance) {
+        cout << "The average radius of the distribution is wrong!" << endl;
+        cout << "radiusMax (cm): " << radiusMax << endl;
+        return 5;
     }
 
     cout << "Run entries: " << run.GetEntries() << endl;
-    if (run.GetEntries() < 600 || run.GetEntries() > 750) {
+    if (run.GetEntries() < 1300 || run.GetEntries() > 1450) {
         cout << "The number of entries is wrong!" << endl;
         cout << "Number of entries : " << run.GetEntries() << endl;
         return 5;
