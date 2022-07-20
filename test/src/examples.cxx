@@ -227,7 +227,6 @@ TEST(restG4, Example_05_PandaX) {
 }
 
 TEST(restG4, Example_06_IonRecoils) {
-    GTEST_SKIP_("Not working yet, needs fixing");
     // cd into example
     const auto originalPath = fs::current_path();
     const auto thisExamplePath = examplesPath / "06.IonRecoils";
@@ -281,6 +280,34 @@ TEST(restG4, Example_07_Decay_FullChain) {
     int error = 0;
     const int result =
         gROOT->ProcessLine(TString::Format("Validate(\"%s\", %d)", parameters.outputFile.Data(), 17), &error);
+    EXPECT_EQ(error, 0);
+    EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
+}
+
+TEST(restG4, Example_09_Pb210_Shield) {
+    GTEST_SKIP_("This test should work, but we skip it because it takes too long");
+    //  cd into example
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "09.Pb210_Shield";
+    fs::current_path(thisExamplePath);
+
+    CommandLineParameters parameters;
+    parameters.rmlFile = "Pb210.rml";
+    parameters.outputFile = thisExamplePath / "shielding.root";  // TODO: fix not working with local path
+
+    Application app;
+    app.Run(parameters);
+
+    TRestRun run(parameters.outputFile.Data());
+
+    // Run validation macro
+    const TString macro(thisExamplePath / "Validate.C");
+    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+    int error = 0;
+    const int result =
+        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", parameters.outputFile.Data()), &error);
     EXPECT_EQ(error, 0);
     EXPECT_EQ(result, 0);
 
