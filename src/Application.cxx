@@ -50,8 +50,6 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     delete fSimulationManager;
     fSimulationManager = new SimulationManager();
 
-    Bool_t saveAllEvents;
-
     const auto timeStart = chrono::steady_clock::now();
 
     const auto originalDirectory = filesystem::current_path();
@@ -127,7 +125,6 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     run->PrintMetadata();
 
     run->FormOutputFile();
-
     run->GetOutputFile()->cd();
 
     run->AddEventBranch(&fSimulationManager->fEvent);
@@ -166,7 +163,6 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     runManager->SetUserInitialization(detector);
     runManager->SetUserInitialization(new PhysicsList(fSimulationManager->GetRestPhysicsLists()));
-
     runManager->SetUserInitialization(new ActionInitialization(fSimulationManager));
 
     runManager->Initialize();
@@ -224,11 +220,12 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     run->UpdateOutputFile();
     run->CloseFile();
-    run->PrintMetadata();
 
     auto geometry = gdml->CreateGeoManager();
     WriteGeometry(geometry, run->GetOutputFileName());
     delete geometry;
+
+    run->PrintMetadata();
 
     cout << "============== Generated file: " << filename << " ==============" << endl;
     auto timeEnd = chrono::steady_clock::now();
