@@ -6,8 +6,17 @@ Int_t Validate(const char* filename) {
     TRestRun run(filename);
     TRestGeant4Event* event = run.GetInputEvent<TRestGeant4Event>();
 
+    cout << "Testing reading of Geant4 metadata class" << endl;
+    TRestGeant4Metadata* geant4Metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
+    if (!geant4Metadata) {
+        cout << "Problem reading Geant4 metadata class!" << endl;
+        return 6;
+    }
+    geant4Metadata->PrintMetadata();
+    const bool isReferenceGeant4Version = geant4Metadata->GetGeant4Version() == "10.4.3";
+
     double averageNumberOfHits = 0;
-    const double averageNumberOfHitsRef = 14413.5;
+    const double averageNumberOfHitsRef = (!isReferenceGeant4Version) ? 14413.5 : 11223.0;
     const double tolerance = 0.001;
 
     for (int i = 0; i < run.GetEntries(); i++) {
