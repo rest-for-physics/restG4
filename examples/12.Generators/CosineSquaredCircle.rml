@@ -21,13 +21,13 @@
     <TRestGeant4Metadata name="cosine" title="CosineSquaredCircle">
         <parameter name="gdmlFile" value="geometry/setup.gdml"/>
         <parameter name="seed" value="171981"/>
-        <parameter name="nEvents" value="200000"/>
+        <parameter name="nEvents" value="100000"/>
         <parameter name="saveAllEvents" value="true"/>
         <generator type="surface" shape="circle"
                    position="(0,100,0)mm" size="(400,0,0)mm"
                    rotationAngle="90deg" rotationAxis="(1,0,0)">
             <source particle="geantino">
-                <angular type="TH1D" file="CosmicAngles.root" spctName="Theta2" direction="(0,-1,0)"/>
+                <angular type="formula" name="Cos2" direction="(0,-1,0)"/>
                 <energy type="mono" energy="1MeV"/>
             </source>
         </generator>

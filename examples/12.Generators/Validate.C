@@ -12,7 +12,7 @@ Int_t Validate(const char* filename) {
     }
 
     cout << "Run entries: " << run.GetEntries() << endl;
-    if (run.GetEntries() != 200000) {
+    if (run.GetEntries() != 100000) {
         cout << "Bad number of entries: " << run.GetEntries() << endl;
         return 2;
     }
@@ -25,7 +25,7 @@ Int_t Validate(const char* filename) {
 
     double radiusAverage = 0, radiusMin = TMath::Infinity(), radiusMax = 0;
     constexpr double radiusAverageRef = 2.67045, radiusMinRef = 0.0, radiusMaxRef = 4.0;
-    constexpr double tolerance = 0.01;
+    constexpr double tolerance = 0.1;
 
     TH1D thetaHist("thetaHist", "Theta angle from source direction", 100, 0, TMath::Pi());
     for (int i = 0; i < run.GetEntries(); i++) {
