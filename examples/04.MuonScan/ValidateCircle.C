@@ -7,7 +7,7 @@ Int_t ValidateCircle(const char* filename) {
     TRestGeant4Event* event = run.GetInputEvent<TRestGeant4Event>();
 
     if (run.GetRunTag() != "MuonsFromCircle") {
-        cout << "Run tag : " << run.GetRunTag() << endl;
+        cout << "Run tag: " << run.GetRunTag() << endl;
         cout << "The run tag of the basic validation test should be 'MuonsFromCircle'" << endl;
         return 1;
     }
@@ -19,9 +19,7 @@ Int_t ValidateCircle(const char* filename) {
         run.GetEntry(n);
         Double_t x = event->GetPrimaryEventOrigin().X();
         Double_t z = event->GetPrimaryEventOrigin().Z();
-
         const auto r = TMath::Sqrt(x * x + z * z) / 100;  // cm
-
         rMean += r / run.GetEntries();
         if (r < rMin) {
             rMin = r;
@@ -30,6 +28,11 @@ Int_t ValidateCircle(const char* filename) {
             rMax = r;
         }
     }
+
+    cout << "Number of entries: " << run.GetEntries() << endl;
+    cout << "Mean radius (cm): " << rMean << endl;
+    cout << "Minimum radius (cm): " << rMin << endl;
+    cout << "Maximum radius (cm): " << rMax << endl;
 
     if (rMean < 2.75 || rMean > 3.25) {
         cout << "The average radius of the distribution is wrong!" << endl;

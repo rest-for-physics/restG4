@@ -30,7 +30,7 @@ First concept author G. Luzón (16-11-2020) -->
                    rotationAxis="(1,0,0)">
             <source particle="mu-" excitedLevel="0.0" fullChain="on">
                 <energy type="TH1D" file="Muons.root" name="cosmicmuon"/>
-                <angular type="formula" name="Cos2" direction="(0,0,-1)"/>
+                <angular type="TH1D" file="CosmicAngles.root" spctName="Theta2" direction="(0,0,-1)"/>
             </source>
         </generator>
 
