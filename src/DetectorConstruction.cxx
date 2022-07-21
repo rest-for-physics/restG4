@@ -60,7 +60,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     filesystem::current_path(startingPath);
 
-    // TODO : Take the name of the sensitive volume and use it here to define its
+    // TODO: Take the name of the sensitive volume and use it here to define its
     // StepSize
     auto sensitiveVolume = (string)restG4Metadata->GetSensitiveVolume();
 
@@ -95,24 +95,27 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     fieldMgr->CreateChordFinder(magField);
 
     if (physicalVolume) {
-        G4LogicalVolume* vol = physicalVolume->GetLogicalVolume();
+        G4LogicalVolume* volume = physicalVolume->GetLogicalVolume();
         // This method seems not available in my Geant4 version 10.4.2
         // In future Geant4 versions it seems possible to define field at particular volumes
-        // vol->setFieldManager(localFieldMgr, true);
-        G4Material* mat = vol->GetMaterial();
+        // volume->setFieldManager(localFieldMgr, true);
+        G4Material* material = volume->GetMaterial();
         G4cout << "Sensitivity volume properties" << G4endl;
         G4cout << "==============" << G4endl;
-        G4cout << "Sensitivity volume name : " << mat->GetName() << G4endl;
-        G4cout << "Sensitivity volume temperature : " << mat->GetTemperature() << G4endl;
-        G4cout << "Sensitivity volume density : " << mat->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
+        G4cout << "Sensitivity volume name: " << material->GetName() << G4endl;
+        G4cout << "Sensitivity volume temperature: " << material->GetTemperature() << " K" << G4endl;
+        G4cout << "Sensitivity volume density: " << material->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
     } else {
-        cout << "ERROR : Logical volume for sensitive \"" << sensitiveVolume << "\" not found!" << endl;
+        cout << "ERROR: Logical volume for sensitive \"" << sensitiveVolume << "\" not found!" << endl;
     }
 
     const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
     // Getting generation volume
-    cout << "Generated from volume : " << primaryGeneratorInfo.GetSpatialGeneratorFrom() << endl;
-    cout << "Generator type : " << primaryGeneratorInfo.GetSpatialGeneratorType() << endl;
+    const auto fromVolume = primaryGeneratorInfo.GetSpatialGeneratorFrom();
+    if (fromVolume != "NO_SUCH_PARA") {
+        cout << "Generated from volume: " << primaryGeneratorInfo.GetSpatialGeneratorFrom() << endl;
+    }
+    cout << "Generator type: " << primaryGeneratorInfo.GetSpatialGeneratorType() << endl;
 
     const auto spatialGeneratorTypeEnum =
         StringToSpatialGeneratorTypes(primaryGeneratorInfo.GetSpatialGeneratorType().Data());
@@ -177,12 +180,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
             G4LogicalVolume* lVol = pVol->GetLogicalVolume();
             if (restG4Metadata->GetMaxStepSize(activeVolumeName) > 0) {
                 G4cout << "Setting maxStepSize = " << restG4Metadata->GetMaxStepSize(activeVolumeName)
-                       << "mm for volume : " << activeVolumeName << G4endl;
+                       << "mm for volume: " << activeVolumeName << G4endl;
                 lVol->SetUserLimits(new G4UserLimits(restG4Metadata->GetMaxStepSize(activeVolumeName) * mm));
             }
         }
 
-        cout << "Activating volume : " << activeVolumeName << endl;
+        cout << "Activating volume: " << activeVolumeName << endl;
         // restG4Event->AddActiveVolume((string)activeVolumeName);
         if (!pVol) {
             cout << "DetectorConstruction. Volume " << activeVolumeName << " is not defined in the geometry"
@@ -190,8 +193,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
             exit(1);
         }
     }
-
-    cout << "Detector constructed : " << worldVolume << endl;
 
     return worldVolume;
 }
