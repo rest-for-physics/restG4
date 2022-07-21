@@ -39,15 +39,16 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
     if (energyDistTypeEnum == EnergyDistributionTypes::TH1D) {
         Double_t minEnergy = source->GetEnergyDistributionRangeMin();
         Double_t maxEnergy = source->GetEnergyDistributionRangeMax();
-
-        // We set the initial spectrum energy provided from TH1D
         SetEnergyDistributionHistogram(fSimulationManager->GetPrimaryEnergyDistribution(), minEnergy,
                                        maxEnergy);
+    } else if (energyDistTypeEnum == EnergyDistributionTypes::FORMULA) {
+        fEnergyDistributionFunction = (TF1*)source->GetEnergyDistributionFunction()->Clone();
     }
 
     if (angularDistTypeEnum == AngularDistributionTypes::TH1D) {
-        // We set the initial angular distribution provided from TH1D
         SetAngularDistributionHistogram(fSimulationManager->GetPrimaryAngularDistribution());
+    } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA) {
+        fAngularDistributionFunction = (TF1*)source->GetAngularDistributionFunction()->Clone();
     }
 }
 
@@ -237,14 +238,10 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
         direction.rotate(G4UniformRand() * 2 * M_PI, referenceOrigin);
 
     } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA) {
-        auto formulaEnum =
-            StringToAngularDistributionFormulas(source->GetAngularDistributionFormulaString().Data());
-        TF1 function = AngularDistributionFormulasToRootFormula(formulaEnum);
-
         G4ThreeVector referenceOrigin = direction;
 
         // We generate the distribution angle (theta) using a rotation around the orthogonal vector
-        direction.rotate(function.GetRandom(fRandom), direction.orthogonal());
+        direction.rotate(fAngularDistributionFunction->GetRandom(fRandom), direction.orthogonal());
 
         // We rotate a full-2PI random angle along the original direction to generate a cone
         direction.rotate(G4UniformRand() * 2 * M_PI, referenceOrigin);
@@ -321,12 +318,8 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t particleSourceIndex,
             }
         }
     } else if (energyDistTypeEnum == EnergyDistributionTypes::FORMULA) {
-        auto formulaEnum =
-            StringToEnergyDistributionFormulas(source->GetEnergyDistributionFormulaString().Data());
-        TF1 function = EnergyDistributionFormulasToRootFormula(formulaEnum);
-
-        energy = function.GetRandom(source->GetEnergyDistributionRangeMin(),
-                                    source->GetEnergyDistributionRangeMax(), fRandom) *
+        energy = fEnergyDistributionFunction->GetRandom(source->GetEnergyDistributionRangeMin(),
+                                                        source->GetEnergyDistributionRangeMax(), fRandom) *
                  keV;
     } else {
         G4cout << "WARNING! Energy distribution type was not recognized. Setting "

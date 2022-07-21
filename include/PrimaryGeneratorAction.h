@@ -45,6 +45,9 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     const TH1D* fEnergyDistributionHistogram = nullptr;
     const TH1D* fAngularDistributionHistogram = nullptr;
 
+    TF1* fEnergyDistributionFunction = nullptr;
+    TF1* fAngularDistributionFunction = nullptr;
+
     TF3* fGeneratorSpatialDensityFunction;
 
     Int_t startEnergyBin;
