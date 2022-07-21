@@ -28,7 +28,7 @@
                    rotationAngle="90deg" rotationAxis="(1,0,0)">
             <source particle="geantino">
                 <angular type="formula" name="Cos2" direction="(0,-1,0)"/>
-                <energy type="mono" energy="1MeV"/>
+                <energy type="formula" name="CosmicNeutrons"/>
             </source>
         </generator>
         <storage sensitiveVolume="gasVolume">
