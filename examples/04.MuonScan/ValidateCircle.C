@@ -14,7 +14,7 @@ Int_t ValidateCircle(const char* filename) {
 
     double radiusAverage = 0, radiusMin = TMath::Infinity(), radiusMax = 0;
     constexpr double radiusAverageRef = 2.92, radiusMinRef = 0.0, radiusMaxRef = 4.0;
-    constexpr double tolerance = 0.1;
+    constexpr double tolerance = 1.0;
 
     for (Int_t n = 0; n < run.GetEntries(); n++) {
         run.GetEntry(n);
