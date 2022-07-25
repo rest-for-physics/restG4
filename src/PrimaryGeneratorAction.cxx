@@ -43,6 +43,19 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
                                        maxEnergy);
     } else if (energyDistTypeEnum == EnergyDistributionTypes::FORMULA) {
         fEnergyDistributionFunction = (TF1*)source->GetEnergyDistributionFunction()->Clone();
+        auto newRangeXMin = fEnergyDistributionFunction->GetXmin();
+        if (source->GetEnergyDistributionRangeMin() > fEnergyDistributionFunction->GetXmin()) {
+            newRangeXMin = source->GetEnergyDistributionRangeMin();
+        }
+        auto newRangeXMax = fEnergyDistributionFunction->GetXmax();
+        if (source->GetEnergyDistributionRangeMax() < fEnergyDistributionFunction->GetXmax()) {
+            newRangeXMax = source->GetEnergyDistributionRangeMax();
+        }
+        if (newRangeXMin == newRangeXMax || newRangeXMin > newRangeXMax) {
+            cout << "PrimaryGeneratorAction - ERROR: energy distribution range is invalid" << endl;
+            exit(1);
+        }
+        fEnergyDistributionFunction->SetRange(newRangeXMin, newRangeXMax);
     }
 
     if (angularDistTypeEnum == AngularDistributionTypes::TH1D) {
@@ -318,9 +331,7 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t particleSourceIndex,
             }
         }
     } else if (energyDistTypeEnum == EnergyDistributionTypes::FORMULA) {
-        energy = fEnergyDistributionFunction->GetRandom(source->GetEnergyDistributionRangeMin(),
-                                                        source->GetEnergyDistributionRangeMax(), fRandom) *
-                 keV;
+        energy = fEnergyDistributionFunction->GetRandom(fRandom) * keV;
     } else {
         G4cout << "WARNING! Energy distribution type was not recognized. Setting "
                   "energy to 1keV"
