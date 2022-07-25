@@ -28,6 +28,10 @@
                    rotationAngle="90deg" rotationAxis="(1,0,0)">
             <source particle="geantino">
                 <angular type="formula" name="Cos2" direction="(0,-1,0)"/>
+                <!-- The "range" parameter inside energy can be omitted.
+                In this case it will use the biggest range defined for the distribution
+                The manually defined range cannot be outside the range defined by the distribution. -->
+                -->
                 <energy type="formula" name="CosmicNeutrons" range="(5,150)MeV"/>
             </source>
         </generator>
