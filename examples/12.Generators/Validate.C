@@ -28,8 +28,8 @@ Int_t Validate(const char* filename) {
     constexpr double tolerance = 0.1;
 
     double energyPrimaryAverage = 0, energyPrimaryMin = TMath::Infinity(), energyPrimaryMax = 0;
-    constexpr double energyPrimaryAverageRef = 53818.8, energyPrimaryMinRef = 5000.45,
-                     energyPrimaryMaxRef = 149998.0;
+    constexpr double energyPrimaryAverageRef = 53818.8, energyPrimaryMinRef = 5000,
+                     energyPrimaryMaxRef = 150000.0;
 
     TH1D thetaHist("thetaHist", "Theta angle from source direction", 100, 0, TMath::Pi());
     for (int i = 0; i < run.GetEntries(); i++) {
@@ -68,35 +68,35 @@ Int_t Validate(const char* filename) {
     cout << "Minimum energy (keV): " << energyPrimaryMin << endl;
     cout << "Maximum energy (keV): " << energyPrimaryMax << endl;
 
-    if (TMath::Abs(radiusAverage - radiusAverageRef) > tolerance) {
+    if (TMath::Abs(radiusAverage - radiusAverageRef) / radiusAverageRef > tolerance) {
         cout << "The average radius of the distribution is wrong!" << endl;
         cout << "radiusAverage (cm): " << radiusAverage << endl;
         return 3;
     }
-    if (TMath::Abs(radiusMin - radiusMinRef) > tolerance) {
+    if (TMath::Abs(radiusMin - radiusMinRef) / (radiusMinRef + 1) > tolerance) {
         cout << "The minimum radius of the distribution is wrong!" << endl;
         cout << "radiusMin (cm): " << radiusMin << endl;
         return 4;
     }
-    if (TMath::Abs(radiusMax - radiusMaxRef) > tolerance) {
+    if (TMath::Abs(radiusMax - radiusMaxRef) / radiusMaxRef > tolerance) {
         cout << "The maximum radius of the distribution is wrong!" << endl;
         cout << "radiusMax (cm): " << radiusMax << endl;
         return 5;
     }
 
-    if (TMath::Abs(energyPrimaryAverage - energyPrimaryAverageRef) > tolerance) {
+    if (TMath::Abs(energyPrimaryAverage - energyPrimaryAverageRef) / energyPrimaryAverageRef > tolerance) {
         cout << "The average energy of the distribution is wrong!" << endl;
-        cout << "radiusAverage (cm): " << radiusAverage << endl;
+        cout << "energyPrimaryAverage (keV): " << energyPrimaryAverage << endl;
         return 6;
     }
-    if (TMath::Abs(energyPrimaryMin - energyPrimaryMinRef) > tolerance) {
+    if (TMath::Abs(energyPrimaryMin - energyPrimaryMinRef) / energyPrimaryMinRef > tolerance) {
         cout << "The minimum energy of the distribution is wrong!" << endl;
-        cout << "radiusMin (cm): " << radiusMin << endl;
+        cout << "energyPrimaryMin (keV): " << energyPrimaryMin << endl;
         return 7;
     }
-    if (TMath::Abs(energyPrimaryMax - energyPrimaryMaxRef) > tolerance) {
+    if (TMath::Abs(energyPrimaryMax - energyPrimaryMaxRef) / energyPrimaryMaxRef > tolerance) {
         cout << "The maximum energy of the distribution is wrong!" << endl;
-        cout << "radiusMax (cm): " << radiusMax << endl;
+        cout << "energyPrimaryMax (keV): " << energyPrimaryMax << endl;
         return 8;
     }
 
