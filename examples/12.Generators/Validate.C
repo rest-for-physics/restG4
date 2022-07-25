@@ -27,6 +27,10 @@ Int_t Validate(const char* filename) {
     constexpr double radiusAverageRef = 2.67045, radiusMinRef = 0.0, radiusMaxRef = 4.0;
     constexpr double tolerance = 0.1;
 
+    double energyPrimaryAverage = 0, energyPrimaryMin = TMath::Infinity(), energyPrimaryMax = 0;
+    constexpr double energyPrimaryAverageRef = 53818.8, energyPrimaryMinRef = 5000.45,
+                     energyPrimaryMaxRef = 149998.0;
+
     TH1D thetaHist("thetaHist", "Theta angle from source direction", 100, 0, TMath::Pi());
     for (int i = 0; i < run.GetEntries(); i++) {
         run.GetEntry(i);
@@ -44,6 +48,15 @@ Int_t Validate(const char* filename) {
         if (r > radiusMax) {
             radiusMax = r;
         }
+
+        Double_t energy = event->GetPrimaryEventEnergy();
+        energyPrimaryAverage += energy / run.GetEntries();
+        if (energy < energyPrimaryMin) {
+            energyPrimaryMin = energy;
+        }
+        if (energy > energyPrimaryMax) {
+            energyPrimaryMax = energy;
+        }
     }
     thetaHist.Scale(1. / thetaHist.Integral(), "width");
 
@@ -51,20 +64,40 @@ Int_t Validate(const char* filename) {
     cout << "Minimum radius (cm): " << radiusMin << endl;
     cout << "Maximum radius (cm): " << radiusMax << endl;
 
+    cout << "Average energy (keV): " << energyPrimaryAverage << endl;
+    cout << "Minimum energy (keV): " << energyPrimaryMin << endl;
+    cout << "Maximum energy (keV): " << energyPrimaryMax << endl;
+
     if (TMath::Abs(radiusAverage - radiusAverageRef) > tolerance) {
         cout << "The average radius of the distribution is wrong!" << endl;
         cout << "radiusAverage (cm): " << radiusAverage << endl;
         return 3;
     }
     if (TMath::Abs(radiusMin - radiusMinRef) > tolerance) {
-        cout << "The average radius of the distribution is wrong!" << endl;
+        cout << "The minimum radius of the distribution is wrong!" << endl;
         cout << "radiusMin (cm): " << radiusMin << endl;
         return 4;
     }
     if (TMath::Abs(radiusMax - radiusMaxRef) > tolerance) {
-        cout << "The average radius of the distribution is wrong!" << endl;
+        cout << "The maximum radius of the distribution is wrong!" << endl;
         cout << "radiusMax (cm): " << radiusMax << endl;
         return 5;
+    }
+
+    if (TMath::Abs(energyPrimaryAverage - energyPrimaryAverageRef) > tolerance) {
+        cout << "The average energy of the distribution is wrong!" << endl;
+        cout << "radiusAverage (cm): " << radiusAverage << endl;
+        return 6;
+    }
+    if (TMath::Abs(energyPrimaryMin - energyPrimaryMinRef) > tolerance) {
+        cout << "The minimum energy of the distribution is wrong!" << endl;
+        cout << "radiusMin (cm): " << radiusMin << endl;
+        return 7;
+    }
+    if (TMath::Abs(energyPrimaryMax - energyPrimaryMaxRef) > tolerance) {
+        cout << "The maximum energy of the distribution is wrong!" << endl;
+        cout << "radiusMax (cm): " << radiusMax << endl;
+        return 8;
     }
 
     auto cos2Lambda = [](double* xs, double* ps) {
@@ -90,8 +123,10 @@ Int_t Validate(const char* filename) {
     cout << "Computed difference from reference function: " << diff << endl;
     if (diff > 0.01) {
         cout << "The computed difference from reference function is too large!" << endl;
-        return 6;
+        return 9;
     }
+
+    // Validate energy distribution
 
     cout << "All tests passed! [\033[32mOK\033[0m]\n";
     return 0;
