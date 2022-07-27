@@ -16,6 +16,7 @@ class CommandLineParameters {
     int nThreads = 0;          // -t Number of threads, only active if serialMode is set to false | OPTIONAL
     int nEvents = 0;           // -n Number of events to be simulated | OPTIONAL
     int nDesiredEntries = 0;   // -N Number of entries desired to be on file | OPTIONAL
+    int timeLimitSeconds = 0;  // -S Amount of time after which the simulation will stop | OPTIONAL
 
     int cmdArgc{};
     char** cmdArgv = nullptr;

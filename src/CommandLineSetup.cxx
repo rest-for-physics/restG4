@@ -4,6 +4,9 @@
 
 #include "CommandLineSetup.h"
 
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TPRegexp.h>
 #include <getopt.h>
 #include <unistd.h>
 
@@ -27,10 +30,51 @@ void CommandLineSetup::ShowUsage() {
             "adjust 'nEvents' accordingly to get this number. Final number of entries may be larger. "
             "Incompatible with '-n' option"
          << endl
+         << "\t-S timeLimit | Sets time limit for the simulation. If the time limit is reached before "
+            "simulation ends, it will end the simulation and save to disk all events. Follows expression "
+            "like '1h20m30s', '5m20s', '30s', ..."
+         << endl
          << "\t-g geometry.gdml | specify geometry file" << endl
          << "\t-i | set interactive mode (default=false)" << endl
          << "\t-s | set serial mode (no multithreading) (default=true)" << endl
          << "\t-t nThreads | set the number of threads, also enables multithreading" << endl;
+}
+
+int GetSecondsFromTimeExpression(const char* expression) {
+    // expression is of the form "20h", "10m", "30s" etc.
+    TPRegexp timeRegex("^(\\d+)([hms])$$");
+    TObjArray* subStrL = timeRegex.MatchS(expression);
+    const Int_t nrSubStr = subStrL->GetLast() + 1;
+    if (nrSubStr > 2) {
+        const int time = stoi(((TObjString*)subStrL->At(1))->GetString().Data());
+        const TString modifier = ((TObjString*)subStrL->At(2))->GetString();
+
+        if (modifier == "h") {
+            return time * 60 * 60;
+        } else if (modifier == "m") {
+            return time * 60;
+        } else if (modifier == "s") {
+            return time;
+        }
+    }
+
+    return 0;
+}
+
+int GetSecondsFromFullTimeExpression(const char* expression) {
+    // expression is of the form "1h20m30s", "1h", "20m30s", "10s" etc.
+    int seconds = 0;
+    TPRegexp fullTimeRegex("^(\\d+h)?(\\d+m)?(\\d+s)?$");
+    TObjArray* subStrL = fullTimeRegex.MatchS(expression);
+
+    for (int i = 0; i < 3; i++) {
+        auto obj = (TObjString*)subStrL->At(i + 1);
+        if (obj != nullptr) {
+            seconds += GetSecondsFromTimeExpression(obj->GetString().Data());
+        }
+    }
+
+    return seconds;
 }
 
 CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv) {
@@ -51,7 +95,7 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
     }
 
     while (true) {
-        const int option = getopt(argc, argv, "vg:c:m:o:ist:n:N:");
+        const int option = getopt(argc, argv, "vg:c:m:o:ist:n:N:S:");
         if (option == -1) break;
         switch (option) {
             case 'c':
@@ -116,6 +160,15 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
                     exit(1);
                 }
                 break;
+            case 'S':
+                parameters.timeLimitSeconds = GetSecondsFromFullTimeExpression(optarg);
+                if (parameters.timeLimitSeconds == 0) {
+                    cout << "CommandLineParameters::ProcessParameters - time regex failed to match for "
+                            "argument '"
+                         << optarg << "'" << endl;
+                    exit(1);
+                }
+                break;
             case 'i':
                 parameters.interactive = true;
                 break;
@@ -160,6 +213,9 @@ void CommandLineSetup::Print(const CommandLineParameters& parameters) {
                  : "")
          << (parameters.nDesiredEntries != 0
                  ? "\t- Number of desired file entries: " + to_string(parameters.nDesiredEntries) + "\n"
+                 : "")
+         << (parameters.timeLimitSeconds != 0
+                 ? "\t- Time limit: " + to_string(parameters.timeLimitSeconds) + " seconds\n"
                  : "")
          << endl;
 }
