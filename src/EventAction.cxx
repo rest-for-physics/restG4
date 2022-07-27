@@ -52,8 +52,5 @@ void EventAction::BeginOfEventAction(const G4Event* event) {
 void EventAction::EndOfEventAction(const G4Event*) {
     fSimulationManager->GetOutputManager()->FinishAndSubmitEvent();
 
-    if (!G4Threading::IsMultithreadedApplication() ||  //
-        (G4Threading::IsMultithreadedApplication() && G4Threading::G4GetThreadId() == 0)) {
-        fSimulationManager->WriteEvents();
-    }
+    fSimulationManager->WriteEvents();
 }
