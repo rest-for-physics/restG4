@@ -47,18 +47,13 @@
 using namespace std;
 
 void Application::Run(const CommandLineParameters& commandLineParameters) {
-    delete fSimulationManager;
-    fSimulationManager = new SimulationManager();
-
-    const auto timeStart = chrono::steady_clock::now();
-
     const auto originalDirectory = filesystem::current_path();
 
     cout << "Current working directory: " << originalDirectory << endl;
 
     CommandLineSetup::Print(commandLineParameters);
 
-    /// Separating relative path and pure RML filename
+    // Separating relative path and pure RML filename
     const char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
 
     if (!TRestTools::CheckFileIsAccessible(inputConfigFile)) {
@@ -73,16 +68,23 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     }
 
     auto metadata = new TRestGeant4Metadata(inputRmlClean.c_str());
-    fSimulationManager->SetRestMetadata(metadata);
+    fSimulationManager.SetRestMetadata(metadata);
 
     metadata->SetGeant4Version(TRestTools::Execute("geant4-config --version"));
 
     if (commandLineParameters.nEvents != 0) {
         metadata->SetNumberOfEvents(commandLineParameters.nEvents);
     }
+    constexpr auto maxPrimariesAllowed = 2147483647;
     if (commandLineParameters.nDesiredEntries != 0) {
-        metadata->SetNumberOfEvents(2147483647);  // max
+        metadata->SetNumberOfEvents(maxPrimariesAllowed);
         metadata->SetNumberOfDesiredEntries(commandLineParameters.nDesiredEntries);
+    }
+    if (commandLineParameters.timeLimitSeconds != 0) {
+        if (commandLineParameters.nEvents == 0) {
+            metadata->SetNumberOfEvents(maxPrimariesAllowed);
+        }
+        metadata->SetSimulationMaxTimeSeconds(commandLineParameters.timeLimitSeconds);
     }
     if (!commandLineParameters.geometryFile.IsNull()) {
         metadata->SetGdmlFilename(commandLineParameters.geometryFile.Data());
@@ -109,10 +111,10 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     metadata->PrintMetadata();
 
     auto physicsLists = new TRestGeant4PhysicsLists(inputRmlClean.c_str());
-    fSimulationManager->SetRestPhysicsLists(physicsLists);
+    fSimulationManager.SetRestPhysicsLists(physicsLists);
 
     auto run = new TRestRun();
-    fSimulationManager->SetRestRun(run);
+    fSimulationManager.SetRestRun(run);
 
     run->LoadConfigFromFile(inputRmlClean);
 
@@ -129,22 +131,22 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     run->SetRunType("restG4");
 
-    run->AddMetadata(fSimulationManager->GetRestMetadata());
-    run->AddMetadata(fSimulationManager->GetRestPhysicsLists());
+    run->AddMetadata(fSimulationManager.GetRestMetadata());
+    run->AddMetadata(fSimulationManager.GetRestPhysicsLists());
 
     run->PrintMetadata();
 
     run->FormOutputFile();
     run->GetOutputFile()->cd();
 
-    run->AddEventBranch(&fSimulationManager->fEvent);
+    run->AddEventBranch(&fSimulationManager.fEvent);
 
     // choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
     long seed = metadata->GetSeed();
     CLHEP::HepRandom::setTheSeed(seed);
 
-    G4VSteppingVerbose::SetInstance(new SteppingVerbose(fSimulationManager));
+    G4VSteppingVerbose::SetInstance(new SteppingVerbose(&fSimulationManager));
 
 #ifndef GEANT4_WITHOUT_G4RunManagerFactory
     auto runManagerType = G4RunManagerType::Default;
@@ -168,13 +170,13 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     auto runManager = new G4RunManager();
 #endif
 
-    auto detector = new DetectorConstruction(fSimulationManager);
+    auto detector = new DetectorConstruction(&fSimulationManager);
 
-    fSimulationManager->InitializeUserDistributions();
+    fSimulationManager.InitializeUserDistributions();
 
     runManager->SetUserInitialization(detector);
-    runManager->SetUserInitialization(new PhysicsList(fSimulationManager->GetRestPhysicsLists()));
-    runManager->SetUserInitialization(new ActionInitialization(fSimulationManager));
+    runManager->SetUserInitialization(new PhysicsList(fSimulationManager.GetRestPhysicsLists()));
+    runManager->SetUserInitialization(new ActionInitialization(&fSimulationManager));
 
     runManager->Initialize();
 
@@ -240,9 +242,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     run->PrintMetadata();
 
     cout << "============== Generated file: " << filename << " ==============" << endl;
-    auto timeEnd = chrono::steady_clock::now();
-    cout << "Elapsed time: " << chrono::duration_cast<chrono::seconds>(timeEnd - timeStart).count()
-         << " seconds" << endl;
+    cout << "Elapsed time: " << fSimulationManager.GetElapsedTime() << " seconds" << endl;
 }
 
 void Application::WriteGeometry(TGeoManager* geometry, const char* filename, const char* option) {

@@ -20,10 +20,10 @@ class Application {
     void Run(const CommandLineParameters& parameters);
     inline void Run(int argc, char** argv) { Run(ProcessCommandLineParameters(argc, argv)); }
 
-    ~Application() { delete fSimulationManager; }
+    ~Application() = default;
 
    private:
-    SimulationManager* fSimulationManager = nullptr;
+    SimulationManager fSimulationManager;
 
     void WriteGeometry(TGeoManager* geometry, const char* filename, const char* option = "UPDATE");
 };

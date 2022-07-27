@@ -40,6 +40,11 @@ class SimulationManager {
 
     void EndOfRun();
     inline bool GetAbortFlag() const { return fAbortFlag; }
+    void StopSimulation();
+
+    inline double GetElapsedTime() const {
+        return 1E-9 * (std::chrono::steady_clock::now().time_since_epoch().count() - fTimeStartUnix);
+    }
 
    private:
     static thread_local OutputManager* fOutputManager;
@@ -54,6 +59,8 @@ class SimulationManager {
     bool fAbortFlag = false;
 
     std::vector<OutputManager*> fOutputManagerContainer = {};
+    long fTimeStartUnix = 0;
+
     /* Primary generation */
    public:
     void InitializeUserDistributions();
@@ -88,6 +95,7 @@ class OutputManager {
     inline bool IsActiveVolume(const char* volumeName) const { return fActiveVolumes.count(volumeName) > 0; }
 
     inline int GetEventCounter() const { return fProcessedEventsCounter; }
+
     void BeginOfEventAction();
 
    private:

@@ -20,6 +20,8 @@ SimulationManager::SimulationManager() {
         cout << "Only master thread should create the SimulationManager!" << endl;
         exit(1);
     }
+
+    fTimeStartUnix = chrono::steady_clock::now().time_since_epoch().count();
 }
 
 void SimulationManager::InitializeOutputManager() {
@@ -48,6 +50,10 @@ SimulationManager::~SimulationManager() {
     delete fRestRun;
     delete fRestGeant4Metadata;
     delete fRestGeant4PhysicsLists;
+
+    for (auto& outputManager : fOutputManagerContainer) {
+        delete outputManager;
+    }
 }
 
 size_t SimulationManager::InsertEvent(std::unique_ptr<TRestGeant4Event>& event) {
@@ -83,10 +89,9 @@ void SimulationManager::WriteEvents() {
 
     const auto nDesiredEntries = GetRestMetadata()->GetNumberOfDesiredEntries();
     if (nDesiredEntries > 0 && !fAbortFlag && fRestRun->GetEventTree()->GetEntries() >= nDesiredEntries) {
-        G4cout << "Aborting Run! We have reached the number of desired entries (" << nDesiredEntries << ")"
+        G4cout << "Stopping Run! We have reached the number of desired entries (" << nDesiredEntries << ")"
                << endl;
-        G4RunManager::GetRunManager()->AbortRun(true);  // This only aborts the current thread
-        fAbortFlag = true;
+        StopSimulation();
     }
 }
 
@@ -132,6 +137,12 @@ void SimulationManager::InitializeUserDistributions() {
     }
 }
 
+void SimulationManager::StopSimulation() {
+    // Still needs to be propagated to other threads, this is done in the BeginOfEventAction
+    G4RunManager::GetRunManager()->AbortRun(true);
+    fAbortFlag = true;
+}
+
 // OutputManager
 OutputManager::OutputManager(const SimulationManager* simulationManager)
     : fSimulationManager(const_cast<SimulationManager*>(simulationManager)) {
@@ -153,8 +164,18 @@ void OutputManager::BeginOfEventAction() {
     // This should only be executed once at BeginOfEventAction
     UpdateEvent();
     fProcessedEventsCounter++;
+
     if (fSimulationManager->GetAbortFlag()) {
         G4RunManager::GetRunManager()->AbortRun(true);
+    }
+
+    if (fSimulationManager->GetRestMetadata()->GetSimulationMaxTimeSeconds() != 0 &&
+        !fSimulationManager->GetAbortFlag() &&
+        fSimulationManager->GetElapsedTime() >
+            fSimulationManager->GetRestMetadata()->GetSimulationMaxTimeSeconds()) {
+        G4cout << "Stopping Run! We have reached the time limit of "
+               << fSimulationManager->GetRestMetadata()->GetSimulationMaxTimeSeconds() << " seconds" << endl;
+        fSimulationManager->StopSimulation();
     }
 }
 
