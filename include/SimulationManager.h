@@ -38,15 +38,20 @@ class SimulationManager {
         fRestGeant4PhysicsLists = physicsLists;
     }
 
+    void EndOfRun();
+
    private:
     static thread_local OutputManager* fOutputManager;
-    std::mutex fEventContainerMutex;
+    std::mutex fSimulationManagerMutex;
     std::queue<std::unique_ptr<TRestGeant4Event> > fEventContainer;
 
     TRestRun* fRestRun = nullptr;
     TRestGeant4PhysicsLists* fRestGeant4PhysicsLists = nullptr;
     TRestGeant4Metadata* fRestGeant4Metadata = nullptr;
 
+    int fNumberOfProcessedEvents = 0;
+
+    std::vector<OutputManager*> fOutputManagerContainer = {};
     /* Primary generation */
    public:
     void InitializeUserDistributions();
@@ -80,12 +85,17 @@ class OutputManager {
 
     inline bool IsActiveVolume(const char* volumeName) const { return fActiveVolumes.count(volumeName) > 0; }
 
+    inline int GetEventCounter() const { return fThreadGeneratedEventCounter; }
+
    private:
     std::unique_ptr<TRestGeant4Event> fEvent{};
     SimulationManager* fSimulationManager = nullptr;
     std::set<std::string> fActiveVolumes = {};
 
+    int fThreadGeneratedEventCounter = 0;
+
     friend class StackingAction;
+    friend class EventAction;
 };
 
 #endif  // REST_SIMULATIONMANAGER_H

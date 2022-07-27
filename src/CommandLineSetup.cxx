@@ -89,7 +89,7 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
                 parameters.outputFile = optarg;
                 break;
             case 'n':
-                if (parameters.nEventsOnFile != 0) {
+                if (parameters.nDesiredEntries != 0) {
                     cout << "CommandLineParameters::ProcessParameters - '-n' and '-N' options are mutually "
                             "incompatible"
                          << endl;
@@ -110,14 +110,12 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
                          << endl;
                     exit(1);
                 }
-                parameters.nEventsOnFile = stoi(optarg);
-                if (parameters.nEventsOnFile < 1) {
+                parameters.nDesiredEntries = stoi(optarg);
+                if (parameters.nDesiredEntries < 1) {
                     cout << "CommandLineParameters::ProcessParameters - number of desired entries must be > 0"
                          << endl;
                     exit(1);
                 }
-                cout << "NOT YET IMPLEMENTED" << endl;  // TODO
-                exit(1);
                 break;
             case 'i':
                 parameters.interactive = true;
@@ -161,8 +159,8 @@ void CommandLineSetup::Print(const CommandLineParameters& parameters) {
          << (parameters.nEvents != 0
                  ? "\t- Number of generated events: " + to_string(parameters.nEvents) + "\n"
                  : "")
-         << (parameters.nEventsOnFile != 0
-                 ? "\t- Number of desired file entries: " + to_string(parameters.nEventsOnFile) + "\n"
+         << (parameters.nDesiredEntries != 0
+                 ? "\t- Number of desired file entries: " + to_string(parameters.nDesiredEntries) + "\n"
                  : "")
          << endl;
 }

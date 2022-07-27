@@ -21,12 +21,13 @@ EventAction::EventAction(SimulationManager* simulationManager)
 EventAction::~EventAction() {}
 
 void EventAction::BeginOfEventAction(const G4Event* event) {
+    fSimulationManager->GetOutputManager()->fThreadGeneratedEventCounter++;
     fSimulationManager->GetOutputManager()->UpdateEvent();
 
     const auto eventID = event->GetEventID();
     TRestRun* restRun = fSimulationManager->GetRestRun();
-    TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
 
+    TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
     if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         G4cout << "DEBUG: Start of event ID " << eventID << " (" << eventID + 1 << " of "
                << G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed() << "). "

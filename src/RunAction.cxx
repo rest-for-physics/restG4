@@ -38,13 +38,24 @@ void RunAction::BeginOfRunAction(const G4Run*) {
 }
 
 void RunAction::EndOfRunAction(const G4Run*) {
+    fSimulationManager->EndOfRun();
+
     TRestRun* restRun = fSimulationManager->GetRestRun();
+    const auto metadata = fSimulationManager->GetRestMetadata();
 
     if (G4Threading::IsMasterThread() || !G4Threading::IsMultithreadedApplication()) {
         G4cout << "============================= Run Summary =============================" << endl;
-        G4cout << restRun->GetEntries() << " events stored out of "
-               << G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed() << " simulated events"
-               << endl;
+        G4cout << restRun->GetEntries() << " events stored out of " << metadata->GetNumberOfEvents()
+               << " simulated events" << endl;
         G4cout << "=======================================================================" << endl;
+    }
+
+    // Sanity check
+    if (metadata->GetNumberOfDesiredEntries() == 0 &&
+        metadata->GetNumberOfEvents() != G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed()) {
+        G4cout << "ERROR: possible error when calculating number of processed events, please check "
+                  "'RunAction::EndOfRunAction'"
+               << endl;
+        exit(1);
     }
 }

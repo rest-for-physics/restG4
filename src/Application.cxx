@@ -80,7 +80,10 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     if (commandLineParameters.nEvents != 0) {
         metadata->SetNumberOfEvents(commandLineParameters.nEvents);
     }
-
+    if (commandLineParameters.nDesiredEntries != 0) {
+        metadata->SetNumberOfEvents(2147483647);  // max
+        metadata->SetNumberOfDesiredEntries(commandLineParameters.nDesiredEntries);
+    }
     if (!commandLineParameters.geometryFile.IsNull()) {
         metadata->SetGdmlFilename(commandLineParameters.geometryFile.Data());
     }

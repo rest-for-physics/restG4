@@ -22,7 +22,21 @@ SimulationManager::SimulationManager() {
     }
 }
 
-void SimulationManager::InitializeOutputManager() { fOutputManager = new OutputManager(this); }
+void SimulationManager::InitializeOutputManager() {
+    lock_guard<std::mutex> guard(fSimulationManagerMutex);
+    fOutputManager = new OutputManager(this);
+    fOutputManagerContainer.push_back(fOutputManager);
+}
+
+void SimulationManager::EndOfRun() {
+    for (auto& outputManager : fOutputManagerContainer) {
+        fNumberOfProcessedEvents += outputManager->GetEventCounter();
+        delete outputManager;
+    }
+    fOutputManagerContainer.clear();
+
+    GetRestMetadata()->SetNumberOfEvents(fNumberOfProcessedEvents);
+}
 
 SimulationManager::~SimulationManager() {
     delete fRestRun;
@@ -31,16 +45,15 @@ SimulationManager::~SimulationManager() {
 }
 
 size_t SimulationManager::InsertEvent(std::unique_ptr<TRestGeant4Event>& event) {
-    fEventContainerMutex.lock();
+    lock_guard<mutex> guard(fSimulationManagerMutex);
     fEventContainer.push(std::move(event));
     auto size = fEventContainer.size();
-    fEventContainerMutex.unlock();
     return size;
 }
 
 void SimulationManager::WriteEvents() {
     if (G4Threading::IsMultithreadedApplication()) {
-        lock_guard<mutex> guard(fEventContainerMutex);
+        lock_guard<mutex> guard(fSimulationManagerMutex);
     }
 
     if (fEventContainer.empty()) {
@@ -62,6 +75,13 @@ void SimulationManager::WriteEvents() {
         }
 
         fEventContainer.pop();
+    }
+
+    const auto nDesiredEntries = GetRestMetadata()->GetNumberOfDesiredEntries();
+    if (nDesiredEntries > 0 && fRestRun->GetEventTree()->GetEntries() >= nDesiredEntries) {
+        G4cout << "Aborting Run! We have reached the number of desired entries (" << nDesiredEntries << ")"
+               << endl;
+        G4RunManager::GetRunManager()->AbortRun(true);
     }
 }
 
@@ -125,6 +145,7 @@ OutputManager::OutputManager(const SimulationManager* simulationManager)
 }
 
 void OutputManager::UpdateEvent() {
+    // Called once per event at the start
     auto event = G4EventManager::GetEventManager()->GetConstCurrentEvent();
     fEvent = make_unique<TRestGeant4Event>(event);
     fEvent->InitializeReferences(fSimulationManager->GetRestRun());
