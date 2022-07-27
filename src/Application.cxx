@@ -12,6 +12,7 @@
 #include <TRestGeant4PhysicsLists.h>
 #include <TRestGeant4Track.h>
 #include <TRestRun.h>
+#include <signal.h>
 
 #include <G4RunManager.hh>
 #ifndef GEANT4_WITHOUT_G4RunManagerFactory
@@ -46,7 +47,16 @@
 
 using namespace std;
 
+int interruptSignalHandler(const int signal, void* ptr) {
+    // See https://stackoverflow.com/a/43400143/11776908
+    std::cout << "Stopping Run! Program was manually stopped by user (CTRL+C)!" << std::endl;
+    const auto manager = (SimulationManager*)(ptr);
+    manager->StopSimulation();
+}
+
 void Application::Run(const CommandLineParameters& commandLineParameters) {
+    signal(SIGINT, (void (*)(int))interruptSignalHandler);
+
     const auto originalDirectory = filesystem::current_path();
 
     cout << "Current working directory: " << originalDirectory << endl;
