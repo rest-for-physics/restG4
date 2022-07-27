@@ -180,7 +180,6 @@ TEST(restG4, Example_04_Muons_MT) {
     parameters.outputFile = thisExamplePath / "muons.root";  // TODO: fix not working with local path
 
     parameters.nThreads = 4;
-    parameters.serialMode = false;
 
     Application app;
     app.Run(parameters);

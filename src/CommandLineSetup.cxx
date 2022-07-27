@@ -65,12 +65,11 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
                 break;
             case 's':
                 // Serial mode
-                parameters.serialMode = true;
+                parameters.nThreads = 0;
                 break;
             case 't':
                 // TODO: implement this in the simulation
                 // Multithreading mode
-                parameters.serialMode = false;
                 parameters.nThreads = stoi(optarg);
                 if (parameters.nThreads < 1) {
                     cout << "CommandLineParameters::ProcessParameters - Number of threads must be > 0"
@@ -154,8 +153,8 @@ void CommandLineSetup::Print(const CommandLineParameters& parameters) {
          << (!parameters.geometryFile.IsNull() ? "\t- Geometry file: " + parameters.geometryFile + "\n" : "")
          << (parameters.interactive ? "\t- Interactive: True\n" : "")  //
          << "\t- Execution mode: "
-         << (parameters.serialMode ? "serial\n"
-                                   : "multithreading (N = " + to_string(parameters.nThreads) + ")\n")
+         << (parameters.nThreads == 0 ? "serial\n"
+                                      : "multithreading (N = " + to_string(parameters.nThreads) + ")\n")
          << (parameters.nEvents != 0
                  ? "\t- Number of generated events: " + to_string(parameters.nEvents) + "\n"
                  : "")

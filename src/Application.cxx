@@ -148,17 +148,18 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
 #ifndef GEANT4_WITHOUT_G4RunManagerFactory
     auto runManagerType = G4RunManagerType::Default;
-    if (!commandLineParameters.serialMode) {
-        runManagerType = G4RunManagerType::MTOnly;
-        cout << "Using MT run manager with " << commandLineParameters.nThreads << " threads" << endl;
-    } else {
+    const bool serialMode = commandLineParameters.nThreads == 0;
+    if (serialMode) {
         runManagerType = G4RunManagerType::SerialOnly;
         cout << "Using serial run manager" << endl;
+    } else {
+        runManagerType = G4RunManagerType::MTOnly;
+        cout << "Using MT run manager with " << commandLineParameters.nThreads << " threads" << endl;
     }
 
     auto runManager = G4RunManagerFactory::CreateRunManager(runManagerType);
 
-    if (!commandLineParameters.serialMode) {
+    if (!serialMode) {
         ROOT::EnableThreadSafety();
         runManager->SetNumberOfThreads(commandLineParameters.nThreads);
     }
