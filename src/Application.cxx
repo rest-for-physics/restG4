@@ -106,6 +106,8 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     metadata->SetGdmlReference(gdml->GetGDMLVersion());
     metadata->SetMaterialsReference(gdml->GetEntityVersion("materials"));
 
+    metadata->PrintMetadata();
+
     auto physicsLists = new TRestGeant4PhysicsLists(inputRmlClean.c_str());
     fSimulationManager->SetRestPhysicsLists(physicsLists);
 
@@ -129,6 +131,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     run->AddMetadata(fSimulationManager->GetRestMetadata());
     run->AddMetadata(fSimulationManager->GetRestPhysicsLists());
+
     run->PrintMetadata();
 
     run->FormOutputFile();
@@ -232,6 +235,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     WriteGeometry(geometry, run->GetOutputFileName());
     delete geometry;
 
+    metadata->PrintMetadata();
     run->PrintMetadata();
 
     cout << "============== Generated file: " << filename << " ==============" << endl;

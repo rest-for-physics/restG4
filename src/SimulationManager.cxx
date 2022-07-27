@@ -29,13 +29,19 @@ void SimulationManager::InitializeOutputManager() {
 }
 
 void SimulationManager::EndOfRun() {
+    if ((G4Threading::IsMultithreadedApplication() && G4Threading::G4GetThreadId() != -1)) {
+        return;  // Only call this once from the main thread
+    }
+
+    WriteEvents();
+
     for (auto& outputManager : fOutputManagerContainer) {
         fNumberOfProcessedEvents += outputManager->GetEventCounter();
         delete outputManager;
     }
-    fOutputManagerContainer.clear();
-
     GetRestMetadata()->SetNumberOfEvents(fNumberOfProcessedEvents);
+
+    fOutputManagerContainer.clear();
 }
 
 SimulationManager::~SimulationManager() {
@@ -76,10 +82,11 @@ void SimulationManager::WriteEvents() {
     }
 
     const auto nDesiredEntries = GetRestMetadata()->GetNumberOfDesiredEntries();
-    if (nDesiredEntries > 0 && fRestRun->GetEventTree()->GetEntries() >= nDesiredEntries) {
+    if (nDesiredEntries > 0 && !fAbortFlag && fRestRun->GetEventTree()->GetEntries() >= nDesiredEntries) {
         G4cout << "Aborting Run! We have reached the number of desired entries (" << nDesiredEntries << ")"
                << endl;
-        G4RunManager::GetRunManager()->AbortRun(true);
+        G4RunManager::GetRunManager()->AbortRun(true);  // This only aborts the current thread
+        fAbortFlag = true;
     }
 }
 
@@ -142,8 +149,16 @@ OutputManager::OutputManager(const SimulationManager* simulationManager)
     }
 }
 
+void OutputManager::BeginOfEventAction() {
+    // This should only be executed once at BeginOfEventAction
+    UpdateEvent();
+    fProcessedEventsCounter++;
+    if (fSimulationManager->GetAbortFlag()) {
+        G4RunManager::GetRunManager()->AbortRun(true);
+    }
+}
+
 void OutputManager::UpdateEvent() {
-    // Called once per event at the start
     auto event = G4EventManager::GetEventManager()->GetConstCurrentEvent();
     fEvent = make_unique<TRestGeant4Event>(event);
     fEvent->InitializeReferences(fSimulationManager->GetRestRun());

@@ -53,7 +53,7 @@ void RunAction::EndOfRunAction(const G4Run*) {
     // Sanity check
     if (metadata->GetNumberOfDesiredEntries() == 0 &&
         metadata->GetNumberOfEvents() != G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed()) {
-        G4cout << "ERROR: possible error when calculating number of processed events, please check "
+        G4cout << "FATAL ERROR: possible error when calculating number of processed events, please check "
                   "'RunAction::EndOfRunAction'"
                << endl;
         exit(1);

@@ -39,6 +39,7 @@ class SimulationManager {
     }
 
     void EndOfRun();
+    inline bool GetAbortFlag() const { return fAbortFlag; }
 
    private:
     static thread_local OutputManager* fOutputManager;
@@ -50,6 +51,7 @@ class SimulationManager {
     TRestGeant4Metadata* fRestGeant4Metadata = nullptr;
 
     int fNumberOfProcessedEvents = 0;
+    bool fAbortFlag = false;
 
     std::vector<OutputManager*> fOutputManagerContainer = {};
     /* Primary generation */
@@ -85,17 +87,17 @@ class OutputManager {
 
     inline bool IsActiveVolume(const char* volumeName) const { return fActiveVolumes.count(volumeName) > 0; }
 
-    inline int GetEventCounter() const { return fThreadGeneratedEventCounter; }
+    inline int GetEventCounter() const { return fProcessedEventsCounter; }
+    void BeginOfEventAction();
 
    private:
     std::unique_ptr<TRestGeant4Event> fEvent{};
     SimulationManager* fSimulationManager = nullptr;
     std::set<std::string> fActiveVolumes = {};
 
-    int fThreadGeneratedEventCounter = 0;
+    int fProcessedEventsCounter = 0;
 
     friend class StackingAction;
-    friend class EventAction;
 };
 
 #endif  // REST_SIMULATIONMANAGER_H

@@ -21,8 +21,7 @@ EventAction::EventAction(SimulationManager* simulationManager)
 EventAction::~EventAction() {}
 
 void EventAction::BeginOfEventAction(const G4Event* event) {
-    fSimulationManager->GetOutputManager()->fThreadGeneratedEventCounter++;
-    fSimulationManager->GetOutputManager()->UpdateEvent();
+    fSimulationManager->GetOutputManager()->BeginOfEventAction();
 
     const auto eventID = event->GetEventID();
     TRestRun* restRun = fSimulationManager->GetRestRun();
