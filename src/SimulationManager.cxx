@@ -52,9 +52,7 @@ size_t SimulationManager::InsertEvent(std::unique_ptr<TRestGeant4Event>& event) 
 }
 
 void SimulationManager::WriteEvents() {
-    if (G4Threading::IsMultithreadedApplication()) {
-        lock_guard<mutex> guard(fSimulationManagerMutex);
-    }
+    lock_guard<mutex> guard(fSimulationManagerMutex);
 
     if (fEventContainer.empty()) {
         return;
