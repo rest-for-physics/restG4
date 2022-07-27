@@ -77,6 +77,10 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     metadata->SetGeant4Version(TRestTools::Execute("geant4-config --version"));
 
+    if (commandLineParameters.nEvents != 0) {
+        metadata->SetNumberOfEvents(commandLineParameters.nEvents);
+    }
+
     if (!commandLineParameters.geometryFile.IsNull()) {
         metadata->SetGdmlFilename(commandLineParameters.geometryFile.Data());
     }

@@ -20,6 +20,13 @@ void CommandLineSetup::ShowUsage() {
          << "\t-h or --help | show usage (this text)" << endl
          << "\t-c example.rml | specify RML file (same as calling restG4 example.rml)" << endl
          << "\t-o output.root | specify output file" << endl
+         << "\t-n nEvents | specify number of events to be generated (overrides nEvents on rml file). "
+            "Incompatible with '-N' option"
+         << endl
+         << "\t-N nEventsOnFile | specify desired number of entries after simulation is completed. It will "
+            "adjust 'nEvents' accordingly to get this number. Final number of entries may be larger. "
+            "Incompatible with '-n' option"
+         << endl
          << "\t-g geometry.gdml | specify geometry file" << endl
          << "\t-i | set interactive mode (default=false)" << endl
          << "\t-s | set serial mode (no multithreading) (default=true)" << endl
@@ -44,7 +51,7 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
     }
 
     while (true) {
-        const int option = getopt(argc, argv, "vg:c:m:o:ist:n:");
+        const int option = getopt(argc, argv, "vg:c:m:o:ist:n:N:");
         if (option == -1) break;
         switch (option) {
             case 'c':
@@ -68,6 +75,7 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
                 if (parameters.nThreads < 1) {
                     cout << "CommandLineParameters::ProcessParameters - Number of threads must be > 0"
                          << endl;
+                    exit(1);
                 }
                 break;
             case 'o':
@@ -80,10 +88,42 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
                 }
                 parameters.outputFile = optarg;
                 break;
+            case 'n':
+                if (parameters.nEventsOnFile != 0) {
+                    cout << "CommandLineParameters::ProcessParameters - '-n' and '-N' options are mutually "
+                            "incompatible"
+                         << endl;
+                    exit(1);
+                }
+                parameters.nEvents = stoi(optarg);
+                if (parameters.nEvents < 1) {
+                    cout
+                        << "CommandLineParameters::ProcessParameters - number of generated events must be > 0"
+                        << endl;
+                    exit(1);
+                }
+                break;
+            case 'N':
+                if (parameters.nEvents != 0) {
+                    cout << "CommandLineParameters::ProcessParameters - '-n' and '-N' options are mutually "
+                            "incompatible"
+                         << endl;
+                    exit(1);
+                }
+                parameters.nEventsOnFile = stoi(optarg);
+                if (parameters.nEventsOnFile < 1) {
+                    cout << "CommandLineParameters::ProcessParameters - number of desired entries must be > 0"
+                         << endl;
+                    exit(1);
+                }
+                cout << "NOT YET IMPLEMENTED" << endl;  // TODO
+                exit(1);
+                break;
             case 'i':
                 parameters.interactive = true;
                 break;
             case 'g':
+                // TODO: implement
                 if (!parameters.geometryFile.IsNull()) {
                     cout << "CommandLineParameters::ProcessParameters - Cannot specify multiple geometry "
                             "files via the -g flag. Please use at most one"
@@ -116,6 +156,13 @@ void CommandLineSetup::Print(const CommandLineParameters& parameters) {
          << (!parameters.geometryFile.IsNull() ? "\t- Geometry file: " + parameters.geometryFile + "\n" : "")
          << (parameters.interactive ? "\t- Interactive: True\n" : "")  //
          << "\t- Execution mode: "
-         << (parameters.serialMode ? "serial" : "multithreading (N = " + to_string(parameters.nThreads) + ")")
+         << (parameters.serialMode ? "serial\n"
+                                   : "multithreading (N = " + to_string(parameters.nThreads) + ")\n")
+         << (parameters.nEvents != 0
+                 ? "\t- Number of generated events: " + to_string(parameters.nEvents) + "\n"
+                 : "")
+         << (parameters.nEventsOnFile != 0
+                 ? "\t- Number of desired file entries: " + to_string(parameters.nEventsOnFile) + "\n"
+                 : "")
          << endl;
 }
