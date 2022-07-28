@@ -16,10 +16,14 @@ SensitiveDetector::SensitiveDetector(SimulationManager* simulationManager, const
 
 G4bool SensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*) {
     // return value will always be ignored, its present for backwards compatibility (I guess)
+    const auto volumeName = fSimulationManager->GetRestMetadata()
+                                ->GetGeant4GeometryInfo()
+                                .GetAlternativeNameFromGeant4PhysicalName(
+                                    step->GetPreStepPoint()->GetPhysicalVolume()->GetName());
+
     const bool isGeantino = step->GetTrack()->GetParticleDefinition() == G4Geantino::Definition();
 
     if (isGeantino) {
-        const auto volumeName = (TString)step->GetPreStepPoint()->GetPhysicalVolume()->GetName();
         const auto length = step->GetStepLength() / CLHEP::mm;
         fSimulationManager->GetOutputManager()->AddSensitiveEnergy(length, volumeName);
         return true;
@@ -29,11 +33,7 @@ G4bool SensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*) {
         if (energy <= 0) {
             return true;
         }
-
-        const auto volumeName = (TString)step->GetPreStepPoint()->GetPhysicalVolume()->GetName();
-
         fSimulationManager->GetOutputManager()->AddSensitiveEnergy(energy, volumeName);
-
         return true;
     }
 }

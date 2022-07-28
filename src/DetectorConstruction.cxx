@@ -68,7 +68,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         // sensitive volume was not found, perhaps the user specified a logical volume
         auto physicalVolumes = geometryInfo.GetAllPhysicalVolumesFromLogical(sensitiveVolume);
         if (physicalVolumes.size() == 1) {
-            restG4Metadata->SetSensitiveVolume(physicalVolumes[0]);
+            restG4Metadata->SetSensitiveVolume(
+                geometryInfo.GetAlternativeNameFromGeant4PhysicalName(physicalVolumes[0]));
             sensitiveVolume = (string)restG4Metadata->GetSensitiveVolume();
             physicalVolume = GetPhysicalVolume(sensitiveVolume);
         }
@@ -226,7 +227,14 @@ void DetectorConstruction::ConstructSDandField() {
         G4LogicalVolume* logicalVolume = nullptr;
         G4VPhysicalVolume* physicalVolume =
             G4PhysicalVolumeStore::GetInstance()->GetVolume(userSensitiveVolume, false);
-        if (!physicalVolume) {
+        if (physicalVolume == nullptr) {
+            const G4String geant4VolumeName =
+                metadata.GetGeant4GeometryInfo()
+                    .GetGeant4PhysicalNameFromAlternativeName(userSensitiveVolume.c_str())
+                    .Data();
+            physicalVolume = G4PhysicalVolumeStore::GetInstance()->GetVolume(geant4VolumeName, false);
+        }
+        if (physicalVolume == nullptr) {
             // perhaps user selected a logical volume with this name
             logicalVolume = G4LogicalVolumeStore::GetInstance()->GetVolume(userSensitiveVolume, false);
         } else {
@@ -236,7 +244,8 @@ void DetectorConstruction::ConstructSDandField() {
             auto logicalVolumes =
                 metadata.GetGeant4GeometryInfo().GetAllLogicalVolumesMatchingExpression(userSensitiveVolume);
             if (logicalVolumes.empty()) {
-                cout << "Error on sensitive detector setup" << endl;
+                cout << "Error on sensitive detector setup for sensitive volume: " << userSensitiveVolume
+                     << endl;
                 exit(1);
             } else {
                 for (const auto& logicalVolumeName : logicalVolumes) {
