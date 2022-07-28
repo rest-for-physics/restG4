@@ -460,7 +460,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     AddHit(hitPosition, energy, hitGlobalTime);  // this increases fNHits
 
     fProcessID.emplace_back(processID);
-    fVolumeID.emplace_back(geometryInfo.GetIDFromVolume(volumeNameGeant4));
+    fVolumeID.emplace_back(geometryInfo.GetIDFromVolume(volumeName));
     fKineticEnergy.emplace_back(step->GetPreStepPoint()->GetKineticEnergy() / CLHEP::keV);
     fMomentumDirection.emplace_back(momentum.x(), momentum.y(), momentum.z());
 

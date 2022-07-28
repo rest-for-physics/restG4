@@ -294,11 +294,11 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
         TString nameMaterial = (TString)volume->GetLogicalVolume()->GetMaterial()->GetName();
         auto position = volume->GetTranslation();
 
-        fPhysicalToLogicalVolumeMap[namePhysical] = nameLogical;
+        fPhysicalToLogicalVolumeMap[physicalNewName] = nameLogical;
         fLogicalToMaterialMap[nameLogical] = nameMaterial;
         fLogicalToPhysicalMap[nameLogical].emplace_back(namePhysical);
-        fPhysicalToPositionInWorldMap[namePhysical] = {position.x(), position.y(), position.z()};
-        InsertVolumeName(i, namePhysical);
+        fPhysicalToPositionInWorldMap[physicalNewName] = {position.x(), position.y(), position.z()};
+        InsertVolumeName(i, physicalNewName);
 
         if (!fIsAssembly && GetAlternativeNameFromGeant4PhysicalName(namePhysical) != namePhysical) {
             fIsAssembly = true;
