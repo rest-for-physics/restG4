@@ -40,9 +40,17 @@ void EventAction::BeginOfEventAction(const G4Event* event) {
             ((numberOfEventsToBePercent > 0 && (eventID + 1) % numberOfEventsToBePercent == 0) ||
              fTimer.RealTime() > 10.0)) {
             fTimer.Start();
-            G4cout << "ESSENTIAL: Start of event ID " << eventID << " (" << eventID + 1 << " of "
-                   << restG4Metadata->GetNumberOfEvents() << "). " << restRun->GetEntries()
-                   << " Events stored" << endl;
+
+            fSimulationManager->SyncStatsFromChild();
+            G4cout << double(fSimulationManager->GetNumberOfProcessedEvents()) /
+                          double(restG4Metadata->GetNumberOfEvents()) * 100
+                   << "% - " << fSimulationManager->GetNumberOfProcessedEvents()
+                   << " Events processed out of " << restG4Metadata->GetNumberOfEvents()
+                   << " requested events ("
+                   << fSimulationManager->GetNumberOfProcessedEvents() / fSimulationManager->GetElapsedTime()
+                   << " per second). " << fSimulationManager->GetNumberOfStoredEvents() << " events stored ("
+                   << fSimulationManager->GetNumberOfStoredEvents() / fSimulationManager->GetElapsedTime()
+                   << " per second). " << fSimulationManager->GetElapsedTime() << " seconds elapsed" << endl;
         } else {
             fTimer.Continue();
         }
@@ -51,5 +59,4 @@ void EventAction::BeginOfEventAction(const G4Event* event) {
 
 void EventAction::EndOfEventAction(const G4Event*) {
     fSimulationManager->GetOutputManager()->FinishAndSubmitEvent();
-    fSimulationManager->WriteEvents();
 }

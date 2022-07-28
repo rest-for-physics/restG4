@@ -24,6 +24,8 @@ G4bool SensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*) {
     const bool isGeantino = step->GetTrack()->GetParticleDefinition() == G4Geantino::Definition();
 
     if (isGeantino) {
+        // Since geantinos don't deposit energy, the length traveled inside the volumes is stored as energy
+        // (mm as keV)
         const auto length = step->GetStepLength() / CLHEP::mm;
         fSimulationManager->GetOutputManager()->AddSensitiveEnergy(length, volumeName);
         return true;

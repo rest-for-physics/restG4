@@ -56,11 +56,9 @@ SimulationManager::~SimulationManager() {
     }
 }
 
-size_t SimulationManager::InsertEvent(std::unique_ptr<TRestGeant4Event>& event) {
+void SimulationManager::InsertEvent(std::unique_ptr<TRestGeant4Event>& event) {
     lock_guard<mutex> guard(fSimulationManagerMutex);
     fEventContainer.push(std::move(event));
-    auto size = fEventContainer.size();
-    return size;
 }
 
 void SimulationManager::WriteEvents() {
@@ -143,6 +141,13 @@ void SimulationManager::StopSimulation() {
     fAbortFlag = true;
 }
 
+void SimulationManager::SyncStatsFromChild() {
+    lock_guard<mutex> guard(fSimulationManagerMutex);
+    fNumberOfProcessedEvents += fOutputManager->GetEventCounter();
+    fOutputManager->ResetEventCounter();
+    fNumberOfStoredEvents = fRestRun->GetEntries();
+}
+
 // OutputManager
 OutputManager::OutputManager(const SimulationManager* simulationManager)
     : fSimulationManager(const_cast<SimulationManager*>(simulationManager)) {
@@ -192,6 +197,7 @@ bool OutputManager::IsValidEvent() const {
         return false;
     }
     if (fSimulationManager->GetRestMetadata()->GetSaveAllEvents()) {
+        // sometimes it enters this section even thought the flag is clearly set to false ???
         return true;
     }
     if (fEvent->GetSensitiveVolumeEnergy() <= 0) {
@@ -207,10 +213,9 @@ bool OutputManager::IsValidEvent() const {
 }
 
 void OutputManager::FinishAndSubmitEvent() {
-    if (IsEmptyEvent()) return;
-
     if (IsValidEvent()) {
-        size_t numberOfInsertedEvents = fSimulationManager->InsertEvent(fEvent);
+        fSimulationManager->InsertEvent(fEvent);
+        fSimulationManager->WriteEvents();
     }
     UpdateEvent();
 }

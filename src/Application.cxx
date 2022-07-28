@@ -242,6 +242,8 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     run->SetEndTimeStamp((Double_t)systime);
     const TString filename = TRestTools::ToAbsoluteName(run->GetOutputFileName().Data());
 
+    const auto nEntries = run->GetEntries();
+
     run->UpdateOutputFile();
     run->CloseFile();
 
@@ -252,8 +254,11 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     metadata->PrintMetadata();
     run->PrintMetadata();
 
-    cout << "============== Generated file: " << filename << " ==============" << endl;
-    cout << "Elapsed time: " << fSimulationManager.GetElapsedTime() << " seconds" << endl;
+    cout << "\t- Total simulation time is " << fSimulationManager.GetElapsedTime() << " seconds, " << nEvents
+         << " processed events (" << nEvents / fSimulationManager.GetElapsedTime() << " per second) and "
+         << nEntries << " events saved to output file (" << nEntries / fSimulationManager.GetElapsedTime()
+         << " per second)" << endl;
+    cout << "\t- Output file: " << filename << endl << endl;
 }
 
 void Application::WriteGeometry(TGeoManager* geometry, const char* filename, const char* option) {

@@ -22,7 +22,7 @@ class SimulationManager {
 
     TRestGeant4Event fEvent;  // Branch on EventTree
 
-    size_t InsertEvent(std::unique_ptr<TRestGeant4Event>& event);
+    void InsertEvent(std::unique_ptr<TRestGeant4Event>& event);
 
     void WriteEvents();
     void WriteEventsAndCloseFile();
@@ -46,6 +46,11 @@ class SimulationManager {
         return 1E-9 * (std::chrono::steady_clock::now().time_since_epoch().count() - fTimeStartUnix);
     }
 
+    void SyncStatsFromChild();
+
+    int GetNumberOfProcessedEvents() const { return fNumberOfProcessedEvents; }
+    int GetNumberOfStoredEvents() const { return fNumberOfStoredEvents; }
+
    private:
     static thread_local OutputManager* fOutputManager;
     std::mutex fSimulationManagerMutex;
@@ -56,6 +61,8 @@ class SimulationManager {
     TRestGeant4Metadata* fRestGeant4Metadata = nullptr;
 
     int fNumberOfProcessedEvents = 0;
+    int fNumberOfStoredEvents = 0;
+
     bool fAbortFlag = false;
 
     std::vector<OutputManager*> fOutputManagerContainer = {};
@@ -95,6 +102,7 @@ class OutputManager {
     inline bool IsActiveVolume(const char* volumeName) const { return fActiveVolumes.count(volumeName) > 0; }
 
     inline int GetEventCounter() const { return fProcessedEventsCounter; }
+    inline void ResetEventCounter() { fProcessedEventsCounter = 0; }
 
     void BeginOfEventAction();
 
