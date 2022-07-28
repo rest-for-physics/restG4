@@ -47,11 +47,12 @@
 
 using namespace std;
 
-int interruptSignalHandler(const int signal, void* ptr) {
+int interruptSignalHandler(const int, void* ptr) {
     // See https://stackoverflow.com/a/43400143/11776908
     std::cout << "Stopping Run! Program was manually stopped by user (CTRL+C)!" << std::endl;
     const auto manager = (SimulationManager*)(ptr);
     manager->StopSimulation();
+    return 0;
 }
 
 void Application::Run(const CommandLineParameters& commandLineParameters) {
@@ -67,7 +68,8 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     const char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
 
     if (!TRestTools::CheckFileIsAccessible(inputConfigFile)) {
-        cout << "Input rml file: " << inputConfigFile << " not found, please check file name" << endl;
+        cout << "ERROR: Input rml file " << filesystem::weakly_canonical(inputConfigFile)
+             << " not found, please check file name." << endl;
         exit(1);
     }
 
