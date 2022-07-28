@@ -409,9 +409,8 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
 
     const auto& geometryInfo = metadata->GetGeant4GeometryInfo();
 
-    // Variables that describe a step are taken.
-    const auto& volumeName = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(
-        (TString &&) step->GetPreStepPoint()->GetPhysicalVolume()->GetName());
+    const auto& volumeNameGeant4 = step->GetPreStepPoint()->GetPhysicalVolume()->GetName();
+    const auto& volumeName = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(volumeNameGeant4);
 
     if (!SimulationManager::GetOutputManager()->IsActiveVolume(volumeName) &&
         step->GetTrack()->GetCurrentStepNumber() != 0) {
@@ -461,7 +460,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     AddHit(hitPosition, energy, hitGlobalTime);  // this increases fNHits
 
     fProcessID.emplace_back(processID);
-    fVolumeID.emplace_back(geometryInfo.GetIDFromVolume(volumeName));
+    fVolumeID.emplace_back(geometryInfo.GetIDFromVolume(volumeNameGeant4));
     fKineticEnergy.emplace_back(step->GetPreStepPoint()->GetKineticEnergy() / CLHEP::keV);
     fMomentumDirection.emplace_back(momentum.x(), momentum.y(), momentum.z());
 
