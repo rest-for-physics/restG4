@@ -197,7 +197,6 @@ bool OutputManager::IsValidEvent() const {
         return false;
     }
     if (fSimulationManager->GetRestMetadata()->GetSaveAllEvents()) {
-        // sometimes it enters this section even thought the flag is clearly set to false ???
         return true;
     }
     if (fEvent->GetSensitiveVolumeEnergy() <= 0) {
@@ -447,10 +446,6 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
 
     auto sensitiveVolumeName =
         geometryInfo.GetAlternativeNameFromGeant4PhysicalName(metadata->GetSensitiveVolume());
-
-    if (particle->GetParticleName() == "geantino" && sensitiveVolumeName.Data() == volumeName) {
-        metadata->SetSaveAllEvents(true);
-    }
 
     G4Track* aTrack = step->GetTrack();
 
