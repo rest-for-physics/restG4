@@ -132,12 +132,6 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
                 parameters.outputFile = optarg;
                 break;
             case 'n':
-                if (parameters.nDesiredEntries != 0) {
-                    cout << "CommandLineParameters::ProcessParameters - '-n' and '-N' options are mutually "
-                            "incompatible"
-                         << endl;
-                    exit(1);
-                }
                 parameters.nEvents = stoi(optarg);
                 if (parameters.nEvents < 1) {
                     cout
@@ -147,12 +141,6 @@ CommandLineParameters CommandLineSetup::ProcessParameters(int argc, char** argv)
                 }
                 break;
             case 'N':
-                if (parameters.nEvents != 0) {
-                    cout << "CommandLineParameters::ProcessParameters - '-n' and '-N' options are mutually "
-                            "incompatible"
-                         << endl;
-                    exit(1);
-                }
                 parameters.nDesiredEntries = stoi(optarg);
                 if (parameters.nDesiredEntries < 1) {
                     cout << "CommandLineParameters::ProcessParameters - number of desired entries must be > 0"

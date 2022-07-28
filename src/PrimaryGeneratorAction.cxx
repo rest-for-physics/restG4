@@ -381,7 +381,7 @@ void PrimaryGeneratorAction::SetParticlePosition() {
             } else if (spatialGeneratorShapeEnum == SpatialGeneratorShapes::SPHERE) {
                 GenPositionOnSphereSurface(x, y, z);
             } else if (spatialGeneratorShapeEnum == SpatialGeneratorShapes::CIRCLE) {
-                GenPositionOnPlate(x, y, z);
+                GenPositionOnDisk(x, y, z);
             } else if (spatialGeneratorShapeEnum == SpatialGeneratorShapes::WALL) {
                 GenPositionOnWall(x, y, z);
             }
@@ -614,7 +614,7 @@ void PrimaryGeneratorAction::GenPositionOnWall(double& x, double& y, double& z) 
     z = position.z() + center.Z();
 }
 
-void PrimaryGeneratorAction::GenPositionOnPlate(double& x, double& y, double& z) {
+void PrimaryGeneratorAction::GenPositionOnDisk(double& x, double& y, double& z) {
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
     const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
 

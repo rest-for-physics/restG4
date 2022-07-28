@@ -84,18 +84,17 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     metadata->SetGeant4Version(TRestTools::Execute("geant4-config --version"));
 
+    constexpr auto maxPrimariesAllowed = 2147483647;
     if (commandLineParameters.nEvents != 0) {
         metadata->SetNumberOfEvents(commandLineParameters.nEvents);
     }
-    constexpr auto maxPrimariesAllowed = 2147483647;
-    if (commandLineParameters.nDesiredEntries != 0) {
+    if (commandLineParameters.nEvents == 0) {
         metadata->SetNumberOfEvents(maxPrimariesAllowed);
+    }
+    if (commandLineParameters.nDesiredEntries != 0) {
         metadata->SetNumberOfDesiredEntries(commandLineParameters.nDesiredEntries);
     }
     if (commandLineParameters.timeLimitSeconds != 0) {
-        if (commandLineParameters.nEvents == 0) {
-            metadata->SetNumberOfEvents(maxPrimariesAllowed);
-        }
         metadata->SetSimulationMaxTimeSeconds(commandLineParameters.timeLimitSeconds);
     }
     if (!commandLineParameters.geometryFile.IsNull()) {

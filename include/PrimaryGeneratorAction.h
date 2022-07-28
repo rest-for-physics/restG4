@@ -80,7 +80,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     void GenPositionOnCylinderSurface(double& x, double& y, double& z);
     void GenPositionOnPoint(double& x, double& y, double& z);
     void GenPositionOnWall(double& x, double& y, double& z);
-    void GenPositionOnPlate(double& x, double& y, double& z);
+    void GenPositionOnDisk(double& x, double& y, double& z);
 
     G4String fParType;
     G4String fGenType;
