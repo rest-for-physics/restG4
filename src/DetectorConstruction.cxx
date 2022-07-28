@@ -52,8 +52,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     fGdmlParser->Read(gdmlToRead, false);
     G4VPhysicalVolume* worldVolume = fGdmlParser->GetWorldVolume();
 
-    restG4Metadata->fGeant4GeometryInfo.PopulateFromGdml(gdmlToRead);
-    restG4Metadata->fGeant4GeometryInfo.PopulateFromGeant4World(worldVolume);
+    restG4Metadata->fGeant4GeometryInfo.InitializeOnDetectorConstruction(gdmlToRead, worldVolume);
 
     const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
     geometryInfo.Print();
@@ -76,11 +75,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     }
 
     if (!physicalVolume) {
-        G4cout << "RESTG4 error. Sensitive volume  " << sensitiveVolume << " does not exist in geometry!!"
-               << G4endl;
-        G4cout << "RESTG4 error. Please, review geometry! Press a key to crash!!" << G4endl;
-        getchar();
-        // We need to produce a clean exit at this point
+        G4cout << "ERROR: Sensitive volume '" << sensitiveVolume << "' not found" << G4endl;
         exit(1);
     }
 
