@@ -244,7 +244,7 @@ void DetectorConstruction::ConstructSDandField() {
             auto logicalVolumes =
                 metadata.GetGeant4GeometryInfo().GetAllLogicalVolumesMatchingExpression(userSensitiveVolume);
             if (logicalVolumes.empty()) {
-                cout << "Error on sensitive detector setup for sensitive volume: " << userSensitiveVolume
+                cerr << "Error on sensitive detector setup for sensitive volume: " << userSensitiveVolume
                      << endl;
                 exit(1);
             } else {

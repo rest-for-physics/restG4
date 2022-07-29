@@ -411,7 +411,7 @@ void Application::Run(const CommandLineOptions::Options& options) {
 
     const auto nEvents = metadata->GetNumberOfEvents();
     if (nEvents < 0) {
-        cout << "Error: \"nEvents\" parameter value (" << nEvents << ") is not valid." << endl;
+        cerr << "'nEvents' parameter value (" << nEvents << ") is not valid" << endl;
         exit(1);
     }
 
