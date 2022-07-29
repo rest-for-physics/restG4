@@ -207,31 +207,22 @@ G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physV
 
 void DetectorConstruction::ConstructSDandField() {
     const TRestGeant4Metadata& metadata = *fSimulationManager->GetRestMetadata();
-    vector<string>
-        sensitiveVolumes;  // user submitted sensitive volumes, may not exist or not be physical (be logical)
-    for (const auto& volume : {metadata.GetSensitiveVolume()}) {
-        sensitiveVolumes.emplace_back(volume);
-    }
-
-    if (sensitiveVolumes.empty()) {
-        return;
-    }
 
     set<G4LogicalVolume*> logicalVolumesSelected;
-    for (const auto& userSensitiveVolume : sensitiveVolumes) {
+    for (const auto& userSensitiveVolume : metadata.GetSensitiveVolumes()) {
         G4LogicalVolume* logicalVolume = nullptr;
         G4VPhysicalVolume* physicalVolume =
-            G4PhysicalVolumeStore::GetInstance()->GetVolume(userSensitiveVolume, false);
+            G4PhysicalVolumeStore::GetInstance()->GetVolume(userSensitiveVolume.Data(), false);
         if (physicalVolume == nullptr) {
             const G4String geant4VolumeName =
                 metadata.GetGeant4GeometryInfo()
-                    .GetGeant4PhysicalNameFromAlternativeName(userSensitiveVolume.c_str())
+                    .GetGeant4PhysicalNameFromAlternativeName(userSensitiveVolume.Data())
                     .Data();
             physicalVolume = G4PhysicalVolumeStore::GetInstance()->GetVolume(geant4VolumeName, false);
         }
         if (physicalVolume == nullptr) {
             // perhaps user selected a logical volume with this name
-            logicalVolume = G4LogicalVolumeStore::GetInstance()->GetVolume(userSensitiveVolume, false);
+            logicalVolume = G4LogicalVolumeStore::GetInstance()->GetVolume(userSensitiveVolume.Data(), false);
         } else {
             logicalVolume = physicalVolume->GetLogicalVolume();
         }
