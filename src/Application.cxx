@@ -88,7 +88,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     if (commandLineParameters.nEvents != 0) {
         metadata->SetNumberOfEvents(commandLineParameters.nEvents);
     }
-    if (commandLineParameters.nEvents == 0) {
+    if (metadata->GetNumberOfEvents() == 0) {
         metadata->SetNumberOfEvents(maxPrimariesAllowed);
     }
     if (commandLineParameters.nDesiredEntries != 0) {
