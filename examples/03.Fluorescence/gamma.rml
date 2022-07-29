@@ -46,10 +46,11 @@ By default REST units are mm, keV and degrees
             </source>
         </generator>
 
-        <storage sensitiveVolume="detector">
+        <detector>
             <parameter name="energyRange" value="(0,30)" units="keV"/>
-            <activeVolume name="detector" chance="1"/>
-        </storage>
+            <volume name="detector" sensitive="true"/>
+        </detector>
+
     </TRestGeant4Metadata>
 
     <TRestGeant4PhysicsLists name="default" title="First physics list implementation.">

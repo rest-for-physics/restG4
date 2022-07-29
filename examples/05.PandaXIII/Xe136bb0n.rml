@@ -34,10 +34,10 @@
             </source>
         </generator>
 
-        <storage sensitiveVolume="Gas">
+        <detector>
             <parameter name="energyRange" value="(0,10)MeV"/>
-            <activeVolume name="Gas" chance="1" maxStepSize="200um"/>
-        </storage>
+            <volume name="Gas" sensitive="true" maxStepSize="200um"/>
+        </detector>
 
     </TRestGeant4Metadata>
 

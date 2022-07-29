@@ -330,8 +330,6 @@ void Application::Run(const CommandLineOptions::Options& options) {
     metadata->SetGdmlReference(gdml->GetGDMLVersion());
     metadata->SetMaterialsReference(gdml->GetEntityVersion("materials"));
 
-    metadata->PrintMetadata();
-
     auto physicsLists = new TRestGeant4PhysicsLists(inputRmlClean.c_str());
     fSimulationManager.SetRestPhysicsLists(physicsLists);
 

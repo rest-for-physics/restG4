@@ -53,6 +53,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     G4VPhysicalVolume* worldVolume = fGdmlParser->GetWorldVolume();
 
     restG4Metadata->fGeant4GeometryInfo.InitializeOnDetectorConstruction(gdmlToRead, worldVolume);
+    restG4Metadata->ReadDetector();
+    restG4Metadata->PrintMetadata();  // now we have detector info
 
     const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
     geometryInfo.Print();
@@ -269,8 +271,8 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
     auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
     TRestGeant4Metadata* restG4Metadata = detector->fSimulationManager->GetRestMetadata();
 
-    const int n = int(world->GetLogicalVolume()->GetNoDaughters());
-    for (int i = 0; i < n + 1; i++) {  // world is the + 1
+    const size_t n = int(world->GetLogicalVolume()->GetNoDaughters());
+    for (size_t i = 0; i < n + 1; i++) {  // world is the + 1
         G4VPhysicalVolume* volume;
         if (i == n) {
             volume = const_cast<G4VPhysicalVolume*>(world);

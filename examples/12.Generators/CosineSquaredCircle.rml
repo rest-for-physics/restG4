@@ -35,10 +35,12 @@
                 <energy type="formula" name="CosmicNeutrons" range="(5,150)MeV"/>
             </source>
         </generator>
-        <storage sensitiveVolume="gasVolume">
+
+        <detector>
             <parameter name="energyRange" value="(0,10)" units="GeV"/>
-            <activeVolume name="gasVolume" chance="1" maxStepSize="1mm"/>
-        </storage>
+            <volume name="gasVolume" sensitive="true" maxStepSize="1mm"/>
+        </detector>
+
     </TRestGeant4Metadata>
 
     <TRestGeant4PhysicsLists name="default" title="First physics list implementation"/>

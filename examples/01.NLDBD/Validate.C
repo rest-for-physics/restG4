@@ -47,7 +47,8 @@ Int_t Validate(const char* filename) {
     const bool isReferenceGeant4Version = geant4Metadata->GetGeant4Version() == "10.4.3";
 
     if (geant4Metadata->GetNumberOfActiveVolumes() != 1) {
-        cout << "The number of registered does not match the reference value of 1" << endl;
+        cout << "The number of active volumes does not match the reference value of 1. Value: "
+             << geant4Metadata->GetNumberOfActiveVolumes() << endl;
         return 7;
     }
 
