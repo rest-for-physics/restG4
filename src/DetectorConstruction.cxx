@@ -59,16 +59,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     filesystem::current_path(startingPath);
 
-    // TODO: Take the name of the sensitive volume and use it here to define its
-    // StepSize
     auto sensitiveVolume = (string)restG4Metadata->GetSensitiveVolume();
-
     G4VPhysicalVolume* physicalVolume = GetPhysicalVolume(sensitiveVolume);
     if (!physicalVolume) {
         // sensitive volume was not found, perhaps the user specified a logical volume
         auto physicalVolumes = geometryInfo.GetAllPhysicalVolumesFromLogical(sensitiveVolume);
         if (physicalVolumes.size() == 1) {
-            restG4Metadata->SetSensitiveVolume(
+            restG4Metadata->InsertSensitiveVolume(
                 geometryInfo.GetAlternativeNameFromGeant4PhysicalName(physicalVolumes[0]));
             sensitiveVolume = (string)restG4Metadata->GetSensitiveVolume();
             physicalVolume = GetPhysicalVolume(sensitiveVolume);
