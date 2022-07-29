@@ -1,6 +1,5 @@
 
 #include <Application.h>
-#include <CommandLineSetup.h>
 #include <TGeoManager.h>
 #include <TROOT.h>
 #include <TRestRun.h>
@@ -30,8 +29,7 @@ TEST(restG4, Example_01_NLDBD) {
 
     CommandLineOptions::Options options;
     options.rmlFile = "NLDBD.rml";
-    options.outputFile =
-        thisExamplePath / "NLDBD_simulation.root";  // TODO: fix not working with local path
+    options.outputFile = thisExamplePath / "NLDBD_simulation.root";  // TODO: fix not working with local path
 
     {  // Run simulation
         Application app;
