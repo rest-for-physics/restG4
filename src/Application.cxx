@@ -53,7 +53,6 @@ namespace CommandLineOptions {
 
 void ShowUsage() {
     cout << "Usage example: restG4 example.rml" << endl
-         << endl
          << "there are other convenient optional parameters that override the ones in the rml file:" << endl
          << "\t--help (-h) | show usage (this text)" << endl
          << "\t--config (-c) example.rml | specify RML file (same as calling restG4 example.rml)" << endl
