@@ -156,13 +156,6 @@ OutputManager::OutputManager(const SimulationManager* simulationManager)
         G4cout << "Error in 'OutputManager', this instance should never exist" << endl;
         exit(1);
     }
-
-    // initialize active volume lookup set
-    const auto metadata = fSimulationManager->GetRestMetadata();
-    for (size_t i = 0; i < metadata->GetNumberOfActiveVolumes(); i++) {
-        const TString& activeVolume = metadata->GetActiveVolumeName(i);
-        fActiveVolumes.insert(activeVolume.Data());
-    }
 }
 
 void OutputManager::BeginOfEventAction() {
@@ -416,8 +409,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     const auto& volumeNameGeant4 = step->GetPreStepPoint()->GetPhysicalVolume()->GetName();
     const auto& volumeName = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(volumeNameGeant4);
 
-    if (!SimulationManager::GetOutputManager()->IsActiveVolume(volumeName) &&
-        step->GetTrack()->GetCurrentStepNumber() != 0) {
+    if (!metadata->IsActiveVolume(volumeName) && step->GetTrack()->GetCurrentStepNumber() != 0) {
         // we always store the first step
         return;
     }

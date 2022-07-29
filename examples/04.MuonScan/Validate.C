@@ -45,7 +45,7 @@ Int_t Validate(const char* filename) {
     geant4Metadata->PrintMetadata();
 
     if (geant4Metadata->GetNumberOfActiveVolumes() != 2) {
-        cout << "The number of registered does not match the reference value of 2" << endl;
+        cout << "The number of active volumes does not match the reference value of 2" << endl;
         return 7;
     }
 

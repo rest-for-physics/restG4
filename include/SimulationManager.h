@@ -99,8 +99,6 @@ class OutputManager {
     void AddSensitiveEnergy(Double_t energy, const char* physicalVolumeName);
     void AddEnergyToVolumeForProcess(Double_t energy, const char* volumeName, const char* processName);
 
-    inline bool IsActiveVolume(const char* volumeName) const { return fActiveVolumes.count(volumeName) > 0; }
-
     inline int GetEventCounter() const { return fProcessedEventsCounter; }
     inline void ResetEventCounter() { fProcessedEventsCounter = 0; }
 
@@ -109,7 +107,6 @@ class OutputManager {
    private:
     std::unique_ptr<TRestGeant4Event> fEvent{};
     SimulationManager* fSimulationManager = nullptr;
-    std::set<std::string> fActiveVolumes = {};
 
     int fProcessedEventsCounter = 0;
 
