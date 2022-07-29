@@ -110,6 +110,8 @@ class OutputManager {
 
     int fProcessedEventsCounter = 0;
 
+    void RemoveUnwantedTracks();
+
     friend class StackingAction;
 };
 

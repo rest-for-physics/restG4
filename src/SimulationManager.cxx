@@ -206,6 +206,9 @@ bool OutputManager::IsValidEvent() const {
 
 void OutputManager::FinishAndSubmitEvent() {
     if (IsValidEvent()) {
+        if (fSimulationManager->GetRestMetadata()->GetRemoveUnwantedTracks()) {
+            RemoveUnwantedTracks();
+        }
         fSimulationManager->InsertEvent(fEvent);
         fSimulationManager->WriteEvents();
     }
@@ -457,4 +460,49 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     fMomentumDirection.emplace_back(momentum.x(), momentum.y(), momentum.z());
 
     SimulationManager::GetOutputManager()->AddEnergyToVolumeForProcess(energy, volumeName, processName);
+}
+
+void OutputManager::RemoveUnwantedTracks() {
+    const auto& metadata = fSimulationManager->GetRestMetadata();
+    set<int> trackIDsToKeep;  // We populate this container with the tracks we want to keep
+    for (const auto& track : fEvent->fTracks) {
+        // If one children track is kept, we keep all the parents
+        if (trackIDsToKeep.count(track.GetTrackID() > 0)) {
+            continue;
+        }
+        const auto hits = track.GetHits();
+        for (int i = 0; i < hits.GetNumberOfHits(); i++) {
+            const auto energy = hits.GetEnergy(i);
+            if (energy <= 0) {
+                continue;
+            }
+            const auto volumeID = hits.GetVolumeId(i);
+            const auto volume = metadata->GetGeant4GeometryInfo().GetVolumeFromID(volumeID);
+            if (metadata->IsKeepTracksVolume(volume)) {
+                trackIDsToKeep.insert(track.GetTrackID());
+                auto parentTrack = track.GetParentTrack();
+                while (parentTrack != nullptr) {
+                    trackIDsToKeep.insert(parentTrack->GetTrackID());
+                    parentTrack = parentTrack->GetParentTrack();
+                }
+            }
+        }
+    }
+    const size_t numberOfTracksBefore = fEvent->fTracks.size();
+
+    vector<TRestGeant4Track> tracksAfterRemoval;
+    for (const auto& track : fEvent->fTracks) {
+        // we do this to preserve original order
+        if (trackIDsToKeep.count(track.GetTrackID()) > 0) {
+            tracksAfterRemoval.push_back(*(fEvent->GetTrackByID(track.GetTrackID())));
+        }
+    }
+
+    fEvent->fTracks = tracksAfterRemoval;
+    const size_t numberOfTracksAfter = fEvent->fTracks.size();
+
+    /*
+    cout << "EventID: " << fEvent->GetID() << " Removed " << numberOfTracksBefore - numberOfTracksAfter
+         << " tracks out of " << numberOfTracksBefore << endl;
+     */
 }
