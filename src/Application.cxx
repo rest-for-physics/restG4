@@ -138,7 +138,7 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
     options.argc = argc;
     options.argv = const_cast<char**>(argv);
 
-    if (argc <= 2) {
+    if (argc < 2) {
         // Invoked without parameter
         ShowUsage();
         exit(0);
@@ -245,6 +245,11 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
         }
     }
 
+    if (options.rmlFile.empty()) {
+        cerr << "Input RML file not specified" << endl;
+        exit(1);
+    }
+
     return options;
 }
 
@@ -271,8 +276,8 @@ void Application::Run(const CommandLineOptions::Options& options) {
     const char* inputConfigFile = options.rmlFile.c_str();
 
     if (!TRestTools::CheckFileIsAccessible(inputConfigFile)) {
-        cout << "ERROR: Input rml file " << filesystem::weakly_canonical(inputConfigFile)
-             << " not found, please check file name." << endl;
+        cerr << "Input RML file " << filesystem::weakly_canonical(inputConfigFile)
+             << " not found, please check file name!" << endl;
         exit(1);
     }
 
