@@ -145,7 +145,7 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
     }
 
     // See https://cplusplus.com/articles/DEN36Up4/
-    for (int i = 1; i < argc; ++i) {
+    for (int i = 1; i < argc; i++) {
         string arg = argv[i];
         if ((arg == "-h") || (arg == "--help")) {
             ShowUsage();
@@ -153,7 +153,7 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
         } else if ((arg == "-c") || (arg == "--config")) {
             if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
                 options.rmlFile =
-                    argv[i++];  // Increment 'i' so we don't get the argument as the next argv[i].
+                    argv[++i];  // Increment 'i' so we don't get the argument as the next argv[i].
             } else {
                 cerr << "--config option requires one argument" << endl;
                 exit(1);
@@ -161,7 +161,7 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
         } else if ((arg == "-o") || (arg == "--output")) {
             if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
                 options.outputFile =
-                    argv[i++];  // Increment 'i' so we don't get the argument as the next argv[i].
+                    argv[++i];  // Increment 'i' so we don't get the argument as the next argv[i].
             } else {
                 cerr << "--output option requires one argument" << endl;
                 exit(1);
@@ -169,7 +169,7 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
         } else if ((arg == "-g") || (arg == "--geometry")) {
             if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
                 options.geometryFile =
-                    argv[i++];  // Increment 'i' so we don't get the argument as the next argv[i].
+                    argv[++i];  // Increment 'i' so we don't get the argument as the next argv[i].
             } else {
                 cerr << "--geometry option requires one argument" << endl;
                 exit(1);
@@ -182,7 +182,7 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
         } else if ((arg == "-j") || (arg == "--threads") || (arg == "-t")) {
             if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
                 options.nThreads =
-                    stoi(argv[i++]);  // Increment 'i' so we don't get the argument as the next argv[i].
+                    stoi(argv[++i]);  // Increment 'i' so we don't get the argument as the next argv[i].
                 if (options.nThreads < 1) {
                     cout << "--threads option error: number of threads must be > 0" << endl;
                     exit(1);
@@ -194,7 +194,7 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
         } else if ((arg == "-n") || (arg == "--events")) {
             if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
                 options.nEvents =
-                    stoi(argv[i++]);  // Increment 'i' so we don't get the argument as the next argv[i].
+                    stoi(argv[++i]);  // Increment 'i' so we don't get the argument as the next argv[i].
                 if (options.nEvents <= 0) {
                     cout << "--events option error: number of events must be > 0" << endl;
                     exit(1);
@@ -206,7 +206,7 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
         } else if ((arg == "-e") || (arg == "--entries")) {
             if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
                 options.nDesiredEntries =
-                    stoi(argv[i++]);  // Increment 'i' so we don't get the argument as the next argv[i].
+                    stoi(argv[++i]);  // Increment 'i' so we don't get the argument as the next argv[i].
                 if (options.nDesiredEntries <= 0) {
                     cout << "--entries option error: number of entries must be > 0" << endl;
                     exit(1);
@@ -218,7 +218,7 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
         } else if ((arg == "-s") || (arg == "--seed")) {
             if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
                 options.seed =
-                    stoi(argv[i++]);  // Increment 'i' so we don't get the argument as the next argv[i].
+                    stoi(argv[++i]);  // Increment 'i' so we don't get the argument as the next argv[i].
                 if (options.seed <= 0) {
                     cout << "--seed option error: seed must be positive number" << endl;
                     exit(1);
@@ -230,7 +230,7 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
         } else if (arg == "--time") {
             if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
                 options.timeLimitSeconds = GetSecondsFromFullTimeExpression(
-                    argv[i++]);  // Increment 'i' so we don't get the argument as the next argv[i].
+                    argv[++i]);  // Increment 'i' so we don't get the argument as the next argv[i].
                 if (options.timeLimitSeconds <= 0) {
                     cout << "--time option error: time limit must be of the format 1h20m30s, 10m20s, 1h, etc."
                          << endl;
