@@ -25,6 +25,10 @@ struct Options {
 
     int nDesiredEntries = 0;
     int timeLimitSeconds = 0;
+
+    // reference to original argc and argv necessary to pass to G4UIExecutive
+    int argc;
+    char** argv;
 };
 
 Options ProcessCommandLineOptions(int argc, char* const argv[]);

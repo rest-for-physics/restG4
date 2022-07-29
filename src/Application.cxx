@@ -134,8 +134,9 @@ int GetSecondsFromFullTimeExpression(const char* expression) {
 }
 
 Options ProcessCommandLineOptions(int argc, char* const argv[]) {
-    // See https://cplusplus.com/articles/DEN36Up4/
     Options options;
+    options.argc = argc;
+    options.argv = const_cast<char**>(argv);
 
     if (argc <= 2) {
         // Invoked without parameter
@@ -143,6 +144,7 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
         exit(0);
     }
 
+    // See https://cplusplus.com/articles/DEN36Up4/
     for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
         if ((arg == "-h") || (arg == "--help")) {
@@ -423,7 +425,7 @@ void Application::Run(const CommandLineOptions::Options& options) {
     {
 #ifdef G4UI_USE
         cout << "Entering vis mode.." << endl;
-        auto ui = new G4UIExecutive(options.cmdArgc, options.cmdArgv);
+        auto ui = new G4UIExecutive(options.argc, options.argv);
 #ifdef G4VIS_USE
         cout << "Executing G4 macro : /control/execute macros/vis.mac" << endl;
         UI->ApplyCommand("/control/execute macros/vis.mac");
