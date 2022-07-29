@@ -87,19 +87,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     fieldMgr->SetDetectorField(magField);
     fieldMgr->CreateChordFinder(magField);
 
-    if (physicalVolume) {
+    if (physicalVolume != nullptr) {
         G4LogicalVolume* volume = physicalVolume->GetLogicalVolume();
-        // This method seems not available in my Geant4 version 10.4.2
-        // In future Geant4 versions it seems possible to define field at particular volumes
-        // volume->setFieldManager(localFieldMgr, true);
         G4Material* material = volume->GetMaterial();
-        G4cout << "Sensitivity volume properties" << G4endl;
-        G4cout << "==============" << G4endl;
-        G4cout << "Sensitivity volume name: " << material->GetName() << G4endl;
-        G4cout << "Sensitivity volume temperature: " << material->GetTemperature() << " K" << G4endl;
-        G4cout << "Sensitivity volume density: " << material->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
+        G4cout << "Sensitive volume properties:" << G4endl;
+        G4cout << "\t- Material: " << material->GetName() << G4endl;
+        G4cout << "\t- Temperature: " << material->GetTemperature() << " K" << G4endl;
+        G4cout << "\t- Density: " << material->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
     } else {
-        cout << "ERROR: Logical volume for sensitive \"" << sensitiveVolume << "\" not found!" << endl;
+        cerr << "Physical volume for sensitive volume '" << sensitiveVolume << "' not found!" << endl;
     }
 
     const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
