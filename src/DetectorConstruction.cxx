@@ -98,6 +98,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         G4cout << "\t- Density: " << material->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
     } else {
         cerr << "Physical volume for sensitive volume '" << sensitiveVolume << "' not found!" << endl;
+        exit(1);
     }
 
     const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
@@ -167,20 +168,16 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     for (int id = 0; id < restG4Metadata->GetNumberOfActiveVolumes(); id++) {
         TString activeVolumeName = restG4Metadata->GetActiveVolumeName(id);
         G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)activeVolumeName);
-        if (pVol) {
+        if (pVol != nullptr) {
             G4LogicalVolume* lVol = pVol->GetLogicalVolume();
             if (restG4Metadata->GetMaxStepSize(activeVolumeName) > 0) {
-                G4cout << "Setting maxStepSize = " << restG4Metadata->GetMaxStepSize(activeVolumeName)
-                       << "mm for volume: " << activeVolumeName << G4endl;
+                RESTInfo << "Setting maxStepSize of " << restG4Metadata->GetMaxStepSize(activeVolumeName) * mm
+                         << "mm for volume '" << activeVolumeName << "'" << RESTendl;
                 lVol->SetUserLimits(new G4UserLimits(restG4Metadata->GetMaxStepSize(activeVolumeName) * mm));
             }
-        }
-
-        cout << "Activating volume: " << activeVolumeName << endl;
-        // restG4Event->AddActiveVolume((string)activeVolumeName);
-        if (!pVol) {
-            cout << "DetectorConstruction. Volume " << activeVolumeName << " is not defined in the geometry"
-                 << endl;
+        } else {
+            cerr << "DetectorConstruction::Construct - Volume '" << activeVolumeName
+                 << "' is not defined in the geometry" << endl;
             exit(1);
         }
     }

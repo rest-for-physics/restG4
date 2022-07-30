@@ -473,7 +473,8 @@ void OutputManager::RemoveUnwantedTracks() {
         const auto hits = track.GetHits();
         for (int i = 0; i < hits.GetNumberOfHits(); i++) {
             const auto energy = hits.GetEnergy(i);
-            if (energy <= 0) {
+            if (!fSimulationManager->GetRestMetadata()->GetRemoveUnwantedTracksKeepZeroEnergyTracks() &&
+                energy <= 0) {
                 continue;
             }
             const auto volumeID = hits.GetVolumeId(i);
