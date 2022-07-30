@@ -241,6 +241,19 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
                 exit(1);
             }
         } else {
+            const string argument = argv[i];
+            if (argument[0] == '-') {
+                cerr << "Bad CLI option '" << argument << "'" << endl << endl;
+                ShowUsage();
+                exit(1);
+            }
+            if (!options.rmlFile.empty()) {
+                // more than one rml specified
+                cerr << "Attempting to set configuration RML file to '" << argument
+                     << "' but it is already defined as '" << options.rmlFile
+                     << "'. It can only be specified once" << endl;
+                exit(1);
+            }
             options.rmlFile = argv[i];  // invoked as restG4 <rmlFile>, restG4 -j 4 <rmlFile>, etc.
         }
     }
