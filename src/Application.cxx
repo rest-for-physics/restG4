@@ -463,10 +463,13 @@ void Application::Run(const CommandLineOptions::Options& options) {
     metadata->PrintMetadata();
     run->PrintMetadata();
 
-    cout << "\t- Total simulation time is " << fSimulationManager.GetElapsedTime() << " seconds, " << nEvents
-         << " processed events (" << nEvents / fSimulationManager.GetElapsedTime() << " per second) and "
-         << nEntries << " events saved to output file (" << nEntries / fSimulationManager.GetElapsedTime()
-         << " per second)" << endl;
+    const auto nEventsAtEnd =
+        metadata->GetNumberOfEvents();  // This could be different from original if exit early
+
+    cout << "\t- Total simulation time is " << fSimulationManager.GetElapsedTime() << " seconds, "
+         << nEventsAtEnd << " processed events (" << nEventsAtEnd / fSimulationManager.GetElapsedTime()
+         << " per second) and " << nEntries << " events saved to output file ("
+         << nEntries / fSimulationManager.GetElapsedTime() << " per second)" << endl;
     cout << "\t- Output file: " << filename << endl << endl;
 }
 
