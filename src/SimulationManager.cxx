@@ -192,13 +192,12 @@ bool OutputManager::IsValidEvent() const {
     if (fSimulationManager->GetRestMetadata()->GetSaveAllEvents()) {
         return true;
     }
-    if (fEvent->GetSensitiveVolumeEnergy() <= 0) {
+    const auto energy = fEvent->GetSensitiveVolumeEnergy();
+    if (energy <= 0) {
         return false;
     }
-    if (fEvent->GetSensitiveVolumeEnergy() <
-            fSimulationManager->GetRestMetadata()->GetMinimumEnergyStored() ||
-        fEvent->GetSensitiveVolumeEnergy() >
-            fSimulationManager->GetRestMetadata()->GetMaximumEnergyStored()) {
+    if (energy < fSimulationManager->GetRestMetadata()->GetMinimumEnergyStored() ||
+        energy > fSimulationManager->GetRestMetadata()->GetMaximumEnergyStored()) {
         return false;
     }
     return true;
