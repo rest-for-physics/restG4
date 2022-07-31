@@ -183,8 +183,8 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
             if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
                 options.nThreads =
                     stoi(argv[++i]);  // Increment 'i' so we don't get the argument as the next argv[i].
-                if (options.nThreads < 1) {
-                    cout << "--threads option error: number of threads must be > 0" << endl;
+                if (options.nThreads < 0) {
+                    cout << "--threads option error: number of threads must be >= 0" << endl;
                     exit(1);
                 }
             } else {
