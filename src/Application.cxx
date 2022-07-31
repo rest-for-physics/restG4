@@ -370,6 +370,11 @@ void Application::Run(const CommandLineOptions::Options& options) {
     run->PrintMetadata();
 
     run->FormOutputFile();
+    if (run->GetOutputFile() == nullptr || !run->GetOutputFile()->IsWritable()) {
+        cerr << "Problem writing output file '" << run->GetOutputFileName()
+             << "'. Perhaps location does not exist or is not writable?" << endl;
+        exit(1);
+    }
     run->GetOutputFile()->cd();
 
     run->AddEventBranch(&fSimulationManager.fEvent);
