@@ -185,6 +185,9 @@ void SimulationManager::StopSimulation() {
 }
 
 void SimulationManager::SyncStatsFromChild(OutputManager* outputManager) {
+    if (outputManager == nullptr) {
+        return;
+    }
     lock_guard<mutex> guard(fSimulationManagerMutex);
     fNumberOfProcessedEvents += outputManager->GetEventCounter();
     outputManager->ResetEventCounter();
