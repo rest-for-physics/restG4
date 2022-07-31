@@ -51,7 +51,7 @@ void PeriodicPrint(SimulationManager* simulationManager) {
 }
 
 void SimulationManager::BeginOfRunAction() {
-    if ((G4Threading::IsMultithreadedApplication() && G4Threading::G4GetThreadId() != -1)) {
+    if (G4Threading::IsMultithreadedApplication() && G4Threading::G4GetThreadId() != -1) {
         return;  // Only call this once from the main thread
     }
 
@@ -65,7 +65,7 @@ void SimulationManager::BeginOfRunAction() {
 }
 
 void SimulationManager::EndOfRunAction() {
-    if ((G4Threading::IsMultithreadedApplication() && G4Threading::G4GetThreadId() != -1)) {
+    if (G4Threading::IsMultithreadedApplication() && G4Threading::G4GetThreadId() != -1) {
         return;  // Only call this once from the main thread
     }
 
@@ -74,7 +74,9 @@ void SimulationManager::EndOfRunAction() {
     WriteEvents();
 
     if (fPeriodicPrintThread != nullptr) {
-        fPeriodicPrintThread->join();  // need to join thread, it may block for up to 1 thread period
+        if (fPeriodicPrintThread->joinable()) {
+            fPeriodicPrintThread->join();  // need to join thread, it may block for up to 1 thread period
+        }
         delete fPeriodicPrintThread;
     }
 
