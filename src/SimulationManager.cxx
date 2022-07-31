@@ -29,12 +29,12 @@ void SimulationManager::InitializeOutputManager() {
     fOutputManagerContainer.push_back(fOutputManager);
 }
 
-void PeriodicPrint(SimulationManager* simulationManager,
-                   const G4RunManager* runManager = G4RunManager::GetRunManager()) {
+void PeriodicPrint(SimulationManager* simulationManager) {
     const auto restG4Metadata = simulationManager->GetRestMetadata();
-    const int numberOfEventsToBePercent = runManager->GetNumberOfEventsToBeProcessed() / 100;
 
     while (!simulationManager->GetPeriodicPrintThreadEndFlag()) {
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+
         for (auto& outputManager : simulationManager->GetOutputManagerContainer()) {
             simulationManager->SyncStatsFromChild(outputManager);
         }
@@ -47,8 +47,6 @@ void PeriodicPrint(SimulationManager* simulationManager,
                << " per second). " << simulationManager->GetNumberOfStoredEvents() << " events stored ("
                << simulationManager->GetNumberOfStoredEvents() / simulationManager->GetElapsedTime()
                << " per second). " << simulationManager->GetElapsedTime() << " seconds elapsed" << G4endl;
-
-        std::this_thread::sleep_for(std::chrono::seconds(2));
     }
 }
 
@@ -57,10 +55,13 @@ void SimulationManager::BeginOfRunAction() {
         return;  // Only call this once from the main thread
     }
 
+#ifndef GEANT4_WITHOUT_G4RunManagerFactory
+    // gives segfault in old Geant4 versions such as 10.4.3, didn't look into it
     if (GetRestMetadata()->PrintProgress() ||
         GetRestMetadata()->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Essential) {
-        fPeriodicPrintThread = new thread(&PeriodicPrint, this, G4RunManager::GetRunManager());
+        fPeriodicPrintThread = new thread(&PeriodicPrint, this);
     }
+#endif
 }
 
 void SimulationManager::EndOfRunAction() {
@@ -72,6 +73,11 @@ void SimulationManager::EndOfRunAction() {
 
     WriteEvents();
 
+    if (fPeriodicPrintThread != nullptr) {
+        fPeriodicPrintThread->join();  // need to join thread, it may block for up to 1 thread period
+        delete fPeriodicPrintThread;
+    }
+
     for (auto& outputManager : fOutputManagerContainer) {
         fNumberOfProcessedEvents += outputManager->GetEventCounter();
         delete outputManager;
@@ -79,11 +85,6 @@ void SimulationManager::EndOfRunAction() {
     GetRestMetadata()->SetNumberOfEvents(fNumberOfProcessedEvents);
 
     fOutputManagerContainer.clear();
-
-    if (fPeriodicPrintThread != nullptr) {
-        fPeriodicPrintThread->join();  // need to join thread, it may block for up to 1 second (thread period)
-        delete fPeriodicPrintThread;
-    }
 }
 
 SimulationManager::~SimulationManager() {
