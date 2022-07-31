@@ -9,6 +9,7 @@
 #include <TRestRun.h>
 
 #include <queue>
+#include <thread>
 
 class OutputManager;
 
@@ -27,6 +28,8 @@ class SimulationManager {
     void WriteEvents();
     void WriteEventsAndCloseFile();
 
+    std::thread* fPeriodicPrintThread;
+
    public:
     inline TRestRun* GetRestRun() const { return fRestRun; }
     inline TRestGeant4Metadata* GetRestMetadata() const { return fRestGeant4Metadata; }
@@ -38,7 +41,9 @@ class SimulationManager {
         fRestGeant4PhysicsLists = physicsLists;
     }
 
-    void EndOfRun();
+    void BeginOfRunAction();
+    void EndOfRunAction();
+
     inline bool GetAbortFlag() const { return fAbortFlag; }
     void StopSimulation();
 
@@ -46,10 +51,12 @@ class SimulationManager {
         return 1E-9 * (std::chrono::steady_clock::now().time_since_epoch().count() - fTimeStartUnix);
     }
 
-    void SyncStatsFromChild();
+    void SyncStatsFromChild(OutputManager*);
 
     int GetNumberOfProcessedEvents() const { return fNumberOfProcessedEvents; }
     int GetNumberOfStoredEvents() const { return fNumberOfStoredEvents; }
+
+    std::vector<OutputManager*> GetOutputManagerContainer() const { return fOutputManagerContainer; }
 
    private:
     static thread_local OutputManager* fOutputManager;

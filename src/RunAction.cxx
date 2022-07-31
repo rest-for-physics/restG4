@@ -38,7 +38,7 @@ void RunAction::BeginOfRunAction(const G4Run*) {
 }
 
 void RunAction::EndOfRunAction(const G4Run*) {
-    fSimulationManager->EndOfRun();
+    fSimulationManager->EndOfRunAction();
 
     TRestRun* restRun = fSimulationManager->GetRestRun();
     const auto metadata = fSimulationManager->GetRestMetadata();

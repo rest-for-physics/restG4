@@ -30,7 +30,31 @@ void SimulationManager::InitializeOutputManager() {
     fOutputManagerContainer.push_back(fOutputManager);
 }
 
-void SimulationManager::EndOfRun() {
+void PeriodicPrint(SimulationManager* simulationManager) {
+    const auto restG4Metadata = simulationManager->GetRestMetadata();
+
+    for (auto& outputManager : simulationManager->GetOutputManagerContainer()) {
+        simulationManager->SyncStatsFromChild(outputManager);
+    }
+
+    G4cout << double(simulationManager->GetNumberOfProcessedEvents()) /
+                  double(restG4Metadata->GetNumberOfEvents()) * 100
+           << "% - " << simulationManager->GetNumberOfProcessedEvents() << " Events processed out of "
+           << restG4Metadata->GetNumberOfEvents() << " requested events ("
+           << simulationManager->GetNumberOfProcessedEvents() / simulationManager->GetElapsedTime()
+           << " per second). " << simulationManager->GetNumberOfStoredEvents() << " events stored ("
+           << simulationManager->GetNumberOfStoredEvents() / simulationManager->GetElapsedTime()
+           << " per second). " << simulationManager->GetElapsedTime() << " seconds elapsed" << G4endl;
+}
+
+void SimulationManager::BeginOfRunAction() {
+    if (GetRestMetadata()->PrintProgress() ||
+        GetRestMetadata()->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Essential) {
+        fPeriodicPrintThread = new thread(&PeriodicPrint, this);
+    }
+}
+
+void SimulationManager::EndOfRunAction() {
     if ((G4Threading::IsMultithreadedApplication() && G4Threading::G4GetThreadId() != -1)) {
         return;  // Only call this once from the main thread
     }
@@ -141,10 +165,10 @@ void SimulationManager::StopSimulation() {
     fAbortFlag = true;
 }
 
-void SimulationManager::SyncStatsFromChild() {
+void SimulationManager::SyncStatsFromChild(OutputManager* outputManager = fOutputManager) {
     lock_guard<mutex> guard(fSimulationManagerMutex);
-    fNumberOfProcessedEvents += fOutputManager->GetEventCounter();
-    fOutputManager->ResetEventCounter();
+    fNumberOfProcessedEvents += outputManager->GetEventCounter();
+    outputManager->ResetEventCounter();
     fNumberOfStoredEvents = fRestRun->GetEntries();
 }
 
