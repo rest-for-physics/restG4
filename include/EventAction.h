@@ -24,7 +24,6 @@ class EventAction : public G4UserEventAction {
 
    private:
     SimulationManager* fSimulationManager;
-    TStopwatch fTimer;
 };
 
 #endif

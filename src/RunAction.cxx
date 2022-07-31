@@ -30,6 +30,8 @@ void RunAction::BeginOfRunAction(const G4Run*) {
         G4cout << "=======================================================================" << endl;
     }
 
+    fSimulationManager->BeginOfRunAction();
+
     auto steppingVerbose = ((SteppingVerbose*)G4VSteppingVerbose::GetInstance());
     steppingVerbose->SetSteppingVerbose(1);
 

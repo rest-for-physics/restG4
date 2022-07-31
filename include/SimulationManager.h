@@ -29,6 +29,7 @@ class SimulationManager {
     void WriteEventsAndCloseFile();
 
     std::thread* fPeriodicPrintThread;
+    bool fPeriodicPrintThreadEndFlag = false;
 
    public:
     inline TRestRun* GetRestRun() const { return fRestRun; }
@@ -41,6 +42,8 @@ class SimulationManager {
         fRestGeant4PhysicsLists = physicsLists;
     }
 
+    bool GetPeriodicPrintThreadEndFlag() const { return fPeriodicPrintThreadEndFlag; }
+
     void BeginOfRunAction();
     void EndOfRunAction();
 
@@ -51,7 +54,7 @@ class SimulationManager {
         return 1E-9 * (std::chrono::steady_clock::now().time_since_epoch().count() - fTimeStartUnix);
     }
 
-    void SyncStatsFromChild(OutputManager*);
+    void SyncStatsFromChild(OutputManager* = fOutputManager);
 
     int GetNumberOfProcessedEvents() const { return fNumberOfProcessedEvents; }
     int GetNumberOfStoredEvents() const { return fNumberOfStoredEvents; }
@@ -110,6 +113,8 @@ class OutputManager {
     inline void ResetEventCounter() { fProcessedEventsCounter = 0; }
 
     void BeginOfEventAction();
+
+    int GetCurrentEventID() const { return fEvent->GetID(); }
 
    private:
     std::unique_ptr<TRestGeant4Event> fEvent{};

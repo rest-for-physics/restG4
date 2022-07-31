@@ -9,7 +9,6 @@
 #include <Randomize.hh>
 
 #include "SteppingAction.h"
-
 using namespace std;
 
 thread_local OutputManager* SimulationManager::fOutputManager = nullptr;
@@ -30,27 +29,37 @@ void SimulationManager::InitializeOutputManager() {
     fOutputManagerContainer.push_back(fOutputManager);
 }
 
-void PeriodicPrint(SimulationManager* simulationManager) {
+void PeriodicPrint(SimulationManager* simulationManager,
+                   const G4RunManager* runManager = G4RunManager::GetRunManager()) {
     const auto restG4Metadata = simulationManager->GetRestMetadata();
+    const int numberOfEventsToBePercent = runManager->GetNumberOfEventsToBeProcessed() / 100;
 
-    for (auto& outputManager : simulationManager->GetOutputManagerContainer()) {
-        simulationManager->SyncStatsFromChild(outputManager);
+    while (!simulationManager->GetPeriodicPrintThreadEndFlag()) {
+        for (auto& outputManager : simulationManager->GetOutputManagerContainer()) {
+            simulationManager->SyncStatsFromChild(outputManager);
+        }
+
+        G4cout << double(simulationManager->GetNumberOfProcessedEvents()) /
+                      double(restG4Metadata->GetNumberOfEvents()) * 100
+               << "% - " << simulationManager->GetNumberOfProcessedEvents() << " Events processed out of "
+               << restG4Metadata->GetNumberOfEvents() << " requested events ("
+               << simulationManager->GetNumberOfProcessedEvents() / simulationManager->GetElapsedTime()
+               << " per second). " << simulationManager->GetNumberOfStoredEvents() << " events stored ("
+               << simulationManager->GetNumberOfStoredEvents() / simulationManager->GetElapsedTime()
+               << " per second). " << simulationManager->GetElapsedTime() << " seconds elapsed" << G4endl;
+
+        std::this_thread::sleep_for(std::chrono::seconds(2));
     }
-
-    G4cout << double(simulationManager->GetNumberOfProcessedEvents()) /
-                  double(restG4Metadata->GetNumberOfEvents()) * 100
-           << "% - " << simulationManager->GetNumberOfProcessedEvents() << " Events processed out of "
-           << restG4Metadata->GetNumberOfEvents() << " requested events ("
-           << simulationManager->GetNumberOfProcessedEvents() / simulationManager->GetElapsedTime()
-           << " per second). " << simulationManager->GetNumberOfStoredEvents() << " events stored ("
-           << simulationManager->GetNumberOfStoredEvents() / simulationManager->GetElapsedTime()
-           << " per second). " << simulationManager->GetElapsedTime() << " seconds elapsed" << G4endl;
 }
 
 void SimulationManager::BeginOfRunAction() {
+    if ((G4Threading::IsMultithreadedApplication() && G4Threading::G4GetThreadId() != -1)) {
+        return;  // Only call this once from the main thread
+    }
+
     if (GetRestMetadata()->PrintProgress() ||
         GetRestMetadata()->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Essential) {
-        fPeriodicPrintThread = new thread(&PeriodicPrint, this);
+        fPeriodicPrintThread = new thread(&PeriodicPrint, this, G4RunManager::GetRunManager());
     }
 }
 
@@ -58,6 +67,8 @@ void SimulationManager::EndOfRunAction() {
     if ((G4Threading::IsMultithreadedApplication() && G4Threading::G4GetThreadId() != -1)) {
         return;  // Only call this once from the main thread
     }
+
+    fPeriodicPrintThreadEndFlag = true;
 
     WriteEvents();
 
@@ -68,6 +79,11 @@ void SimulationManager::EndOfRunAction() {
     GetRestMetadata()->SetNumberOfEvents(fNumberOfProcessedEvents);
 
     fOutputManagerContainer.clear();
+
+    if (fPeriodicPrintThread != nullptr) {
+        fPeriodicPrintThread->join();  // need to join thread, it may block for up to 1 second (thread period)
+        delete fPeriodicPrintThread;
+    }
 }
 
 SimulationManager::~SimulationManager() {
@@ -165,7 +181,7 @@ void SimulationManager::StopSimulation() {
     fAbortFlag = true;
 }
 
-void SimulationManager::SyncStatsFromChild(OutputManager* outputManager = fOutputManager) {
+void SimulationManager::SyncStatsFromChild(OutputManager* outputManager) {
     lock_guard<mutex> guard(fSimulationManagerMutex);
     fNumberOfProcessedEvents += outputManager->GetEventCounter();
     outputManager->ResetEventCounter();
