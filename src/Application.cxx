@@ -88,7 +88,7 @@ void PrintOptions(const Options& options) {
                                   : "")
          << (options.seed != 0 ? "\t- Random seed: " + to_string(options.seed) + "\n" : "")
          << (options.nDesiredEntries != 0
-                 ? "\t- Number of desired file entries: " + to_string(options.nDesiredEntries) + "\n"
+                 ? "\t- Number of desired entries: " + to_string(options.nDesiredEntries) + "\n"
                  : "")
          << (options.timeLimitSeconds != 0
                  ? "\t- Time limit: " + to_string(options.timeLimitSeconds) + " seconds\n"
