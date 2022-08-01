@@ -113,6 +113,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     fSimulationManager->fRestRun->AddMetadata(fSimulationManager->fRestGeant4Metadata);
     fSimulationManager->fRestRun->AddMetadata(fSimulationManager->fRestGeant4PhysicsLists);
+
     fSimulationManager->fRestRun->PrintMetadata();
 
     fSimulationManager->fRestRun->FormOutputFile();
@@ -138,6 +139,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 
     runManager->SetUserInitialization(detector);
     runManager->SetUserInitialization(new PhysicsList(fSimulationManager->fRestGeant4PhysicsLists));
+    fSimulationManager->fRestGeant4PhysicsLists->PrintMetadata();
 
     runManager->SetUserInitialization(new ActionInitialization(fSimulationManager));
 
