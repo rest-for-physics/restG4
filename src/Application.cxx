@@ -466,7 +466,7 @@ void Application::Run(const CommandLineOptions::Options& options) {
 
     systime = time(nullptr);
     run->SetEndTimeStamp((Double_t)systime);
-    const TString filename = TRestTools::ToAbsoluteName(run->GetOutputFileName().Data());
+    const string filename = TRestTools::ToAbsoluteName(run->GetOutputFileName().Data());
 
     const auto nEntries = run->GetEntries();
 
@@ -488,6 +488,9 @@ void Application::Run(const CommandLineOptions::Options& options) {
          << " per second) and " << nEntries << " events saved to output file ("
          << nEntries / fSimulationManager.GetElapsedTime() << " per second)" << endl;
     cout << "\t- Output file: " << filename << endl << endl;
+
+    // Do some checks
+    ValidateOutputFile(filename);
 }
 
 void Application::WriteGeometry(TGeoManager* geometry, const char* filename, const char* option) {
@@ -501,4 +504,34 @@ void Application::WriteGeometry(TGeoManager* geometry, const char* filename, con
     geometry->Write("Geometry");
 
     file->Close();
+}
+
+void Application::ValidateOutputFile(const string& filename) const {
+    bool error = false;
+    const auto file = TFile::Open(filename.c_str(), "READ");
+    if (file == nullptr) {
+        cerr << "Output file not found" << endl;
+        exit(1);
+    }
+
+    const auto eventTree = file->Get<TTree>("EventTree");
+    if (eventTree == nullptr) {
+        error = true;
+        cerr << "EventTree not found in output file" << endl;
+    }
+    const auto analysisTree = file->Get<TTree>("AnalysisTree");
+    if (analysisTree == nullptr) {
+        error = true;
+        cerr << "AnalysisTree not found in output file" << endl;
+    }
+    const auto geometry = file->Get<TGeoManager>("Geometry");
+    if (geometry == nullptr) {
+        error = true;
+        cerr << "Geometry not found in output file" << endl;
+    }
+
+    if (error) {
+        file->ls();
+        exit(1);
+    }
 }
