@@ -493,6 +493,8 @@ void Application::Run(const CommandLineOptions::Options& options) {
     ValidateOutputFile(filename);
 }
 
+constexpr const char* geometryName = "Geometry";
+
 void Application::WriteGeometry(TGeoManager* geometry, const char* filename, const char* option) {
     auto file = TFile::Open(filename, option);
     file->cd();
@@ -501,35 +503,54 @@ void Application::WriteGeometry(TGeoManager* geometry, const char* filename, con
         cout << "Application::WriteGeometry - Error - Unable to write geometry into file" << endl;
         exit(1);
     }
-    geometry->Write("Geometry");
+    geometry->Write(geometryName);
 
     file->Close();
 }
 
 void Application::ValidateOutputFile(const string& filename) const {
     bool error = false;
-    const auto file = TFile::Open(filename.c_str(), "READ");
+
+    const auto run = TRestRun(filename);
+    const auto file = run.GetInputFile();
     if (file == nullptr) {
         cerr << "Output file not found" << endl;
         exit(1);
     }
 
-    const auto eventTree = file->Get<TTree>("EventTree");
+    const auto eventTree = run.GetEventTree();
     if (eventTree == nullptr) {
         error = true;
-        cerr << "EventTree not found in output file" << endl;
+        cerr << "'EventTree' not found in output file" << endl;
     }
-    const auto analysisTree = file->Get<TTree>("AnalysisTree");
+    const auto analysisTree = run.GetAnalysisTree();
     if (analysisTree == nullptr) {
         error = true;
-        cerr << "AnalysisTree not found in output file" << endl;
+        cerr << "'AnalysisTree' not found in output file" << endl;
     }
-    const auto geometry = file->Get<TGeoManager>("Geometry");
+
+    const auto geometry = file->Get<TGeoManager>(geometryName);
     if (geometry == nullptr) {
         error = true;
         cerr << "Geometry not found in output file" << endl;
     }
 
+    map<string, int> metadataCount;
+    for (const auto& obj : *file->GetListOfKeys()) {
+        const auto key = dynamic_cast<TKey*>(obj);
+        metadataCount[key->GetClassName()]++;
+    }
+    for (const auto name : {"TRestGeant4Metadata", "TRestGeant4PhysicsLists", "TRestRun", "TRestAnalysisTree",
+                            "TGeoManager", "TTree"}) {
+        if (metadataCount[name] != 1) {
+            error = true;
+            if (metadataCount[name] <= 0) {
+                cerr << "'" << name << "' not found in output file" << endl;
+            } else {
+                cerr << "Multiple instances of '" << name << "' in the same output file" << endl;
+            }
+        }
+    }
     if (error) {
         file->ls();
         exit(1);
