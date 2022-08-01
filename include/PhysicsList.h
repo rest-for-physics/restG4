@@ -10,9 +10,9 @@
 
 class PhysicsList : public G4VModularPhysicsList {
    public:
-    PhysicsList();
-    PhysicsList(TRestGeant4PhysicsLists* restPhysicsLists);
-    ~PhysicsList();
+    PhysicsList() = delete;
+    explicit PhysicsList(TRestGeant4PhysicsLists* restPhysicsLists);
+    ~PhysicsList() override;
 
    protected:
     // Construct particle and physics

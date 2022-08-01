@@ -41,10 +41,6 @@
 
 using namespace std;
 
-PhysicsList::PhysicsList() : G4VModularPhysicsList() {
-    cout << "restG4. PhysicsList. Wrong constructor!!" << endl;
-}
-
 PhysicsList::PhysicsList(TRestGeant4PhysicsLists* physicsLists) : G4VModularPhysicsList() {
     // add new units for radioActive decays
     const G4double minute = 60 * second;
@@ -132,13 +128,11 @@ void PhysicsList::InitializePhysicsLists() {
 
     if (fRestPhysicsLists->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Essential &&
         emCounter == 0) {
-        G4cout << "REST WARNING : No electromagenetic physics list has been enabled!!" << G4endl;
+        RESTWarning << "PhysicsList: No EM physics list has been enabled" << RESTendl;
     }
 
     if (emCounter > 1) {
-        G4cout << "REST ERROR: restG4. PhysicsList. More than 1 EM PhysicsList "
-                  "enabled."
-               << G4endl;
+        cerr << "PhysicsList: More than 1 EM PhysicsList enabled." << endl;
         exit(1);
     }
 
@@ -250,29 +244,21 @@ void PhysicsList::ConstructProcess() {
         // Setting Internal Conversion (ICM) option.
         if (fRestPhysicsLists->GetPhysicsListOptionValue("G4RadioactiveDecay", "ICM") == "true") {
             radioactiveDecay->SetICM(true);
-        }  // Internal Conversion
-        else if (fRestPhysicsLists->GetPhysicsListOptionValue("G4RadioactiveDecay", "ICM") == "false") {
+        } else if (fRestPhysicsLists->GetPhysicsListOptionValue("G4RadioactiveDecay", "ICM") == "false") {
             radioactiveDecay->SetICM(false);
-        }  // Internal Conversion
-        else if (fRestPhysicsLists->GetVerboseLevel() >=
-                 TRestStringOutput::REST_Verbose_Level::REST_Essential) {
-            G4cout << "REST WARNING. restG4. PhysicsList. G4RadioactiveDecay. Option "
-                      "ICM not defined."
-                   << G4endl;
+        } else if (fRestPhysicsLists->GetVerboseLevel() >=
+                   TRestStringOutput::REST_Verbose_Level::REST_Essential) {
+            RESTWarning << "PhysicsList 'G4RadioactiveDecay' option 'ICM' not defined" << RESTendl;
         }
 
         // Enabling electron re-arrangement (ARM) option.
         if (fRestPhysicsLists->GetPhysicsListOptionValue("G4RadioactiveDecay", "ARM") == "true") {
             radioactiveDecay->SetARM(true);
-        }  // Internal Conversion
-        else if (fRestPhysicsLists->GetPhysicsListOptionValue("G4RadioactiveDecay", "ARM") == "false") {
+        } else if (fRestPhysicsLists->GetPhysicsListOptionValue("G4RadioactiveDecay", "ARM") == "false") {
             radioactiveDecay->SetARM(false);
-        }  // Internal Conversion
-        else if (fRestPhysicsLists->GetVerboseLevel() >=
-                 TRestStringOutput::REST_Verbose_Level::REST_Essential) {
-            G4cout << "REST WARNING. restG4. PhysicsList. G4RadioactiveDecay. Option "
-                      "ARM not defined."
-                   << G4endl;
+        } else if (fRestPhysicsLists->GetVerboseLevel() >=
+                   TRestStringOutput::REST_Verbose_Level::REST_Essential) {
+            RESTWarning << "PhysicsList 'G4RadioactiveDecay' option 'ARM' not defined" << RESTendl;
         }
     }
 
