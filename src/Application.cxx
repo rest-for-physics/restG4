@@ -408,12 +408,11 @@ void Application::Run(const CommandLineOptions::Options& options) {
     auto runManager = new G4RunManager();
 #endif
 
-    auto detector = new DetectorConstruction(&fSimulationManager);
-
     fSimulationManager.InitializeUserDistributions();
 
-    runManager->SetUserInitialization(detector);
+    runManager->SetUserInitialization(new DetectorConstruction(&fSimulationManager));
     runManager->SetUserInitialization(new PhysicsList(fSimulationManager.GetRestPhysicsLists()));
+    fSimulationManager.GetRestPhysicsLists()->PrintMetadata();
     runManager->SetUserInitialization(new ActionInitialization(&fSimulationManager));
 
     runManager->Initialize();

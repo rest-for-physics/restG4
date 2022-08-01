@@ -30,8 +30,7 @@
         <parameter name="seed" value="1"/>
 
         <generator type="volume" from="Gas">
-            <source use="Xe136bb0n.dat">
-            </source>
+            <source use="Xe136bb0n.dat"/>
         </generator>
 
         <detector>
@@ -53,24 +52,24 @@
         <parameter name="maxEnergyRangeProductionCuts" value="1GeV"/>
 
         <!-- EM Physics lists -->
-        <physicsList name="G4EmLivermorePhysics"></physicsList>
-        <!-- <physicsList name="G4EmPenelopePhysics"> </physicsList> -->
-        <!-- <physicsList name="G4EmStandardPhysics_option3"> </physicsList> -->
+        <physicsList name="G4EmLivermorePhysics"> <!-- "G4EmPenelopePhysics", "G4EmStandardPhysics_option3" -->
+            <option name="pixe" value="true"/>
+        </physicsList>
 
         <!-- Decay physics lists -->
-        <physicsList name="G4DecayPhysics"></physicsList>
-        <physicsList name="G4RadioactiveDecayPhysics"></physicsList>
+        <physicsList name="G4DecayPhysics"/>
+        <physicsList name="G4RadioactiveDecayPhysics"/>
         <physicsList name="G4RadioactiveDecay">
             <option name="ICM" value="true"/>
             <option name="ARM" value="true"/>
         </physicsList>
 
         <!-- Hadron physics lists -->
-        <physicsList name="G4HadronElasticPhysicsHP"></physicsList>
-        <physicsList name="G4IonBinaryCascadePhysics"></physicsList>
-        <physicsList name="G4HadronPhysicsQGSP_BIC_HP"></physicsList>
-        <physicsList name="G4NeutronTrackingCut"></physicsList>
-        <physicsList name="G4EmExtraPhysics"></physicsList>
+        <physicsList name="G4HadronElasticPhysicsHP"/>
+        <physicsList name="G4IonBinaryCascadePhysics"/>
+        <physicsList name="G4HadronPhysicsQGSP_BIC_HP"/>
+        <physicsList name="G4NeutronTrackingCut"/>
+        <physicsList name="G4EmExtraPhysics"/>
 
     </TRestGeant4PhysicsLists>
 
