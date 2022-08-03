@@ -15,9 +15,9 @@
 #include <TRestGeant4PhysicsLists.h>
 #include <TRestGeant4Track.h>
 #include <TRestRun.h>
-#include <signal.h>
 
 #include <G4RunManager.hh>
+#include <csignal>
 #ifndef GEANT4_WITHOUT_G4RunManagerFactory
 #include <G4RunManagerFactory.hh>
 #endif
@@ -483,14 +483,14 @@ void Application::Run(const CommandLineOptions::Options& options) {
     const auto nEventsAtEnd =
         metadata->GetNumberOfEvents();  // This could be different from original if exit early
 
-    cout << "\t- Total simulation time is " << fSimulationManager.GetElapsedTime() << " seconds, "
+    // Do some checks
+    ValidateOutputFile(filename);
+
+    cout << "\n\t- Total simulation time is " << fSimulationManager.GetElapsedTime() << " seconds, "
          << nEventsAtEnd << " processed events (" << nEventsAtEnd / fSimulationManager.GetElapsedTime()
          << " per second) and " << nEntries << " events saved to output file ("
          << nEntries / fSimulationManager.GetElapsedTime() << " per second)" << endl;
     cout << "\t- Output file: " << filename << endl << endl;
-
-    // Do some checks
-    ValidateOutputFile(filename);
 }
 
 constexpr const char* geometryName = "Geometry";
