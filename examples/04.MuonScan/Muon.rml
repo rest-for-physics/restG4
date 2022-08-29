@@ -48,9 +48,9 @@
         <parameter name="maxEnergyRangeProductionCuts" value="1" units="GeV"/>
 
         <!-- EM Physics lists -->
-        <physicsList name="G4EmLivermorePhysics"/>
-        <!-- <physicsList name="G4EmPenelopePhysics"> </physicsList> -->
-        <!-- <physicsList name="G4EmStandardPhysics_option3"> </physicsList> -->
+        <physicsList name="G4EmLivermorePhysics"> <!-- "G4EmPenelopePhysics", "G4EmStandardPhysics_option3" -->
+            <option name="pixe" value="true"/>
+        </physicsList>
 
         <!-- Decay physics lists -->
         <physicsList name="G4DecayPhysics"/>
