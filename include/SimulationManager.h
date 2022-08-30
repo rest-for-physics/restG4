@@ -107,7 +107,8 @@ class OutputManager {
     void RecordStep(const G4Step*);
 
     void AddSensitiveEnergy(Double_t energy, const char* physicalVolumeName);
-    void AddEnergyToVolumeForProcess(Double_t energy, const char* volumeName, const char* processName);
+    void AddEnergyToVolumeForParticleForProcess(Double_t energy, const char* volumeName,
+                                                const char* particleName, const char* processName);
 
     inline int GetEventCounter() const { return fProcessedEventsCounter; }
     inline void ResetEventCounter() { fProcessedEventsCounter = 0; }

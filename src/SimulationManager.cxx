@@ -301,17 +301,13 @@ void OutputManager::AddSensitiveEnergy(Double_t energy, const char* physicalVolu
                                                   */
 }
 
-void OutputManager::AddEnergyToVolumeForProcess(Double_t energy, const char* volumeName,
-                                                const char* processName) {
+void OutputManager::AddEnergyToVolumeForParticleForProcess(Double_t energy, const char* volumeName,
+                                                           const char* particleName,
+                                                           const char* processName) {
     if (energy <= 0) {
         return;
     }
-    if (fEvent->fEnergyInVolumePerProcess[volumeName].count(processName) == 0) {
-        fEvent->fEnergyInVolumePerProcess[volumeName][processName] = 0;
-    }
-    fEvent->fEnergyInVolumePerProcess[volumeName][processName] += energy;
-
-    fEvent->fTotalDepositedEnergy += energy;
+    fEvent->fEnergyInVolumePerParticlePerProcess[volumeName][particleName][processName] += energy;
 }
 
 // Geant4Lib
@@ -504,7 +500,8 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     fKineticEnergy.emplace_back(step->GetPreStepPoint()->GetKineticEnergy() / CLHEP::keV);
     fMomentumDirection.emplace_back(momentum.x(), momentum.y(), momentum.z());
 
-    SimulationManager::GetOutputManager()->AddEnergyToVolumeForProcess(energy, volumeName, processName);
+    SimulationManager::GetOutputManager()->AddEnergyToVolumeForParticleForProcess(energy, volumeName,
+                                                                                  particleName, processName);
 }
 
 void OutputManager::RemoveUnwantedTracks() {
