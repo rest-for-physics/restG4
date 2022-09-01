@@ -1,5 +1,7 @@
 
 #include <TRestGeant4Event.h>
+#include <TRestGeant4Metadata.h>
+#include <TRestRun.h>
 
 Int_t Validate(const char* filename) {
     cout << "Starting validation for '" << filename << "'" << endl;
