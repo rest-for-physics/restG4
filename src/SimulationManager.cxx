@@ -421,7 +421,7 @@ TRestGeant4Track::TRestGeant4Track(const G4Track* track) : TRestGeant4Track() {
 
     fWeight = track->GetWeight();
 
-    fGlobalTimestamp = track->GetGlobalTime() / CLHEP::second;
+    fGlobalTimestamp = track->GetGlobalTime() / CLHEP::microsecond;
 
     const G4ThreeVector& trackOrigin = track->GetPosition();
     fInitialPosition = {trackOrigin.x(), trackOrigin.y(), trackOrigin.z()};
@@ -436,7 +436,7 @@ void TRestGeant4Track::UpdateTrack(const G4Track* track) {
     }
 
     fLength = track->GetTrackLength() / CLHEP::mm;
-    fTimeLength = track->GetGlobalTime() / CLHEP::second - fGlobalTimestamp;
+    fTimeLength = track->GetGlobalTime() / CLHEP::microsecond - fGlobalTimestamp;
 }
 
 Int_t TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(const G4VProcess* process) {
@@ -490,7 +490,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     Double_t z = aTrack->GetPosition().z() / CLHEP::mm;
 
     const TVector3 hitPosition(x, y, z);
-    const Double_t hitGlobalTime = step->GetPreStepPoint()->GetGlobalTime() / CLHEP::second;
+    const Double_t hitGlobalTime = step->GetPreStepPoint()->GetGlobalTime() / CLHEP::microsecond;
     const G4ThreeVector& momentum = step->GetPreStepPoint()->GetMomentumDirection();
 
     AddHit(hitPosition, energy, hitGlobalTime);  // this increases fNHits
