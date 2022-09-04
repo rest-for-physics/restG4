@@ -66,13 +66,13 @@ Build Standalone:
 Load REST Libraries:
   stage: Load REST Libraries
   script:
-    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - source ${CI_PROJECT_DIR}/install/thisREST.sh
     - restRoot -b -q
 
 01.NLDBD:
   stage: Run Examples
   script:
-    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - source ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/01.NLDBD/
     - restG4 NLDBD.rml
     - geant4-config --version
@@ -81,7 +81,7 @@ Load REST Libraries:
 03.Fluorescence:
   stage: Run Examples
   script:
-    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - source ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/03.Fluorescence/
     - restG4 gamma.rml
     - restManager --c g4Analysis.rml --f Run00111_Gamma_Fluorescence.root
@@ -91,7 +91,7 @@ Load REST Libraries:
 04.MuonScan:
   stage: Run Examples
   script:
-    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - source ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/04.MuonScan/
     - restG4 Muon.rml
     - geant4-config --version
@@ -104,7 +104,7 @@ Load REST Libraries:
 05.PandaXIII:
   stage: Run Examples
   script:
-    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - source ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/05.PandaXIII/
     - restG4 Xe136bb0n.rml
     - restRoot -b -q Validate.C'("Xe136bb0n_n2E06.root")'
@@ -112,7 +112,7 @@ Load REST Libraries:
 06.IonRecoils:
   stage: Run Examples
   script:
-    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - source ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/06.IonRecoils/
     - restG4 recoils.rml
     - restRoot -b -q Validate.C'("Run00001_F20_Recoils.root")'
@@ -120,7 +120,7 @@ Load REST Libraries:
 07.FullChainDecay:
   stage: Run Examples
   script:
-    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - source ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/07.FullChainDecay/
     - restG4 fullChain.rml
     - restG4 singleDecay.rml
@@ -133,7 +133,7 @@ Load REST Libraries:
 08.Alphas:
   stage: Run Examples
   script:
-    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - source ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/08.Alphas/
     - mkdir data
     - export REST_ENERGY=5
@@ -154,7 +154,7 @@ Load REST Libraries:
 09.Pb210_Shielding:
   stage: Run Examples
   script:
-    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - source ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/09.Pb210_Shield/
     - restG4 Pb210.rml
     - restRoot -b -q Validate.C'("Run00001_Pb210_Shielding.root")'
@@ -162,7 +162,7 @@ Load REST Libraries:
 10.Geometries:
   stage: Run Examples
   script:
-    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - source ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/10.Geometries/
     - restG4 Assembly.rml
     - restRoot -b -q Validate.C'("Run00001_Assembly_Assembly.root")'
@@ -170,7 +170,7 @@ Load REST Libraries:
 11.Xrays:
   stage: Run Examples
   script:
-    - . ${CI_PROJECT_DIR}/install/thisREST.sh
+    - source ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/11.Xrays/
     - restG4 xrays.rml
     - restManager --c analysis.rml --f RestG4_xrays_00001_ArgonISO.root
