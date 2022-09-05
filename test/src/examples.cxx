@@ -285,7 +285,7 @@ TEST(restG4, Example_07_Decay_FullChain) {
 
 TEST(restG4, Example_09_Pb210_Shield) {
     GTEST_SKIP_("This test should work, but we skip it because it takes too long");
-    //  cd into example
+    // cd into example
     const auto originalPath = fs::current_path();
     const auto thisExamplePath = examplesPath / "09.Pb210_Shield";
     fs::current_path(thisExamplePath);
@@ -298,6 +298,33 @@ TEST(restG4, Example_09_Pb210_Shield) {
     app.Run(options);
 
     TRestRun run(options.outputFile.c_str());
+
+    // Run validation macro
+    const TString macro(thisExamplePath / "Validate.C");
+    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+    int error = 0;
+    const int result =
+        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", options.outputFile.c_str()), &error);
+    EXPECT_EQ(error, 0);
+    EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
+}
+
+TEST(restG4, Example_10_Geometry) {
+    // cd into example
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "10.Geometries";
+    fs::current_path(thisExamplePath);
+
+    CommandLineOptions::Options options;
+    options.rmlFile = "Assembly.rml";
+    options.outputFile = thisExamplePath / "geometries.root";
+
+    Application app;
+    app.Run(options);
+
+    TRestRun run(options.outputFile);
 
     // Run validation macro
     const TString macro(thisExamplePath / "Validate.C");
