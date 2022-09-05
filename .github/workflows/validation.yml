@@ -395,6 +395,27 @@ jobs:
           restG4 CosineSquaredCircle.rml -o CosineSquaredCircle.root
           restRoot -b -q Validate.C'("CosineSquaredCircle.root")'
 
+  restG4-examples-13:
+    name: "Example 13: IAXO"
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
+    needs: [ check-installation, restG4-examples-10 ]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Restore cache
+        uses: actions/cache@v3
+        id: framework-install-restG4-cache
+        with:
+          path: ${{ env.REST_PATH }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
+      - name: Run example
+        run: |
+          source ${{ env.REST_PATH }}/thisREST.sh
+          cd ${{ env.REST_PATH }}/examples/restG4/13.IAXO/
+          restG4 Neutrons.rml -o Neutrons.root -e 1
+          restRoot -b -q Validate.C'("Neutrons.root")'
+
   # Reference version of Geant4
 
   framework-install-reference:
