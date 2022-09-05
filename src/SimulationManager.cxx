@@ -304,10 +304,7 @@ void OutputManager::AddSensitiveEnergy(Double_t energy, const char* physicalVolu
 void OutputManager::AddEnergyToVolumeForParticleForProcess(Double_t energy, const char* volumeName,
                                                            const char* particleName,
                                                            const char* processName) {
-    if (energy <= 0) {
-        return;
-    }
-    fEvent->fEnergyInVolumePerParticlePerProcess[volumeName][particleName][processName] += energy;
+    fEvent->AddEnergyInVolumeForParticleForProcess(energy, volumeName, particleName, processName);
 }
 
 // Geant4Lib
