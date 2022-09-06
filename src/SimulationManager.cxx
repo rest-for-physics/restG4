@@ -472,7 +472,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
         processID = TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(process);
     }
 
-    metadata->fGeant4PhysicsInfo.InsertProcessName(processID, processName);
+    metadata->fGeant4PhysicsInfo.InsertProcessName(processID, processName, processTypeName);
 
     const auto energy = step->GetTotalEnergyDeposit() / CLHEP::keV;
     const auto trackKineticEnergy = step->GetTrack()->GetKineticEnergy() / CLHEP::keV;
