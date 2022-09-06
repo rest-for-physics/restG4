@@ -364,3 +364,31 @@ TEST(restG4, Example_12_Generators) {
 
     fs::current_path(originalPath);
 }
+
+TEST(restG4, Example_13_IAXO) {
+    //  cd into example
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "13.IAXO";
+    fs::current_path(thisExamplePath);
+
+    CommandLineOptions::Options options;
+    options.rmlFile = "Neutrons.rml";
+    options.outputFile = thisExamplePath / "Neutrons.root";
+    options.nDesiredEntries = 1;
+
+    Application app;
+    app.Run(options);
+
+    TRestRun run(options.outputFile);
+
+    // Run validation macro
+    const TString macro(thisExamplePath / "Validate.C");
+    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+    int error = 0;
+    const int result =
+        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", options.outputFile.c_str()), &error);
+    EXPECT_EQ(error, 0);
+    EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
+}
