@@ -27,7 +27,7 @@ Author: Luis Obis (lobis@unizar.es)
             <parameter name="maxStepSize" value="1mm"/>
             <parameter name="activateAllVolumes" value="true"/>
 
-            <removeUnwantedTracks enabled="false" keepZeroEnergyTracks="true"/>
+            <removeUnwantedTracks enabled="true" keepZeroEnergyTracks="true"/>
 
             <volume name="gasVolume" sensitive="true" maxStepSize="0.05mm"/>
             <volume name="^scintillatorVolume" sensitive="false" keepTracks="true" maxStepSize="0.5mm"/>

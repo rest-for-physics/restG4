@@ -516,8 +516,7 @@ void OutputManager::RemoveUnwantedTracks() {
                 energy <= 0) {
                 continue;
             }
-            const auto volumeID = hits.GetVolumeId(i);
-            const auto volume = metadata->GetGeant4GeometryInfo().GetVolumeFromID(volumeID);
+            const auto volume = metadata->GetGeant4GeometryInfo().GetVolumeFromID(hits.GetVolumeId(i));
             if (metadata->IsKeepTracksVolume(volume)) {
                 trackIDsToKeep.insert(track.GetTrackID());
                 auto parentTrack = track.GetParentTrack();
@@ -541,8 +540,6 @@ void OutputManager::RemoveUnwantedTracks() {
     fEvent->fTracks = tracksAfterRemoval;
     const size_t numberOfTracksAfter = fEvent->fTracks.size();
 
-    /*
     cout << "EventID: " << fEvent->GetID() << " Removed " << numberOfTracksBefore - numberOfTracksAfter
          << " tracks out of " << numberOfTracksBefore << endl;
-     */
 }
