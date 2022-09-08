@@ -506,7 +506,7 @@ void OutputManager::RemoveUnwantedTracks() {
     set<int> trackIDsToKeep;  // We populate this container with the tracks we want to keep
     for (const auto& track : fEvent->fTracks) {
         // If one children track is kept, we keep all the parents
-        if (trackIDsToKeep.count(track.GetTrackID() > 0)) {
+        if (trackIDsToKeep.count(track.GetTrackID()) > 0) {
             continue;
         }
         const auto hits = track.GetHits();
