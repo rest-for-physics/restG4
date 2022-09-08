@@ -32,13 +32,13 @@ Int_t Validate(const char* filename) {
     TRestGeant4Event* event = run.GetInputEvent<TRestGeant4Event>();
     run.GetEntry(0);
 
-    if (event->GetNumberOfTracks() != 28059) {
+    if (event->GetNumberOfTracks() != 1738 /* 28059 */) {
         cout << "Incorrect number of tracks: " << event->GetNumberOfTracks() << endl;
-        // return 4;
+        return 4;
     }
-    if (event->GetNumberOfHits() != 87189) {
+    if (event->GetNumberOfHits() != 15202 /* 87189 */) {
         cout << "Incorrect number of hits: " << event->GetNumberOfHits() << endl;
-        // return 5;
+        return 5;
     }
 
     if (TMath::Abs(event->GetSensitiveVolumeEnergy() - 72.436883) > 1e-4) {
