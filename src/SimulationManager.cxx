@@ -510,7 +510,7 @@ void OutputManager::RemoveUnwantedTracks() {
             continue;
         }
         const auto hits = track.GetHits();
-        for (int i = 0; i < hits.GetNumberOfHits(); i++) {
+        for (int i = 0; i < int(hits.GetNumberOfHits()); i++) {
             const auto energy = hits.GetEnergy(i);
             if (!fSimulationManager->GetRestMetadata()->GetRemoveUnwantedTracksKeepZeroEnergyTracks() &&
                 energy <= 0) {
@@ -538,8 +538,15 @@ void OutputManager::RemoveUnwantedTracks() {
     }
 
     fEvent->fTracks = tracksAfterRemoval;
-    const size_t numberOfTracksAfter = fEvent->fTracks.size();
 
+    fEvent->fTrackIDToTrackIndex.clear();
+    for (int i = 0; i < int(fEvent->fTracks.size()); i++) {
+        fEvent->fTrackIDToTrackIndex[fEvent->fTracks[i].GetTrackID()] = i;
+    }
+
+    /*
+    const size_t numberOfTracksAfter = fEvent->fTracks.size();
     cout << "EventID: " << fEvent->GetID() << " Removed " << numberOfTracksBefore - numberOfTracksAfter
          << " tracks out of " << numberOfTracksBefore << endl;
+     */
 }
