@@ -363,7 +363,7 @@ bool TRestGeant4Event::InsertTrack(const G4Track* track) {
         fSubEventPrimaryDirection = {momentum.x(), momentum.y(), momentum.z()};
     }
 
-    fTrackIDToTrackIndex[track->GetTrackID()] = fTracks.size();  // before insertion
+    fTrackIDToTrackIndex[track->GetTrackID()] = int(fTracks.size());  // before insertion
 
     fTracks.emplace_back(track);
 
@@ -539,6 +539,7 @@ void OutputManager::RemoveUnwantedTracks() {
 
     fEvent->fTracks = tracksAfterRemoval;
 
+    // Updated indices
     fEvent->fTrackIDToTrackIndex.clear();
     for (int i = 0; i < int(fEvent->fTracks.size()); i++) {
         fEvent->fTrackIDToTrackIndex[fEvent->fTracks[i].GetTrackID()] = i;
