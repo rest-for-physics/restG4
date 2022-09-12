@@ -9,6 +9,7 @@
 #include <Randomize.hh>
 
 #include "SteppingAction.h"
+
 using namespace std;
 
 thread_local OutputManager* SimulationManager::fOutputManager = nullptr;
@@ -327,20 +328,20 @@ TRestGeant4Event::TRestGeant4Event(const G4Event* event) : TRestGeant4Event() {
         fPrimaryDirections.emplace_back(momentum.x(), momentum.y(), momentum.z());
     }
 
-    return;
-
     // TODO: move this
     // Defining if the hits in a given volume will be stored
     const auto metadata = GetGeant4Metadata();
-    for (int i = 0; i < metadata->GetNumberOfActiveVolumes(); i++) {
-        if (metadata->GetStorageChance(i) >= 1.00) {
-            // ActivateVolumeForStorage(i);
-        } else {
-            Double_t randomNumber = G4UniformRand();
-            if (metadata->GetStorageChance(i) >= randomNumber) {
-                // ActivateVolumeForStorage(i);
+    if (metadata != nullptr) {
+        for (int i = 0; i < metadata->GetNumberOfActiveVolumes(); i++) {
+            if (metadata->GetStorageChance(i) >= 1.00) {
+                ActivateVolumeForStorage(i);
             } else {
-                DisableVolumeForStorage(i);
+                Double_t randomNumber = G4UniformRand();
+                if (metadata->GetStorageChance(i) >= randomNumber) {
+                    ActivateVolumeForStorage(i);
+                } else {
+                    DisableVolumeForStorage(i);
+                }
             }
         }
     }
