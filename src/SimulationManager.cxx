@@ -60,7 +60,7 @@ void SimulationManager::BeginOfRunAction() {
     // gives segfault in old Geant4 versions such as 10.4.3, didn't look into it
     if (GetRestMetadata()->PrintProgress() ||
         GetRestMetadata()->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Essential) {
-        fPeriodicPrintThread = new thread(&PeriodicPrint, this);
+        fPeriodicPrintThread = make_unique<thread>(&PeriodicPrint, this);
     }
 #endif
 }
@@ -78,7 +78,6 @@ void SimulationManager::EndOfRunAction() {
         if (fPeriodicPrintThread->joinable()) {
             fPeriodicPrintThread->join();  // need to join thread, it may block for up to 1 thread period
         }
-        delete fPeriodicPrintThread;
     }
 
     for (auto& outputManager : fOutputManagerContainer) {

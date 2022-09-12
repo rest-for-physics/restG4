@@ -28,7 +28,7 @@ class SimulationManager {
     void WriteEvents();
     void WriteEventsAndCloseFile();
 
-    std::thread* fPeriodicPrintThread = nullptr;
+    std::unique_ptr<std::thread> fPeriodicPrintThread = nullptr;
     bool fPeriodicPrintThreadEndFlag = false;
 
    public:
