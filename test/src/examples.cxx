@@ -374,7 +374,7 @@ TEST(restG4, Example_13_IAXO) {
     CommandLineOptions::Options options;
     options.rmlFile = "Neutrons.rml";
     options.outputFile = thisExamplePath / "Neutrons.root";
-    options.nDesiredEntries = 1;
+    options.nRequestedEntries = 1;
 
     Application app;
     app.Run(options);

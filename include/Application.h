@@ -23,7 +23,7 @@ struct Options {
     int nEvents = 0;
     Long_t seed = 0;
 
-    int nDesiredEntries = 0;
+    int nRequestedEntries = 0;
     int timeLimitSeconds = 0;
 
     // reference to original argc and argv necessary to pass to G4UIExecutive

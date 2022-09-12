@@ -2,30 +2,22 @@
 #include "Application.h"
 
 #include <TGeoManager.h>
-#include <TGeoVolume.h>
-#include <TH1D.h>
-#include <TH2D.h>
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TPRegexp.h>
 #include <TROOT.h>
 #include <TRestGDMLParser.h>
-#include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
 #include <TRestGeant4PhysicsLists.h>
-#include <TRestGeant4Track.h>
 #include <TRestRun.h>
 
-#include <G4RunManager.hh>
 #include <csignal>
 #ifndef GEANT4_WITHOUT_G4RunManagerFactory
 #include <G4RunManagerFactory.hh>
 #endif
 #include <G4UImanager.hh>
 #include <G4VSteppingVerbose.hh>
-#include <cstdio>
 #include <cstdlib>
-#include <cstring>
 #include <filesystem>
 
 #include "ActionInitialization.h"
@@ -37,7 +29,6 @@
 #include "SimulationManager.h"
 #include "SteppingAction.h"
 #include "SteppingVerbose.h"
-#include "TrackingAction.h"
 
 #ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
@@ -60,7 +51,7 @@ void ShowUsage() {
          << "\t--events (-n) nEvents | specify number of events to be processed (overrides nEvents on rml "
             "file)"
          << endl
-         << "\t--entries (-e) | specify the desired number of entries. The simulation will stop after "
+         << "\t--entries (-e) | specify the requested number of entries. The simulation will stop after "
             "reaching this number of saved events. Final number may be larger"
          << endl
          << "\t--time timeLimit | Sets time limit for the simulation in the format '1h20m30s', '5m20s', "
@@ -87,8 +78,8 @@ void PrintOptions(const Options& options) {
          << (options.nEvents != 0 ? "\t- Number of generated events: " + to_string(options.nEvents) + "\n"
                                   : "")
          << (options.seed != 0 ? "\t- Random seed: " + to_string(options.seed) + "\n" : "")
-         << (options.nDesiredEntries != 0
-                 ? "\t- Number of desired entries: " + to_string(options.nDesiredEntries) + "\n"
+         << (options.nRequestedEntries != 0
+                 ? "\t- Number of requested entries: " + to_string(options.nRequestedEntries) + "\n"
                  : "")
          << (options.timeLimitSeconds != 0
                  ? "\t- Time limit: " + to_string(options.timeLimitSeconds) + " seconds\n"
@@ -205,9 +196,9 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
             }
         } else if ((arg == "-e") || (arg == "--entries")) {
             if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
-                options.nDesiredEntries =
+                options.nRequestedEntries =
                     stoi(argv[++i]);  // Increment 'i' so we don't get the argument as the next argv[i].
-                if (options.nDesiredEntries <= 0) {
+                if (options.nRequestedEntries <= 0) {
                     cout << "--entries option error: number of entries must be > 0" << endl;
                     exit(1);
                 }
@@ -315,8 +306,8 @@ void Application::Run(const CommandLineOptions::Options& options) {
     if (metadata->GetNumberOfEvents() == 0) {
         metadata->SetNumberOfEvents(maxPrimariesAllowed);
     }
-    if (options.nDesiredEntries != 0) {
-        metadata->SetNumberOfDesiredEntries(options.nDesiredEntries);
+    if (options.nRequestedEntries != 0) {
+        metadata->SetNumberOfRequestedEntries(options.nRequestedEntries);
     }
     if (options.timeLimitSeconds != 0) {
         metadata->SetSimulationMaxTimeSeconds(options.timeLimitSeconds);

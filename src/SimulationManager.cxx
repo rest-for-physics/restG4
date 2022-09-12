@@ -129,10 +129,10 @@ void SimulationManager::WriteEvents() {
         fEventContainer.pop();
     }
 
-    const auto nDesiredEntries = GetRestMetadata()->GetNumberOfDesiredEntries();
-    if (nDesiredEntries > 0 && !fAbortFlag && fRestRun->GetEventTree()->GetEntries() >= nDesiredEntries) {
-        G4cout << "Stopping Run! We have reached the number of desired entries (" << nDesiredEntries << ")"
-               << endl;
+    const auto nRequestedEntries = GetRestMetadata()->GetNumberOfRequestedEntries();
+    if (nRequestedEntries > 0 && !fAbortFlag && fRestRun->GetEventTree()->GetEntries() >= nRequestedEntries) {
+        G4cout << "Stopping Run! We have reached the number of requested entries (" << nRequestedEntries
+               << ")" << endl;
         StopSimulation();
     }
 }
