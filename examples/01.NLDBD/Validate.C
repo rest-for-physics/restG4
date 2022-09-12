@@ -4,6 +4,8 @@
 Int_t Validate(const char* filename) {
     cout << "Starting validation for '" << filename << "'" << endl;
 
+    gSystem->Load("libRestGeant4.so");
+
     TRestRun run(filename);
 
     if (run.GetParentRunNumber() != 0) {
