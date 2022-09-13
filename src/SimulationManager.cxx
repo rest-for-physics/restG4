@@ -1,9 +1,7 @@
 
 #include "SimulationManager.h"
 
-#include <G4Event.hh>
 #include <G4EventManager.hh>
-#include <G4HadronicProcess.hh>
 #include <G4Nucleus.hh>
 #include <G4Threading.hh>
 #include <Randomize.hh>

@@ -197,7 +197,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
 
     fProcessID.emplace_back(processID);
     fVolumeID.emplace_back(geometryInfo.GetIDFromVolume(volumeName));
-    fKineticEnergy.emplace_back(step->GetPreStepPoint()->GetKineticEnergy() / CLHEP::keV);
+    fKineticEnergy.emplace_back(trackKineticEnergy);
     fMomentumDirection.emplace_back(momentum.x(), momentum.y(), momentum.z());
 
     SimulationManager::GetOutputManager()->AddEnergyToVolumeForParticleForProcess(energy, volumeName,
