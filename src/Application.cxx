@@ -434,7 +434,7 @@ void Application::Run(const CommandLineOptions::Options& options) {
         cout << "Writing geometry - Error - Unable to write geometry (geometry not found)" << endl;
         exit(1);
     }
-    gGeoManager->Write(geometryName, TObject::kWriteDelete);
+    gGeoManager->Write(geometryName, TObject::kOverwrite);
 
     cout << "Number of events: " << nEvents << endl;
     if (nEvents > 0)  // batch mode
