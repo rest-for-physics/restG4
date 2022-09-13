@@ -124,7 +124,7 @@ Load REST Libraries:
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/07.FullChainDecay/
     - restG4 fullChain.rml
     - restG4 singleDecay.rml
-    - restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 16)'
+    - restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 17)'
     - restRoot -b -q Validate.C'("Run00002_U238_SingleChainDecay.root", 1)'
     - export REST_ISOTOPE="Be7"
     - restG4 singleDecay.rml
