@@ -494,7 +494,7 @@ void Application::WriteGeometry(TGeoManager* geometry, const char* filename, con
         cout << "Application::WriteGeometry - Error - Unable to write geometry into file" << endl;
         exit(1);
     }
-    geometry->Write(geometryName);
+    geometry->Write(geometryName, TObject::kWriteDelete);
 
     file->Close();
 }
