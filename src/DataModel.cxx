@@ -28,6 +28,7 @@ TRestGeant4Event::TRestGeant4Event(const G4Event* event) : TRestGeant4Event() {
         fPrimaryDirections.emplace_back(momentum.x(), momentum.y(), momentum.z());
     }
 
+    /*
     // TODO: move this
     // Defining if the hits in a given volume will be stored
     const auto metadata = GetGeant4Metadata();
@@ -45,6 +46,7 @@ TRestGeant4Event::TRestGeant4Event(const G4Event* event) : TRestGeant4Event() {
             }
         }
     }
+    */
 }
 
 bool TRestGeant4Event::InsertTrack(const G4Track* track) {
