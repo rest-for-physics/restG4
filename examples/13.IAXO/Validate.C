@@ -18,7 +18,7 @@ Int_t Validate(const char* filename) {
 
     geometryInfo.Print();
 
-    if (geometryInfo.GetAllPhysicalVolumes().size() != 374) {
+    if (geometryInfo.GetAllPhysicalVolumes().size() != 309) {
         cout << "Incorrect number of physical volumes " << geometryInfo.GetAllPhysicalVolumes().size()
              << endl;
         return 2;
@@ -32,24 +32,25 @@ Int_t Validate(const char* filename) {
     TRestGeant4Event* event = run.GetInputEvent<TRestGeant4Event>();
     run.GetEntry(0);
 
-    if (event->GetNumberOfTracks() != 1738 /* 28059 */) {
+    if (event->GetNumberOfTracks() != 405) {
         cout << "Incorrect number of tracks: " << event->GetNumberOfTracks() << endl;
         return 4;
     }
-    if (event->GetNumberOfHits() != 15202 /* 87189 */) {
+    if (event->GetNumberOfHits() != 6345) {
         cout << "Incorrect number of hits: " << event->GetNumberOfHits() << endl;
         return 5;
     }
 
-    if (TMath::Abs(event->GetSensitiveVolumeEnergy() - 72.436883) > 1e-4) {
+    constexpr Double_t sensitiveVolumeEnergyRef = 30.2461;
+    if (TMath::Abs(event->GetSensitiveVolumeEnergy() - sensitiveVolumeEnergyRef) > 1e-4) {
         cout << "Incorrect sensitive volume energy: " << event->GetSensitiveVolumeEnergy() << endl;
         return 6;
     }
 
     const auto scintillatorVolumeName =
-        "VetoSystem_vetoSystemBack_vetoLayerBack1_assembly-17.veto3_scintillatorVolume-800.0mm-f1a5df6c";
+        "VetoSystem_vetoSystemWest_vetoLayerWest2_assembly-16.veto3_scintillatorVolume-1500.0mm-f1a5df6b";
     const auto scintillatorEnergy = event->GetEnergyInVolume(scintillatorVolumeName);
-    const auto scintillatorEnergyRef = 1348.3876;
+    const auto scintillatorEnergyRef = 3367.0536;
     if (TMath::Abs(scintillatorEnergy - scintillatorEnergyRef) > 1e-4) {
         cout << "Incorrect scintillator volume energy: " << scintillatorEnergy << endl;
         return 7;
