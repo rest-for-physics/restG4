@@ -46,7 +46,6 @@ class Application {
    private:
     SimulationManager fSimulationManager;
 
-    void WriteGeometry(TGeoManager* geometry, const char* filename, const char* option = "UPDATE");
     void ValidateOutputFile(const std::string& outputFile) const;
 };
 

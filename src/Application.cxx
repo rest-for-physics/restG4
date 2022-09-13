@@ -267,6 +267,8 @@ int interruptSignalHandler(const int, void* ptr) {
     return 0;
 }
 
+constexpr const char* geometryName = "Geometry";
+
 void Application::Run(const CommandLineOptions::Options& options) {
     signal(SIGINT, (void (*)(int))interruptSignalHandler);
 
@@ -424,6 +426,16 @@ void Application::Run(const CommandLineOptions::Options& options) {
     time_t systime = time(nullptr);
     run->SetStartTimeStamp((Double_t)systime);
 
+    run->UpdateOutputFile();
+
+    cout << "Writing geometry" << endl;
+    gdml->CreateGeoManager();
+    if (!gGeoManager) {
+        cout << "Writing geometry - Error - Unable to write geometry (geometry not found)" << endl;
+        exit(1);
+    }
+    gGeoManager->Write(geometryName, TObject::kWriteDelete);
+
     cout << "Number of events: " << nEvents << endl;
     if (nEvents > 0)  // batch mode
     {
@@ -464,10 +476,6 @@ void Application::Run(const CommandLineOptions::Options& options) {
     run->UpdateOutputFile();
     run->CloseFile();
 
-    auto geometry = gdml->CreateGeoManager();
-    WriteGeometry(geometry, run->GetOutputFileName());
-    delete geometry;
-
     metadata->PrintMetadata();
     run->PrintMetadata();
 
@@ -482,21 +490,6 @@ void Application::Run(const CommandLineOptions::Options& options) {
          << " per second) and " << nEntries << " events saved to output file ("
          << nEntries / fSimulationManager.GetElapsedTime() << " per second)" << endl;
     cout << "\t- Output file: " << filename << endl << endl;
-}
-
-constexpr const char* geometryName = "Geometry";
-
-void Application::WriteGeometry(TGeoManager* geometry, const char* filename, const char* option) {
-    auto file = TFile::Open(filename, option);
-    file->cd();
-    cout << "Application::WriteGeometry - Writing geometry into '" << filename << "'" << endl;
-    if (!geometry) {
-        cout << "Application::WriteGeometry - Error - Unable to write geometry into file" << endl;
-        exit(1);
-    }
-    geometry->Write(geometryName, TObject::kWriteDelete);
-
-    file->Close();
 }
 
 void Application::ValidateOutputFile(const string& filename) const {
