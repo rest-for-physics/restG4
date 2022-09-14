@@ -15,7 +15,7 @@ Int_t Validate() {
     run.GetEntry(100);
 
     Double_t thetaSample = analysisTree->GetObservableValue<Double_t>("g4Ana_thetaPrimary");
-    constexpr Double_t thetaSampleRef = 1.77307;
+    constexpr Double_t thetaSampleRef = 2.85884;
 
     Double_t phiSample = analysisTree->GetObservableValue<Double_t>("g4Ana_phiPrimary");
     constexpr Double_t phiSampleRef = -1.59582;
@@ -24,24 +24,24 @@ Int_t Validate() {
     constexpr Double_t thetaAverageRef = 1.5767;
 
     Double_t phiAverage = analysisTree->GetObservableAverage("g4Ana_phiPrimary");
-    constexpr Double_t phiAverageRef = 0.0727066;
+    constexpr Double_t phiAverageRef = 0.069711;
 
     cout << "entry 100, theta: " << thetaSample << ", phi: " << phiSample << endl;
     cout << "average theta: " << thetaAverage << ", average phi: " << phiAverage << endl;
 
-    if (h1->Integral() != 1960) {
+    if (h1->Integral() != 1989) {
         cout << "Wrong number of alphas produced at 1MeV_5um!" << endl;
         cout << "Histogram contains : " << h1->Integral() << endl;
         return 10;
     }
 
-    if (h2->Integral() != 7623) {
+    if (h2->Integral() != 7422) {
         cout << "Wrong number of alphas produced at 5MeV_5um!" << endl;
         cout << "Histogram contains : " << h2->Integral() << endl;
         return 20;
     }
 
-    if (h3->Integral() != 9554) {
+    if (h3->Integral() != 9417) {
         cout << "Wrong number of alphas produced at 5MeV_1um!" << endl;
         cout << "Histogram contains : " << h3->Integral() << endl;
         return 30;
