@@ -38,13 +38,18 @@ void PeriodicPrint(SimulationManager* simulationManager) {
             simulationManager->SyncStatsFromChild(outputManager);
         }
 
-        G4cout << double(simulationManager->GetNumberOfProcessedEvents()) /
-                      double(restG4Metadata->GetNumberOfEvents()) * 100
+        G4cout << TString::Format("%5.2f", double(simulationManager->GetNumberOfProcessedEvents()) /
+                                               double(restG4Metadata->GetNumberOfEvents()) * 100)
+                      .Data()
                << "% - " << simulationManager->GetNumberOfProcessedEvents() << " Events processed out of "
                << restG4Metadata->GetNumberOfEvents() << " requested events ("
-               << simulationManager->GetNumberOfProcessedEvents() / simulationManager->GetElapsedTime()
+               << TString::Format("%.2e", simulationManager->GetNumberOfProcessedEvents() /
+                                              simulationManager->GetElapsedTime())
+                      .Data()
                << " per second). " << simulationManager->GetNumberOfStoredEvents() << " events stored ("
-               << simulationManager->GetNumberOfStoredEvents() / simulationManager->GetElapsedTime()
+               << TString::Format("%.2e", simulationManager->GetNumberOfStoredEvents() /
+                                              simulationManager->GetElapsedTime())
+                      .Data()
                << " per second). " << simulationManager->GetElapsedTime() << " seconds elapsed" << G4endl;
     }
 }
