@@ -41,7 +41,7 @@ void PeriodicPrint(SimulationManager* simulationManager) {
         G4cout << TString::Format("%5.2f", double(simulationManager->GetNumberOfProcessedEvents()) /
                                                double(restG4Metadata->GetNumberOfEvents()) * 100)
                       .Data()
-               << "% - " << simulationManager->GetNumberOfProcessedEvents() << " Events processed out of "
+               << "% - " << simulationManager->GetNumberOfProcessedEvents() << " events processed out of "
                << restG4Metadata->GetNumberOfEvents() << " requested events ("
                << TString::Format("%.2e", simulationManager->GetNumberOfProcessedEvents() /
                                               simulationManager->GetElapsedTime())
