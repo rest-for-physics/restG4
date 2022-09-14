@@ -301,7 +301,7 @@ void Application::Run(const CommandLineOptions::Options& options) {
     if (options.seed != 0) {
         metadata->SetSeed(options.seed);
     }
-    constexpr auto maxPrimariesAllowed = 2147483647;
+    constexpr int maxPrimariesAllowed = numeric_limits<int>::max();
     if (options.nEvents != 0) {
         metadata->SetNumberOfEvents(options.nEvents);
     }
