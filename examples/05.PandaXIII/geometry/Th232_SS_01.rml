@@ -33,8 +33,8 @@
 
     <generator type="volume" from="VesselWall" >
       <source particle="Th232" fullChain="on">
-        <angularDist type="isotropic" />
-        <energyDist type="mono" energy="0" units="keV" />
+        <angular type="isotropic" />
+        <energy type="mono" energy="0" units="keV" />
       </source>
     </generator>
 

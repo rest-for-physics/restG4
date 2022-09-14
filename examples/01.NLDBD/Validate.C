@@ -47,7 +47,8 @@ Int_t Validate(const char* filename) {
     const bool isReferenceGeant4Version = geant4Metadata->GetGeant4Version() == "10.4.3";
 
     if (geant4Metadata->GetNumberOfActiveVolumes() != 1) {
-        cout << "The number of registered does not match the reference value of 1" << endl;
+        cout << "The number of active volumes does not match the reference value of 1. Value: "
+             << geant4Metadata->GetNumberOfActiveVolumes() << endl;
         return 7;
     }
 
@@ -62,10 +63,10 @@ Int_t Validate(const char* filename) {
     const double averageSensitiveEnergyRef = (!isReferenceGeant4Version) ? 2280.96 : 2221.55;
 
     double averageNumberOfHits = 0;
-    const double averageNumberOfHitsRef = (!isReferenceGeant4Version) ? 3071.17 : 342.37;
+    const double averageNumberOfHitsRef = (!isReferenceGeant4Version) ? 5371.17 : 353.2;
 
     double averageNumberOfTracks = 0;
-    const double averageNumberOfTracksRef = (!isReferenceGeant4Version) ? 2161.43 : 10.11;
+    const double averageNumberOfTracksRef = (!isReferenceGeant4Version) ? 2300 : 10.83;
 
     TVector3 averagePosition = {};
     const TVector3 averagePositionRef = (!isReferenceGeant4Version) ? TVector3(-38.8987, 27.5536, 91.3969)

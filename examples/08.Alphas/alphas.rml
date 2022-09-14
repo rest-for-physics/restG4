@@ -1,4 +1,4 @@
-<?xml version="4.0" encoding="UTF-8" standalone="no" ?>
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 
 <!-- Constructing XML-like REST metadata input file
      File : config.rml
@@ -42,15 +42,16 @@ By default REST units are mm, keV and degrees
 
         <generator type="volume" from="source">
             <source particle="alpha">
-                <angularDist type="isotropic"/>
-                <energyDist type="mono" energy="${REST_ENERGY}" units="MeV"/>
+                <angular type="isotropic"/>
+                <energy type="mono" energy="${REST_ENERGY}" units="MeV"/>
             </source>
         </generator>
 
-        <storage sensitiveVolume="gas">
+        <detector>
             <parameter name="energyRange" value="(0,2*${REST_ENERGY})" units="MeV"/>
-            <activeVolume name="gas" chance="1" maxStepSize="0.5mm"/>
-        </storage>
+            <volume name="gas" sensitive="true" maxStepSize="0.5mm"/>
+        </detector>
+
     </TRestGeant4Metadata>
 
     <TRestGeant4PhysicsLists name="default" title="First physics list implementation.">

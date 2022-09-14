@@ -2,6 +2,7 @@
 #include "RunAction.h"
 
 #include <PrimaryGeneratorAction.h>
+#include <SteppingVerbose.h>
 #include <TRestGeant4Metadata.h>
 #include <TRestRun.h>
 
@@ -22,19 +23,41 @@ RunAction::RunAction(SimulationManager* simulationManager)
 RunAction::~RunAction() {}
 
 void RunAction::BeginOfRunAction(const G4Run*) {
-    G4cout << "========================== Begin of Run Action ========================" << endl;
-    G4cout << G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed() << " events to be simulated"
-           << endl;
-    G4cout << "=======================================================================" << endl;
+    if (G4Threading::IsMasterThread() || !G4Threading::IsMultithreadedApplication()) {
+        G4cout << "========================== Begin of Run Action ========================" << endl;
+        G4cout << G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed() << " events to be simulated"
+               << endl;
+        G4cout << "=======================================================================" << endl;
+    }
+
+    fSimulationManager->BeginOfRunAction();
+
+    auto steppingVerbose = ((SteppingVerbose*)G4VSteppingVerbose::GetInstance());
+    steppingVerbose->SetSteppingVerbose(1);
+
     // inform the runManager to save random number seed
     G4RunManager::GetRunManager()->SetRandomNumberStore(false);
 }
 
 void RunAction::EndOfRunAction(const G4Run*) {
-    TRestRun* restRun = fSimulationManager->fRestRun;
+    fSimulationManager->EndOfRunAction();
 
-    G4cout << "============================= Run Summary =============================" << endl;
-    G4cout << restRun->GetEntries() << " events stored out of "
-           << G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed() << " simulated events" << endl;
-    G4cout << "=======================================================================" << endl;
+    TRestRun* restRun = fSimulationManager->GetRestRun();
+    const auto metadata = fSimulationManager->GetRestMetadata();
+
+    if (G4Threading::IsMasterThread() || !G4Threading::IsMultithreadedApplication()) {
+        G4cout << "============================= Run Summary =============================" << endl;
+        G4cout << restRun->GetEntries() << " events stored out of " << metadata->GetNumberOfEvents()
+               << " simulated events" << endl;
+        G4cout << "=======================================================================" << endl;
+    }
+
+    // Sanity check
+    if (metadata->GetNumberOfRequestedEntries() == 0 && metadata->GetSimulationMaxTimeSeconds() == 0 &&
+        metadata->GetNumberOfEvents() != G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed()) {
+        cerr << "FATAL ERROR: possible error when calculating number of processed events, please check "
+                "'RunAction::EndOfRunAction'"
+             << endl;
+        exit(1);
+    }
 }

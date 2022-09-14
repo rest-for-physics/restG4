@@ -1,6 +1,6 @@
 
 #include <Application.h>
-#include <CommandLineSetup.h>
+#include <TGeoManager.h>
 #include <TROOT.h>
 #include <TRestRun.h>
 #include <gtest/gtest.h>
@@ -27,14 +27,13 @@ TEST(restG4, Example_01_NLDBD) {
     const auto thisExamplePath = examplesPath / "01.NLDBD";
     fs::current_path(thisExamplePath);
 
-    CommandLineParameters parameters;
-    parameters.rmlFile = "NLDBD.rml";
-    parameters.outputFile =
-        thisExamplePath / "NLDBD_simulation.root";  // TODO: fix not working with local path
+    CommandLineOptions::Options options;
+    options.rmlFile = "NLDBD.rml";
+    options.outputFile = thisExamplePath / "NLDBD_simulation.root";  // TODO: fix not working with local path
 
     {  // Run simulation
         Application app;
-        app.Run(parameters);
+        app.Run(options);
     }
 
     {  // Run validation macro
@@ -42,7 +41,7 @@ TEST(restG4, Example_01_NLDBD) {
         gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
         int error = 0;
         const int result =
-            gROOT->ProcessLine(TString::Format("Validate(\"%s\")", parameters.outputFile.Data()), &error);
+            gROOT->ProcessLine(TString::Format("Validate(\"%s\")", options.outputFile.c_str()), &error);
         EXPECT_EQ(error, 0);
         EXPECT_EQ(result, 0);
     }
@@ -50,7 +49,7 @@ TEST(restG4, Example_01_NLDBD) {
     fs::current_path(originalPath);
 }
 
-TEST(restG4, TRestGeant4GeometryInfo_TRestGeant4PhysicsInfo) {
+TEST(restG4, Metadata) {
     // Test "TRestGeant4GeometryInfo" and "TRestGeant4PhysicsInfo" even though its from Geant4Lib, we need a
     // simulation file, so we placed the test here
 
@@ -65,12 +64,12 @@ TEST(restG4, TRestGeant4GeometryInfo_TRestGeant4PhysicsInfo) {
         cout << "Results file not found, generating file..." << endl;
         fs::current_path(thisExamplePath);
 
-        CommandLineParameters parameters;
-        parameters.rmlFile = "NLDBD.rml";
-        parameters.outputFile = resultsFile;
+        CommandLineOptions::Options options;
+        options.rmlFile = "NLDBD.rml";
+        options.outputFile = resultsFile;
 
         Application app;
-        app.Run(parameters);
+        app.Run(options);
 
         fs::current_path(originalPath);
     } else {
@@ -78,6 +77,12 @@ TEST(restG4, TRestGeant4GeometryInfo_TRestGeant4PhysicsInfo) {
     }
 
     TRestRun run(resultsFile);
+
+    /* Check TGeoManager is present on file */
+    const TGeoManager* geometry = run.GetInputFile()->Get<TGeoManager>("Geometry");
+    EXPECT_EQ(geometry != nullptr, true);
+    delete geometry;
+
     // Test `TRestGeant4Metadata::GetUnambiguousGlobalInstance`
     auto geant4Metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
     EXPECT_EQ(geant4Metadata != nullptr, true);
@@ -121,6 +126,16 @@ TEST(restG4, TRestGeant4GeometryInfo_TRestGeant4PhysicsInfo) {
 
     cout << "Printing physics info" << endl;
     physicsInfo.Print();
+
+    const auto particles = physicsInfo.GetAllParticles();
+    EXPECT_EQ(particles.size() == 2, true);
+    EXPECT_EQ(particles.count("e-") > 0, true);
+    EXPECT_EQ(particles.count("gamma") > 0, true);
+
+    const auto processes = physicsInfo.GetAllProcesses();
+    EXPECT_EQ(processes.count("Init") > 0, true);
+    EXPECT_EQ(processes.count("Transportation") > 0, true);
+    EXPECT_EQ(processes.count("compt") > 0, true);
 }
 
 TEST(restG4, Example_04_Muons) {
@@ -129,26 +144,57 @@ TEST(restG4, Example_04_Muons) {
     const auto thisExamplePath = examplesPath / "04.MuonScan";
     fs::current_path(thisExamplePath);
 
-    CommandLineParameters parameters;
-    parameters.rmlFile = "CosmicMuonsFromWall.rml";
-    parameters.outputFile = thisExamplePath / "muons.root";  // TODO: fix not working with local path
+    CommandLineOptions::Options options;
+    options.rmlFile = "CosmicMuonsFromWall.rml";
+    options.outputFile = thisExamplePath / "muons.root";  // TODO: fix not working with local path
 
     Application app;
-    app.Run(parameters);
+    app.Run(options);
 
     // Run validation macro
     const TString macro(thisExamplePath / "ValidateWall.C");
     gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
     int error = 0;
     const int result =
-        gROOT->ProcessLine(TString::Format("ValidateWall(\"%s\")", parameters.outputFile.Data()), &error);
+        gROOT->ProcessLine(TString::Format("ValidateWall(\"%s\")", options.outputFile.c_str()), &error);
     EXPECT_EQ(error, 0);
     EXPECT_EQ(result, 0);
 
     fs::current_path(originalPath);
 
     // use output file to check additional things
-    TRestRun run(parameters.outputFile.Data());
+    TRestRun run(options.outputFile.c_str());
+    cout << "Number of entries: " << run.GetEntries() << endl;
+}
+
+TEST(restG4, Example_04_Muons_MT) {
+    // cd into example
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "04.MuonScan";
+    fs::current_path(thisExamplePath);
+
+    CommandLineOptions::Options options;
+    options.rmlFile = "CosmicMuonsFromWall.rml";
+    options.outputFile = thisExamplePath / "muons.root";  // TODO: fix not working with local path
+
+    options.nThreads = 4;
+
+    Application app;
+    app.Run(options);
+
+    // Run validation macro
+    const TString macro(thisExamplePath / "ValidateWall.C");
+    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+    int error = 0;
+    const int result =
+        gROOT->ProcessLine(TString::Format("ValidateWall(\"%s\")", options.outputFile.c_str()), &error);
+    EXPECT_EQ(error, 0);
+    EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
+
+    // use output file to check additional things
+    TRestRun run(options.outputFile.c_str());
     cout << "Number of entries: " << run.GetEntries() << endl;
 }
 
@@ -158,19 +204,44 @@ TEST(restG4, Example_05_PandaX) {
     const auto thisExamplePath = examplesPath / "05.PandaXIII";
     fs::current_path(thisExamplePath);
 
-    CommandLineParameters parameters;
-    parameters.rmlFile = "Xe136bb0n.rml";
-    parameters.outputFile = thisExamplePath / "Xe136bb0n.root";  // TODO: fix not working with local path
+    CommandLineOptions::Options options;
+    options.rmlFile = "Xe136bb0n.rml";
+    options.outputFile = thisExamplePath / "Xe136bb0n.root";  // TODO: fix not working with local path
 
     Application app;
-    app.Run(parameters);
+    app.Run(options);
 
     // Run validation macro
     const TString macro(thisExamplePath / "Validate.C");
     gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
     int error = 0;
     const int result =
-        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", parameters.outputFile.Data()), &error);
+        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", options.outputFile.c_str()), &error);
+    EXPECT_EQ(error, 0);
+    EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
+}
+
+TEST(restG4, Example_06_IonRecoils) {
+    // cd into example
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "06.IonRecoils";
+    fs::current_path(thisExamplePath);
+
+    CommandLineOptions::Options options;
+    options.rmlFile = "recoils.rml";
+    options.outputFile = thisExamplePath / "recoils.root";
+
+    Application app;
+    app.Run(options);
+
+    // Run validation macro
+    const TString macro(thisExamplePath / "Validate.C");
+    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+    int error = 0;
+    const int result =
+        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", options.outputFile.c_str()), &error);
     EXPECT_EQ(error, 0);
     EXPECT_EQ(result, 0);
 
@@ -183,15 +254,15 @@ TEST(restG4, Example_07_Decay_FullChain) {
     const auto thisExamplePath = examplesPath / "07.FullChainDecay";
     fs::current_path(thisExamplePath);
 
-    CommandLineParameters parameters;
-    parameters.rmlFile = "fullChain.rml";
-    parameters.outputFile = thisExamplePath / "fullChain.root";  // TODO: fix not working with local path
+    CommandLineOptions::Options options;
+    options.rmlFile = "fullChain.rml";
+    options.outputFile = thisExamplePath / "fullChain.root";  // TODO: fix not working with local path
 
     Application app;
-    app.Run(parameters);
+    app.Run(options);
 
     // print processes
-    TRestRun run(parameters.outputFile.Data());
+    TRestRun run(options.outputFile.c_str());
     auto geant4Metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
     EXPECT_EQ(geant4Metadata != nullptr, true);
 
@@ -205,7 +276,117 @@ TEST(restG4, Example_07_Decay_FullChain) {
     gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
     int error = 0;
     const int result =
-        gROOT->ProcessLine(TString::Format("Validate(\"%s\", %d)", parameters.outputFile.Data(), 16), &error);
+        gROOT->ProcessLine(TString::Format("Validate(\"%s\", %d)", options.outputFile.c_str(), 17), &error);
+    EXPECT_EQ(error, 0);
+    EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
+}
+
+TEST(restG4, Example_09_Pb210_Shield) {
+    GTEST_SKIP_("This test should work, but we skip it because it takes too long");
+    // cd into example
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "09.Pb210_Shield";
+    fs::current_path(thisExamplePath);
+
+    CommandLineOptions::Options options;
+    options.rmlFile = "Pb210.rml";
+    options.outputFile = thisExamplePath / "shielding.root";  // TODO: fix not working with local path
+
+    Application app;
+    app.Run(options);
+
+    TRestRun run(options.outputFile.c_str());
+
+    // Run validation macro
+    const TString macro(thisExamplePath / "Validate.C");
+    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+    int error = 0;
+    const int result =
+        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", options.outputFile.c_str()), &error);
+    EXPECT_EQ(error, 0);
+    EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
+}
+
+TEST(restG4, Example_10_Geometry) {
+    // cd into example
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "10.Geometries";
+    fs::current_path(thisExamplePath);
+
+    CommandLineOptions::Options options;
+    options.rmlFile = "Assembly.rml";
+    options.outputFile = thisExamplePath / "geometries.root";
+
+    Application app;
+    app.Run(options);
+
+    TRestRun run(options.outputFile);
+
+    // Run validation macro
+    const TString macro(thisExamplePath / "Validate.C");
+    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+    int error = 0;
+    const int result =
+        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", options.outputFile.c_str()), &error);
+    EXPECT_EQ(error, 0);
+    EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
+}
+
+TEST(restG4, Example_12_Generators) {
+    //  cd into example
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "12.Generators";
+    fs::current_path(thisExamplePath);
+
+    CommandLineOptions::Options options;
+    options.rmlFile = "CosineSquaredCircle.rml";
+    options.outputFile = thisExamplePath / "cosine.root";
+
+    Application app;
+    app.Run(options);
+
+    TRestRun run(options.outputFile);
+
+    // Run validation macro
+    const TString macro(thisExamplePath / "Validate.C");
+    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+    int error = 0;
+    const int result =
+        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", options.outputFile.c_str()), &error);
+    EXPECT_EQ(error, 0);
+    EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
+}
+
+TEST(restG4, Example_13_IAXO) {
+    //  cd into example
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "13.IAXO";
+    fs::current_path(thisExamplePath);
+
+    CommandLineOptions::Options options;
+    options.rmlFile = "Neutrons.rml";
+    options.outputFile = thisExamplePath / "Neutrons.root";
+    options.nRequestedEntries = 1;
+
+    Application app;
+    app.Run(options);
+
+    TRestRun run(options.outputFile);
+
+    // Run validation macro
+    const TString macro(thisExamplePath / "Validate.C");
+    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+    int error = 0;
+    const int result =
+        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", options.outputFile.c_str()), &error);
     EXPECT_EQ(error, 0);
     EXPECT_EQ(result, 0);
 

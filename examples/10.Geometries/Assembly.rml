@@ -1,4 +1,4 @@
-<?xml version="4.0" encoding="UTF-8" standalone="no" ?>
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 
 <!-- Work with GDML assembly geometry
      File : config.rml
@@ -30,7 +30,7 @@ By default REST units are mm, keV and degrees
 
     <TRestGeant4Metadata name="AssemblyGeantino" title="AssemblyGeantino">
 
-        <parameter name="gdmlFile" value="geometry/iaxo/setup.gdml"/>
+        <parameter name="gdmlFile" value="../13.IAXO/geometry/setup.gdml"/>
         <parameter name="subEventTimeDelay" value="100" units="us"/>
 
         <parameter name="seed" value="17021981"/>
@@ -41,15 +41,15 @@ By default REST units are mm, keV and degrees
 
         <generator type="point" position="(0,0,0)">
             <source particle="geantino">
-                <angularDist type="isotropic"/>
-                <energyDist type="mono" energy="1keV"/>
+                <angular type="isotropic"/>
+                <energy type="mono" energy="1keV"/>
             </source>
         </generator>
 
-        <storage sensitiveVolume="gasVolume">
+        <detector>
             <parameter name="energyRange" value="(0,10)" units="GeV"/>
-            <activeVolume name="gasVolume" chance="1" maxStepSize="1mm"/>
-        </storage>
+            <volume name="gasVolume" sensitive="true" maxStepSize="1mm"/>
+        </detector>
 
     </TRestGeant4Metadata>
 
@@ -68,22 +68,22 @@ By default REST units are mm, keV and degrees
         <!-- EM Physics lists -->
         <!--<physicsList name="G4EmLivermorePhysics"> </physicsList>-->
         <!-- <physicsList name="G4EmPenelopePhysics"> </physicsList> -->
-        <physicsList name="G4EmStandardPhysics_option4"></physicsList>
+        <physicsList name="G4EmStandardPhysics_option4"/>
 
         <!-- Decay physics lists -->
-        <physicsList name="G4DecayPhysics"></physicsList>
-        <physicsList name="G4RadioactiveDecayPhysics"></physicsList>
+        <physicsList name="G4DecayPhysics"/>
+        <physicsList name="G4RadioactiveDecayPhysics"/>
         <physicsList name="G4RadioactiveDecay">
             <option name="ICM" value="true"/>
             <option name="ARM" value="true"/>
         </physicsList>
 
         <!-- Hadron physics lists -->
-        <physicsList name="G4HadronElasticPhysicsHP"></physicsList>
-        <physicsList name="G4IonBinaryCascadePhysics"></physicsList>
-        <physicsList name="G4HadronPhysicsQGSP_BIC_HP"></physicsList>
-        <physicsList name="G4NeutronTrackingCut"></physicsList>
-        <physicsList name="G4EmExtraPhysics"></physicsList>
+        <physicsList name="G4HadronElasticPhysicsHP"/>
+        <physicsList name="G4IonBinaryCascadePhysics"/>
+        <physicsList name="G4HadronPhysicsQGSP_BIC_HP"/>
+        <physicsList name="G4NeutronTrackingCut"/>
+        <physicsList name="G4EmExtraPhysics"/>
 
     </TRestGeant4PhysicsLists>
 

@@ -41,16 +41,16 @@
 
         <generator type="virtualWall" position="(0,0,158-1.25+0.001)mm" rotation="(0,0,0)" lenX="20cm" lenY="20cm">
             <source particle="${REST_ISOTOPE}" excitedLevel="0.0" fullChain="on">
-                <angularDist type="isotropic"/>
-                <energyDist type="mono" energy="0.0" units="keV"/>
+                <angular type="isotropic"/>
+                <energy type="mono" energy="0.0" units="keV"/>
             </source>
         </generator>
 
-
-        <storage sensitiveVolume="gas">
+        <detector>
             <parameter name="energyRange" value="(0,1)" units="GeV"/>
-            <activeVolume name="gas" chance="1" maxStepSize="${STEP_SIZE}"/>
-        </storage>
+            <volume name="gas" sensitive="true" maxStepSize="${STEP_SIZE}"/>
+        </detector>
+
     </TRestGeant4Metadata>
 
     <TRestGeant4PhysicsLists name="default" file="common/physics.xml"/>

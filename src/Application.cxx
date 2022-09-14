@@ -1,25 +1,26 @@
 
 #include "Application.h"
 
-#include <TGeoVolume.h>
-#include <TH1D.h>
-#include <TH2D.h>
+#include <TGeoManager.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TPRegexp.h>
+#include <TROOT.h>
 #include <TRestGDMLParser.h>
-#include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
 #include <TRestGeant4PhysicsLists.h>
-#include <TRestGeant4Track.h>
 #include <TRestRun.h>
 
-#include <G4RunManager.hh>
+#include <csignal>
+#ifndef GEANT4_WITHOUT_G4RunManagerFactory
+#include <G4RunManagerFactory.hh>
+#endif
 #include <G4UImanager.hh>
-#include <cstdio>
+#include <G4VSteppingVerbose.hh>
 #include <cstdlib>
-#include <cstring>
 #include <filesystem>
 
 #include "ActionInitialization.h"
-#include "CommandLineSetup.h"
 #include "DetectorConstruction.h"
 #include "EventAction.h"
 #include "PhysicsList.h"
@@ -27,7 +28,7 @@
 #include "RunAction.h"
 #include "SimulationManager.h"
 #include "SteppingAction.h"
-#include "TrackingAction.h"
+#include "SteppingVerbose.h"
 
 #ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
@@ -39,27 +40,250 @@
 
 using namespace std;
 
-void Application::Run(const CommandLineParameters& commandLineParameters) {
-    delete fSimulationManager;
-    fSimulationManager = new SimulationManager();
+namespace CommandLineOptions {
 
-    Bool_t saveAllEvents;
+void ShowUsage() {
+    cout << "Usage example: restG4 example.rml" << endl
+         << "there are other convenient optional parameters that override the ones in the rml file:" << endl
+         << "\t--help (-h) | show usage (this text)" << endl
+         << "\t--config (-c) example.rml | specify RML file (same as calling restG4 example.rml)" << endl
+         << "\t--output (-o) output.root | specify output file" << endl
+         << "\t--events (-n) nEvents | specify number of events to be processed (overrides nEvents on rml "
+            "file)"
+         << endl
+         << "\t--entries (-e) | specify the requested number of entries. The simulation will stop after "
+            "reaching this number of saved events. Final number may be larger"
+         << endl
+         << "\t--time timeLimit | Sets time limit for the simulation in the format '1h20m30s', '5m20s', "
+            "'30s', ... If the time limit is reached before simulation ends, it will end the simulation and "
+            "save to disk all events"
+         << endl
+         << "\t--geometry (-g) geometry.gdml | specify geometry file" << endl
+         << "\t--seed (-s) seed | specify random seed (positive integer)" << endl
+         << "\t--interactive (-i) | set interactive mode (disabled by default)" << endl
+         << "\t--threads (-t, -j) | set the number of threads, also enables multithreading which is disabled "
+            "by default"
+         << endl;
+}
 
-    Int_t nEvents;
+void PrintOptions(const Options& options) {
+    cout << "Command line parameters configuration:" << endl
+         << "\t- RML file: " << options.rmlFile << endl
+         << (!options.outputFile.empty() ? "\t- Output file: " + options.outputFile + "\n" : "")
+         << (!options.geometryFile.empty() ? "\t- Geometry file: " + options.geometryFile + "\n" : "")
+         << (options.interactive ? "\t- Interactive: True\n" : "")  //
+         << "\t- Execution mode: "
+         << (options.nThreads == 0 ? "serial\n"
+                                   : "multithreading (N = " + to_string(options.nThreads) + ")\n")
+         << (options.nEvents != 0 ? "\t- Number of generated events: " + to_string(options.nEvents) + "\n"
+                                  : "")
+         << (options.seed != 0 ? "\t- Random seed: " + to_string(options.seed) + "\n" : "")
+         << (options.nRequestedEntries != 0
+                 ? "\t- Number of requested entries: " + to_string(options.nRequestedEntries) + "\n"
+                 : "")
+         << (options.timeLimitSeconds != 0
+                 ? "\t- Time limit: " + to_string(options.timeLimitSeconds) + " seconds\n"
+                 : "")
+         << endl;
+}
 
-    auto timeStart = chrono::steady_clock::now();
+int GetSecondsFromTimeExpression(const char* expression) {
+    // expression is of the form "20h", "10m", "30s" etc.
+    TPRegexp timeRegex("^(\\d+)([hms])$$");
+    TObjArray* subStrL = timeRegex.MatchS(expression);
+    const Int_t nrSubStr = subStrL->GetLast() + 1;
+    if (nrSubStr > 2) {
+        const int time = stoi(((TObjString*)subStrL->At(1))->GetString().Data());
+        const TString modifier = ((TObjString*)subStrL->At(2))->GetString();
+
+        if (modifier == "h") {
+            return time * 60 * 60;
+        } else if (modifier == "m") {
+            return time * 60;
+        } else if (modifier == "s") {
+            return time;
+        }
+    }
+
+    return 0;
+}
+
+int GetSecondsFromFullTimeExpression(const char* expression) {
+    // expression is of the form "1h20m30s", "1h", "20m30s", "10s" etc.
+    int seconds = 0;
+    TPRegexp fullTimeRegex("^(\\d+h)?(\\d+m)?(\\d+s)?$");
+    TObjArray* subStrL = fullTimeRegex.MatchS(expression);
+
+    for (int i = 0; i < 3; i++) {
+        auto obj = (TObjString*)subStrL->At(i + 1);
+        if (obj != nullptr) {
+            seconds += GetSecondsFromTimeExpression(obj->GetString().Data());
+        }
+    }
+
+    return seconds;
+}
+
+Options ProcessCommandLineOptions(int argc, char* const argv[]) {
+    Options options;
+    options.argc = argc;
+    options.argv = const_cast<char**>(argv);
+
+    if (argc < 2) {
+        // Invoked without parameter
+        ShowUsage();
+        exit(0);
+    }
+
+    // See https://cplusplus.com/articles/DEN36Up4/
+    for (int i = 1; i < argc; i++) {
+        string arg = argv[i];
+        if ((arg == "-h") || (arg == "--help")) {
+            ShowUsage();
+            exit(0);
+        } else if ((arg == "-c") || (arg == "--config")) {
+            if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
+                options.rmlFile =
+                    argv[++i];  // Increment 'i' so we don't get the argument as the next argv[i].
+            } else {
+                cerr << "--config option requires one argument" << endl;
+                exit(1);
+            }
+        } else if ((arg == "-o") || (arg == "--output")) {
+            if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
+                options.outputFile =
+                    argv[++i];  // Increment 'i' so we don't get the argument as the next argv[i].
+            } else {
+                cerr << "--output option requires one argument" << endl;
+                exit(1);
+            }
+        } else if ((arg == "-g") || (arg == "--geometry")) {
+            if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
+                options.geometryFile =
+                    argv[++i];  // Increment 'i' so we don't get the argument as the next argv[i].
+            } else {
+                cerr << "--geometry option requires one argument" << endl;
+                exit(1);
+            }
+        } else if ((arg == "-i") || (arg == "--interactive")) {
+            options.interactive = true;
+            // TODO: not yet implemented
+            cout << "--interactive option not yet implemented" << endl;
+            exit(1);
+        } else if ((arg == "-j") || (arg == "--threads") || (arg == "-t")) {
+            if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
+                options.nThreads =
+                    stoi(argv[++i]);  // Increment 'i' so we don't get the argument as the next argv[i].
+                if (options.nThreads < 0) {
+                    cout << "--threads option error: number of threads must be >= 0" << endl;
+                    exit(1);
+                }
+            } else {
+                cerr << "--threads option requires one argument." << endl;
+                exit(1);
+            }
+        } else if ((arg == "-n") || (arg == "--events")) {
+            if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
+                options.nEvents =
+                    stoi(argv[++i]);  // Increment 'i' so we don't get the argument as the next argv[i].
+                if (options.nEvents <= 0) {
+                    cout << "--events option error: number of events must be > 0" << endl;
+                    exit(1);
+                }
+            } else {
+                cerr << "--events option requires one argument." << endl;
+                exit(1);
+            }
+        } else if ((arg == "-e") || (arg == "--entries")) {
+            if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
+                options.nRequestedEntries =
+                    stoi(argv[++i]);  // Increment 'i' so we don't get the argument as the next argv[i].
+                if (options.nRequestedEntries <= 0) {
+                    cout << "--entries option error: number of entries must be > 0" << endl;
+                    exit(1);
+                }
+            } else {
+                cerr << "--entries option requires one argument." << endl;
+                exit(1);
+            }
+        } else if ((arg == "-s") || (arg == "--seed")) {
+            if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
+                options.seed =
+                    stoi(argv[++i]);  // Increment 'i' so we don't get the argument as the next argv[i].
+                if (options.seed <= 0) {
+                    cout << "--seed option error: seed must be positive number" << endl;
+                    exit(1);
+                }
+            } else {
+                cerr << "--seed option requires one argument." << endl;
+                exit(1);
+            }
+        } else if (arg == "--time") {
+            if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
+                options.timeLimitSeconds = GetSecondsFromFullTimeExpression(
+                    argv[++i]);  // Increment 'i' so we don't get the argument as the next argv[i].
+                if (options.timeLimitSeconds <= 0) {
+                    cout << "--time option error: time limit must be of the format 1h20m30s, 10m20s, 1h, etc."
+                         << endl;
+                    exit(1);
+                }
+            } else {
+                cerr << "--time option requires one argument." << endl;
+                exit(1);
+            }
+        } else {
+            const string argument = argv[i];
+            if (argument[0] == '-') {
+                cerr << "Bad CLI option '" << argument << "'" << endl << endl;
+                ShowUsage();
+                exit(1);
+            }
+            if (!options.rmlFile.empty()) {
+                // more than one rml specified
+                cerr << "Attempting to set configuration RML file to '" << argument
+                     << "' but it is already defined as '" << options.rmlFile
+                     << "'. It can only be specified once" << endl;
+                exit(1);
+            }
+            options.rmlFile = argv[i];  // invoked as restG4 <rmlFile>, restG4 -j 4 <rmlFile>, etc.
+        }
+    }
+
+    if (options.rmlFile.empty()) {
+        cerr << "Input RML file not specified" << endl;
+        exit(1);
+    }
+
+    return options;
+}
+
+}  // namespace CommandLineOptions
+
+int interruptSignalHandler(const int, void* ptr) {
+    // See https://stackoverflow.com/a/43400143/11776908
+    cout << "Stopping Run! Program was manually stopped by user (CTRL+C)!" << endl;
+    const auto manager = (SimulationManager*)(ptr);
+    manager->StopSimulation();
+    return 0;
+}
+
+constexpr const char* geometryName = "Geometry";
+
+void Application::Run(const CommandLineOptions::Options& options) {
+    signal(SIGINT, (void (*)(int))interruptSignalHandler);
 
     const auto originalDirectory = filesystem::current_path();
 
     cout << "Current working directory: " << originalDirectory << endl;
 
-    CommandLineSetup::Print(commandLineParameters);
+    CommandLineOptions::PrintOptions(options);
 
-    /// Separating relative path and pure RML filename
-    char* inputConfigFile = const_cast<char*>(commandLineParameters.rmlFile.Data());
+    // Separating relative path and pure RML filename
+    const char* inputConfigFile = options.rmlFile.c_str();
 
     if (!TRestTools::CheckFileIsAccessible(inputConfigFile)) {
-        cout << "Input rml file: " << inputConfigFile << " not found, please check file name" << endl;
+        cerr << "Input RML file " << filesystem::weakly_canonical(inputConfigFile)
+             << " not found, please check file name!" << endl;
         exit(1);
     }
 
@@ -69,11 +293,29 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
         filesystem::current_path(inputRmlPath);
     }
 
-    fSimulationManager->fRestGeant4Metadata = new TRestGeant4Metadata(inputRmlClean.c_str());
-    fSimulationManager->fRestGeant4Metadata->SetGeant4Version(TRestTools::Execute("geant4-config --version"));
+    auto metadata = new TRestGeant4Metadata(inputRmlClean.c_str());
+    fSimulationManager.SetRestMetadata(metadata);
 
-    if (!commandLineParameters.geometryFile.IsNull()) {
-        fSimulationManager->fRestGeant4Metadata->SetGdmlFilename(commandLineParameters.geometryFile.Data());
+    metadata->SetGeant4Version(TRestTools::Execute("geant4-config --version"));
+
+    if (options.seed != 0) {
+        metadata->SetSeed(options.seed);
+    }
+    constexpr int maxPrimariesAllowed = numeric_limits<int>::max();
+    if (options.nEvents != 0) {
+        metadata->SetNumberOfEvents(options.nEvents);
+    }
+    if (metadata->GetNumberOfEvents() == 0) {
+        metadata->SetNumberOfEvents(maxPrimariesAllowed);
+    }
+    if (options.nRequestedEntries != 0) {
+        metadata->SetNumberOfRequestedEntries(options.nRequestedEntries);
+    }
+    if (options.timeLimitSeconds != 0) {
+        metadata->SetSimulationMaxTimeSeconds(options.timeLimitSeconds);
+    }
+    if (!options.geometryFile.empty()) {
+        metadata->SetGdmlFilename(options.geometryFile);
     }
 
     // We need to process and generate a new GDML for several reasons.
@@ -85,68 +327,86 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     auto gdml = new TRestGDMLParser();
 
     // This call will generate a new single file GDML output
-    gdml->Load((string)fSimulationManager->fRestGeant4Metadata->GetGdmlFilename());
+    gdml->Load((string)metadata->GetGdmlFilename());
 
     // We redefine the value of the GDML file to be used in DetectorConstructor.
-    fSimulationManager->fRestGeant4Metadata->SetGdmlFilename(gdml->GetOutputGDMLFile());
-    fSimulationManager->fRestGeant4Metadata->SetGeometryPath("");
+    metadata->SetGdmlFilename(gdml->GetOutputGDMLFile());
+    metadata->SetGeometryPath("");
 
-    fSimulationManager->fRestGeant4Metadata->SetGdmlReference(gdml->GetGDMLVersion());
-    fSimulationManager->fRestGeant4Metadata->SetMaterialsReference(gdml->GetEntityVersion("materials"));
+    metadata->SetGdmlReference(gdml->GetGDMLVersion());
+    metadata->SetMaterialsReference(gdml->GetEntityVersion("materials"));
 
-    fSimulationManager->fRestGeant4PhysicsLists = new TRestGeant4PhysicsLists(inputRmlClean.c_str());
+    auto physicsLists = new TRestGeant4PhysicsLists(inputRmlClean.c_str());
+    fSimulationManager.SetRestPhysicsLists(physicsLists);
 
-    fSimulationManager->fRestRun = new TRestRun();
-    fSimulationManager->fRestRun->LoadConfigFromFile(inputRmlClean);
+    auto run = new TRestRun();
+    fSimulationManager.SetRestRun(run);
 
-    if (!commandLineParameters.outputFile.IsNull()) {
-        fSimulationManager->fRestRun->SetOutputFileName(commandLineParameters.outputFile.Data());
+    run->LoadConfigFromFile(inputRmlClean);
+
+    if (!options.outputFile.empty()) {
+        run->SetOutputFileName(options.outputFile);
     }
 
     filesystem::current_path(originalDirectory);
 
-    TString runTag = fSimulationManager->fRestRun->GetRunTag();
-    if (runTag == "Null" || runTag == "")
-        fSimulationManager->fRestRun->SetRunTag(fSimulationManager->fRestGeant4Metadata->GetTitle());
+    TString runTag = run->GetRunTag();
+    if (runTag == "Null" || runTag == "") {
+        run->SetRunTag(metadata->GetTitle());
+    }
 
-    fSimulationManager->fRestRun->SetRunType("restG4");
+    run->SetRunType("restG4");
 
-    fSimulationManager->fRestRun->AddMetadata(fSimulationManager->fRestGeant4Metadata);
-    fSimulationManager->fRestRun->AddMetadata(fSimulationManager->fRestGeant4PhysicsLists);
+    run->AddMetadata(fSimulationManager.GetRestMetadata());
+    run->AddMetadata(fSimulationManager.GetRestPhysicsLists());
 
-    fSimulationManager->fRestRun->PrintMetadata();
+    run->PrintMetadata();
 
-    fSimulationManager->fRestRun->FormOutputFile();
+    run->FormOutputFile();
+    if (run->GetOutputFile() == nullptr || !run->GetOutputFile()->IsWritable()) {
+        cerr << "Problem writing output file '" << run->GetOutputFileName()
+             << "'. Perhaps location does not exist or is not writable?" << endl;
+        exit(1);
+    }
+    run->GetOutputFile()->cd();
 
-    fSimulationManager->fRestGeant4Event = new TRestGeant4Event();
-    fSimulationManager->fRestGeant4SubEvent = new TRestGeant4Event();
+    run->AddEventBranch(&fSimulationManager.fEvent);
 
-    fSimulationManager->fRestGeant4Event->InitializeReferences(fSimulationManager->fRestRun);
-    fSimulationManager->fRestGeant4SubEvent->InitializeReferences(fSimulationManager->fRestRun);
-
-    fSimulationManager->fRestRun->AddEventBranch(fSimulationManager->fRestGeant4SubEvent);
-
-    fSimulationManager->fRestGeant4Track = new TRestGeant4Track();
-    fSimulationManager->fRestGeant4Track->SetEvent(fSimulationManager->fRestGeant4SubEvent);
     // choose the Random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
-    long seed = fSimulationManager->fRestGeant4Metadata->GetSeed();
+    long seed = metadata->GetSeed();
     CLHEP::HepRandom::setTheSeed(seed);
 
-    auto runManager = new G4RunManager;
+    G4VSteppingVerbose::SetInstance(new SteppingVerbose(&fSimulationManager));
 
-    auto detector = new DetectorConstruction(fSimulationManager);
+#ifndef GEANT4_WITHOUT_G4RunManagerFactory
+    auto runManagerType = G4RunManagerType::Default;
+    const bool serialMode = options.nThreads == 0;
+    if (serialMode) {
+        runManagerType = G4RunManagerType::SerialOnly;
+        cout << "Using serial run manager" << endl;
+    } else {
+        runManagerType = G4RunManagerType::MTOnly;
+        cout << "Using MT run manager with " << options.nThreads << " threads" << endl;
+    }
 
-    runManager->SetUserInitialization(detector);
-    runManager->SetUserInitialization(new PhysicsList(fSimulationManager->fRestGeant4PhysicsLists));
-    fSimulationManager->fRestGeant4PhysicsLists->PrintMetadata();
+    auto runManager = G4RunManagerFactory::CreateRunManager(runManagerType);
 
-    runManager->SetUserInitialization(new ActionInitialization(fSimulationManager));
+    if (!serialMode) {
+        ROOT::EnableThreadSafety();
+        runManager->SetNumberOfThreads(options.nThreads);
+    }
+#else
+    cout << "Using serial run manager" << endl;
+    auto runManager = new G4RunManager();
+#endif
 
-    auto step = (SteppingAction*)G4RunManager::GetRunManager()->GetUserSteppingAction();
+    fSimulationManager.InitializeUserDistributions();
 
-    auto primaryGenerator =
-        (PrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
+    runManager->SetUserInitialization(new DetectorConstruction(&fSimulationManager));
+    runManager->SetUserInitialization(new PhysicsList(fSimulationManager.GetRestPhysicsLists()));
+    fSimulationManager.GetRestPhysicsLists()->PrintMetadata();
+    runManager->SetUserInitialization(new ActionInitialization(&fSimulationManager));
 
     runManager->Initialize();
 
@@ -157,34 +417,38 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     visManager->Initialize();
 #endif
 
-    nEvents = fSimulationManager->fRestGeant4Metadata->GetNumberOfEvents();
+    const auto nEvents = metadata->GetNumberOfEvents();
+    if (nEvents < 0) {
+        cerr << "'nEvents' parameter value (" << nEvents << ") is not valid" << endl;
+        exit(1);
+    }
 
     time_t systime = time(nullptr);
-    fSimulationManager->fRestRun->SetStartTimeStamp((Double_t)systime);
+    run->SetStartTimeStamp((Double_t)systime);
 
-    cout << "Number of events : " << nEvents << endl;
+    run->UpdateOutputFile();
+
+    cout << "Writing geometry" << endl;
+    gdml->CreateGeoManager();
+    if (!gGeoManager) {
+        cout << "Writing geometry - Error - Unable to write geometry (geometry not found)" << endl;
+        exit(1);
+    }
+    gGeoManager->Write(geometryName, TObject::kOverwrite);
+
+    cout << "Number of events: " << nEvents << endl;
     if (nEvents > 0)  // batch mode
     {
-        G4String command = "/tracking/verbose 0";
-        UI->ApplyCommand(command);
-        command = "/run/initialize";
-        UI->ApplyCommand(command);
-
-        char tmp[256];
-        sprintf(tmp, "/run/beamOn %d", nEvents);
-
-        command = tmp;
-        UI->ApplyCommand(command);
-
-        fSimulationManager->fRestRun->GetOutputFile()->cd();
-
+        UI->ApplyCommand("/tracking/verbose 0");
+        UI->ApplyCommand("/run/initialize");
+        UI->ApplyCommand("/run/beamOn " + to_string(nEvents));
     }
 
     else if (nEvents == 0)  // define visualization and UI terminal for interactive mode
     {
 #ifdef G4UI_USE
         cout << "Entering vis mode.." << endl;
-        auto ui = new G4UIExecutive(commandLineParameters.cmdArgc, commandLineParameters.cmdArgv);
+        auto ui = new G4UIExecutive(options.argc, options.argv);
 #ifdef G4VIS_USE
         cout << "Executing G4 macro : /control/execute macros/vis.mac" << endl;
         UI->ApplyCommand("/control/execute macros/vis.mac");
@@ -194,25 +458,7 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
 #endif
     }
 
-    else  // nEvents == -1
-    {
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << "The number of events to be simulated was not recognized properly!" << endl;
-        cout << "Make sure you did not forget the number of events entry in TRestGeant4Metadata." << endl;
-        cout << endl;
-        cout << " ... or the parameter is properly constructed/interpreted." << endl;
-        cout << endl;
-        cout << "It should be something like : " << endl;
-        cout << endl;
-        cout << R"( <parameter name ="nEvents" value="100"/>)" << endl;
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << "++++++++++ ERROR +++++++++" << endl;
-        cout << endl;
-    }
-    fSimulationManager->fRestRun->GetOutputFile()->cd();
+    run->GetOutputFile()->cd();
 
 #ifdef G4VIS_USE
     delete visManager;
@@ -222,52 +468,75 @@ void Application::Run(const CommandLineParameters& commandLineParameters) {
     delete runManager;
 
     systime = time(nullptr);
-    fSimulationManager->fRestRun->SetEndTimeStamp((Double_t)systime);
-    const TString filename =
-        TRestTools::ToAbsoluteName(fSimulationManager->fRestRun->GetOutputFileName().Data());
-    fSimulationManager->fRestRun->UpdateOutputFile();
-    fSimulationManager->fRestRun->CloseFile();
-    fSimulationManager->fRestRun->PrintMetadata();
+    run->SetEndTimeStamp((Double_t)systime);
+    const string filename = TRestTools::ToAbsoluteName(run->GetOutputFileName().Data());
 
-    ////////// Writing the geometry in TGeoManager format to the ROOT file
-    ////////// Need to fork and do it in child process, to prevent occasional seg.fault
-    pid_t pid;
-    pid = fork();
-    if (pid < 0) {
-        perror("fork error:");
+    const auto nEntries = run->GetEntries();
+
+    run->UpdateOutputFile();
+    run->CloseFile();
+
+    metadata->PrintMetadata();
+    run->PrintMetadata();
+
+    const auto nEventsAtEnd =
+        metadata->GetNumberOfEvents();  // This could be different from original if exit early
+
+    // Do some checks
+    ValidateOutputFile(filename);
+
+    cout << "\n\t- Total simulation time is " << ToTimeStringLong(fSimulationManager.GetElapsedTime()) << ", "
+         << nEventsAtEnd << " processed events (" << nEventsAtEnd / fSimulationManager.GetElapsedTime()
+         << " per second) and " << nEntries << " events saved to output file ("
+         << nEntries / fSimulationManager.GetElapsedTime() << " per second)" << endl;
+    cout << "\t- Output file: " << filename << endl << endl;
+}
+
+void Application::ValidateOutputFile(const string& filename) const {
+    bool error = false;
+
+    const auto run = TRestRun(filename);
+    const auto file = run.GetInputFile();
+    if (file == nullptr) {
+        cerr << "Output file not found" << endl;
         exit(1);
     }
-    // child process
-    if (pid == 0) {
-        // writing the geometry object
-        freopen("/dev/null", "w", stdout);
-        freopen("/dev/null", "w", stderr);
 
-        REST_Display_CompatibilityMode = true;
-
-        // We wait the father process ends properly
-        sleep(5);
-
-        // Then we just add the geometry
-        auto file = new TFile(filename, "update");
-        TGeoManager* geoManager = gdml->CreateGeoManager();
-
-        file->cd();
-        geoManager->SetName("Geometry");
-        geoManager->Write();
-        file->Close();
-        exit(0);
+    const auto eventTree = run.GetEventTree();
+    if (eventTree == nullptr) {
+        error = true;
+        cerr << "'EventTree' not found in output file" << endl;
     }
-    // father process
-    else {
-        int stat_val = 0;
-        pid_t child_pid;
-
-        printf("Writing geometry ... \n");
+    const auto analysisTree = run.GetAnalysisTree();
+    if (analysisTree == nullptr) {
+        error = true;
+        cerr << "'AnalysisTree' not found in output file" << endl;
     }
 
-    cout << "============== Generated file: " << filename << " ==============" << endl;
-    auto timeEnd = chrono::steady_clock::now();
-    cout << "Elapsed time: " << chrono::duration_cast<chrono::seconds>(timeEnd - timeStart).count()
-         << " seconds" << endl;
+    const auto geometry = file->Get<TGeoManager>(geometryName);
+    if (geometry == nullptr) {
+        error = true;
+        cerr << "Geometry not found in output file" << endl;
+    }
+
+    map<string, int> metadataCount;
+    for (const auto& obj : *file->GetListOfKeys()) {
+        const auto key = dynamic_cast<TKey*>(obj);
+        metadataCount[key->GetClassName()]++;
+    }
+    for (const auto name : {"TRestGeant4Metadata", "TRestGeant4PhysicsLists", "TRestRun", "TRestAnalysisTree",
+                            "TGeoManager", "TTree"}) {
+        if (metadataCount[name] != 1) {
+            error = true;
+            if (metadataCount[name] <= 0) {
+                cerr << "'" << name << "' not found in output file" << endl;
+            } else {
+                cerr << "Multiple instances of '" << name << "' in the same output file" << endl;
+            }
+        }
+    }
+    if (error) {
+        file->ls();
+        exit(1);
+    }
 }

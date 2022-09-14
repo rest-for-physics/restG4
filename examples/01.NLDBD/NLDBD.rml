@@ -1,4 +1,4 @@
-<?xml version="4.0" encoding="UTF-8" standalone="no" ?>
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 
 <!-- Constructing XML-like REST metadata input file
      File : config.rml
@@ -56,8 +56,8 @@ By default REST units are mm, keV and degrees
 
             ///3. geant4 internal
             <!--<source use="geant4" particle="Na22" excitedLevel="0.0" fullChain="on">
-              <angularDist type="isotropic" />
-              <energyDist type="mono" energy="0.0" units="MeV" />
+              <angular type="isotropic" />
+              <energy type="mono" energy="0.0" units="MeV" />
             </source>-->
         </generator>
 
@@ -67,10 +67,12 @@ By default REST units are mm, keV and degrees
             <biasingVolume size="2050mm" position="(0,0,0)mm" factor="2" energyRange="(0,5)MeV"/>
         </biasing>
 
-        <storage sensitiveVolume="gas">
+        <detector>
             <parameter name="energyRange" value="(0,5)" units="MeV"/>
-            <activeVolume name="gas" chance="1" maxStepSize="1mm"/>
-        </storage>
+            <parameter name="activateAllVolumes" value="false"/>
+            <volume name="gas" sensitive="true" maxStepSize="1mm"/>
+        </detector>
+
     </TRestGeant4Metadata>
 
     <TRestGeant4PhysicsLists name="default" title="First physics list implementation.">

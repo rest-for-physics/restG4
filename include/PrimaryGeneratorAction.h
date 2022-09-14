@@ -4,6 +4,8 @@
 
 #include <TF3.h>
 #include <TH1D.h>
+#include <TRandom.h>
+#include <TRestGeant4Particle.h>
 
 #include <G4IonTable.hh>
 #include <G4ParticleGun.hh>
@@ -11,40 +13,41 @@
 #include <fstream>
 #include <globals.hh>
 #include <iostream>
+#include <mutex>
 
 #include "DetectorConstruction.h"
-#include "TRestGeant4Particle.h"
-
-const int nSpct = 3000;
 
 class G4Event;
 class SimulationManager;
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
    public:
-    PrimaryGeneratorAction(SimulationManager*, DetectorConstruction* pDetector);
+    PrimaryGeneratorAction(SimulationManager*);
     ~PrimaryGeneratorAction();
 
    public:
     virtual void GeneratePrimaries(G4Event*);
-    G4ParticleGun* GetParticleGun() { return fParticleGun; };
 
-    void SetSpectrum(TH1D* spt, double eMin = 0, double eMax = 0);
+    void SetEnergyDistributionHistogram(const TH1D* h, double eMin = 0, double eMax = 0);
+    inline void SetAngularDistributionHistogram(const TH1D* h) { fAngularDistributionHistogram = h; }
+
     void SetGeneratorSpatialDensity(TString str);
-
-    void SetAngularDistribution(TH1D* ang) { fAngularDistribution = ang; }
 
    private:
     SimulationManager* fSimulationManager;
+    std::mutex fMutex;
 
     std::vector<TRestGeant4Particle> fTempParticles;
 
-    G4ParticleGun* fParticleGun;
-    DetectorConstruction* fDetector;
+    G4ParticleGun fParticleGun;
     G4ParticleDefinition* fParticle = nullptr;
 
-    TH1D* fSpectrum;
-    TH1D* fAngularDistribution;
+    const TH1D* fEnergyDistributionHistogram = nullptr;
+    const TH1D* fAngularDistributionHistogram = nullptr;
+
+    TF1* fEnergyDistributionFunction = nullptr;
+    TF1* fAngularDistributionFunction = nullptr;
+
     TF3* fGeneratorSpatialDensityFunction;
 
     Int_t startEnergyBin;
@@ -55,12 +58,15 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
 
     Double_t lastEnergy;
 
-    void SetParticlePosition();
-    G4ParticleDefinition* SetParticleDefinition(Int_t particlesourceindex, TRestGeant4Particle p);
-    void SetParticleEnergy(Int_t particlesourceindex, TRestGeant4Particle p);
-    void SetParticleDirection(Int_t particlesourceindex, TRestGeant4Particle p);
+    TRandom* fRandom = nullptr;
 
-    G4ThreeVector GetIsotropicVector();
+    void SetParticlePosition();
+    G4ParticleDefinition* SetParticleDefinition(Int_t particleSourceIndex,
+                                                const TRestGeant4Particle& particle);
+    void SetParticleEnergy(Int_t particleSourceIndex, const TRestGeant4Particle& particle);
+    void SetParticleDirection(Int_t particleSourceIndex, const TRestGeant4Particle& particle);
+
+    G4ThreeVector GetIsotropicVector() const;
     Double_t GetAngle(G4ThreeVector x, G4ThreeVector y);
     Double_t GetCosineLowRandomThetaAngle();
 
@@ -74,18 +80,10 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     void GenPositionOnCylinderSurface(double& x, double& y, double& z);
     void GenPositionOnPoint(double& x, double& y, double& z);
     void GenPositionOnWall(double& x, double& y, double& z);
-    void GenPositionOnPlate(double& x, double& y, double& z);
+    void GenPositionOnDisk(double& x, double& y, double& z);
 
     G4String fParType;
     G4String fGenType;
-    G4double fParEnergy;
-    G4double fParGenerator;
-
-    G4String fSpctFilename;
-
-    G4int gammaSpectrum[nSpct];
-
-    G4int nCollections;
 };
 
 #endif

@@ -1,4 +1,4 @@
-<?xml version="4.0" encoding="UTF-8" standalone="no" ?>
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 
 <!-- Constructing XML-like REST metadata input file
      File : config.rml
@@ -42,15 +42,16 @@ By default REST units are mm, keV and degrees
 
         <generator type="volume" from="lead">
             <source particle="Pb210" fullChain="on">
-                <angularDist type="isotropic"/>
-                <energyDist type="mono" energy="0keV"/>
+                <angular type="isotropic"/>
+                <energy type="mono" energy="0keV"/>
             </source>
         </generator>
 
-        <storage sensitiveVolume="detector">
+        <detector>
             <parameter name="energyRange" value="(0,10)" units="keV"/>
-            <activeVolume name="detector" chance="1" maxStepSize="1mm"/>
-        </storage>
+            <volume name="detector" sensitive="true" maxStepSize="1mm"/>
+        </detector>
+
     </TRestGeant4Metadata>
 
     <TRestGeant4PhysicsLists name="default" title="First physics list implementation.">
@@ -68,22 +69,22 @@ By default REST units are mm, keV and degrees
         <!-- EM Physics lists -->
         <!--<physicsList name="G4EmLivermorePhysics"> </physicsList>-->
         <!-- <physicsList name="G4EmPenelopePhysics"> </physicsList> -->
-        <physicsList name="G4EmStandardPhysics_option4"></physicsList>
+        <physicsList name="G4EmStandardPhysics_option4"/>
 
         <!-- Decay physics lists -->
-        <physicsList name="G4DecayPhysics"></physicsList>
-        <physicsList name="G4RadioactiveDecayPhysics"></physicsList>
+        <physicsList name="G4DecayPhysics"/>
+        <physicsList name="G4RadioactiveDecayPhysics"/>
         <physicsList name="G4RadioactiveDecay">
             <option name="ICM" value="true"/>
             <option name="ARM" value="true"/>
         </physicsList>
 
         <!-- Hadron physics lists -->
-        <physicsList name="G4HadronElasticPhysicsHP"></physicsList>
-        <physicsList name="G4IonBinaryCascadePhysics"></physicsList>
-        <physicsList name="G4HadronPhysicsQGSP_BIC_HP"></physicsList>
-        <physicsList name="G4NeutronTrackingCut"></physicsList>
-        <physicsList name="G4EmExtraPhysics"></physicsList>
+        <physicsList name="G4HadronElasticPhysicsHP"/>
+        <physicsList name="G4IonBinaryCascadePhysics"/>
+        <physicsList name="G4HadronPhysicsQGSP_BIC_HP"/>
+        <physicsList name="G4NeutronTrackingCut"/>
+        <physicsList name="G4EmExtraPhysics"/>
 
     </TRestGeant4PhysicsLists>
 

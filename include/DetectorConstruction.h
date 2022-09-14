@@ -15,34 +15,30 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
    private:
     SimulationManager* fSimulationManager;
 
-    G4GDMLParser* parser;
-    G4VSolid* generatorSolid;
+    G4GDMLParser* fGdmlParser;
+    G4VSolid* fGeneratorSolid;
     G4ThreeVector fGeneratorTranslation;
 
-    Double_t boundBox_xMin, boundBox_xMax;
-    Double_t boundBox_yMin, boundBox_yMax;
-    Double_t boundBox_zMin, boundBox_zMax;
+    Double_t fBoundBoxXMin, fBoundBoxXMax, fBoundBoxYMin, fBoundBoxYMax, fBoundBoxZMin, fBoundBoxZMax;
 
    public:
-    G4GDMLParser* GetGeometry() { return parser; }
-    G4VPhysicalVolume* GetPhysicalVolume(const G4String& physVolName);
-    G4VSolid* GetGeneratorSolid() { return generatorSolid; }
-    G4ThreeVector GetGeneratorTranslation() { return fGeneratorTranslation; }
+    G4VPhysicalVolume* GetPhysicalVolume(const G4String& physVolName) const;
+    inline G4VSolid* GetGeneratorSolid() const { return fGeneratorSolid; }
+    inline G4ThreeVector GetGeneratorTranslation() const { return fGeneratorTranslation; }
 
-    Double_t GetBoundingX_min() { return boundBox_xMin; }
-    Double_t GetBoundingX_max() { return boundBox_xMax; }
-
-    Double_t GetBoundingY_min() { return boundBox_yMin; }
-    Double_t GetBoundingY_max() { return boundBox_yMax; }
-
-    Double_t GetBoundingZ_min() { return boundBox_zMin; }
-    Double_t GetBoundingZ_max() { return boundBox_zMax; }
+    inline Double_t GetBoundBoxXMin() const { return fBoundBoxXMin; }
+    inline Double_t GetBoundBoxXMax() const { return fBoundBoxXMax; }
+    inline Double_t GetBoundBoxYMin() const { return fBoundBoxYMin; }
+    inline Double_t GetBoundBoxYMax() const { return fBoundBoxYMax; }
+    inline Double_t GetBoundBoxZMin() const { return fBoundBoxZMin; }
+    inline Double_t GetBoundBoxZMax() const { return fBoundBoxZMax; }
 
     DetectorConstruction(SimulationManager*);
     ~DetectorConstruction();
 
    public:
-    G4VPhysicalVolume* Construct();
+    G4VPhysicalVolume* Construct() override;
+    void ConstructSDandField() override;
 
     friend class TRestGeant4GeometryInfo;
 };
