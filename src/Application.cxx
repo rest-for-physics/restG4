@@ -485,7 +485,7 @@ void Application::Run(const CommandLineOptions::Options& options) {
     // Do some checks
     ValidateOutputFile(filename);
 
-    cout << "\n\t- Total simulation time is " << fSimulationManager.GetElapsedTime() << " seconds, "
+    cout << "\n\t- Total simulation time is " << ToTimeStringLong(fSimulationManager.GetElapsedTime()) << ", "
          << nEventsAtEnd << " processed events (" << nEventsAtEnd / fSimulationManager.GetElapsedTime()
          << " per second) and " << nEntries << " events saved to output file ("
          << nEntries / fSimulationManager.GetElapsedTime() << " per second)" << endl;

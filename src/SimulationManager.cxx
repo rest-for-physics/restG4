@@ -50,7 +50,8 @@ void PeriodicPrint(SimulationManager* simulationManager) {
                << TString::Format("%.2e", simulationManager->GetNumberOfStoredEvents() /
                                               simulationManager->GetElapsedTime())
                       .Data()
-               << " per second). " << simulationManager->GetElapsedTime() << " seconds elapsed" << G4endl;
+               << " per second). " << ToTimeStringLong(simulationManager->GetElapsedTime()) << " elapsed"
+               << G4endl;
     }
 }
 
@@ -221,7 +222,8 @@ void OutputManager::BeginOfEventAction() {
         fSimulationManager->GetElapsedTime() >
             fSimulationManager->GetRestMetadata()->GetSimulationMaxTimeSeconds()) {
         G4cout << "Stopping Run! We have reached the time limit of "
-               << fSimulationManager->GetRestMetadata()->GetSimulationMaxTimeSeconds() << " seconds" << endl;
+               << ToTimeStringLong(fSimulationManager->GetRestMetadata()->GetSimulationMaxTimeSeconds())
+               << endl;
         fSimulationManager->StopSimulation();
     }
 }
