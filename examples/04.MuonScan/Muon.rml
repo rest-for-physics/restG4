@@ -1,7 +1,5 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <restG4>
-
     <TRestRun name="MuonRun" title="A basic muon test with 2 active volumes">
         <parameter name="experimentName" value="MuonScan"/>
         <parameter name="readOnly" value="false"/>
@@ -12,46 +10,37 @@
         <parameter name="overwrite" value="off"/>
         <parameter name="outputFileName" value="Run[fRunNumber]_[fRunType]_[fRunTag]_[fRunUser].root"/>
     </TRestRun>
-
     <TRestGeant4Metadata name="restG4 run" title="MuonsFromPoint" verboseLevel="info">
         <parameter name="gdmlFile" value="setup.gdml"/>
         <parameter name="subEventTimeDelay" value="100us"/>
-
         <parameter name="nEvents" value="1000"/>
         <parameter name="saveAllEvents" value="off"/>
-
         <parameter name="seed" value="17021981"/>
-
         <generator type="point" position="(0,0,-50)cm">
             <source particle="mu-" excitedLevel="0.0">
                 <energy type="mono" energy="100GeV"/>
                 <angular type="flux" direction="(0,0,1)"/>
             </source>
         </generator>
-
         <detector>
             <parameter name="energyRange" value="(0,10)" units="GeV"/>
             <volume name="det_dw_01" sensitive="true" maxStepSize="1mm"/>
             <volume name="det_up_01" maxStepSize="1mm"/>
         </detector>
-
     </TRestGeant4Metadata>
-
     <TRestGeant4PhysicsLists name="default" title="First physics list implementation." verboseLevel="warning">
         <parameter name="cutForGamma" value="1" units="um"/>
         <parameter name="cutForElectron" value="1" units="um"/>
         <parameter name="cutForPositron" value="1" units="um"/>
-
         <parameter name="cutForMuon" value="1" units="mm"/>
         <parameter name="cutForNeutron" value="1" units="mm"/>
         <parameter name="minEnergyRangeProductionCuts" value="1" units="keV"/>
         <parameter name="maxEnergyRangeProductionCuts" value="1" units="GeV"/>
-
         <!-- EM Physics lists -->
-        <physicsList name="G4EmLivermorePhysics"> <!-- "G4EmPenelopePhysics", "G4EmStandardPhysics_option3" -->
-            <option name="pixe" value="true"/>
+        <physicsList name="G4EmLivermorePhysics">
+            <!-- "G4EmPenelopePhysics", "G4EmStandardPhysics_option3" -->
+            <option name="pixe" value="false"/>
         </physicsList>
-
         <!-- Decay physics lists -->
         <physicsList name="G4DecayPhysics"/>
         <physicsList name="G4RadioactiveDecayPhysics"/>
@@ -59,13 +48,10 @@
             <option name="ICM" value="true"/>
             <option name="ARM" value="true"/>
         </physicsList>
-
         <!-- Hadron physics lists -->
         <physicsList name="G4HadronElasticPhysicsHP"/>
         <physicsList name="G4IonBinaryCascadePhysics"/>
         <physicsList name="G4HadronPhysicsQGSP_BIC_HP"/>
         <physicsList name="G4EmExtraPhysics"/>
-
     </TRestGeant4PhysicsLists>
-
 </restG4>
