@@ -270,8 +270,6 @@ int interruptSignalHandler(const int, void* ptr) {
 constexpr const char* geometryName = "Geometry";
 
 void Application::Run(const CommandLineOptions::Options& options) {
-    signal(SIGINT, (void (*)(int))interruptSignalHandler);
-
     const auto originalDirectory = filesystem::current_path();
 
     cout << "Current working directory: " << originalDirectory << endl;
@@ -435,6 +433,8 @@ void Application::Run(const CommandLineOptions::Options& options) {
         exit(1);
     }
     gGeoManager->Write(geometryName, TObject::kOverwrite);
+
+    signal(SIGINT, (void (*)(int))interruptSignalHandler);  // Add custom signal handler before simulation
 
     cout << "Number of events: " << nEvents << endl;
     if (nEvents > 0)  // batch mode
