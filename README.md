@@ -28,7 +28,7 @@ Simulation results are determined by the random seed and the number of threads, 
 with the same seed will produce different results. Using the same seed and same number of threads produces the same
 results.
 
-The multithreading implementation of `restG4` is new and although it looks to work properly it may have some bugs. If
+The multithreading implementation of `restG4` is new and although it looks to be working properly it may have some bugs. If
 you find one of such bugs, please post an issue [here](https://github.com/rest-for-physics/restG4/issues) with
 the `multithreading` label.
 
@@ -49,13 +49,13 @@ The simulation run will naturally end when the selected number of events have be
 specified in the RML file or via the `-n` flag on the CLI. However, the user can also specify additional conditions to
 end the simulation early.
 
-- `restG4 simulation.rml -N 1000` will signal the simulation to stop once 1000 events have been marked as valid (saved
+- `restG4 simulation.rml -e 1000` will signal the simulation to stop once 1000 events have been marked as valid (saved
   on the output file). The final simulation will probably have a slightly higher number of entries than the value
   specified in the case of multithreading as the worker threads may still be working on valid events, or they may not
   have been saved yet. The number of processed events (the equivalent of `nEvents`) will be adjusted to the real number
   of processed events, overriding the selected value of the user, so the resulting simulation would be equivalent to a
   plain simulation using this value as `nEvents`. This holds more accurately the large the `-N` parameter.
-- `restG4 simulation.rml -S 1h20m30s` will signal the simulation to stop after 1 hour 20 minutes and 30 seconds have
+- `restG4 simulation.rml --time 1h20m30s` will signal the simulation to stop after 1 hour 20 minutes and 30 seconds have
   elapsed since the start. You can specify any value using this format such as `1h15m`, `30s`, etc.
 - Sending the interrupt signal (typically via `CTRL+C`) will signal the simulation to stop, and it will attempt to save
   the results into disk before closing the process.

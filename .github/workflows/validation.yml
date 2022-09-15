@@ -336,7 +336,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
-    needs: [ check-installation, restG4-examples-01 ]
+    needs: [ check-installation ]
     steps:
       - uses: actions/checkout@v3
       - name: Restore cache

@@ -56,22 +56,22 @@ Int_t Validate(const char* filename) {
     double nEvents = run.GetEntries();
 
     double averageTotalEnergy = 0;
-    constexpr double averageTotalEnergyRef = 18.8645;
+    constexpr double averageTotalEnergyRef = 18.1009;
 
     double averageSensitiveEnergy = 0;
-    constexpr double averageSensitiveEnergyRef = 9.01081;
+    constexpr double averageSensitiveEnergyRef = 8.68937;
 
     double averageNumberOfTracks = 0;
-    constexpr double averageNumberOfTracksRef = 1388.56;
+    constexpr double averageNumberOfTracksRef = 425.292;
 
     double averageNumberOfHitsVolume0 = 0;
-    constexpr double averageNumberOfHitsVolume0Ref = 74.095;
+    constexpr double averageNumberOfHitsVolume0Ref = 68.674;
 
     double averageNumberOfHitsVolume1 = 0;
-    constexpr double averageNumberOfHitsVolume1Ref = 64.182;
+    constexpr double averageNumberOfHitsVolume1Ref = 58.278;
 
     TVector3 averagePosition = {};
-    const TVector3 averagePositionRef = {0.100946, -0.26358, 300.348};
+    const TVector3 averagePositionRef = {-0.00970671, 0.148902, 300.517};
 
     constexpr double tolerance = 0.001;
 
