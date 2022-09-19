@@ -32,25 +32,25 @@ Int_t Validate(const char* filename) {
     TRestGeant4Event* event = run.GetInputEvent<TRestGeant4Event>();
     run.GetEntry(0);
 
-    if (event->GetNumberOfTracks() != 405) {
+    if (event->GetNumberOfTracks() != 45) {
         cout << "Incorrect number of tracks: " << event->GetNumberOfTracks() << endl;
         return 4;
     }
-    if (event->GetNumberOfHits() != 6345) {
+    if (event->GetNumberOfHits() != 1080) {
         cout << "Incorrect number of hits: " << event->GetNumberOfHits() << endl;
         return 5;
     }
 
-    constexpr Double_t sensitiveVolumeEnergyRef = 30.2461;
+    constexpr Double_t sensitiveVolumeEnergyRef = 10.345786;
     if (TMath::Abs(event->GetSensitiveVolumeEnergy() - sensitiveVolumeEnergyRef) > 1e-4) {
         cout << "Incorrect sensitive volume energy: " << event->GetSensitiveVolumeEnergy() << endl;
         return 6;
     }
 
     const auto scintillatorVolumeName =
-        "VetoSystem_vetoSystemWest_vetoLayerWest2_assembly-16.veto3_scintillatorVolume-1500.0mm-f1a5df6b";
+        "VetoSystem_vetoSystemBottom_vetoLayerBottom2_assembly-10.veto2_scintillatorVolume-1500.0mm-73266212";
     const auto scintillatorEnergy = event->GetEnergyInVolume(scintillatorVolumeName);
-    const auto scintillatorEnergyRef = 3367.0536;
+    const auto scintillatorEnergyRef = 1078.0490;
     if (TMath::Abs(scintillatorEnergy - scintillatorEnergyRef) > 1e-4) {
         cout << "Incorrect scintillator volume energy: " << scintillatorEnergy << endl;
         return 7;
