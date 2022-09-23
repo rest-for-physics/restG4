@@ -261,29 +261,31 @@ void PhysicsList::ConstructProcess() {
             RESTWarning << "PhysicsList 'G4RadioactiveDecay' option 'ARM' not defined" << RESTendl;
         }
 
-        // Tritium (H3) fix | https://geant4-forum.web.cern.ch/t/triton-decay-with-rdecay01-example/2616
-        // Make tritium unstable, so it can be decayed
-        G4ParticleDefinition* tritium = G4Triton::Definition();
-        tritium->SetPDGStable(false);
+        if (fRestPhysicsLists->GetPhysicsListOptionValue("G4RadioactiveDecay", "TritiumDecay", "false") ==
+            "true") {
+            // Tritium (H3) fix | https://geant4-forum.web.cern.ch/t/triton-decay-with-rdecay01-example/2616
+            G4ParticleDefinition* tritium = G4Triton::Definition();
+            tritium->SetPDGStable(false);
 
-        // Remove G4Decay process, which requires a registered decay table
-        G4VProcess* decay = nullptr;
-        G4ProcessManager* tritiumProcessManager = tritium->GetProcessManager();
-        G4ProcessVector* tritiumProcessVector = tritiumProcessManager->GetAtRestProcessVector();
-        for (int i = 0; i < tritiumProcessVector->size() && decay == nullptr; i++) {
-            if ((*tritiumProcessVector)[i]->GetProcessName() == "Decay") decay = (*tritiumProcessVector)[i];
-        }
-        if (decay) {
-            tritiumProcessManager->RemoveProcess(decay);
-        }
+            G4VProcess* decay = nullptr;
+            G4ProcessManager* tritiumProcessManager = tritium->GetProcessManager();
+            G4ProcessVector* tritiumProcessVector = tritiumProcessManager->GetAtRestProcessVector();
+            for (int i = 0; i < tritiumProcessVector->size() && decay == nullptr; i++) {
+                if ((*tritiumProcessVector)[i]->GetProcessName() == "Decay")
+                    decay = (*tritiumProcessVector)[i];
+            }
+            if (decay) {
+                tritiumProcessManager->RemoveProcess(decay);
+            }
 
 #ifdef GEANT4_VERSION_LESS_11_0_0
-        decay = new G4RadioactiveDecayBase();
+            decay = new G4RadioactiveDecayBase();
 #else
-        decay = new G4RadioactiveDecay();
+            decay = new G4RadioactiveDecay();
 #endif
 
-        tritium->GetProcessManager()->AddProcess(decay, 1000, -1, 1000);
+            tritium->GetProcessManager()->AddProcess(decay, 1000, -1, 1000);
+        }
     }
 
     auto theParticleIterator = GetParticleIterator();
