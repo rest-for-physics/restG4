@@ -262,6 +262,7 @@ void PhysicsList::ConstructProcess() {
             RESTWarning << "PhysicsList 'G4RadioactiveDecay' option 'ARM' not defined" << RESTendl;
         }
 
+#ifndef GEANT4_VERSION_LESS_11_0_0
         /*
          * If no TritiumDecay is set, do not produce tritium decay unless particle source is H3
          * If H3 is particle source, produce tritium decay unless TritiumDecay option is explicitly disabled
@@ -286,14 +287,11 @@ void PhysicsList::ConstructProcess() {
                 tritiumProcessManager->RemoveProcess(decay);
             }
 
-#ifdef GEANT4_VERSION_LESS_11_0_0
-            decay = new G4RadioactiveDecayBase();
-#else
             decay = new G4RadioactiveDecay();
-#endif
 
             tritium->GetProcessManager()->AddProcess(decay, 1000, -1, 1000);
         }
+#endif
     }
 
     auto theParticleIterator = GetParticleIterator();
