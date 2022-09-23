@@ -402,7 +402,8 @@ void Application::Run(const CommandLineOptions::Options& options) {
     fSimulationManager.InitializeUserDistributions();
 
     runManager->SetUserInitialization(new DetectorConstruction(&fSimulationManager));
-    runManager->SetUserInitialization(new PhysicsList(fSimulationManager.GetRestPhysicsLists()));
+    runManager->SetUserInitialization(
+        new PhysicsList(&fSimulationManager, fSimulationManager.GetRestPhysicsLists()));
     fSimulationManager.GetRestPhysicsLists()->PrintMetadata();
     runManager->SetUserInitialization(new ActionInitialization(&fSimulationManager));
 
