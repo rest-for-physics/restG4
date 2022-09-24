@@ -183,11 +183,19 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
                 exit(1);
             }
         } else if ((arg == "-n") || (arg == "--events")) {
-            if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
-                options.nEvents =
-                    stoi(argv[++i]);  // Increment 'i' so we don't get the argument as the next argv[i].
+            if (i + 1 < argc) {        // Make sure we aren't at the end of argv!
+                string s = argv[++i];  // Increment 'i' so we don't get the argument as the next argv[i].
+                // Allows to parse inputs of the form 1E5, 1.5E10 etc.
+                regex rgx("^([0-9]+.?([0-9]+)?)E([0-9]+)");
+                std::smatch matches;
+                if (std::regex_search(s, matches, rgx)) {
+                    options.nEvents = int(stod(matches[1].str()) * TMath::Power(10, stoi(matches[3].str())));
+                } else {
+                    options.nEvents = stoi(s);
+                }
                 if (options.nEvents <= 0) {
-                    cout << "--events option error: number of events must be > 0" << endl;
+                    cout << "--events option error: number of events must be > 0 (input: " << s << ")"
+                         << endl;
                     exit(1);
                 }
             } else {
