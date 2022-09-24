@@ -8,10 +8,12 @@
 #include <G4VModularPhysicsList.hh>
 #include <globals.hh>
 
+#include "SimulationManager.h"
+
 class PhysicsList : public G4VModularPhysicsList {
    public:
     PhysicsList() = delete;
-    explicit PhysicsList(TRestGeant4PhysicsLists* restPhysicsLists);
+    explicit PhysicsList(SimulationManager* simulationManager, TRestGeant4PhysicsLists* restPhysicsLists);
     ~PhysicsList() override;
 
    protected:
@@ -23,6 +25,8 @@ class PhysicsList : public G4VModularPhysicsList {
     void SetCuts() override;
 
    private:
+    SimulationManager* fSimulationManager = nullptr;
+
     G4EmConfigurator fEmConfig;
 
     G4VPhysicsConstructor* fEmPhysicsList = nullptr;

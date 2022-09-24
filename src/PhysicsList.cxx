@@ -41,7 +41,8 @@
 
 using namespace std;
 
-PhysicsList::PhysicsList(TRestGeant4PhysicsLists* physicsLists) : G4VModularPhysicsList() {
+PhysicsList::PhysicsList(SimulationManager* simulationManager, TRestGeant4PhysicsLists* physicsLists)
+    : G4VModularPhysicsList(), fSimulationManager(simulationManager) {
     // add new units for radioActive decays
     const G4double minute = 60 * second;
     const G4double hour = 60 * minute;
@@ -260,6 +261,37 @@ void PhysicsList::ConstructProcess() {
                    TRestStringOutput::REST_Verbose_Level::REST_Essential) {
             RESTWarning << "PhysicsList 'G4RadioactiveDecay' option 'ARM' not defined" << RESTendl;
         }
+
+#ifndef GEANT4_VERSION_LESS_11_0_0
+        /*
+         * If no TritiumDecay is set, do not produce tritium decay unless particle source is H3
+         * If H3 is particle source, produce tritium decay unless TritiumDecay option is explicitly disabled
+         */
+        if (!(fRestPhysicsLists->GetPhysicsListOptionValue("G4RadioactiveDecay", "TritiumDecay") ==
+              "false") &&
+            (fRestPhysicsLists->GetPhysicsListOptionValue("G4RadioactiveDecay", "TritiumDecay", "false") ==
+                 "true" ||
+             fSimulationManager->GetRestMetadata()->GetParticleSource()->GetParticleName() == "H3")) {
+            // Tritium (H3) fix | https://geant4-forum.web.cern.ch/t/triton-decay-with-rdecay01-example/2616
+            G4ParticleDefinition* tritium = G4Triton::Definition();
+            tritium->SetPDGStable(false);
+
+            G4VProcess* decay = nullptr;
+            G4ProcessManager* tritiumProcessManager = tritium->GetProcessManager();
+            G4ProcessVector* tritiumProcessVector = tritiumProcessManager->GetAtRestProcessVector();
+            for (int i = 0; i < tritiumProcessVector->size() && decay == nullptr; i++) {
+                if ((*tritiumProcessVector)[i]->GetProcessName() == "Decay")
+                    decay = (*tritiumProcessVector)[i];
+            }
+            if (decay) {
+                tritiumProcessManager->RemoveProcess(decay);
+            }
+
+            decay = new G4RadioactiveDecay();
+
+            tritium->GetProcessManager()->AddProcess(decay, 1000, -1, 1000);
+        }
+#endif
     }
 
     auto theParticleIterator = GetParticleIterator();
