@@ -12,6 +12,7 @@
 #include <TRestRun.h>
 
 #include <csignal>
+#include <regex>
 #ifndef GEANT4_WITHOUT_G4RunManagerFactory
 #include <G4RunManagerFactory.hh>
 #endif
