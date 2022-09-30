@@ -3,7 +3,7 @@
 
 <!DOCTYPE gdml [
         <!ENTITY geometry SYSTEM "geometry.gdml">
-        <!ENTITY gases SYSTEM "https://sultan.unizar.es/materials/gases.xml">
+        <!ENTITY materials SYSTEM "https://sultan.unizar.es/materials/gases.xml">
         ]>
 
 <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -24,7 +24,7 @@
         <variable name="gasPressure" value="1"/> <!-- bar -->
     </define>
 
-    &gases;
+    &materials;
 
     &geometry;
 
