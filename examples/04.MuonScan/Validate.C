@@ -51,9 +51,8 @@ Int_t Validate(const char* filename) {
         return 7;
     }
 
-    if (geant4Metadata->GetMaterialsReference() != "0.0") {
+    if (geant4Metadata->GetMaterialsReference() == "0.0") {
         cout << "Materials version was not defined!" << endl;
-        cout << "The parent run number from restG4 generated file should be 0" << endl;
         return 8;
     }
 
