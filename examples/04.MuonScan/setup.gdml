@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<!-- ##VERSION TREX-DM Basic geometry Version 1.1 (Ar_ISO - 1 bar - Quencher: 0.01 )## -->
+<!-- ##VERSION Cosmic Bench Version 1.1 (Ar_ISO - 1 bar - Quencher: 0.01 )## -->
 
 <!DOCTYPE gdml [
         <!ENTITY geometry SYSTEM "geometry.gdml">
