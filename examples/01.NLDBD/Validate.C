@@ -63,7 +63,7 @@ Int_t Validate(const char* filename) {
     const double averageSensitiveEnergyRef = (!isReferenceGeant4Version) ? 2321.41 : 2221.55;
 
     double averageNumberOfHits = 0;
-    const double averageNumberOfHitsRef = (!isReferenceGeant4Version) ? 5437.37 : 353.2;
+    const double averageNumberOfHitsRef = (!isReferenceGeant4Version) ? 5281.31 : 353.2;
 
     double averageNumberOfTracks = 0;
     const double averageNumberOfTracksRef = (!isReferenceGeant4Version) ? 2309.69 : 10.83;
