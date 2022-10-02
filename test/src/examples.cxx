@@ -276,7 +276,7 @@ TEST(restG4, Example_07_Decay_FullChain) {
     gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
     int error = 0;
     const int result =
-        gROOT->ProcessLine(TString::Format("Validate(\"%s\", %d)", options.outputFile.c_str(), 17), &error);
+        gROOT->ProcessLine(TString::Format("Validate(\"%s\", %d)", options.outputFile.c_str(), 15), &error);
     EXPECT_EQ(error, 0);
     EXPECT_EQ(result, 0);
 
