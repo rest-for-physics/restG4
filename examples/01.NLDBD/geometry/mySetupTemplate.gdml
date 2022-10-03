@@ -3,8 +3,7 @@
 
 <!DOCTYPE gdml [
         <!ENTITY geometry SYSTEM "myGeometryTemplate.gdml">
-        <!ENTITY gases SYSTEM "https://sultan.unizar.es/materials/gases.xml">
-        <!ENTITY materials SYSTEM "https://sultan.unizar.es/materials/materials.xml">
+        <!ENTITY materials SYSTEM "https://raw.githubusercontent.com/rest-for-physics/materials/55f13a61ab400f7f0845f06e604a8d1a3974d7a7/output/rest.xml">
         ]>
 
 <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -41,10 +40,7 @@
     </define>
 
     &materials;
-    &gases;
-
     &geometry;
-
 
     <setup name="Default" version="1.0">
         <world ref="World"/>
