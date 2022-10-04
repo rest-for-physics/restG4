@@ -51,27 +51,32 @@ Int_t Validate(const char* filename) {
         return 7;
     }
 
+    if (geant4Metadata->GetMaterialsReference() == "0.0") {
+        cout << "Materials version was not defined!" << endl;
+        return 8;
+    }
+
     TRestGeant4Event* event = run.GetInputEvent<TRestGeant4Event>();
 
     double nEvents = run.GetEntries();
 
     double averageTotalEnergy = 0;
-    constexpr double averageTotalEnergyRef = 18.074;
+    constexpr double averageTotalEnergyRef = 18.3461;
 
     double averageSensitiveEnergy = 0;
-    constexpr double averageSensitiveEnergyRef = 8.99048;
+    constexpr double averageSensitiveEnergyRef = 8.59475;
 
     double averageNumberOfTracks = 0;
-    constexpr double averageNumberOfTracksRef = 432.763;
+    constexpr double averageNumberOfTracksRef = 394.381;
 
     double averageNumberOfHitsVolume0 = 0;
-    constexpr double averageNumberOfHitsVolume0Ref = 66.317;
+    constexpr double averageNumberOfHitsVolume0Ref = 69.092;
 
     double averageNumberOfHitsVolume1 = 0;
-    constexpr double averageNumberOfHitsVolume1Ref = 61.555;
+    constexpr double averageNumberOfHitsVolume1Ref = 58.31;
 
     TVector3 averagePosition = {};
-    const TVector3 averagePositionRef = {-0.59902, 0.0256995, 300.385};
+    const TVector3 averagePositionRef = {0.338143, -0.291832, 300.517};
 
     constexpr double tolerance = 0.001;
 
@@ -97,7 +102,7 @@ Int_t Validate(const char* filename) {
     if (TMath::Abs(averageNumberOfTracks - averageNumberOfTracksRef) / averageNumberOfTracksRef > tolerance) {
         cout << "The average number of tracks does not match the reference value of "
              << averageNumberOfTracksRef << endl;
-        return 8;
+        return 9;
     }
 
     if (TMath::Abs(averageNumberOfHitsVolume0 - averageNumberOfHitsVolume0Ref) /
@@ -105,7 +110,7 @@ Int_t Validate(const char* filename) {
         tolerance) {
         cout << "The average number of hits in volume 0 does not match the reference value of "
              << averageNumberOfHitsVolume0Ref << endl;
-        return 9;
+        return 10;
     }
 
     if (TMath::Abs(averageNumberOfHitsVolume1 - averageNumberOfHitsVolume1Ref) /
@@ -113,27 +118,27 @@ Int_t Validate(const char* filename) {
         tolerance) {
         cout << "The average number of hits in volume 1 does not match the reference value of "
              << averageNumberOfHitsVolume1Ref << endl;
-        return 10;
+        return 11;
     }
 
     if (TMath::Abs(averageSensitiveEnergy - averageSensitiveEnergyRef) / averageSensitiveEnergyRef >
         tolerance) {
         cout << "The average sensitive volume energy does not match the reference value of "
              << averageSensitiveEnergyRef << endl;
-        return 11;
+        return 12;
     }
 
     if (TMath::Abs(averageTotalEnergy - averageTotalEnergyRef) / averageTotalEnergyRef > tolerance) {
         cout << "The average total energy does not match the reference value of " << averageTotalEnergyRef
              << endl;
-        return 12;
+        return 13;
     }
 
     if (TMath::Abs(averagePosition.Mag() - averagePositionRef.Mag()) / averagePositionRef.Mag() > tolerance) {
         cout << "The average position does not match the reference value of "
              << "(" << averagePositionRef.x() << ", " << averagePositionRef.y() << ", "
              << averagePositionRef.z() << ") mm" << endl;
-        return 13;
+        return 14;
     }
 
     return 0;
