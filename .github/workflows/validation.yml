@@ -450,7 +450,13 @@ jobs:
           find . -name "*.gdml"
       - name: Use old materials for reference Geant4 version
         run: |
+          cd ${{ env.REST_PATH }}
+          pwd
+          cat ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/geometry/mySetupTemplate.gdml
           find . -name "*.gdml" | xargs sed -i 's/https:\/\/rest-for-physics.github.io\/materials\/rest.xml/https:\/\/rest-for-physics.github.io\/materials\/legacy\/v1.4\/rest.xml/g'
+          cat ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/geometry/mySetupTemplate.gdml
+          sed -i 's/https:\/\/rest-for-physics.github.io\/materials\/rest.xml/https:\/\/rest-for-physics.github.io\/materials\/legacy\/v1.4\/rest.xml/g' ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/geometry/mySetupTemplate.gdml           
+          cat ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/geometry/mySetupTemplate.gdml
       - name: Test after
         run: |
           cat ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/geometry/mySetupTemplate.gdml
