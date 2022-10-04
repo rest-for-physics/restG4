@@ -444,9 +444,17 @@ jobs:
           mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
           cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
           make -j4 install
+      - name: Test before
+        run: |
+          cat ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/geometry/mySetupTemplate.gdml
+          find . -name "*.gdml"
       - name: Use old materials for reference Geant4 version
         run: |
           find . -name "*.gdml" | xargs sed -i 's/https:\/\/rest-for-physics.github.io\/materials\/rest.xml/https:\/\/rest-for-physics.github.io\/materials\/legacy\/v1.4\/rest.xml/g'
+      - name: Test after
+        run: |
+          cat ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/geometry/mySetupTemplate.gdml
+          find . -name "*.gdml"
       - name: Cache framework installation
         id: framework-install-restG4-cache-reference
         uses: actions/cache@v3
