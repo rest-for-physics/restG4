@@ -219,28 +219,6 @@
          </material>
    	 <!-- }}} -->   
 
-         <!-- {{{ 6-Lithium -->
-   	 <isotope N="6" Z="3" name="Li6">
-        <atom unit="g/mole" value="6"/>
-    	</isotope>    
-   	 <element name="6Li">
-        <fraction n="1" ref="Li6"/>
-    	</element>
-   	 <material name="6-Lithium" state="solid">
-        <D unit="g/cm3" value="0.463"/>
-        <fraction n="1" ref="6Li"/>
-    	</material>
-          <!-- }}} -->
-        <!-- {{{  Lithium6 iodide -->
-    	<material name="6LiI" formula="6-LiI">
-        <MEE unit="eV" value="485.1"/>
-        <D unit="g/cm3" value="3.494" />
-        <composite n="1" ref="6-Lithium" />
-        <composite n="1" ref="iodide" />
-   	 </material>
-    <!-- }}} -->
-	
-                                      
         <!-- {{{ Stainlesssteel -->
         <material name="Stainlesssteel" state="solid">
             <MEE unit="eV" value="280.927567486627"/>
