@@ -205,10 +205,6 @@ jobs:
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/04.MuonScan/
-          cd geometry
-          rm rest.xml
-          wget https://rest-for-physics.github.io/materials/rest.xml
-          cd ..
           restG4 Muon.rml -o muons_from_point.root
           restRoot -b -q Validate.C'("muons_from_point.root")'
           restG4 CosmicMuonsFromWall.rml -o muons_from_wall.root
@@ -255,6 +251,10 @@ jobs:
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/06.IonRecoils/
+          cd geometry
+          rm rest.xml
+          wget https://rest-for-physics.github.io/materials/rest.xml
+          cd ..
           restG4 recoils.rml -o Run00001_F20_Recoils.root
           restRoot -b -q Validate.C'("Run00001_F20_Recoils.root")'
 
