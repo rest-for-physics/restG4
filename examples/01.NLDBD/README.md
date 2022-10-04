@@ -6,4 +6,4 @@ Date : 19/July/2019
 
 **Command** : restG4 NLDBD.rml
 
-**Remark** : The second version of NLDBD.rml is used in order to force loading the remote materials file. Inside the GitHub workflow the remote materials file is downloaded and overwritten (except for the reference pipeline that still needs the old materials file).
+**Remark** : The second version of `NLDBD.rml` (NLDBD2.rml) is used in order to force loading the remote materials file. `NLDBD2.rml` will be used by the `ctests`. Inside the GitHub workflow the remote materials file is downloaded and the local version is overwritten (thus that pipeline simply uses `NLDBD.rml`). The reference pipeline still needs the old materials file, which now is available in the example geometry directory (named `rest.xml`).
