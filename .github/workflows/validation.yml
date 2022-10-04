@@ -158,6 +158,9 @@ jobs:
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/
+          cd geometry
+          wget https://rest-for-physics.github.io/materials/rest.xml
+          cd ..
           restG4 NLDBD.rml -o Run00001_NLDBD_Test.root
           restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
 
