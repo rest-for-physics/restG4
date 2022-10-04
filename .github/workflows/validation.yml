@@ -449,7 +449,7 @@ jobs:
           cd ${{ env.REST_PATH }}
           find . -name "*.gdml" | xargs sed -i 's/https:\/\/sultan.unizar.es\/materials\/materials.xml/https:\/\/rest-for-physics.github.io\/materials\/legacy\/v1.4\/rest.xml/g'
       - name: Cache framework installation
-        id: framework-install-restG4-cache-old-Geant4
+        id: framework-install-restG4-cache-reference
         uses: actions/cache@v3
         with:
           path: ${{ env.REST_PATH }}
