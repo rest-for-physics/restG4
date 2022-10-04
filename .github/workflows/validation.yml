@@ -306,6 +306,10 @@ jobs:
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/08.Alphas/
+          cd geometry
+          rm rest.xml
+          wget https://rest-for-physics.github.io/materials/rest.xml
+          cd ..
           mkdir data
           export REST_ENERGY=5
           export REST_FOIL=1
