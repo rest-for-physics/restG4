@@ -28,7 +28,7 @@ TEST(restG4, Example_01_NLDBD) {
     fs::current_path(thisExamplePath);
 
     CommandLineOptions::Options options;
-    options.rmlFile = "NLDBD.rml";
+    options.rmlFile = "NLDBD2.rml";
     options.outputFile = thisExamplePath / "NLDBD_simulation.root";  // TODO: fix not working with local path
 
     {  // Run simulation
@@ -276,7 +276,7 @@ TEST(restG4, Example_07_Decay_FullChain) {
     gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
     int error = 0;
     const int result =
-        gROOT->ProcessLine(TString::Format("Validate(\"%s\", %d)", options.outputFile.c_str(), 15), &error);
+        gROOT->ProcessLine(TString::Format("Validate(\"%s\", %d)", options.outputFile.c_str(), 17), &error);
     EXPECT_EQ(error, 0);
     EXPECT_EQ(result, 0);
 
