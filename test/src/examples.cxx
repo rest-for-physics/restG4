@@ -28,7 +28,7 @@ TEST(restG4, Example_01_NLDBD) {
     fs::current_path(thisExamplePath);
 
     CommandLineOptions::Options options;
-    options.rmlFile = "NLDBD2.rml";
+    options.rmlFile = "NLDBD.rml";
     options.outputFile = thisExamplePath / "NLDBD_simulation.root";  // TODO: fix not working with local path
 
     {  // Run simulation
