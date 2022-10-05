@@ -269,7 +269,7 @@ jobs:
           source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/07.FullChainDecay/
           restG4 fullChain.rml -o Run00001_U238_FullChainDecay.root
-          restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 17)'
+          restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 15)'
           restG4 singleDecay.rml -o Run00002_U238_SingleChainDecay.root
           restRoot -b -q Validate.C'("Run00002_U238_SingleChainDecay.root", 1)'
           export REST_ISOTOPE=Be7
@@ -444,8 +444,12 @@ jobs:
           mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
           cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
           make -j4 install
+      - name: Use old materials for reference Geant4 version
+        run: |
+          cd ${{ env.REST_PATH }}
+          find . -name "*.gdml" | xargs sed -i 's/https:\/\/rest-for-physics.github.io\/materials\/rest.xml/https:\/\/rest-for-physics.github.io\/materials\/legacy\/v1.4\/rest.xml/g'
       - name: Cache framework installation
-        id: framework-install-restG4-cache-old-Geant4
+        id: framework-install-restG4-cache-reference
         uses: actions/cache@v3
         with:
           path: ${{ env.REST_PATH }}

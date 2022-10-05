@@ -3,7 +3,7 @@
 
 <!DOCTYPE gdml [
         <!ENTITY geometry SYSTEM "geometry.gdml">
-        <!ENTITY materials SYSTEM "https://sultan.unizar.es/materials/materials.xml">
+        <!ENTITY materials SYSTEM "https://rest-for-physics.github.io/materials/rest.xml">
         ]>
 
 <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
