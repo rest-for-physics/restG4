@@ -423,6 +423,28 @@ jobs:
           restG4 Neutrons.rml -o Neutrons.root -e 1
           restRoot -b -q Validate.C'("Neutrons.root")'
 
+  restG4-examples-14:
+    name: "Example 14: DetectorResponse"
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
+    needs: [ check-installation, restG4-examples-10 ]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Restore cache
+        uses: actions/cache@v3
+        id: framework-install-restG4-cache
+        with:
+          path: ${{ env.REST_PATH }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
+      - name: Run example
+        run: |
+          source ${{ env.REST_PATH }}/thisREST.sh
+          cd ${{ env.REST_PATH }}/examples/restG4/14.DetectorResponse/
+          source launchResponse.sh
+          restManager --c analysis.rml --f RestG4_XenonNeon_30Pct_1.5bar_Drift3cm_Size6cm.root
+          restRoot -b -q ValidateResponse.C'("G4Analysis_XenonNeon_30Pct_1.5bar_Drift3cm_Size6cm.root")'
+
   # Reference version of Geant4
 
   framework-install-reference:
