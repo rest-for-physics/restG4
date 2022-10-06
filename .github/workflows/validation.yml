@@ -366,13 +366,20 @@ jobs:
         with:
           path: ${{ env.REST_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
-      - name: Run example
+      - name: Launching Gammas 
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/11.Xrays/
           restG4 xrays.rml -o xrays_simulation.root
           restManager --c analysis.rml --f xrays_simulation.root --o xrays_simulation_analysis.root
           restRoot -b -q GetQE.C'("xrays_simulation_analysis.root")'
+      - name: Launching Fe55 source
+        run: |
+          source ${{ env.REST_PATH }}/thisREST.sh
+          cd ${{ env.REST_PATH }}/examples/restG4/11.Xrays/
+          restG4 Fe55.rml -o Fe55_simulation.root
+          restManager --c analysis.rml --f Fe55_simulation.root --o Fe55_simulation_analysis.root
+          restRoot -b -q ValidateFe55.C'("Fe55_simulation_analysis.root")'
 
   restG4-examples-12:
     name: "Example 12: Generators"
