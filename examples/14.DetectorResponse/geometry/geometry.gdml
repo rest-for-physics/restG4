@@ -1,0 +1,28 @@
+<solids>
+    <box name="WorldSolid" x="world_size" y="world_size" z="world_size" lunit="mm"/>
+    <box name="targetSolid" startphi="0" deltaphi="360" x="${GDML_DETECTOR_SIZE}" y="${GDML_DETECTOR_SIZE}" z="${GDML_DRIFT}" lunit="cm"/>
+</solids>
+
+<structure>
+
+<volume name="targetVolume">
+    <materialref ref="XenonNeon"/>
+    <solidref ref="targetSolid"/>
+</volume>
+
+<volume name="World">
+    <materialref ref="Vacuum"/>
+    <solidref ref="WorldSolid"/>
+
+    <physvol name="target">
+        <volumeref ref="targetVolume"/>
+        <position name="targetPos" unit="mm" x="0" y="0" z="0"/>
+    </physvol>
+
+    <physvol name="target2">
+        <volumeref ref="targetVolume"/>
+        <position name="targetPos" unit="mm" x="100" y="100" z="100"/>
+    </physvol>
+</volume>
+
+</structure>
