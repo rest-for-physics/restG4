@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Globals file contains the paths to the geometry and data directories.
+	If externally unchanged, ${REST_DATAPAH} points to current directory by default. -->
+<restG4>
+    <globals><parameter name="mainDataPath" value="."/><parameter name="verboseLevel" value="warning"/> %options are : essential silent, warning, info, debug
+	</globals>
+    <TRestRun name="QE_Xenon" title="QE detector response simulation.">
+        <parameter name="experiment" value="GasDetector"/>
+        <parameter name="runType" value="DetectorResponse"/>
+        <parameter name="runNumber" value="auto"/>
+        <parameter name="runTag" value="${GDML_GAS}_${GDML_QUENCHER_PCT}Pct_${GDML_PRESSURE}bar_Drift${GDML_DRIFT}cm_Size${GDML_DETECTOR_SIZE}cm"/>
+        <parameter name="runDescription" value="We launch photons 0 to 15 keV."/>
+        <parameter name="user" value="${USER}"/>
+        <parameter name="overwrite" value="off"/>
+        <parameter name="outputFileName" value="RestG4_[fRunTag].root"/>
+    </TRestRun>
+    <TRestGeant4Metadata name="${GDML_GAS}_${GDML_PRESSURE}bar_Drift${GDML_DRIFT}cm_Size${GDML_DETECTOR_SIZE}cm" title="${GDML_GAS} at ${GDML_PRESSURE}bar. Detector size: ${GDML_DETECTOR_SIZE}x${GDML_DETECTOR_SIZE}cm^2 and ${GDML_DRIFT}cm drift" verboseLevel="warning">
+        <parameter name="gdml_file" value="geometry.gdml"/>
+        <parameter name="subEventTimeDelay" value="100" units="us"/>
+        <!-- The number of events to be simulated is now defined in TRestGeant4Metadata -->
+        <parameter name="Nevents" value="150000"/>
+        <parameter name="seed" value="137"/>
+        <parameter name="saveAllEvents" value="false"/>
+        <parameter name="printProgress" value="true"/>
+        <generator type="point" position="(0,0,-100)" units="mm">
+            <!-- postion="(0,0,100)" -->
+            <source particle="gamma">
+                <angularDist type="flux" direction="(0,0,1)"/>
+                <energyDist type="flat" range="(0,15)" units="keV"/>
+            </source>
+        </generator>
+        <detector>
+            <parameter name="energyRange" value="(0,15)" units="keV"/>
+            <volume name="target" sensitive="true" chance="1" maxStepSize="0.2mm"/>
+        </detector>
+    </TRestGeant4Metadata>
+    <TRestGeant4PhysicsLists name="default" title="First physics list implementation." verboseLevel="warning">
+        <parameter name="cutForGamma" value="1" units="um"/>
+        <parameter name="cutForElectron" value="1" units="um"/>
+        <parameter name="cutForPositron" value="1" units="mm"/>
+        <parameter name="cutForMuon" value="1" units="mm"/>
+        <parameter name="cutForNeutron" value="1" units="mm"/>
+        <parameter name="minEnergyRangeProductionCuts" value="1" units="keV"/>
+        <parameter name="maxEnergyRangeProductionCuts" value="1" units="GeV"/>
+        <physicsList name="G4EmLivermorePhysics"> </physicsList>
+        <physicsList name="G4DecayPhysics"> </physicsList>
+        <physicsList name="G4RadioactiveDecayPhysics"> </physicsList>
+        <physicsList name="G4RadioactiveDecay">
+            <option name="ICM" value="true"/>
+            <option name="ARM" value="true"/>
+        </physicsList>
+        <physicsList name="G4HadronElasticPhysicsHP"> </physicsList>
+        <physicsList name="G4IonBinaryCascadePhysics"> </physicsList>
+        <physicsList name="G4HadronPhysicsQGSP_BIC_HP"> </physicsList>
+        <physicsList name="G4NeutronTrackingCut"> </physicsList>
+        <physicsList name="G4EmExtraPhysics"> </physicsList>
+    </TRestGeant4PhysicsLists>
+</restG4>

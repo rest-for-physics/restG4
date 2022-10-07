@@ -366,13 +366,20 @@ jobs:
         with:
           path: ${{ env.REST_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
-      - name: Run example
+      - name: Launching Gammas 
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/11.Xrays/
           restG4 xrays.rml -o xrays_simulation.root
           restManager --c analysis.rml --f xrays_simulation.root --o xrays_simulation_analysis.root
           restRoot -b -q GetQE.C'("xrays_simulation_analysis.root")'
+      - name: Launching Fe55 source
+        run: |
+          source ${{ env.REST_PATH }}/thisREST.sh
+          cd ${{ env.REST_PATH }}/examples/restG4/11.Xrays/
+          restG4 Fe55.rml -o Fe55_simulation.root
+          restManager --c analysis.rml --f Fe55_simulation.root --o Fe55_simulation_analysis.root
+          restRoot -b -q ValidateFe55.C'("Fe55_simulation_analysis.root")'
 
   restG4-examples-12:
     name: "Example 12: Generators"
@@ -415,6 +422,28 @@ jobs:
           cd ${{ env.REST_PATH }}/examples/restG4/13.IAXO/
           restG4 Neutrons.rml -o Neutrons.root -e 1
           restRoot -b -q Validate.C'("Neutrons.root")'
+
+  restG4-examples-14:
+    name: "Example 14: DetectorResponse"
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
+    needs: [ check-installation, restG4-examples-10 ]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Restore cache
+        uses: actions/cache@v3
+        id: framework-install-restG4-cache
+        with:
+          path: ${{ env.REST_PATH }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
+      - name: Run example
+        run: |
+          source ${{ env.REST_PATH }}/thisREST.sh
+          cd ${{ env.REST_PATH }}/examples/restG4/14.DetectorResponse/
+          source launchResponse.sh
+          restManager --c analysis.rml --f RestG4_XenonNeon_30Pct_1.5bar_Drift3cm_Size6cm.root
+          restRoot -b -q ValidateResponse.C'("G4Analysis_XenonNeon_30Pct_1.5bar_Drift3cm_Size6cm.root")'
 
   # Reference version of Geant4
 

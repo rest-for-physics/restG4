@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!-- ##VERSION REST ${GDML_GAS} (${GDML_QUENCHER_PCT}Pct) - ${GDML_PRESSURE}bar - Drift:${GDML_DRIFT}cm - Detector size:${GDML_DETECTOR_SIZE}cm ## -->
+
+<!DOCTYPE gdml [
+        <!ENTITY geometry SYSTEM "geometry.gdml">
+		<!ENTITY materials SYSTEM "https://rest-for-physics.github.io/materials/rest.xml">
+        ]>
+
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+
+    <define>
+		<!-- All lenghts should be in mm -->
+        <constant name="world_size" value="20000"/>
+
+		<variable name="targetGasDensity" value="(100-${GDML_QUENCHER_PCT})/100. * ${GDML_PRESSURE} * ${GDML_TARGET_DENSITY} * (273.15+15) / 273.15 / 1.01325"/> 
+
+		<variable name="quencherDensity" value="${GDML_QUENCHER_PCT} / 100. * ${GDML_PRESSURE} * ${GDML_QUENCHER_DENSITY}  * (273.15+15) / 273.15 / 1.01325"/>
+		<variable name="quencherFraction" value="${GDML_QUENCHER_PCT} / 100."/>
+
+		<!-- What matters is just the density (this is just additional info) -->
+        <variable name="gasTemperature" value="273.15+15"/>
+		<variable name="gasPressure" value="${GDML_PRESSURE}"/>
+    </define>
+
+    &materials;
+
+	<solids>
+		<box name="WorldSolid" x="world_size" y="world_size" z="world_size" lunit="mm"/>
+		<box name="targetSolid" startphi="0" deltaphi="360" x="${GDML_DETECTOR_SIZE}" y="${GDML_DETECTOR_SIZE}" z="${GDML_DRIFT}" lunit="cm"/>
+	</solids>
+
+	<structure>
+
+	<volume name="targetVolume">
+		<materialref ref="${GDML_GAS}"/>
+		<solidref ref="targetSolid"/>
+	</volume>
+
+	<volume name="World">
+		<materialref ref="Vacuum"/>
+		<solidref ref="WorldSolid"/>
+
+		<physvol name="target">
+			<volumeref ref="targetVolume"/>
+			<position name="targetPos" unit="mm" x="0" y="0" z="0"/>
+		</physvol>
+	</volume>
+
+	</structure>
+
+    <setup name="Default" version="1.0">
+        <world ref="World"/>
+    </setup>
+
+</gdml>
