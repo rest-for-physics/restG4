@@ -1,3 +1,4 @@
+export GDML_GAS="XenonNeon"
 export GDML_PRESSURE=1.5
 export GDML_NEON_PCT=30
 export GDML_DRIFT=3

@@ -6,7 +6,7 @@
 <structure>
 
 <volume name="targetVolume">
-    <materialref ref="XenonNeon"/>
+    <materialref ref="${GDML_GAS}"/>
     <solidref ref="targetSolid"/>
 </volume>
 

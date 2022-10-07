@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<!-- ##VERSION REST XenonNeon (${GDML_NEON_PCT}Pct) - ${GDML_PRESSURE}bar - Drift:${GDML_DRIFT}cm - Detector size:${GDML_DETECTOR_SIZE}cm ## -->
+<!-- ##VERSION REST ${GDML_GAS} (${GDML_NEON_PCT}Pct) - ${GDML_PRESSURE}bar - Drift:${GDML_DRIFT}cm - Detector size:${GDML_DETECTOR_SIZE}cm ## -->
 
 <!DOCTYPE gdml [
         <!ENTITY geometry SYSTEM "geometry.gdml">
