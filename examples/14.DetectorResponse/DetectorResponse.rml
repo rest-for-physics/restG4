@@ -15,7 +15,7 @@
         <parameter name="outputFileName" value="RestG4_[fRunTag].root"/>
     </TRestRun>
     <TRestGeant4Metadata name="${GDML_GAS}_${GDML_PRESSURE}bar_Drift${GDML_DRIFT}cm_Size${GDML_DETECTOR_SIZE}cm" title="${GDML_GAS} at ${GDML_PRESSURE}bar. Detector size: ${GDML_DETECTOR_SIZE}x${GDML_DETECTOR_SIZE}cm^2 and ${GDML_DRIFT}cm drift" verboseLevel="warning">
-        <parameter name="gdml_file" value="geometry/setup.gdml"/>
+        <parameter name="gdml_file" value="geometry.gdml"/>
         <parameter name="subEventTimeDelay" value="100" units="us"/>
         <!-- The number of events to be simulated is now defined in TRestGeant4Metadata -->
         <parameter name="Nevents" value="150000"/>
@@ -32,7 +32,6 @@
         <detector>
             <parameter name="energyRange" value="(0,15)" units="keV"/>
             <volume name="target" sensitive="true" chance="1" maxStepSize="0.2mm"/>
-            <volume name="target2" chance="1" maxStepSize="0.2mm"/>
         </detector>
     </TRestGeant4Metadata>
     <TRestGeant4PhysicsLists name="default" title="First physics list implementation." verboseLevel="warning">
