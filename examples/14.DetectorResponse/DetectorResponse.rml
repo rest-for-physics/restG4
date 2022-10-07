@@ -8,7 +8,7 @@
         <parameter name="experiment" value="GasDetector"/>
         <parameter name="runType" value="DetectorResponse"/>
         <parameter name="runNumber" value="auto"/>
-        <parameter name="runTag" value="${GDML_GAS}_${GDML_NEON_PCT}Pct_${GDML_PRESSURE}bar_Drift${GDML_DRIFT}cm_Size${GDML_DETECTOR_SIZE}cm"/>
+        <parameter name="runTag" value="${GDML_GAS}_${GDML_QUENCHER_PCT}Pct_${GDML_PRESSURE}bar_Drift${GDML_DRIFT}cm_Size${GDML_DETECTOR_SIZE}cm"/>
         <parameter name="runDescription" value="We launch photons 0 to 15 keV."/>
         <parameter name="user" value="${USER}"/>
         <parameter name="overwrite" value="off"/>
