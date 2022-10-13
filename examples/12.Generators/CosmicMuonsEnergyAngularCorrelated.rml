@@ -6,19 +6,19 @@
         <parameter name="verboseLevel" value="essential"/>
     </globals>
 
-    <TRestRun name="CosmicMuonsEnergyAngularCorrelated" title="CosmicMuonsEnergyAngularCorrelated">
-        <parameter name="experimentName" value="CosmicMuonsEnergyAngularCorrelated"/>
+    <TRestRun name="CosmicMuons" title="CosmicMuons">
+        <parameter name="experimentName" value="CosmicMuons"/>
         <parameter name="runType" value="simulation"/>
         <parameter name="runNumber" value="1"/>
-        <parameter name="runTag" value="CosmicMuonsEnergyAngularCorrelated"/>
-        <parameter name="outputFileName" value="CosmicMuonsEnergyAngularCorrelated.root"/>
+        <parameter name="runTag" value="CosmicMuons"/>
+        <parameter name="outputFileName" value="CosmicMuons.root"/>
         <parameter name="runDescription" value=""/>
         <parameter name="user" value="${USER}"/>
         <parameter name="overwrite" value="off"/>
         <parameter name="readOnly" value="false"/>
     </TRestRun>
 
-    <TRestGeant4Metadata name="CosmicMuonsEnergyAngularCorrelated" title="CosmicMuonsEnergyAngularCorrelated">
+    <TRestGeant4Metadata name="CosmicMuons" title="CosmicMuons">
         <parameter name="gdmlFile" value="geometry/setup.gdml"/>
         <parameter name="seed" value="171981"/>
         <parameter name="nEvents" value="100000"/>
