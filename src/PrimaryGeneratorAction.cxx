@@ -67,14 +67,8 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
 
     if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 &&
         energyDistTypeEnum == EnergyDistributionTypes::FORMULA2) {
-        const auto function = source->GetEnergyAndAngularDistributionFunction();
-        cout << "geant4 formula: " << function << " " << (function == nullptr) << endl;
-
         fEnergyAndAngularDistributionFunction =
             (TF2*)source->GetEnergyAndAngularDistributionFunction()->Clone();
-        cout << "test formula: " << fEnergyAndAngularDistributionFunction << " "
-             << (fEnergyAndAngularDistributionFunction == nullptr) << endl;
-
     } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 ||
                energyDistTypeEnum == EnergyDistributionTypes::FORMULA2) {
         cout << "Energy/Angular distribution type 'formula2' should be used on both energy and angular"
