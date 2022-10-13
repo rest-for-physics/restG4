@@ -354,7 +354,7 @@ TEST(restG4, Example_12_Generators_CosineSquared) {
     TRestRun run(options.outputFile);
 
     // Run validation macro
-    const TString macro(thisExamplePath / "Validate.C");
+    const TString macro(thisExamplePath / "ValidateCosineSquared.C");
     gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
     int error = 0;
     const int result =
@@ -365,7 +365,7 @@ TEST(restG4, Example_12_Generators_CosineSquared) {
     fs::current_path(originalPath);
 }
 
-TEST(restG4, Example_12_Generators_EnergyAndAngularCorrelated_MT) {
+TEST(restG4, Example_12_Generators_EnergyAndAngularCorrelated) {
     const auto originalPath = fs::current_path();
     const auto thisExamplePath = examplesPath / "12.Generators";
     fs::current_path(thisExamplePath);
@@ -373,8 +373,6 @@ TEST(restG4, Example_12_Generators_EnergyAndAngularCorrelated_MT) {
     CommandLineOptions::Options options;
     options.rmlFile = "CosmicMuonsEnergyAngularCorrelated.rml";
     options.outputFile = thisExamplePath / "energyAndAngular.root";
-    // verify multithreading is working
-    options.nThreads = 20;
 
     Application app;
     app.Run(options);
