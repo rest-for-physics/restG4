@@ -338,7 +338,7 @@ TEST(restG4, Example_10_Geometry) {
     fs::current_path(originalPath);
 }
 
-TEST(restG4, Example_12_Generators) {
+TEST(restG4, Example_12_Generators_CosineSquared) {
     //  cd into example
     const auto originalPath = fs::current_path();
     const auto thisExamplePath = examplesPath / "12.Generators";
@@ -365,7 +365,21 @@ TEST(restG4, Example_12_Generators) {
     fs::current_path(originalPath);
 }
 
-TEST(restG4, Example_13_IAXO) {
+TEST(restG4, Example_12_Generators_EnergyAndAngularCorrelated) {
+    //  cd into example
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "12.Generators";
+    fs::current_path(thisExamplePath);
+
+    CommandLineOptions::Options options;
+    options.rmlFile = "CosmicMuonsEnergyAngularCorrelated.rml";
+    options.outputFile = thisExamplePath / "energyAndAngular.root";
+
+    Application app;
+    app.Run(options);
+}
+
+TEST(restG4, Example_13_IAXO_Neutrons) {
     //  cd into example
     const auto originalPath = fs::current_path();
     const auto thisExamplePath = examplesPath / "13.IAXO";
@@ -389,6 +403,27 @@ TEST(restG4, Example_13_IAXO) {
         gROOT->ProcessLine(TString::Format("Validate(\"%s\")", options.outputFile.c_str()), &error);
     EXPECT_EQ(error, 0);
     EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
+}
+
+TEST(restG4, Example_13_IAXO_Calibration) {
+    //  cd into example
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "13.IAXO";
+    fs::current_path(thisExamplePath);
+
+    CommandLineOptions::Options options;
+    options.rmlFile = "Calibration.rml";
+    options.outputFile = thisExamplePath / "Calibration.root";
+    options.nRequestedEntries = 10000;
+
+    Application app;
+    app.Run(options);
+
+    TRestRun run(options.outputFile);
+
+    cout << "OUTPUT PATH: " << options.outputFile << endl;
 
     fs::current_path(originalPath);
 }
