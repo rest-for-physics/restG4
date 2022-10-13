@@ -6,7 +6,7 @@
         <parameter name="verboseLevel" value="essential"/>
     </globals>
 
-    <TRestRun name="CosmicMuons" title="CosmicMuons">
+    <TRestRun>
         <parameter name="experimentName" value="CosmicMuons"/>
         <parameter name="runType" value="simulation"/>
         <parameter name="runNumber" value="1"/>
@@ -18,7 +18,7 @@
         <parameter name="readOnly" value="false"/>
     </TRestRun>
 
-    <TRestGeant4Metadata name="CosmicMuons" title="CosmicMuons">
+    <TRestGeant4Metadata>
         <parameter name="gdmlFile" value="geometry/setup.gdml"/>
         <parameter name="seed" value="171981"/>
         <parameter name="nEvents" value="100000"/>
