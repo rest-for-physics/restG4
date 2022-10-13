@@ -2,6 +2,7 @@
 #include "PrimaryGeneratorAction.h"
 
 #include <TF1.h>
+#include <TF2.h>
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
 #include <TRestGeant4PrimaryGeneratorInfo.h>
@@ -62,6 +63,23 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
         SetAngularDistributionHistogram(fSimulationManager->GetPrimaryAngularDistribution());
     } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA) {
         fAngularDistributionFunction = (TF1*)source->GetAngularDistributionFunction()->Clone();
+    }
+
+    if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 &&
+        energyDistTypeEnum == EnergyDistributionTypes::FORMULA2) {
+        const auto function = source->GetEnergyAndAngularDistributionFunction();
+        cout << "geant4 formula: " << function << " " << (function == nullptr) << endl;
+
+        fEnergyAndAngularDistributionFunction =
+            (TF2*)source->GetEnergyAndAngularDistributionFunction()->Clone();
+        cout << "test formula: " << fEnergyAndAngularDistributionFunction << " "
+             << (fEnergyAndAngularDistributionFunction == nullptr) << endl;
+
+    } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 ||
+               energyDistTypeEnum == EnergyDistributionTypes::FORMULA2) {
+        cout << "Energy/Angular distribution type 'formula2' should be used on both energy and angular"
+             << endl;
+        exit(1);
     }
 }
 
@@ -145,9 +163,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         for (const auto& p : particles) {
             // ParticleDefinition should be always declared first (after position).
             SetParticleDefinition(i, p);
-            // Particle Direction must be always set before energy
-            SetParticleEnergy(i, p);
-            SetParticleDirection(i, p);
+            SetParticleEnergyAndDirection(i, p);
             fParticleGun.GeneratePrimaryVertex(event);
         }
     }
@@ -636,4 +652,58 @@ void PrimaryGeneratorAction::GenPositionOnDisk(double& x, double& y, double& z) 
     x = position.x() + center.X();
     y = position.y() + center.Y();
     z = position.z() + center.Z();
+}
+
+void PrimaryGeneratorAction::SetParticleEnergyAndDirection(Int_t particleSourceIndex,
+                                                           const TRestGeant4Particle& particle) {
+    auto simulationManager = fSimulationManager;
+
+    TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
+    TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
+
+    const string angularDistTypeName =
+        restG4Metadata->GetParticleSource(particleSourceIndex)->GetAngularDistributionType().Data();
+    const auto angularDistTypeEnum = StringToAngularDistributionTypes(angularDistTypeName);
+
+    const string energyDistTypeName =
+        restG4Metadata->GetParticleSource(particleSourceIndex)->GetEnergyDistributionType().Data();
+    const auto energyDistTypeEnum = StringToEnergyDistributionTypes(energyDistTypeName);
+
+    if (energyDistTypeEnum != EnergyDistributionTypes::FORMULA2 &&
+        angularDistTypeEnum != AngularDistributionTypes::FORMULA2) {
+        // when not using 'FORMULA2'
+        SetParticleDirection(particleSourceIndex, particle);
+        SetParticleEnergy(particleSourceIndex, particle);
+        return;
+    }
+
+    // this function should only be invoked when both energy and angular dist are "formula2"
+    if (energyDistTypeEnum != EnergyDistributionTypes::FORMULA2 ||
+        angularDistTypeEnum != AngularDistributionTypes::FORMULA2) {
+        cout << "PrimaryGeneratorAction::SetParticleEnergyAndDirection - this method should only invoked "
+                "when both angular and energy dist are 'formula2'"
+             << endl;
+        exit(1);
+    }
+
+    if (fEnergyAndAngularDistributionFunction == nullptr) {
+        RESTError << "PrimaryGeneratorAction::SetParticleEnergyAndDirection - energy and angular "
+                     "distribution function is not set"
+                  << RESTendl;
+        exit(1);
+    }
+
+    double energy, angle;
+    fEnergyAndAngularDistributionFunction->GetRandom2(energy, angle, fRandom);
+
+    G4ThreeVector direction = {source->GetDirection().X(), source->GetDirection().Y(),
+                               source->GetDirection().Z()};
+
+    G4ThreeVector referenceOrigin = direction;
+    direction.rotate(angle, direction.orthogonal());
+    direction.rotate(G4UniformRand() * 2 * M_PI, referenceOrigin);
+
+    fParticleGun.SetParticleMomentumDirection(direction);
+    fParticleGun.SetParticleEnergy(energy);
 }

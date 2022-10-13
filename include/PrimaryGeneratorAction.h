@@ -47,6 +47,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
 
     TF1* fEnergyDistributionFunction = nullptr;
     TF1* fAngularDistributionFunction = nullptr;
+    TF2* fEnergyAndAngularDistributionFunction = nullptr;
 
     TF3* fGeneratorSpatialDensityFunction;
 
@@ -65,6 +66,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
                                                 const TRestGeant4Particle& particle);
     void SetParticleEnergy(Int_t particleSourceIndex, const TRestGeant4Particle& particle);
     void SetParticleDirection(Int_t particleSourceIndex, const TRestGeant4Particle& particle);
+
+    void SetParticleEnergyAndDirection(Int_t particleSourceIndex, const TRestGeant4Particle& particle);
 
     G4ThreeVector GetIsotropicVector() const;
     Double_t GetAngle(G4ThreeVector x, G4ThreeVector y);
