@@ -673,8 +673,8 @@ void PrimaryGeneratorAction::SetParticleEnergyAndDirection(Int_t particleSourceI
     if (energyDistTypeEnum != EnergyDistributionTypes::FORMULA2 &&
         angularDistTypeEnum != AngularDistributionTypes::FORMULA2) {
         // when not using 'FORMULA2'
-        SetParticleDirection(particleSourceIndex, particle);
         SetParticleEnergy(particleSourceIndex, particle);
+        SetParticleDirection(particleSourceIndex, particle);
         return;
     }
 
