@@ -406,24 +406,3 @@ TEST(restG4, Example_13_IAXO_Neutrons) {
 
     fs::current_path(originalPath);
 }
-
-TEST(restG4, Example_13_IAXO_Calibration) {
-    //  cd into example
-    const auto originalPath = fs::current_path();
-    const auto thisExamplePath = examplesPath / "13.IAXO";
-    fs::current_path(thisExamplePath);
-
-    CommandLineOptions::Options options;
-    options.rmlFile = "Calibration.rml";
-    options.outputFile = thisExamplePath / "Calibration.root";
-    options.nRequestedEntries = 10000;
-
-    Application app;
-    app.Run(options);
-
-    TRestRun run(options.outputFile);
-
-    cout << "OUTPUT PATH: " << options.outputFile << endl;
-
-    fs::current_path(originalPath);
-}
