@@ -28,32 +28,44 @@ Int_t Validate(const char* filename) {
         return 3;
     }
 
+    if (metadata->GetParticleSource()->GetEnergyDistributionFormulaNPoints() != 2000) {
+        cout << "Incorrect number of sampling points on energy distribution: "
+             << metadata->GetParticleSource()->GetEnergyDistributionFormulaNPoints() << endl;
+        return 4;
+    }
+
+    if (metadata->GetParticleSource()->GetAngularDistributionFormulaNPoints() != 300) {
+        cout << "Incorrect number of sampling points on angular distribution: "
+             << metadata->GetParticleSource()->GetAngularDistributionFormulaNPoints() << endl;
+        return 5;
+    }
+
     // event information
     TRestGeant4Event* event = run.GetInputEvent<TRestGeant4Event>();
     run.GetEntry(0);
 
-    if (event->GetNumberOfTracks() != 45) {
+    if (event->GetNumberOfTracks() != 81) {
         cout << "Incorrect number of tracks: " << event->GetNumberOfTracks() << endl;
-        return 4;
+        return 6;
     }
-    if (event->GetNumberOfHits() != 1080) {
+    if (event->GetNumberOfHits() != 728) {
         cout << "Incorrect number of hits: " << event->GetNumberOfHits() << endl;
-        return 5;
+        return 7;
     }
 
-    constexpr Double_t sensitiveVolumeEnergyRef = 10.345786;
+    constexpr Double_t sensitiveVolumeEnergyRef = 492.80777;
     if (TMath::Abs(event->GetSensitiveVolumeEnergy() - sensitiveVolumeEnergyRef) > 1e-4) {
         cout << "Incorrect sensitive volume energy: " << event->GetSensitiveVolumeEnergy() << endl;
-        return 6;
+        return 8;
     }
 
     const auto scintillatorVolumeName =
-        "VetoSystem_vetoSystemBottom_vetoLayerBottom2_assembly-10.veto2_scintillatorVolume-1500.0mm-73266212";
+        "VetoSystem_vetoSystemWest_vetoLayerWest3_assembly-16.veto1_scintillatorVolume-1500.0mm-f1a5df6b";
     const auto scintillatorEnergy = event->GetEnergyInVolume(scintillatorVolumeName);
-    const auto scintillatorEnergyRef = 1078.0490;
+    const auto scintillatorEnergyRef = 1966.3087;
     if (TMath::Abs(scintillatorEnergy - scintillatorEnergyRef) > 1e-4) {
         cout << "Incorrect scintillator volume energy: " << scintillatorEnergy << endl;
-        return 7;
+        return 9;
     }
 
     double scintillatorEnergyFromTracks = 0;
@@ -71,7 +83,7 @@ Int_t Validate(const char* filename) {
 
     if (TMath::Abs(scintillatorEnergyFromTracks - scintillatorEnergyRef) > 1e-4) {
         cout << "Incorrect scintillator volume energy from tracks: " << scintillatorEnergyFromTracks << endl;
-        return 8;
+        return 10;
     }
 
     cout << "All tests passed! [\033[32mOK\033[0m]\n";
