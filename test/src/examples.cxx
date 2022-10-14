@@ -357,8 +357,8 @@ TEST(restG4, Example_12_Generators_CosineSquared) {
     const TString macro(thisExamplePath / "ValidateCosineSquared.C");
     gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
     int error = 0;
-    const int result =
-        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", options.outputFile.c_str()), &error);
+    const int result = gROOT->ProcessLine(
+        TString::Format("ValidateCosineSquared(\"%s\")", options.outputFile.c_str()), &error);
     EXPECT_EQ(error, 0);
     EXPECT_EQ(result, 0);
 
