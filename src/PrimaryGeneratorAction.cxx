@@ -63,12 +63,61 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
         SetAngularDistributionHistogram(fSimulationManager->GetPrimaryAngularDistribution());
     } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA) {
         fAngularDistributionFunction = (TF1*)source->GetAngularDistributionFunction()->Clone();
+        auto newRangeXMin = fAngularDistributionFunction->GetXmin();
+        if (source->GetAngularDistributionRangeMin() > fAngularDistributionFunction->GetXmin()) {
+            newRangeXMin = source->GetAngularDistributionRangeMin();
+        }
+        auto newRangeXMax = fAngularDistributionFunction->GetXmax();
+        if (source->GetAngularDistributionRangeMax() < fAngularDistributionFunction->GetXmax()) {
+            newRangeXMax = source->GetAngularDistributionRangeMax();
+        }
+        if (newRangeXMin == newRangeXMax || newRangeXMin > newRangeXMax) {
+            cout << "PrimaryGeneratorAction - ERROR: angular distribution range is invalid" << endl;
+            exit(1);
+        }
+        fAngularDistributionFunction->SetRange(newRangeXMin, newRangeXMax);
     }
 
     if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 &&
         energyDistTypeEnum == EnergyDistributionTypes::FORMULA2) {
         fEnergyAndAngularDistributionFunction =
             (TF2*)source->GetEnergyAndAngularDistributionFunction()->Clone();
+
+        // energy
+        auto newEnergyRangeXMin = fEnergyAndAngularDistributionFunction->GetXaxis()->GetXmin();
+        if (source->GetEnergyDistributionRangeMin() >
+            fEnergyAndAngularDistributionFunction->GetXaxis()->GetXmin()) {
+            newEnergyRangeXMin = source->GetEnergyDistributionRangeMin();
+        }
+        auto newEnergyRangeXMax = fEnergyAndAngularDistributionFunction->GetXaxis()->GetXmax();
+        if (source->GetEnergyDistributionRangeMax() <
+            fEnergyAndAngularDistributionFunction->GetXaxis()->GetXmax()) {
+            newEnergyRangeXMax = source->GetEnergyDistributionRangeMax();
+        }
+        if (newEnergyRangeXMin == newEnergyRangeXMax || newEnergyRangeXMin > newEnergyRangeXMax) {
+            cout << "PrimaryGeneratorAction - ERROR: energy distribution range is invalid" << endl;
+            exit(1);
+        }
+
+        // angular
+        auto newAngularRangeXMin = fEnergyAndAngularDistributionFunction->GetYaxis()->GetXmin();
+        if (source->GetAngularDistributionRangeMin() >
+            fEnergyAndAngularDistributionFunction->GetYaxis()->GetXmin()) {
+            newAngularRangeXMin = source->GetAngularDistributionRangeMin();
+        }
+        auto newAngularRangeXMax = fEnergyAndAngularDistributionFunction->GetYaxis()->GetXmax();
+        if (source->GetAngularDistributionRangeMax() <
+            fEnergyAndAngularDistributionFunction->GetYaxis()->GetXmax()) {
+            newAngularRangeXMax = source->GetAngularDistributionRangeMax();
+        }
+        if (newAngularRangeXMin == newAngularRangeXMax || newAngularRangeXMin > newAngularRangeXMax) {
+            cout << "PrimaryGeneratorAction - ERROR: angular distribution range is invalid" << endl;
+            exit(1);
+        }
+
+        fEnergyAndAngularDistributionFunction->SetRange(newEnergyRangeXMin, newAngularRangeXMin,
+                                                        newEnergyRangeXMax, newAngularRangeXMax);
+
     } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 ||
                energyDistTypeEnum == EnergyDistributionTypes::FORMULA2) {
         cout << "Energy/Angular distribution type 'formula2' should be used on both energy and angular"
