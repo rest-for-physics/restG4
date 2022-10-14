@@ -7,11 +7,11 @@
     </globals>
 
     <TRestRun>
-        <parameter name="experimentName" value="CosmicMuons"/>
+        <parameter name="experimentName" value="CosineSquaredCircle"/>
         <parameter name="runType" value="simulation"/>
         <parameter name="runNumber" value="1"/>
-        <parameter name="runTag" value="CosmicMuons"/>
-        <parameter name="outputFileName" value="CosmicMuons.root"/>
+        <parameter name="runTag" value="CosineSquaredCircle"/>
+        <parameter name="outputFileName" value="CosineSquaredCircle.root"/>
         <parameter name="runDescription" value=""/>
         <parameter name="user" value="${USER}"/>
         <parameter name="overwrite" value="off"/>
@@ -27,10 +27,8 @@
                    position="(0,100,0)mm" size="(400,0,0)mm"
                    rotationAngle="90deg" rotationAxis="(1,0,0)">
             <source particle="geantino">
-                <!-- Use a TF2 to sample energy and angle at once (correlation) -->
-                <energy type="formula2" name="CosmicMuons" range="(100,150)MeV"/>
-                <angular type="formula2" direction="(0,-1,0)"
-                         range="(50,20)deg"/> <!-- name is not required as it is redundant -->
+                <angular type="formula" name="Cos2" direction="(0,-1,0)" range="(-5,55)deg"/>
+                <energy type="formula" name="CosmicNeutrons" range="(-10,15)MeV"/>
             </source>
         </generator>
 
