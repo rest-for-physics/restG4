@@ -28,9 +28,9 @@
                    rotationAngle="90deg" rotationAxis="(1,0,0)">
             <source particle="geantino">
                 <!-- Use a TF2 to sample energy and angle at once (correlation) -->
-                <energy type="formula2" name="CosmicMuons" range="(100,150)MeV"/>
+                <energy type="formula2" name="CosmicMuons" range="(100,150)MeV" nPoints="1200"/>
                 <angular type="formula2" direction="(0,-1,0)"
-                         range="(50,20)deg"/> <!-- name is not required as it is redundant -->
+                         range="(50,20)deg" nPoints="300"/> <!-- name is not required as it is redundant -->
             </source>
         </generator>
 

@@ -57,6 +57,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
             exit(1);
         }
         fEnergyDistributionFunction->SetRange(newRangeXMin, newRangeXMax);
+        fEnergyDistributionFunction->SetNpx(source->GetEnergyDistributionFormulaNPoints());
     }
 
     if (angularDistTypeEnum == AngularDistributionTypes::TH1D) {
@@ -76,6 +77,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
             exit(1);
         }
         fAngularDistributionFunction->SetRange(newRangeXMin, newRangeXMax);
+        fAngularDistributionFunction->SetNpx(source->GetAngularDistributionFormulaNPoints());
     }
 
     if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 &&
@@ -117,6 +119,9 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
 
         fEnergyAndAngularDistributionFunction->SetRange(newEnergyRangeXMin, newAngularRangeXMin,
                                                         newEnergyRangeXMax, newAngularRangeXMax);
+
+        fEnergyAndAngularDistributionFunction->SetNpx(source->GetEnergyDistributionFormulaNPoints());
+        fEnergyAndAngularDistributionFunction->SetNpy(source->GetAngularDistributionFormulaNPoints());
 
     } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 ||
                energyDistTypeEnum == EnergyDistributionTypes::FORMULA2) {
