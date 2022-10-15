@@ -201,12 +201,12 @@ jobs:
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/04.MuonScan/
-          restG4 Muon.rml -o muons_from_point.root
-          restRoot -b -q Validate.C'("muons_from_point.root")'
-          restG4 CosmicMuonsFromWall.rml -o muons_from_wall.root
-          restRoot -b -q ValidateWall.C'("muons_from_wall.root")'
-          restG4 CosmicMuonsFromCircle.rml -o muons_from_circle.root
-          restRoot -b -q ValidateCircle.C'("muons_from_circle.root")'
+          restG4 MuonsFromPoint.rml -o MuonsFromPoint.root
+          restRoot -b -q ValidateMuonsFromPoint.C'("MuonsFromPoint.root")'
+          restG4 CosmicMuonsFromWall.rml -o CosmicMuonsFromWall.root
+          restRoot -b -q ValidateCosmicMuonsFromWall.C'("CosmicMuonsFromWall.root")'
+          restG4 CosmicMuonsFromCircle.rml -o CosmicMuonsFromCircle.root
+          restRoot -b -q ValidateCosmicMuonsFromCircle.C'("CosmicMuonsFromCircle.root")'
 
   restG4-examples-05:
     name: "Example 05: PandaX-III"

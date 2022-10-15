@@ -93,13 +93,13 @@ Load REST Libraries:
   script:
     - source ${CI_PROJECT_DIR}/install/thisREST.sh
     - cd ${CI_PROJECT_DIR}/install/examples/restG4/04.MuonScan/
-    - restG4 Muon.rml
     - geant4-config --version
-    - restRoot -b -q Validate.C'("Run00111_restG4_MuonsFromPoint_rest.root")'
-    - restG4 CosmicMuonsFromWall.rml
-    - restRoot -b -q ValidateWall.C'("Run00111_restG4_MuonsFromWall_rest.root")'
-    - restG4 CosmicMuonsFromCircle.rml
-    - restRoot -b -q ValidateCircle.C'("Run00111_restG4_MuonsFromCircle_rest.root")'
+    - restG4 MuonsFromPoint.rml -o MuonsFromPoint.root
+    - restRoot -b -q ValidateMuonsFromPoint.C'("MuonsFromPoint.root")'
+    - restG4 CosmicMuonsFromWall.rml -o CosmicMuonsFromWall.root
+    - restRoot -b -q ValidateCosmicMuonsFromWall.C'("CosmicMuonsFromWall.root")'
+    - restG4 CosmicMuonsFromCircle.rml -o CosmicMuonsFromCircle.root
+    - restRoot -b -q ValidateCosmicMuonsFromCircle.C'("CosmicMuonsFromCircle.root")'
 
 05.PandaXIII:
   stage: Run Examples

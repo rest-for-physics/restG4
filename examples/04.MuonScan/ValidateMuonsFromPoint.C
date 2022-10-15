@@ -3,7 +3,7 @@
 #include <TRestGeant4Metadata.h>
 #include <TRestRun.h>
 
-Int_t Validate(const char* filename) {
+Int_t ValidateMuonsFromPoint(const char* filename) {
     cout << "Starting validation for '" << filename << "'" << endl;
 
     TRestRun run(filename);

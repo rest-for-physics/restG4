@@ -1,6 +1,6 @@
 #include <TRestGeant4Event.h>
 
-Int_t ValidateCircle(const char* filename) {
+Int_t ValidateCosmicMuonsFromCircle(const char* filename) {
     cout << "Starting validation for '" << filename << "'" << endl;
 
     TRestRun run(filename);
