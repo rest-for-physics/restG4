@@ -11,7 +11,7 @@
         <parameter name="outputFileName" value="Run[fRunNumber]_[fRunType]_[fRunTag]_[fRunUser].root"/>
     </TRestRun>
     <TRestGeant4Metadata name="restG4 run" title="MuonsFromPoint" verboseLevel="info">
-        <parameter name="gdmlFile" value="setup.gdml"/>
+        <parameter name="gdmlFile" value="geometry/setup.gdml"/>
         <parameter name="subEventTimeDelay" value="100us"/>
         <parameter name="nEvents" value="1000"/>
         <parameter name="saveAllEvents" value="off"/>
