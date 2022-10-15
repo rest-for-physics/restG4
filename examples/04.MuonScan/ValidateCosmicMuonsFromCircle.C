@@ -51,7 +51,7 @@ Int_t ValidateCosmicMuonsFromCircle(const char* filename) {
     }
 
     cout << "Run entries: " << run.GetEntries() << endl;
-    if (run.GetEntries() < 1300 || run.GetEntries() > 1450) {
+    if (run.GetEntries() < 1400 || run.GetEntries() > 1600) {
         cout << "The number of entries is wrong!" << endl;
         cout << "Number of entries : " << run.GetEntries() << endl;
         return 5;
