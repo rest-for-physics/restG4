@@ -366,7 +366,7 @@ jobs:
         with:
           path: ${{ env.REST_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
-      - name: Launching Gammas 
+      - name: Launching Gammas
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/11.Xrays/
@@ -400,7 +400,7 @@ jobs:
           source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/12.Generators/
           restG4 CosineSquaredCircle.rml -o CosineSquaredCircle.root
-          restRoot -b -q Validate.C'("CosineSquaredCircle.root")'
+          restRoot -b -q ValidateCosineSquared.C'("CosineSquaredCircle.root")'
 
   restG4-examples-13:
     name: "Example 13: IAXO"

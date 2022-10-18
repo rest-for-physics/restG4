@@ -232,6 +232,15 @@ void OutputManager::UpdateEvent() {
     auto event = G4EventManager::GetEventManager()->GetConstCurrentEvent();
     fEvent = make_unique<TRestGeant4Event>(event);
     fEvent->InitializeReferences(fSimulationManager->GetRestRun());
+
+    if ((event->GetPrimaryVertex()->GetNumberOfParticle() !=
+         fEvent->GetGeant4Metadata()->GetNumberOfSources()) &&
+        (int(fEvent->GetNumberOfPrimaries()) != fEvent->GetGeant4Metadata()->GetNumberOfSources())) {
+        cout << "TRestGeant4Event: Number of particles on primary vertex does not match number of sources "
+                "for event ID: "
+             << fEvent->GetID() << endl;
+        exit(1);
+    }
 }
 
 bool OutputManager::IsEmptyEvent() const { return !fEvent || fEvent->fTracks.empty(); }

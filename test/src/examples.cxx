@@ -338,7 +338,7 @@ TEST(restG4, Example_10_Geometry) {
     fs::current_path(originalPath);
 }
 
-TEST(restG4, Example_12_Generators) {
+TEST(restG4, Example_12_Generators_CosineSquared) {
     //  cd into example
     const auto originalPath = fs::current_path();
     const auto thisExamplePath = examplesPath / "12.Generators";
@@ -346,7 +346,7 @@ TEST(restG4, Example_12_Generators) {
 
     CommandLineOptions::Options options;
     options.rmlFile = "CosineSquaredCircle.rml";
-    options.outputFile = thisExamplePath / "cosine.root";
+    options.outputFile = thisExamplePath / "CosineSquaredCircle.root";
 
     Application app;
     app.Run(options);
@@ -354,18 +354,70 @@ TEST(restG4, Example_12_Generators) {
     TRestRun run(options.outputFile);
 
     // Run validation macro
-    const TString macro(thisExamplePath / "Validate.C");
+    const TString macro(thisExamplePath / "ValidateCosineSquared.C");
     gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
     int error = 0;
-    const int result =
-        gROOT->ProcessLine(TString::Format("Validate(\"%s\")", options.outputFile.c_str()), &error);
+    const int result = gROOT->ProcessLine(
+        TString::Format("ValidateCosineSquared(\"%s\")", options.outputFile.c_str()), &error);
     EXPECT_EQ(error, 0);
     EXPECT_EQ(result, 0);
 
     fs::current_path(originalPath);
 }
 
-TEST(restG4, Example_13_IAXO) {
+TEST(restG4, Example_12_Generators_EnergyAndAngularRange) {
+    //  cd into example
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "12.Generators";
+    fs::current_path(thisExamplePath);
+
+    CommandLineOptions::Options options;
+    options.rmlFile = "EnergyAndAngularRange.rml";
+    options.outputFile = thisExamplePath / "EnergyAndAngularRange.root";
+
+    Application app;
+    app.Run(options);
+
+    TRestRun run(options.outputFile);
+
+    // Run validation macro
+    const TString macro(thisExamplePath / "ValidateEnergyAndAngularRange.C");
+    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+    int error = 0;
+    const int result = gROOT->ProcessLine(
+        TString::Format("ValidateEnergyAndAngularRange(\"%s\")", options.outputFile.c_str()), &error);
+    EXPECT_EQ(error, 0);
+    EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
+}
+
+TEST(restG4, Example_12_Generators_EnergyAndAngularCorrelated) {
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "12.Generators";
+    fs::current_path(thisExamplePath);
+
+    CommandLineOptions::Options options;
+    options.rmlFile = "CosmicMuonsEnergyAngularCorrelated.rml";
+    options.outputFile = thisExamplePath / "CosmicMuonsEnergyAngularCorrelated.root";
+
+    Application app;
+    app.Run(options);
+
+    // Run validation macro
+    const TString macro(thisExamplePath / "ValidateCosmicMuonsEnergyAngularCorrelated.C");
+    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+    int error = 0;
+    const int result = gROOT->ProcessLine(
+        TString::Format("ValidateCosmicMuonsEnergyAngularCorrelated(\"%s\")", options.outputFile.c_str()),
+        &error);
+    EXPECT_EQ(error, 0);
+    EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
+}
+
+TEST(restG4, Example_13_IAXO_Neutrons) {
     //  cd into example
     const auto originalPath = fs::current_path();
     const auto thisExamplePath = examplesPath / "13.IAXO";

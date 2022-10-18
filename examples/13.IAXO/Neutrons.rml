@@ -11,15 +11,16 @@ Author: Luis Obis (lobis@unizar.es)
 
     <TRestGeant4Metadata>
         <parameter name="gdmlFile" value="geometry/setup.gdml"/>
-        <parameter name="seed" value="17021981"/>
+        <parameter name="seed" value="170211"/>
+        <parameter name="nEvents" value="10000"/>
 
         <generator type="surface" shape="circle"
                    position="(0,1250,0)mm" size="(100,0,0)mm"
                    rotationAngle="90deg" rotationAxis="(1,0,0)">
             <source particle="neutron">
                 <energy type="formula" name="CosmicNeutrons"
-                        range="(10,10000)MeV"/>  <!-- By default, ranges from 0.1 MeV to 10 GeV -->
-                <angular type="formula" name="Cos2" direction="(0,-1,0)"/>
+                        range="(10,10000)MeV" nPoints="2000"/>  <!-- By default, ranges from 0.1 MeV to 10 GeV -->
+                <angular type="formula" name="Cos2" direction="(0,-1,0)" nPoints="300"/>
             </source>
         </generator>
 

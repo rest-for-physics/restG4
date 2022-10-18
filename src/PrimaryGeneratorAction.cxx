@@ -2,6 +2,7 @@
 #include "PrimaryGeneratorAction.h"
 
 #include <TF1.h>
+#include <TF2.h>
 #include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
 #include <TRestGeant4PrimaryGeneratorInfo.h>
@@ -56,12 +57,77 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
             exit(1);
         }
         fEnergyDistributionFunction->SetRange(newRangeXMin, newRangeXMax);
+        fEnergyDistributionFunction->SetNpx(source->GetEnergyDistributionFormulaNPoints());
     }
 
     if (angularDistTypeEnum == AngularDistributionTypes::TH1D) {
         SetAngularDistributionHistogram(fSimulationManager->GetPrimaryAngularDistribution());
     } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA) {
         fAngularDistributionFunction = (TF1*)source->GetAngularDistributionFunction()->Clone();
+        auto newRangeXMin = fAngularDistributionFunction->GetXmin();
+        if (source->GetAngularDistributionRangeMin() > fAngularDistributionFunction->GetXmin()) {
+            newRangeXMin = source->GetAngularDistributionRangeMin();
+        }
+        auto newRangeXMax = fAngularDistributionFunction->GetXmax();
+        if (source->GetAngularDistributionRangeMax() < fAngularDistributionFunction->GetXmax()) {
+            newRangeXMax = source->GetAngularDistributionRangeMax();
+        }
+        if (newRangeXMin == newRangeXMax || newRangeXMin > newRangeXMax) {
+            cout << "PrimaryGeneratorAction - ERROR: angular distribution range is invalid" << endl;
+            exit(1);
+        }
+        fAngularDistributionFunction->SetRange(newRangeXMin, newRangeXMax);
+        fAngularDistributionFunction->SetNpx(source->GetAngularDistributionFormulaNPoints());
+    }
+
+    if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 &&
+        energyDistTypeEnum == EnergyDistributionTypes::FORMULA2) {
+        fEnergyAndAngularDistributionFunction =
+            (TF2*)source->GetEnergyAndAngularDistributionFunction()->Clone();
+
+        // energy
+        auto newEnergyRangeXMin = fEnergyAndAngularDistributionFunction->GetXaxis()->GetXmin();
+        if (source->GetEnergyDistributionRangeMin() >
+            fEnergyAndAngularDistributionFunction->GetXaxis()->GetXmin()) {
+            newEnergyRangeXMin = source->GetEnergyDistributionRangeMin();
+        }
+        auto newEnergyRangeXMax = fEnergyAndAngularDistributionFunction->GetXaxis()->GetXmax();
+        if (source->GetEnergyDistributionRangeMax() <
+            fEnergyAndAngularDistributionFunction->GetXaxis()->GetXmax()) {
+            newEnergyRangeXMax = source->GetEnergyDistributionRangeMax();
+        }
+        if (newEnergyRangeXMin == newEnergyRangeXMax || newEnergyRangeXMin > newEnergyRangeXMax) {
+            cout << "PrimaryGeneratorAction - ERROR: energy distribution range is invalid" << endl;
+            exit(1);
+        }
+
+        // angular
+        auto newAngularRangeXMin = fEnergyAndAngularDistributionFunction->GetYaxis()->GetXmin();
+        if (source->GetAngularDistributionRangeMin() >
+            fEnergyAndAngularDistributionFunction->GetYaxis()->GetXmin()) {
+            newAngularRangeXMin = source->GetAngularDistributionRangeMin();
+        }
+        auto newAngularRangeXMax = fEnergyAndAngularDistributionFunction->GetYaxis()->GetXmax();
+        if (source->GetAngularDistributionRangeMax() <
+            fEnergyAndAngularDistributionFunction->GetYaxis()->GetXmax()) {
+            newAngularRangeXMax = source->GetAngularDistributionRangeMax();
+        }
+        if (newAngularRangeXMin == newAngularRangeXMax || newAngularRangeXMin > newAngularRangeXMax) {
+            cout << "PrimaryGeneratorAction - ERROR: angular distribution range is invalid" << endl;
+            exit(1);
+        }
+
+        fEnergyAndAngularDistributionFunction->SetRange(newEnergyRangeXMin, newAngularRangeXMin,
+                                                        newEnergyRangeXMax, newAngularRangeXMax);
+
+        fEnergyAndAngularDistributionFunction->SetNpx(source->GetEnergyDistributionFormulaNPoints());
+        fEnergyAndAngularDistributionFunction->SetNpy(source->GetAngularDistributionFormulaNPoints());
+
+    } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 ||
+               energyDistTypeEnum == EnergyDistributionTypes::FORMULA2) {
+        cout << "Energy/Angular distribution type 'formula2' should be used on both energy and angular"
+             << endl;
+        exit(1);
     }
 }
 
@@ -145,9 +211,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         for (const auto& p : particles) {
             // ParticleDefinition should be always declared first (after position).
             SetParticleDefinition(i, p);
-            // Particle Direction must be always set before energy
-            SetParticleEnergy(i, p);
-            SetParticleDirection(i, p);
+            SetParticleEnergyAndDirection(i, p);
             fParticleGun.GeneratePrimaryVertex(event);
         }
     }
@@ -636,4 +700,59 @@ void PrimaryGeneratorAction::GenPositionOnDisk(double& x, double& y, double& z) 
     x = position.x() + center.X();
     y = position.y() + center.Y();
     z = position.z() + center.Z();
+}
+
+void PrimaryGeneratorAction::SetParticleEnergyAndDirection(Int_t particleSourceIndex,
+                                                           const TRestGeant4Particle& particle) {
+    auto simulationManager = fSimulationManager;
+
+    TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
+    TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
+
+    const string angularDistTypeName =
+        restG4Metadata->GetParticleSource(particleSourceIndex)->GetAngularDistributionType().Data();
+    const auto angularDistTypeEnum = StringToAngularDistributionTypes(angularDistTypeName);
+
+    const string energyDistTypeName =
+        restG4Metadata->GetParticleSource(particleSourceIndex)->GetEnergyDistributionType().Data();
+    const auto energyDistTypeEnum = StringToEnergyDistributionTypes(energyDistTypeName);
+
+    if (energyDistTypeEnum != EnergyDistributionTypes::FORMULA2 &&
+        angularDistTypeEnum != AngularDistributionTypes::FORMULA2) {
+        // when not using 'FORMULA2'
+        SetParticleEnergy(particleSourceIndex, particle);
+        SetParticleDirection(particleSourceIndex, particle);
+        return;
+    }
+
+    // this function should only be invoked when both energy and angular dist are "formula2"
+    if (energyDistTypeEnum != EnergyDistributionTypes::FORMULA2 ||
+        angularDistTypeEnum != AngularDistributionTypes::FORMULA2) {
+        cout << "PrimaryGeneratorAction::SetParticleEnergyAndDirection - this method should only invoked "
+                "when both angular and energy dist are 'formula2'"
+             << endl;
+        exit(1);
+    }
+
+    if (fEnergyAndAngularDistributionFunction == nullptr) {
+        RESTError << "PrimaryGeneratorAction::SetParticleEnergyAndDirection - energy and angular "
+                     "distribution function is not set"
+                  << RESTendl;
+        exit(1);
+    }
+
+    double energy, angle;
+    fEnergyAndAngularDistributionFunction->GetRandom2(energy, angle, fRandom);
+    energy *= keV;
+
+    G4ThreeVector direction = {source->GetDirection().X(), source->GetDirection().Y(),
+                               source->GetDirection().Z()};
+
+    G4ThreeVector referenceOrigin = direction;
+    direction.rotate(angle, direction.orthogonal());
+    direction.rotate(G4UniformRand() * 2 * M_PI, referenceOrigin);
+
+    fParticleGun.SetParticleMomentumDirection(direction);
+    fParticleGun.SetParticleEnergy(energy);
 }

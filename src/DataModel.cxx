@@ -55,7 +55,8 @@ bool TRestGeant4Event::InsertTrack(const G4Track* track) {
         exit(1);
     }
 
-    if (fTracks.empty() && IsSubEvent()) {
+    if ((fTracks.empty() && IsSubEvent()) ||
+        (fTracks.empty() && !IsSubEvent() && GetGeant4Metadata()->GetNumberOfSources() == 1)) {
         // First track of sub-event (primary)
         fSubEventPrimaryParticleName = track->GetParticleDefinition()->GetParticleName();
         fSubEventPrimaryEnergy = track->GetKineticEnergy() / CLHEP::keV;

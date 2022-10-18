@@ -1,6 +1,6 @@
 #include <TRestGeant4Event.h>
 
-Int_t Validate(const char* filename) {
+Int_t ValidateCosineSquared(const char* filename) {
     cout << "Starting validation for '" << filename << "'" << endl;
 
     TRestRun run(filename);
