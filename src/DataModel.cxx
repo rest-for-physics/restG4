@@ -154,6 +154,8 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     const auto& volumeNameGeant4 = step->GetPreStepPoint()->GetPhysicalVolume()->GetName();
     const auto& volumeName = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(volumeNameGeant4);
 
+    const bool kill = metadata->IsKillVolume(volumeName);
+
     if (!metadata->IsActiveVolume(volumeName) && step->GetTrack()->GetCurrentStepNumber() != 0) {
         // we always store the first step
         return;
@@ -162,6 +164,8 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     const auto& particle = step->GetTrack()->GetDefinition();
     const auto& particleID = particle->GetPDGEncoding();
     const auto& particleName = particle->GetParticleName();
+
+    auto energy = step->GetTotalEnergyDeposit() / CLHEP::keV;
 
     metadata->fGeant4PhysicsInfo.InsertParticleName(particleID, particleName);
 
@@ -176,9 +180,17 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
         processID = TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(process);
     }
 
+    if (kill) {
+        processName = "REST-for-physics-kill";
+        processTypeName = "REST-for-physics";
+        processID = 1000000;  // use id out of range!
+        energy = 0;
+
+        step->GetTrack()->SetTrackStatus(fStopAndKill);
+    }
+
     metadata->fGeant4PhysicsInfo.InsertProcessName(processID, processName, processTypeName);
 
-    const auto energy = step->GetTotalEnergyDeposit() / CLHEP::keV;
     const auto trackKineticEnergy = step->GetTrack()->GetKineticEnergy() / CLHEP::keV;
 
     auto sensitiveVolumeName =
@@ -231,7 +243,7 @@ void OutputManager::RemoveUnwantedTracks() {
             }
         }
     }
-    const size_t numberOfTracksBefore = fEvent->fTracks.size();
+    // const size_t numberOfTracksBefore = fEvent->fTracks.size();
 
     vector<TRestGeant4Track> tracksAfterRemoval;
     for (const auto& track : fEvent->fTracks) {
