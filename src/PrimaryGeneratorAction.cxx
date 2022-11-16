@@ -225,10 +225,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         cout << "DEBUG: Primary generation" << endl;
     }
     // We have to initialize here and not in start of the event because
-    // GeneratePrimaries is called first, and we want to store event origin and
-    // position inside
-    // we should have already written the information from previous event to disk
-    // (in endOfEventAction)
+    // GeneratePrimaries is called first, and we want to store event origin and position inside
+    // we should have already written the information from previous event to disk (in endOfEventAction)
 
     for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
         restG4Metadata->GetParticleSource(i)->Update();
@@ -535,28 +533,6 @@ G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() const {
     b /= n;
     c /= n;
     return {a, b, c};
-}
-
-Double_t PrimaryGeneratorAction::GetAngle(G4ThreeVector x, G4ThreeVector y) {
-    Double_t angle = y.angle(x);
-
-    return angle;
-}
-
-Double_t PrimaryGeneratorAction::GetCosineLowRandomThetaAngle() {
-    // We obtain an angle with a cos(theta)*sin(theta) distribution
-    Double_t value = G4UniformRand();
-    double dTheta = 0.01;
-    for (double theta = 0; theta < M_PI / 2; theta = theta + dTheta) {
-        // sin(theta)^2 is the integral of sin(theta)*cos(theta)
-        if (sin(theta) * sin(theta) >= value) {
-            if (theta > 0)
-                return theta - dTheta * (0.5 - G4UniformRand());
-            else
-                return theta;
-        }
-    }
-    return M_PI / 2;
 }
 
 void PrimaryGeneratorAction::GenPositionOnGDMLVolume(double& x, double& y, double& z) {
