@@ -68,6 +68,10 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
     TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
 
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
+    const string& spatialGeneratorTypeName = primaryGeneratorInfo.GetSpatialGeneratorType().Data();
+    const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
+
     const string angularDistTypeName = source->GetAngularDistributionType().Data();
     const auto angularDistTypeEnum = StringToAngularDistributionTypes(angularDistTypeName);
 
@@ -237,7 +241,14 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         restG4Metadata->GetParticleSource(i)->Update();
     }
 
-    Int_t nParticles = restG4Metadata->GetNumberOfSources();
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
+    const string& spatialGeneratorTypeName = primaryGeneratorInfo.GetSpatialGeneratorType().Data();
+    const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
+
+    if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::COSMIC) {
+        if (fCosmicCircumscribedSphereRadius == 0.) {
+            const auto worldPhysical = GetWorldVolume();
+            const auto worldSolid = dynamic_cast<G4Box*>(worldPhysical->GetLogicalVolume()->GetSolid());
 
     // Set the particle(s)' position, multiple particles generated from multiple
     // sources shall always have a same origin
@@ -249,6 +260,13 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
             // ParticleDefinition should be always declared first (after position).
             SetParticleDefinition(i, p);
             SetParticleEnergyAndDirection(i, p);
+
+            if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::COSMIC) {
+                const auto position = ComputeCosmicPosition(fParticleGun.GetParticleMomentumDirection(),
+                                                            fCosmicCircumscribedSphereRadius);
+                fParticleGun.SetParticlePosition(position);
+            }
+
             fParticleGun.GeneratePrimaryVertex(event);
         }
     }
@@ -496,6 +514,8 @@ void PrimaryGeneratorAction::SetParticlePosition() {
             } else if (spatialGeneratorShapeEnum == SpatialGeneratorShapes::SPHERE) {
                 GenPositionOnSphereVolume(x, y, z);
             }
+        } else if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::COSMIC) {
+            // position will be defined after direction
         } else {
             G4cout << "WARNING! Generator type \"" << spatialGeneratorTypeName
                    << "\" was not recognized. Launching particle "
