@@ -5,6 +5,7 @@
 #include <G4Nucleus.hh>
 #include <G4Threading.hh>
 #include <Randomize.hh>
+#include <csignal>
 
 #include "SteppingAction.h"
 
@@ -86,10 +87,20 @@ void PeriodicPrint(SimulationManager* simulationManager) {
     }
 }
 
+int interruptSignalHandler(const int, void* ptr) {
+    // See https://stackoverflow.com/a/43400143/11776908
+    cout << "Stopping Run! Program was manually stopped by user (CTRL+C)!" << endl;
+    const auto manager = (SimulationManager*)(ptr);
+    manager->StopSimulation();
+    return 0;
+}
+
 void SimulationManager::BeginOfRunAction() {
     if (G4Threading::IsMultithreadedApplication() && G4Threading::G4GetThreadId() != -1) {
         return;  // Only call this once from the main thread
     }
+    signal(SIGINT, (void (*)(int))interruptSignalHandler);  // Add custom signal handler before simulation
+
     fTimeStartUnix = chrono::steady_clock::now().time_since_epoch().count();
 #ifndef GEANT4_WITHOUT_G4RunManagerFactory
     // gives segfault in old Geant4 versions such as 10.4.3, didn't look into it
