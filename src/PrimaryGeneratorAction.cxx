@@ -22,6 +22,40 @@
 using namespace std;
 using namespace TRestGeant4PrimaryGeneratorTypes;
 
+G4VPhysicalVolume* GetWorldVolume() {
+    for (const auto& [name, volumes] : G4PhysicalVolumeStore::GetInstance()->GetMap()) {
+        for (const auto& volume : volumes) {
+            if (volume->GetMotherLogical() == nullptr) {
+                return volume;
+            }
+        }
+    }
+    // we didn't find the world volume
+    G4cout << "Error trying to find world volume" << endl;
+    exit(1);
+}
+
+G4ThreeVector ComputeCosmicPosition(const G4ThreeVector& direction, double radius) {
+    // Angles in radians
+    const auto directionRoot = TVector3(direction.x(), direction.y(), direction.z());
+    const auto theta = directionRoot.Angle(TVector3(0, -1, 0));
+    const auto phi = directionRoot.Phi();
+    // Get random point in a disk
+    const double u1 = G4UniformRand(), u2 = G4UniformRand();
+    const auto positionInDisk =
+        G4ThreeVector(sqrt(u1) * cos(2. * M_PI * u2), 0, sqrt(u1) * sin(2. * M_PI * u2))
+            .rotateX(theta)
+            .rotateY(phi) *
+        radius;
+
+    // Get intersection with sphere
+    const G4ThreeVector& toCenter = positionInDisk;
+    double t = sqrt(radius * radius - toCenter.dot(toCenter));
+    auto position = positionInDisk - t * direction;
+
+    return position;
+}
+
 PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationManager)
     : G4VUserPrimaryGeneratorAction(), fSimulationManager(simulationManager) {
     fGeneratorSpatialDensityFunction = nullptr;
