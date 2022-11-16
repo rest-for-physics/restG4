@@ -23,6 +23,10 @@ using namespace std;
 using namespace TRestGeant4PrimaryGeneratorTypes;
 
 G4VPhysicalVolume* GetWorldVolume() {
+#ifdef GEANT4_WITHOUT_G4RunManagerFactory
+    G4cout << "This does not work on older Geant4 versions" << endl;
+    exit(1);
+#else
     for (const auto& [name, volumes] : G4PhysicalVolumeStore::GetInstance()->GetMap()) {
         for (const auto& volume : volumes) {
             if (volume->GetMotherLogical() == nullptr) {
@@ -33,6 +37,7 @@ G4VPhysicalVolume* GetWorldVolume() {
     // we didn't find the world volume
     G4cout << "Error trying to find world volume" << endl;
     exit(1);
+#endif
 }
 
 G4ThreeVector ComputeCosmicPosition(const G4ThreeVector& direction, double radius) {
