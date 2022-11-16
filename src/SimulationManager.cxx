@@ -18,8 +18,6 @@ SimulationManager::SimulationManager() {
         cout << "Only master thread should create the SimulationManager!" << endl;
         exit(1);
     }
-
-    fTimeStartUnix = chrono::steady_clock::now().time_since_epoch().count();
 }
 
 void SimulationManager::InitializeOutputManager() {
@@ -92,7 +90,7 @@ void SimulationManager::BeginOfRunAction() {
     if (G4Threading::IsMultithreadedApplication() && G4Threading::G4GetThreadId() != -1) {
         return;  // Only call this once from the main thread
     }
-
+    fTimeStartUnix = chrono::steady_clock::now().time_since_epoch().count();
 #ifndef GEANT4_WITHOUT_G4RunManagerFactory
     // gives segfault in old Geant4 versions such as 10.4.3, didn't look into it
     if (GetRestMetadata()->PrintProgress() ||
