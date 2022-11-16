@@ -19,12 +19,12 @@
     <!-- All values should be in mm -->
 
     <define>
-        <constant name="world_size" value="20000"/>
+        <constant name="world_size" value="200"/>
 
-		<!-- Rough density values taken from wikipedia -->
-		<!-- Density values is what matters, pressure and temperature are irrelevant -->
-		<variable name="targetGasDensity" value="1.78"/> <!-- mg/cm3 -->
-		<variable name="quencherDensity" value="2.51*0.01"/> <!-- mg/cm3 -->
+        <!-- Rough density values taken from wikipedia -->
+        <!-- Density values is what matters, pressure and temperature are irrelevant -->
+        <variable name="targetGasDensity" value="1.78"/> <!-- mg/cm3 -->
+        <variable name="quencherDensity" value="2.51*0.01"/> <!-- mg/cm3 -->
         <variable name="quencherFraction" value="0.01"/>
         <variable name="gasTemperature" value="300"/>
         <variable name="gasPressure" value="1"/>
