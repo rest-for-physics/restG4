@@ -51,6 +51,8 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
 
     TF3* fGeneratorSpatialDensityFunction;
 
+    Double_t fCosmicCircumscribedSphereRadius = 0.;
+
     Int_t startEnergyBin;
     Int_t endEnergyBin;
     Double_t fSpectrumIntegral;
