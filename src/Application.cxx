@@ -198,8 +198,8 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
                 string s = argv[++i];  // Increment 'i' so we don't get the argument as the next argv[i].
                 options.nEvents = GetNumberFromStringScientific(s);
                 if (options.nEvents <= 0) {
-                    cout << "--events option error: number of events must be > 0 (input: " << s << ")"
-                         << endl;
+                    cout << "--events option error: number of events must be > 0 (input: " << options.nEvents
+                         << " from " << s << ")" << endl;
                     exit(1);
                 }
             } else {
@@ -211,7 +211,8 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
                 string s = argv[++i];  // Increment 'i' so we don't get the argument as the next argv[i].
                 options.nRequestedEntries = GetNumberFromStringScientific(s);
                 if (options.nRequestedEntries <= 0) {
-                    cout << "--entries option error: number of entries must be > 0" << endl;
+                    cout << "--entries option error: number of entries must be > 0 (input: "
+                         << options.nRequestedEntries << " from " << s << ")" << endl;
                     exit(1);
                 }
             } else {
