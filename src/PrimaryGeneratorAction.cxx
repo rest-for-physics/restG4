@@ -250,6 +250,19 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
             const auto worldPhysical = GetWorldVolume();
             const auto worldSolid = dynamic_cast<G4Box*>(worldPhysical->GetLogicalVolume()->GetSolid());
 
+            // get distance from center of box to one of its corners
+            fCosmicCircumscribedSphereRadius =
+                G4ThreeVector(worldSolid->GetXHalfLength(), worldSolid->GetYHalfLength(),
+                              worldSolid->GetZHalfLength())
+                    .mag();
+        }
+
+        // This generator has correlated position / direction, so we need to use a different approach
+        if (restG4Metadata->GetNumberOfSources() != 1) {
+            cout << "PrimaryGeneratorAction - ERROR: cosmic generator only supports one source" << endl;
+            exit(1);
+        }
+    }
     // Set the particle(s)' position, multiple particles generated from multiple
     // sources shall always have a same origin
     SetParticlePosition();
