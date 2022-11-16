@@ -72,8 +72,6 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     void SetParticleEnergyAndDirection(Int_t particleSourceIndex, const TRestGeant4Particle& particle);
 
     G4ThreeVector GetIsotropicVector() const;
-    Double_t GetAngle(G4ThreeVector x, G4ThreeVector y);
-    Double_t GetCosineLowRandomThetaAngle();
 
     void GenPositionOnGDMLVolume(double& x, double& y, double& z);
     void GenPositionOnGDMLSurface(double& x, double& y, double& z);
