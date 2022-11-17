@@ -234,9 +234,11 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
 
     if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::COSMIC) {
         if (fCosmicCircumscribedSphereRadius == 0.) {
+            // radius in mm
             fCosmicCircumscribedSphereRadius = fSimulationManager->GetRestMetadata()
                                                    ->GetGeant4PrimaryGeneratorInfo()
-                                                   .GetSpatialGeneratorCosmicRadius();
+                                                   .GetSpatialGeneratorCosmicRadius() *
+                                               10.;
         }
 
         // This generator has correlated position / direction, so we need to use a different approach
