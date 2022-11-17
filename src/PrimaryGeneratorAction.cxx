@@ -22,24 +22,6 @@
 using namespace std;
 using namespace TRestGeant4PrimaryGeneratorTypes;
 
-G4VPhysicalVolume* GetWorldVolume() {
-#ifdef GEANT4_WITHOUT_G4RunManagerFactory
-    G4cout << "This does not work on older Geant4 versions" << endl;
-    exit(1);
-#else
-    for (const auto& [name, volumes] : G4PhysicalVolumeStore::GetInstance()->GetMap()) {
-        for (const auto& volume : volumes) {
-            if (volume->GetMotherLogical() == nullptr) {
-                return volume;
-            }
-        }
-    }
-    // we didn't find the world volume
-    G4cout << "Error trying to find world volume" << endl;
-    exit(1);
-#endif
-}
-
 G4ThreeVector ComputeCosmicPosition(const G4ThreeVector& direction, double radius) {
     // Angles in radians
     const auto directionRoot = TVector3(direction.x(), direction.y(), direction.z());
@@ -247,14 +229,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
 
     if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::COSMIC) {
         if (fCosmicCircumscribedSphereRadius == 0.) {
-            const auto worldPhysical = GetWorldVolume();
-            const auto worldSolid = dynamic_cast<G4Box*>(worldPhysical->GetLogicalVolume()->GetSolid());
-
-            // get distance from center of box to one of its corners
-            fCosmicCircumscribedSphereRadius =
-                G4ThreeVector(worldSolid->GetXHalfLength(), worldSolid->GetYHalfLength(),
-                              worldSolid->GetZHalfLength())
-                    .mag();
+            fCosmicCircumscribedSphereRadius = fSimulationManager->GetRestMetadata()
+                                                   ->GetGeant4PrimaryGeneratorInfo()
+                                                   .GetSpatialGeneratorCosmicRadius();
         }
 
         // This generator has correlated position / direction, so we need to use a different approach
