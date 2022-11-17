@@ -401,8 +401,8 @@ jobs:
           cd ${{ env.REST_PATH }}/examples/restG4/12.Generators/
           restG4 CosineSquaredCircle.rml -o CosineSquaredCircle.root
           restRoot -b -q ValidateCosineSquared.C'("CosineSquaredCircle.root")'
-          restG4 CosmicMuons.rml -o CosmicMuons.root
-          restRoot -b -q ValidateCosmic.C'("CosmicMuons.root")'
+          restG4 CosmicGenerator.rml -o CosmicGenerator.root
+          restRoot -b -q ValidateCosmicGenerator.C'("CosmicGenerator.root")'
 
   restG4-examples-13:
     name: "Example 13: IAXO"

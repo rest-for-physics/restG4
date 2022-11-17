@@ -1,6 +1,6 @@
 #include <TRestGeant4Event.h>
 
-Int_t ValidateCosmic(const char* filename) {
+Int_t ValidateCosmicGenerator(const char* filename) {
     cout << "Starting validation for '" << filename << "'" << endl;
 
     TRestRun run(filename);
