@@ -96,6 +96,11 @@ Int_t ValidateCosmicGenerator(const char* filename) {
         return 8;
     }
 
+    cout << "Simulated events: " << metadata->GetNumberOfEvents() << endl;
+    cout << "Equivalent cosmic surface (cm2): "
+         << metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTerm() << endl;
+    cout << "Equivalent simulation time (s) " << metadata->GetEquivalentSimulatedTime() << endl;
+
     cout << "All tests passed! [\033[32mOK\033[0m]\n";
     return 0;
 }
