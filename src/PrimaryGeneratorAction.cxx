@@ -148,6 +148,11 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
         fEnergyAndAngularDistributionFunction->SetNpx(source->GetEnergyDistributionFormulaNPoints());
         fEnergyAndAngularDistributionFunction->SetNpy(source->GetAngularDistributionFormulaNPoints());
 
+        fSimulationManager->GetRestMetadata()->GetParticleSource()->SetEnergyDistributionRange(
+            {newEnergyRangeXMin, newEnergyRangeXMax});
+        fSimulationManager->GetRestMetadata()->GetParticleSource()->SetAngularDistributionRange(
+            {newAngularRangeXMin, newAngularRangeXMax});
+
     } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 ||
                energyDistTypeEnum == EnergyDistributionTypes::FORMULA2) {
         cout << "Energy/Angular distribution type 'formula2' should be used on both energy and angular"
