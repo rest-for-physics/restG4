@@ -96,9 +96,20 @@ Int_t ValidateCosmicGenerator(const char* filename) {
         return 8;
     }
 
-    cout << "Simulated events: " << metadata->GetNumberOfEvents() << endl;
-    cout << "Equivalent cosmic surface (cm2): "
-         << metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTerm() << endl;
+    if (metadata->GetNumberOfEvents() != 885919) {
+        cout << "wrong number of events: " << metadata->GetNumberOfEvents() << endl;
+        return 9;
+    }
+
+    const auto surfaceTermRef = 942.478;
+    if ((metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTerm() - surfaceTermRef) /
+            surfaceTermRef >
+        tolerance) {
+        cout << "wrong cosmic surface term: "
+             << metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTerm() << endl;
+        return 10;
+    }
+
     cout << "Equivalent simulation time (s) " << metadata->GetEquivalentSimulatedTime() << endl;
 
     cout << "All tests passed! [\033[32mOK\033[0m]\n";
