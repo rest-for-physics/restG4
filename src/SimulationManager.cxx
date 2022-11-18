@@ -283,6 +283,10 @@ void OutputManager::UpdateEvent() {
              << fEvent->GetID() << endl;
         exit(1);
     }
+
+    for (const TString& volumeName : fEvent->GetGeant4Metadata()->GetActiveVolumes()) {
+        fEvent->AddActiveVolume(volumeName.Data());
+    }
 }
 
 bool OutputManager::IsEmptyEvent() const { return !fEvent || fEvent->fTracks.empty(); }
@@ -307,6 +311,9 @@ bool OutputManager::IsValidEvent() const {
 
 void OutputManager::FinishAndSubmitEvent() {
     if (IsValidEvent()) {
+        for (int i = 0; i < fEvent->GetNumberOfActiveVolumes(); i++) {
+            fEvent->SetEnergyDepositedInVolume(i, fEvent->GetEnergyInVolume(fEvent->fVolumeStoredNames[i]));
+        }
         if (fSimulationManager->GetRestMetadata()->GetRemoveUnwantedTracks()) {
             RemoveUnwantedTracks();
         }
