@@ -11,7 +11,6 @@
 #include <TRestGeant4PhysicsLists.h>
 #include <TRestRun.h>
 
-#include <csignal>
 #include <regex>
 #ifndef GEANT4_WITHOUT_G4RunManagerFactory
 #include <G4RunManagerFactory.hh>
@@ -199,8 +198,8 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
                 string s = argv[++i];  // Increment 'i' so we don't get the argument as the next argv[i].
                 options.nEvents = GetNumberFromStringScientific(s);
                 if (options.nEvents <= 0) {
-                    cout << "--events option error: number of events must be > 0 (input: " << s << ")"
-                         << endl;
+                    cout << "--events option error: number of events must be > 0 (input: " << options.nEvents
+                         << " from " << s << ")" << endl;
                     exit(1);
                 }
             } else {
@@ -212,7 +211,8 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
                 string s = argv[++i];  // Increment 'i' so we don't get the argument as the next argv[i].
                 options.nRequestedEntries = GetNumberFromStringScientific(s);
                 if (options.nRequestedEntries <= 0) {
-                    cout << "--entries option error: number of entries must be > 0" << endl;
+                    cout << "--entries option error: number of entries must be > 0 (input: "
+                         << options.nRequestedEntries << " from " << s << ")" << endl;
                     exit(1);
                 }
             } else {
@@ -271,14 +271,6 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
 }
 
 }  // namespace CommandLineOptions
-
-int interruptSignalHandler(const int, void* ptr) {
-    // See https://stackoverflow.com/a/43400143/11776908
-    cout << "Stopping Run! Program was manually stopped by user (CTRL+C)!" << endl;
-    const auto manager = (SimulationManager*)(ptr);
-    manager->StopSimulation();
-    return 0;
-}
 
 constexpr const char* geometryName = "Geometry";
 
@@ -447,8 +439,6 @@ void Application::Run(const CommandLineOptions::Options& options) {
         exit(1);
     }
     gGeoManager->Write(geometryName, TObject::kOverwrite);
-
-    signal(SIGINT, (void (*)(int))interruptSignalHandler);  // Add custom signal handler before simulation
 
     cout << "Number of events: " << nEvents << endl;
     if (nEvents > 0)  // batch mode

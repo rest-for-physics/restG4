@@ -20,10 +20,19 @@ RunAction::~RunAction() = default;
 
 void RunAction::BeginOfRunAction(const G4Run*) {
     if (G4Threading::IsMasterThread() || !G4Threading::IsMultithreadedApplication()) {
-        G4cout << "========================== Begin of Run Action ========================" << endl;
-        G4cout << G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed() << " events to be simulated"
-               << endl;
-        G4cout << "=======================================================================" << endl;
+        G4cout << "========================== Begin of Run Action ========================" << G4endl;
+        G4cout << "Events to be simulated: "
+               << G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed() << G4endl;
+        if (fSimulationManager->GetRestMetadata()->GetNumberOfRequestedEntries() > 0) {
+            G4cout << "Requested number of entries in file: "
+                   << fSimulationManager->GetRestMetadata()->GetNumberOfRequestedEntries() << G4endl;
+        }
+        if (fSimulationManager->GetRestMetadata()->GetSimulationMaxTimeSeconds() > 0) {
+            G4cout << "Maximum simulation time: "
+                   << ToTimeStringLong(fSimulationManager->GetRestMetadata()->GetSimulationMaxTimeSeconds())
+                   << G4endl;
+        }
+        G4cout << "=======================================================================" << G4endl;
     }
 
     fSimulationManager->BeginOfRunAction();

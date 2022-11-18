@@ -5,6 +5,7 @@
 #include <G4Nucleus.hh>
 #include <G4Threading.hh>
 #include <Randomize.hh>
+#include <csignal>
 
 #include "SteppingAction.h"
 
@@ -18,8 +19,6 @@ SimulationManager::SimulationManager() {
         cout << "Only master thread should create the SimulationManager!" << endl;
         exit(1);
     }
-
-    fTimeStartUnix = chrono::steady_clock::now().time_since_epoch().count();
 }
 
 void SimulationManager::InitializeOutputManager() {
@@ -38,28 +37,71 @@ void PeriodicPrint(SimulationManager* simulationManager) {
             simulationManager->SyncStatsFromChild(outputManager);
         }
 
-        G4cout << TString::Format("%5.2f", double(simulationManager->GetNumberOfProcessedEvents()) /
-                                               double(restG4Metadata->GetNumberOfEvents()) * 100)
-                      .Data()
-               << "% - " << simulationManager->GetNumberOfProcessedEvents() << " events processed out of "
-               << restG4Metadata->GetNumberOfEvents() << " requested events ("
-               << TString::Format("%.2e", simulationManager->GetNumberOfProcessedEvents() /
-                                              simulationManager->GetElapsedTime())
-                      .Data()
-               << " per second). " << simulationManager->GetNumberOfStoredEvents() << " events stored ("
+        string outputPercentageType = "events";
+        double completionPercentage = double(simulationManager->GetNumberOfProcessedEvents()) /
+                                      double(restG4Metadata->GetNumberOfEvents()) * 100;
+        if (restG4Metadata->GetNumberOfRequestedEntries() > 0) {
+            auto completionPercentageEntries = double(simulationManager->GetNumberOfStoredEvents()) /
+                                               double(restG4Metadata->GetNumberOfRequestedEntries()) * 100;
+            if (completionPercentageEntries > completionPercentage) {
+                completionPercentage = completionPercentageEntries;
+                outputPercentageType = "entries";
+            }
+        }
+        if (restG4Metadata->GetSimulationMaxTimeSeconds() > 0) {
+            auto completionPercentageTime = double(simulationManager->GetElapsedTime()) /
+                                            double(restG4Metadata->GetSimulationMaxTimeSeconds()) * 100;
+            if (completionPercentageTime > completionPercentage) {
+                completionPercentage = completionPercentageTime;
+                outputPercentageType = "time";
+            }
+        }
+        const string eventsProgress =
+            " | " + to_string(simulationManager->GetNumberOfProcessedEvents()) + " events processed / " +
+            to_string(restG4Metadata->GetNumberOfEvents()) + " requested (" +
+            TString::Format(
+                "%.2e", simulationManager->GetNumberOfProcessedEvents() / simulationManager->GetElapsedTime())
+                .Data() +
+            "/s)";
+        const string timeProgress =
+            " | " + ToTimeStringLong(simulationManager->GetElapsedTime()) + " elapsed / " +
+            ToTimeStringLong(simulationManager->GetRestMetadata()->GetSimulationMaxTimeSeconds());
+
+        string progress = "";
+        if (outputPercentageType == "events") {
+            progress = eventsProgress;
+        } else if (outputPercentageType == "time") {
+            progress = timeProgress;
+        }
+        string timeInfo = "";
+        if (outputPercentageType != "time") {
+            timeInfo = " | " + ToTimeStringLong(simulationManager->GetElapsedTime()) + " elapsed";
+        }
+        G4cout << TString::Format("%5.2f", completionPercentage).Data() << "% | "
+               << simulationManager->GetNumberOfStoredEvents() << " events stored / "
+               << simulationManager->GetNumberOfProcessedEvents() << " processed ("
                << TString::Format("%.2e", simulationManager->GetNumberOfStoredEvents() /
                                               simulationManager->GetElapsedTime())
                       .Data()
-               << " per second). " << ToTimeStringLong(simulationManager->GetElapsedTime()) << " elapsed"
-               << G4endl;
+               << "/s)" << progress << timeInfo << G4endl;
     }
+}
+
+int interruptSignalHandler(const int, void* ptr) {
+    // See https://stackoverflow.com/a/43400143/11776908
+    cout << "Stopping Run! Program was manually stopped by user (CTRL+C)!" << endl;
+    const auto manager = (SimulationManager*)(ptr);
+    manager->StopSimulation();
+    return 0;
 }
 
 void SimulationManager::BeginOfRunAction() {
     if (G4Threading::IsMultithreadedApplication() && G4Threading::G4GetThreadId() != -1) {
         return;  // Only call this once from the main thread
     }
+    signal(SIGINT, (void (*)(int))interruptSignalHandler);  // Add custom signal handler before simulation
 
+    fTimeStartUnix = chrono::steady_clock::now().time_since_epoch().count();
 #ifndef GEANT4_WITHOUT_G4RunManagerFactory
     // gives segfault in old Geant4 versions such as 10.4.3, didn't look into it
     if (GetRestMetadata()->PrintProgress() ||
