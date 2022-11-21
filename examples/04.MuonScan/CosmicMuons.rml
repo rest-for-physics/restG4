@@ -18,7 +18,7 @@
         <parameter name="gdmlFile" value="geometry/setup.gdml"/>
         <parameter name="subEventTimeDelay" value="100us"/>
 
-        <parameter name="nRequestedEntries" value="200"/>
+        <parameter name="nRequestedEntries" value="10000"/>
         <parameter name="seed" value="1702198"/>
 
         <parameter name="saveAllEvents" value="false"/>
