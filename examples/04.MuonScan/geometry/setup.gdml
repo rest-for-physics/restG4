@@ -12,7 +12,7 @@
     <!-- All values should be in mm -->
 
     <define>
-        <constant name="world_size" value="20000"/>
+        <constant name="world_size" value="1000"/>
 
         <!-- We must define these variables that are hardcoded in materials.xml -->
         <!-- They have no use in this example since we do not use a gas mixture in our simulation -->
