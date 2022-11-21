@@ -6,7 +6,7 @@ Int_t ValidateCosmicGenerator(const char* filename) {
     TRestRun run(filename);
 
     cout << "Run entries: " << run.GetEntries() << endl;
-    if (run.GetEntries() != 100000) {
+    if (run.GetEntries() != 200000) {
         cout << "Bad number of entries: " << run.GetEntries() << endl;
         return 2;
     }
@@ -20,11 +20,11 @@ Int_t ValidateCosmicGenerator(const char* filename) {
     constexpr double tolerance = 0.1;
 
     double thetaAverage = 0, thetaMin = TMath::Infinity(), thetaMax = 0;
-    constexpr double thetaAverageRef = 45.39, thetaMinRef = 0.32, thetaMaxRef = 89.99;
+    constexpr double thetaAverageRef = 45.7252, thetaMinRef = 0.16134, thetaMaxRef = 89.9919;
 
     double energyPrimaryAverage = 0, energyPrimaryMin = TMath::Infinity(), energyPrimaryMax = 0;
-    constexpr double energyPrimaryAverageRef = 8590750, energyPrimaryMinRef = 145.8,
-                     energyPrimaryMaxRef = 2810890000;
+    constexpr double energyPrimaryAverageRef = 8.67876E6, energyPrimaryMinRef = 200027,
+                     energyPrimaryMaxRef = 1.9867E9;
 
     TH1D thetaHist("thetaHist", "Theta angle from source direction", 100, 0, TMath::Pi() * TMath::RadToDeg());
     TH1D energyHist("energyHist", "Primary muon energy", 200, 0, 1E9);
@@ -96,7 +96,7 @@ Int_t ValidateCosmicGenerator(const char* filename) {
         return 8;
     }
 
-    if (metadata->GetNumberOfEvents() != 885919) {
+    if (metadata->GetNumberOfEvents() != 1758534) {
         cout << "wrong number of events: " << metadata->GetNumberOfEvents() << endl;
         return 9;
     }
@@ -109,7 +109,7 @@ Int_t ValidateCosmicGenerator(const char* filename) {
              << metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTerm() << endl;
         return 10;
     }
-    const auto simulationTimeRef = 71193.790;
+    const auto simulationTimeRef = 151159.0;
     if ((metadata->GetEquivalentSimulatedTime() - simulationTimeRef) / simulationTimeRef > tolerance) {
         cout << "wrong equivalent simulation time: " << metadata->GetEquivalentSimulatedTime() << endl;
         return 11;

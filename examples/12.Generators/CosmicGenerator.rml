@@ -21,12 +21,12 @@
     <TRestGeant4Metadata>
         <parameter name="gdmlFile" value="geometry/setup.gdml"/>
         <parameter name="seed" value="137"/>
-        <parameter name="nRequestedEntries" value="100000"/>
+        <parameter name="nRequestedEntries" value="200000"/>
         <parameter name="saveAllEvents" value="false"/>
         <generator type="cosmic">
             <source particle="geantino">
-                <energy type="formula2" name="CosmicMuons" nPoints="1200"/>
-                <angular type="formula2" direction="(0,-1,0)" nPoints="300"/>
+                <energy type="formula2" name="CosmicMuons" nPoints="5000"/>
+                <angular type="formula2" direction="(0,-1,0)" nPoints="1000"/>
             </source>
         </generator>
 
