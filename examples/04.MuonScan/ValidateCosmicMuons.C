@@ -13,7 +13,7 @@ Int_t ValidateCosmicMuons(const char* filename) {
     }
 
     cout << "Run entries: " << run.GetEntries() << endl;
-    if (run.GetEntries() != 10000) {
+    if (run.GetEntries() != 20000) {
         cout << "The number of entries is wrong!" << endl;
         cout << "Number of entries : " << run.GetEntries() << endl;
         return 2;
@@ -22,10 +22,10 @@ Int_t ValidateCosmicMuons(const char* filename) {
     double nEvents = run.GetEntries();
 
     double averageTotalEnergy = 0;
-    constexpr double averageTotalEnergyRef = 14.455;
+    constexpr double averageTotalEnergyRef = 14.0729;
 
     double averageSensitiveEnergy = 0;
-    constexpr double averageSensitiveEnergyRef = 13.9482;
+    constexpr double averageSensitiveEnergyRef = 13.5387;
 
     constexpr double tolerance = 0.01;
 
