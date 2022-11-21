@@ -207,6 +207,8 @@ jobs:
           restRoot -b -q ValidateCosmicMuonsFromWall.C'("CosmicMuonsFromWall.root")'
           restG4 CosmicMuonsFromCircle.rml -o CosmicMuonsFromCircle.root
           restRoot -b -q ValidateCosmicMuonsFromCircle.C'("CosmicMuonsFromCircle.root")'
+          restG4 CosmicMuons.rml -o CosmicMuons.root
+          restRoot -b -q ValidateCosmicMuons.C'("CosmicMuons.root")'
 
   restG4-examples-05:
     name: "Example 05: PandaX-III"
