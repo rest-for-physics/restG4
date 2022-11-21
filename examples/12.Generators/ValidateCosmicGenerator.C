@@ -96,7 +96,7 @@ Int_t ValidateCosmicGenerator(const char* filename) {
         return 8;
     }
 
-    if (metadata->GetNumberOfEvents() != 885919) {
+    if (metadata->GetNumberOfEvents() != 885918) {
         cout << "wrong number of events: " << metadata->GetNumberOfEvents() << endl;
         return 9;
     }
