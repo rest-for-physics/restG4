@@ -32,7 +32,7 @@ Int_t ValidateMuonsFromPoint(const char* filename) {
         return 4;
     }
 
-    if (run.GetEntries() != 1000) {
+    if (run.GetEntries() != 5000) {
         cout << "Run entries : " << run.GetEntries() << endl;
         cout << "The number of stored events should match the reference value of 1000" << endl;
         return 5;
@@ -61,22 +61,22 @@ Int_t ValidateMuonsFromPoint(const char* filename) {
     double nEvents = run.GetEntries();
 
     double averageTotalEnergy = 0;
-    constexpr double averageTotalEnergyRef = 18.3461;
+    constexpr double averageTotalEnergyRef = 18.281;
 
     double averageSensitiveEnergy = 0;
-    constexpr double averageSensitiveEnergyRef = 8.59475;
+    constexpr double averageSensitiveEnergyRef = 8.871;
 
     double averageNumberOfTracks = 0;
-    constexpr double averageNumberOfTracksRef = 394.381;
+    constexpr double averageNumberOfTracksRef = 262.316;
 
     double averageNumberOfHitsVolume0 = 0;
-    constexpr double averageNumberOfHitsVolume0Ref = 69.092;
+    constexpr double averageNumberOfHitsVolume0Ref = 68.76;
 
     double averageNumberOfHitsVolume1 = 0;
-    constexpr double averageNumberOfHitsVolume1Ref = 58.31;
+    constexpr double averageNumberOfHitsVolume1Ref = 59.83;
 
     TVector3 averagePosition = {};
-    const TVector3 averagePositionRef = {0.338143, -0.291832, 300.517};
+    const TVector3 averagePositionRef = {-0.318717, 0.2209, 300.379};
 
     constexpr double tolerance = 0.001;
 
