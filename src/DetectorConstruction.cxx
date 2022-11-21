@@ -52,6 +52,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     fGdmlParser->Read(gdmlToRead, false);
     G4VPhysicalVolume* worldVolume = fGdmlParser->GetWorldVolume();
 
+    const auto worldSolid = dynamic_cast<G4Box*>(worldVolume->GetLogicalVolume()->GetSolid());
+    restG4Metadata->fGeant4PrimaryGeneratorInfo.fSpatialGeneratorWorldSize = {
+        worldSolid->GetXHalfLength(), worldSolid->GetYHalfLength(), worldSolid->GetZHalfLength()};
+
     restG4Metadata->fGeant4GeometryInfo.InitializeOnDetectorConstruction(gdmlToRead, worldVolume);
     restG4Metadata->ReadDetector();
     restG4Metadata->PrintMetadata();  // now we have detector info

@@ -34,8 +34,8 @@ void EventAction::BeginOfEventAction(const G4Event* event) {
     else {
         const int numberOfEventsToBePercent =
             G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed() / 100;
-        if ((restG4Metadata->PrintProgress() ||
-             restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Essential) &&
+        if ((restG4Metadata->PrintProgress() &&
+             restG4Metadata->GetVerboseLevel() != TRestStringOutput::REST_Verbose_Level::REST_Silent) &&
             // print roughly every 1% of events or whenever 10 seconds without printing have elapsed
             (numberOfEventsToBePercent > 0 && (eventID + 1) % numberOfEventsToBePercent == 0)) {
             fSimulationManager->SyncStatsFromChild();

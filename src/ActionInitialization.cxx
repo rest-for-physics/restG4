@@ -4,9 +4,7 @@
 
 #include "ActionInitialization.h"
 
-#include "DetectorConstruction.h"
 #include "EventAction.h"
-#include "G4RunManager.hh"
 #include "PrimaryGeneratorAction.h"
 #include "RunAction.h"
 #include "SimulationManager.h"

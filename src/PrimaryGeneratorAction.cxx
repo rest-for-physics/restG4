@@ -22,12 +22,37 @@
 using namespace std;
 using namespace TRestGeant4PrimaryGeneratorTypes;
 
+G4ThreeVector ComputeCosmicPosition(const G4ThreeVector& direction, double radius) {
+    // Angles in radians
+    const auto directionRoot = TVector3(direction.x(), direction.y(), direction.z());
+    const auto theta = directionRoot.Angle(TVector3(0, -1, 0));
+    const auto phi = directionRoot.Phi();
+    // Get random point in a disk
+    const double u1 = G4UniformRand(), u2 = G4UniformRand();
+    const auto positionInDisk =
+        G4ThreeVector(sqrt(u1) * cos(2. * M_PI * u2), 0, sqrt(u1) * sin(2. * M_PI * u2))
+            .rotateX(theta)
+            .rotateY(phi) *
+        radius;
+
+    // Get intersection with sphere
+    const G4ThreeVector& toCenter = positionInDisk;
+    double t = sqrt(radius * radius - toCenter.dot(toCenter));
+    auto position = positionInDisk - t * direction;
+
+    return position;
+}
+
 PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationManager)
     : G4VUserPrimaryGeneratorAction(), fSimulationManager(simulationManager) {
     fGeneratorSpatialDensityFunction = nullptr;
 
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
     TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
+
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
+    const string& spatialGeneratorTypeName = primaryGeneratorInfo.GetSpatialGeneratorType().Data();
+    const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
 
     const string angularDistTypeName = source->GetAngularDistributionType().Data();
     const auto angularDistTypeEnum = StringToAngularDistributionTypes(angularDistTypeName);
@@ -123,6 +148,11 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
         fEnergyAndAngularDistributionFunction->SetNpx(source->GetEnergyDistributionFormulaNPoints());
         fEnergyAndAngularDistributionFunction->SetNpy(source->GetAngularDistributionFormulaNPoints());
 
+        fSimulationManager->GetRestMetadata()->GetParticleSource()->SetEnergyDistributionRange(
+            {newEnergyRangeXMin, newEnergyRangeXMax});
+        fSimulationManager->GetRestMetadata()->GetParticleSource()->SetAngularDistributionRange(
+            {newAngularRangeXMin, newAngularRangeXMax});
+
     } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 ||
                energyDistTypeEnum == EnergyDistributionTypes::FORMULA2) {
         cout << "Energy/Angular distribution type 'formula2' should be used on both energy and angular"
@@ -191,17 +221,32 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         cout << "DEBUG: Primary generation" << endl;
     }
     // We have to initialize here and not in start of the event because
-    // GeneratePrimaries is called first, and we want to store event origin and
-    // position inside
-    // we should have already written the information from previous event to disk
-    // (in endOfEventAction)
+    // GeneratePrimaries is called first, and we want to store event origin and position inside
+    // we should have already written the information from previous event to disk (in endOfEventAction)
 
     for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
         restG4Metadata->GetParticleSource(i)->Update();
     }
 
-    Int_t nParticles = restG4Metadata->GetNumberOfSources();
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
+    const string& spatialGeneratorTypeName = primaryGeneratorInfo.GetSpatialGeneratorType().Data();
+    const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
 
+    if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::COSMIC) {
+        if (fCosmicCircumscribedSphereRadius == 0.) {
+            // radius in mm
+            fCosmicCircumscribedSphereRadius = fSimulationManager->GetRestMetadata()
+                                                   ->GetGeant4PrimaryGeneratorInfo()
+                                                   .GetSpatialGeneratorCosmicRadius() *
+                                               10.;
+        }
+
+        // This generator has correlated position / direction, so we need to use a different approach
+        if (restG4Metadata->GetNumberOfSources() != 1) {
+            cout << "PrimaryGeneratorAction - ERROR: cosmic generator only supports one source" << endl;
+            exit(1);
+        }
+    }
     // Set the particle(s)' position, multiple particles generated from multiple
     // sources shall always have a same origin
     SetParticlePosition();
@@ -212,6 +257,13 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
             // ParticleDefinition should be always declared first (after position).
             SetParticleDefinition(i, p);
             SetParticleEnergyAndDirection(i, p);
+
+            if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::COSMIC) {
+                const auto position = ComputeCosmicPosition(fParticleGun.GetParticleMomentumDirection(),
+                                                            fCosmicCircumscribedSphereRadius);
+                fParticleGun.SetParticlePosition(position);
+            }
+
             fParticleGun.GeneratePrimaryVertex(event);
         }
     }
@@ -459,6 +511,8 @@ void PrimaryGeneratorAction::SetParticlePosition() {
             } else if (spatialGeneratorShapeEnum == SpatialGeneratorShapes::SPHERE) {
                 GenPositionOnSphereVolume(x, y, z);
             }
+        } else if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::COSMIC) {
+            // position will be defined after direction
         } else {
             G4cout << "WARNING! Generator type \"" << spatialGeneratorTypeName
                    << "\" was not recognized. Launching particle "
@@ -501,28 +555,6 @@ G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() const {
     b /= n;
     c /= n;
     return {a, b, c};
-}
-
-Double_t PrimaryGeneratorAction::GetAngle(G4ThreeVector x, G4ThreeVector y) {
-    Double_t angle = y.angle(x);
-
-    return angle;
-}
-
-Double_t PrimaryGeneratorAction::GetCosineLowRandomThetaAngle() {
-    // We obtain an angle with a cos(theta)*sin(theta) distribution
-    Double_t value = G4UniformRand();
-    double dTheta = 0.01;
-    for (double theta = 0; theta < M_PI / 2; theta = theta + dTheta) {
-        // sin(theta)^2 is the integral of sin(theta)*cos(theta)
-        if (sin(theta) * sin(theta) >= value) {
-            if (theta > 0)
-                return theta - dTheta * (0.5 - G4UniformRand());
-            else
-                return theta;
-        }
-    }
-    return M_PI / 2;
 }
 
 void PrimaryGeneratorAction::GenPositionOnGDMLVolume(double& x, double& y, double& z) {
