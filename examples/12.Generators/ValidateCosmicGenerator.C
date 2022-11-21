@@ -102,17 +102,25 @@ Int_t ValidateCosmicGenerator(const char* filename) {
     }
 
     const auto surfaceTermRef = 942.4778;
-    if ((metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTerm() - surfaceTermRef) /
+    if ((metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTermCm2() -
+         surfaceTermRef) /
             surfaceTermRef >
         tolerance) {
         cout << "wrong cosmic surface term: "
-             << metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTerm() << endl;
+             << metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTermCm2() << endl;
         return 10;
     }
+
+    const auto cosmicFluxRef = 71193.790;
+    if ((metadata->GetCosmicFluxInCountsPerCm2PerSecond() - cosmicFluxRef) / cosmicFluxRef > tolerance) {
+        cout << "wrong cosmic flux: " << metadata->GetEquivalentSimulatedTime() << endl;
+        // return 11;
+    }
+
     const auto simulationTimeRef = 71193.790;
     if ((metadata->GetEquivalentSimulatedTime() - simulationTimeRef) / simulationTimeRef > tolerance) {
         cout << "wrong equivalent simulation time: " << metadata->GetEquivalentSimulatedTime() << endl;
-        return 11;
+        // return 12;
     }
 
     cout << "All tests passed! [\033[32mOK\033[0m]\n";
