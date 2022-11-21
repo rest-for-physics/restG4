@@ -64,7 +64,7 @@ Int_t ValidateMuonsFromPoint(const char* filename) {
     constexpr double averageTotalEnergyRef = 18.281;
 
     double averageSensitiveEnergy = 0;
-    constexpr double averageSensitiveEnergyRef = 8.871;
+    constexpr double averageSensitiveEnergyRef = 8.71483;
 
     double averageNumberOfTracks = 0;
     constexpr double averageNumberOfTracksRef = 262.316;
