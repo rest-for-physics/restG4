@@ -30,17 +30,8 @@ First concept author G. Luzón (16-11-2020) -->
         <generator type="surface" shape="wall" position="(0,0,50)cm" size="(30,30,0)cm" rotationAngle="0"
                    rotationAxis="(1,0,0)">
             <source particle="mu-" fullChain="on">
-                <!--
-                Use a TF2 to sample energy and angle at once (correlation)
-                nPoints parameters is related to the random sampling of the formula (see TF1/TF2 documentation for more details)
-                if not specified it will use a default value which should be enough for most cases
-                The bigger the value, the better the distribution will be sampled
-                The processing time per event will be the same, but a bigger initialization time will take place
-                It is recommended to use a big value for longer simulations where waiting for ~5-10 minutes is not a problem
-                 -->
-                <energy type="formula2" name="CosmicMuons" range="(0,10)GeV" nPoints="1000"/>
-                <angular type="formula2" direction="(0,0,-1)"
-                         nPoints="200"/> <!-- name is not required as it is redundant -->
+                <energy type="TH1D" file="Muons.root" name="cosmicmuon"/>
+                <angular type="formula" name="Cos2" direction="(0,0,-1)"/>
             </source>
         </generator>
 

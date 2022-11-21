@@ -17,13 +17,12 @@
         <parameter name="saveAllEvents" value="off"/>
         <parameter name="seed" value="17021981"/>
         <generator type="point" position="(0,0,-50)cm">
-            <source particle="mu-" excitedLevel="0.0">
+            <source particle="mu-">
                 <energy type="mono" energy="100GeV"/>
                 <angular type="flux" direction="(0,0,1)"/>
             </source>
         </generator>
         <detector>
-            <parameter name="energyRange" value="(0,10)" units="GeV"/>
             <volume name="det_dw_01" sensitive="true" maxStepSize="1mm"/>
             <volume name="det_up_01" maxStepSize="1mm"/>
         </detector>
