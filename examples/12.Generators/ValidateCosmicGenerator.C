@@ -102,8 +102,8 @@ Int_t ValidateCosmicGenerator(const char* filename) {
     }
 
     const auto surfaceTermRef = 942.4778;
-    if ((metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTermCm2() -
-         surfaceTermRef) /
+    if (abs(metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTermCm2() -
+            surfaceTermRef) /
             surfaceTermRef >
         tolerance) {
         cout << "wrong cosmic surface term: "
@@ -111,16 +111,16 @@ Int_t ValidateCosmicGenerator(const char* filename) {
         return 10;
     }
 
-    const auto cosmicFluxRef = 71193.790;
-    if ((metadata->GetCosmicFluxInCountsPerCm2PerSecond() - cosmicFluxRef) / cosmicFluxRef > tolerance) {
-        cout << "wrong cosmic flux: " << metadata->GetEquivalentSimulatedTime() << endl;
-        // return 11;
+    const auto cosmicFluxRef = 11728.0;
+    if (abs(metadata->GetCosmicFluxInCountsPerCm2PerSecond() - cosmicFluxRef) / cosmicFluxRef > tolerance) {
+        cout << "wrong cosmic flux: " << metadata->GetCosmicFluxInCountsPerCm2PerSecond() << endl;
+        return 11;
     }
 
-    const auto simulationTimeRef = 71193.790;
-    if ((metadata->GetEquivalentSimulatedTime() - simulationTimeRef) / simulationTimeRef > tolerance) {
+    const auto simulationTimeRef = 0.080;
+    if (abs(metadata->GetEquivalentSimulatedTime() - simulationTimeRef) / simulationTimeRef > tolerance) {
         cout << "wrong equivalent simulation time: " << metadata->GetEquivalentSimulatedTime() << endl;
-        // return 12;
+        return 12;
     }
 
     cout << "All tests passed! [\033[32mOK\033[0m]\n";
