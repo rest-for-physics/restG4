@@ -25,8 +25,8 @@
         <parameter name="saveAllEvents" value="true"/>
         <generator type="cosmic">
             <source particle="geantino">
-                <energy type="formula2" name="CosmicMuons" nPoints="1200"/>
-                <angular type="formula2" direction="(0,-1,0)" nPoints="300"/>
+                <energy type="formula2" name="CosmicMuons" nPoints="2000"/>
+                <angular type="formula2" direction="(0.1,-0.5,1.25)" nPoints="500"/>
             </source>
         </generator>
 
