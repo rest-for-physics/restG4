@@ -29,11 +29,19 @@ Int_t ValidateCosmicGenerator(const char* filename) {
     constexpr double energyPrimaryAverageRef = 7.89997e+06, energyPrimaryMinRef = 200008,
                      energyPrimaryMaxRef = 4.63073e+09;
 
+    double primaryRadiusRef = 173.20508;
+
     TH1D thetaHist("thetaHist", "Theta angle from source direction", 100, 0, TMath::Pi() * TMath::RadToDeg());
     TH1D energyHist("energyHist", "Primary muon energy", 200, 0, 1E9);
     for (int i = 0; i < run.GetEntries(); i++) {
         run.GetEntry(i);
         TVector3 direction = event->GetPrimaryEventDirection();
+        TVector3 position = event->GetPrimaryEventOrigin();
+        if (TMath::Abs(position.Mag() - primaryRadiusRef) / primaryRadiusRef > tolerance) {
+            cout << "Bad primary position: (" << position.X() << ", " << position.Y() << ", " << position.Z()
+                 << ") with radius " << position.Mag() << endl;
+            return 4;
+        }
         const auto theta = sourceDirection.Angle(direction) * TMath::RadToDeg();
         thetaHist.Fill(theta);
 
