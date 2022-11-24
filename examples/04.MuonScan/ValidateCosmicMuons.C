@@ -22,10 +22,10 @@ Int_t ValidateCosmicMuons(const char* filename) {
     double nEvents = run.GetEntries();
 
     double averageTotalEnergy = 0;
-    constexpr double averageTotalEnergyRef = 14.0729;
+    constexpr double averageTotalEnergyRef = 15.244;
 
     double averageSensitiveEnergy = 0;
-    constexpr double averageSensitiveEnergyRef = 13.5387;
+    constexpr double averageSensitiveEnergyRef = 14.8731;
 
     constexpr double tolerance = 0.1;
 
