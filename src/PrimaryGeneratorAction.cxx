@@ -34,7 +34,7 @@ G4ThreeVector ComputeCosmicPosition(const G4ThreeVector& direction, double radiu
     // Get intersection with sphere
     const G4ThreeVector& toCenter = positionInDisk;
     const double t = sqrt(radius * radius - toCenter.dot(toCenter));
-    auto position = positionInDisk + t * direction;
+    auto position = positionInDisk - t * direction;
 
     return position;
 }
