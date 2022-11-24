@@ -6,7 +6,7 @@ Int_t ValidateCosmicMuonsEnergyAngularCorrelated(const char* filename) {
     TRestRun run(filename);
 
     cout << "Run entries: " << run.GetEntries() << endl;
-    if (run.GetEntries() != 100000) {
+    if (run.GetEntries() != 200000) {
         cout << "Bad number of entries: " << run.GetEntries() << endl;
         return 2;
     }
@@ -20,11 +20,11 @@ Int_t ValidateCosmicMuonsEnergyAngularCorrelated(const char* filename) {
     constexpr double tolerance = 0.1;
 
     double thetaAverage = 0, thetaMin = TMath::Infinity(), thetaMax = 0;
-    constexpr double thetaAverageRef = 33.8542, thetaMinRef = 20.0, thetaMaxRef = 50.0;
+    constexpr double thetaAverageRef = 34.0558, thetaMinRef = 20., thetaMaxRef = 50.;
 
     double energyPrimaryAverage = 0, energyPrimaryMin = TMath::Infinity(), energyPrimaryMax = 0;
-    constexpr double energyPrimaryAverageRef = 124804.0, energyPrimaryMinRef = 100000,
-                     energyPrimaryMaxRef = 150000.0;
+    constexpr double energyPrimaryAverageRef = 507020., energyPrimaryMinRef = 200000,
+                     energyPrimaryMaxRef = 850000;
 
     TH1D thetaHist("thetaHist", "Theta angle from source direction", 100, 0, TMath::Pi() * TMath::RadToDeg());
     TH1D energyHist("energyHist", "Primary muon energy", 200, 0, 1E9);
