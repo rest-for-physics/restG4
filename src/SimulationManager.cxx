@@ -56,27 +56,29 @@ void PeriodicPrint(SimulationManager* simulationManager) {
                 outputPercentageType = "time";
             }
         }
-        const string eventsProgress =
-            " | " + to_string(simulationManager->GetNumberOfProcessedEvents()) + " events processed / " +
-            to_string(restG4Metadata->GetNumberOfEvents()) + " requested (" +
-            TString::Format(
-                "%.2e", simulationManager->GetNumberOfProcessedEvents() / simulationManager->GetElapsedTime())
-                .Data() +
-            "/s)";
-        const string timeProgress =
-            " | " + ToTimeStringLong(simulationManager->GetElapsedTime()) + " elapsed / " +
-            ToTimeStringLong(simulationManager->GetRestMetadata()->GetSimulationMaxTimeSeconds());
 
-        string progress = "";
+        string progress;
         if (outputPercentageType == "events") {
-            progress = eventsProgress;
+            progress = " | " + to_string(simulationManager->GetNumberOfProcessedEvents()) +
+                       " events processed / " + to_string(restG4Metadata->GetNumberOfEvents()) +
+                       " requested (" +
+                       TString::Format("%.2e", simulationManager->GetNumberOfProcessedEvents() /
+                                                   simulationManager->GetElapsedTime())
+                           .Data() +
+                       "/s)";
+        } else if (outputPercentageType == "entries") {
+            progress = " | " + to_string(simulationManager->GetNumberOfStoredEvents()) + " entries / " +
+                       to_string(restG4Metadata->GetNumberOfRequestedEntries()) + " requested";
         } else if (outputPercentageType == "time") {
-            progress = timeProgress;
+            progress = " | " + ToTimeStringLong(simulationManager->GetElapsedTime()) + " elapsed / " +
+                       ToTimeStringLong(simulationManager->GetRestMetadata()->GetSimulationMaxTimeSeconds());
         }
-        string timeInfo = "";
+
+        string timeInfo;
         if (outputPercentageType != "time") {
             timeInfo = " | " + ToTimeStringLong(simulationManager->GetElapsedTime()) + " elapsed";
         }
+
         G4cout << TString::Format("%5.2f", completionPercentage).Data() << "% | "
                << simulationManager->GetNumberOfStoredEvents() << " events stored / "
                << simulationManager->GetNumberOfProcessedEvents() << " processed ("

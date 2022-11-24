@@ -7,11 +7,11 @@
     </globals>
 
     <TRestRun>
-        <parameter name="experimentName" value="CosmicMuons"/>
+        <parameter name="experimentName" value="CosmicGenerator"/>
         <parameter name="runType" value="simulation"/>
         <parameter name="runNumber" value="1"/>
-        <parameter name="runTag" value="CosmicMuons"/>
-        <parameter name="outputFileName" value="CosmicMuons.root"/>
+        <parameter name="runTag" value="CosmicGenerator"/>
+        <parameter name="outputFileName" value="CosmicGenerator.root"/>
         <parameter name="runDescription" value=""/>
         <parameter name="user" value="${USER}"/>
         <parameter name="overwrite" value="off"/>
@@ -21,17 +21,16 @@
     <TRestGeant4Metadata>
         <parameter name="gdmlFile" value="geometry/setup.gdml"/>
         <parameter name="seed" value="137"/>
-        <parameter name="nRequestedEntries" value="100000"/>
-        <parameter name="saveAllEvents" value="false"/>
+        <parameter name="nRequestedEntries" value="1000000"/>
+        <parameter name="saveAllEvents" value="true"/>
         <generator type="cosmic">
             <source particle="geantino">
-                <energy type="formula2" name="CosmicMuons" nPoints="1200"/>
-                <angular type="formula2" direction="(0,-1,0)" nPoints="300"/>
+                <energy type="formula2" name="CosmicMuons" nPoints="2000"/>
+                <angular type="formula2" direction="(0.1,-0.5,1.25)" nPoints="500"/>
             </source>
         </generator>
 
         <detector>
-            <parameter name="energyRange" value="(0,10)" units="GeV"/>
             <volume name="gasVolume" sensitive="true" maxStepSize="1mm"/>
         </detector>
 
