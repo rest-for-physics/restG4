@@ -23,22 +23,18 @@ using namespace std;
 using namespace TRestGeant4PrimaryGeneratorTypes;
 
 G4ThreeVector ComputeCosmicPosition(const G4ThreeVector& direction, double radius) {
-    // Angles in radians
-    const auto directionRoot = TVector3(direction.x(), direction.y(), direction.z());
-    const auto theta = directionRoot.Angle(TVector3(0, -1, 0));
-    const auto phi = directionRoot.Phi();
-    // Get random point in a disk
+    // Get random point in a disk with 'direction' as normal
     const double u1 = G4UniformRand(), u2 = G4UniformRand();
     const auto positionInDisk =
-        G4ThreeVector(sqrt(u1) * cos(2. * M_PI * u2), 0, sqrt(u1) * sin(2. * M_PI * u2))
-            .rotateX(theta)
-            .rotateY(phi) *
+        G4ThreeVector(sqrt(u1) * cos(2. * M_PI * u2), sqrt(u1) * sin(2. * M_PI * u2), 0)
+            .rotateX(direction.getTheta())
+            .rotateZ(direction.getPhi() + M_PI_2) *
         radius;
 
     // Get intersection with sphere
     const G4ThreeVector& toCenter = positionInDisk;
-    double t = sqrt(radius * radius - toCenter.dot(toCenter));
-    auto position = positionInDisk - t * direction;
+    const double t = sqrt(radius * radius - toCenter.dot(toCenter));
+    auto position = positionInDisk + t * direction;
 
     return position;
 }
