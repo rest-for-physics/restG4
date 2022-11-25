@@ -9,6 +9,10 @@ on:
     branches: [ master ]
   release:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   CMAKE_BUILD_TYPE: Release
   REST_PATH: /rest/framework/install
