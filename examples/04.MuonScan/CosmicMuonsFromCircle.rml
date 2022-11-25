@@ -15,7 +15,7 @@
 
     <TRestGeant4Metadata name="restG4 run" title="MuonsFromCircle">
 
-        <parameter name="gdmlFile" value="setup.gdml"/>
+        <parameter name="gdmlFile" value="geometry/setup.gdml"/>
         <parameter name="subEventTimeDelay" value="100us"/>
 
         <parameter name="nEvents" value="10000"/>
@@ -28,14 +28,13 @@
         <generator type="surface" shape="circle"
                    position="(0,100,0)mm" size="(400,0,0)mm"
                    rotationAngle="90deg" rotationAxis="(1,0,0)">
-            <source particle="mu-" excitedLevel="0.0" fullChain="on">
+            <source particle="mu-" fullChain="on">
                 <energy type="TH1D" file="Muons.root" name="cosmicmuon"/>
                 <angular type="formula" name="Cos2" direction="(0,-1,0)"/>
             </source>
         </generator>
 
         <detector>
-            <parameter name="energyRange" value="(0,10)" units="GeV"/>
             <volume name="det_dw_01" sensitive="true" maxStepSize="1mm"/>
             <volume name="det_up_01" maxStepSize="1mm"/>
         </detector>

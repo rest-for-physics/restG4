@@ -1,6 +1,6 @@
 #include <TRestGeant4Event.h>
 
-Int_t ValidateWall(const char* filename) {
+Int_t ValidateCosmicMuonsFromWall(const char* filename) {
     cout << "Starting validation for '" << filename << "'" << endl;
 
     TRestRun run(filename);
@@ -29,8 +29,8 @@ Int_t ValidateWall(const char* filename) {
     }
 
     cout << "Run entries: " << run.GetEntries() << endl;
-    if (run.GetEntries() < 350 || run.GetEntries() > 450) {
-        cout << "The number of entries is not between 350 and 450!" << endl;
+    if (run.GetEntries() < 950 || run.GetEntries() > 1000) {
+        cout << "The number of entries is not between 950 and 1000!" << endl;
         cout << "Number of entries : " << run.GetEntries() << endl;
         return 3;
     }

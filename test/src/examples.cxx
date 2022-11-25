@@ -146,17 +146,17 @@ TEST(restG4, Example_04_Muons) {
 
     CommandLineOptions::Options options;
     options.rmlFile = "CosmicMuonsFromWall.rml";
-    options.outputFile = thisExamplePath / "muons.root";  // TODO: fix not working with local path
+    options.outputFile = thisExamplePath / "CosmicMuonsFromWall.root";
 
     Application app;
     app.Run(options);
 
     // Run validation macro
-    const TString macro(thisExamplePath / "ValidateWall.C");
+    const TString macro(thisExamplePath / "ValidateCosmicMuonsFromWall.C");
     gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
     int error = 0;
-    const int result =
-        gROOT->ProcessLine(TString::Format("ValidateWall(\"%s\")", options.outputFile.c_str()), &error);
+    const int result = gROOT->ProcessLine(
+        TString::Format("ValidateCosmicMuonsFromWall(\"%s\")", options.outputFile.c_str()), &error);
     EXPECT_EQ(error, 0);
     EXPECT_EQ(result, 0);
 
@@ -175,7 +175,7 @@ TEST(restG4, Example_04_Muons_MT) {
 
     CommandLineOptions::Options options;
     options.rmlFile = "CosmicMuonsFromWall.rml";
-    options.outputFile = thisExamplePath / "muons.root";  // TODO: fix not working with local path
+    options.outputFile = thisExamplePath / "CosmicMuonsFromWall.root";
 
     options.nThreads = 4;
 
@@ -183,11 +183,11 @@ TEST(restG4, Example_04_Muons_MT) {
     app.Run(options);
 
     // Run validation macro
-    const TString macro(thisExamplePath / "ValidateWall.C");
+    const TString macro(thisExamplePath / "ValidateCosmicMuonsFromWall.C");
     gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
     int error = 0;
-    const int result =
-        gROOT->ProcessLine(TString::Format("ValidateWall(\"%s\")", options.outputFile.c_str()), &error);
+    const int result = gROOT->ProcessLine(
+        TString::Format("ValidateCosmicMuonsFromWall(\"%s\")", options.outputFile.c_str()), &error);
     EXPECT_EQ(error, 0);
     EXPECT_EQ(result, 0);
 

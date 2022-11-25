@@ -6,6 +6,7 @@ Int_t ValidateCosmicGenerator(const char* filename) {
     TRestRun run(filename);
 
     cout << "Run entries: " << run.GetEntries() << endl;
+
     if (run.GetEntries() != 1E6) {
         cout << "Bad number of entries: " << run.GetEntries() << endl;
         return 2;
@@ -23,11 +24,12 @@ Int_t ValidateCosmicGenerator(const char* filename) {
     }
 
     double thetaAverage = 0, thetaMin = TMath::Infinity(), thetaMax = 0;
+
     constexpr double thetaAverageRef = 37.8595, thetaMinRef = 0.0110538, thetaMaxRef = 89.9982;
 
     double energyPrimaryAverage = 0, energyPrimaryMin = TMath::Infinity(), energyPrimaryMax = 0;
-    constexpr double energyPrimaryAverageRef = 7.89997e+06, energyPrimaryMinRef = 200008,
-                     energyPrimaryMaxRef = 4.63073e+09;
+    constexpr double energyPrimaryAverageRef = 7.89997E6, energyPrimaryMinRef = 2E5,
+                     energyPrimaryMaxRef = 4.63073E9;
 
     double primaryRadiusRef = 173.20508;
 
@@ -113,8 +115,8 @@ Int_t ValidateCosmicGenerator(const char* filename) {
     }
 
     const auto surfaceTermRef = 942.4778;
-    if (abs(metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTermCm2() -
-            surfaceTermRef) /
+    if (TMath::Abs(metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTermCm2() -
+                   surfaceTermRef) /
             surfaceTermRef >
         tolerance) {
         cout << "wrong cosmic surface term: "
@@ -123,13 +125,15 @@ Int_t ValidateCosmicGenerator(const char* filename) {
     }
 
     const auto cosmicFluxRef = 0.108215;
-    if (abs(metadata->GetCosmicFluxInCountsPerCm2PerSecond() - cosmicFluxRef) / cosmicFluxRef > tolerance) {
+    if (TMath::Abs(metadata->GetCosmicFluxInCountsPerCm2PerSecond() - cosmicFluxRef) / cosmicFluxRef >
+        tolerance) {
         cout << "wrong cosmic flux: " << metadata->GetCosmicFluxInCountsPerCm2PerSecond() << endl;
         return 13;
     }
 
     const auto simulationTimeRef = 9804.87;
-    if (abs(metadata->GetEquivalentSimulatedTime() - simulationTimeRef) / simulationTimeRef > tolerance) {
+    if (TMath::Abs(metadata->GetEquivalentSimulatedTime() - simulationTimeRef) / simulationTimeRef >
+        tolerance) {
         cout << "wrong equivalent simulation time: " << metadata->GetEquivalentSimulatedTime() << endl;
         return 14;
     }
