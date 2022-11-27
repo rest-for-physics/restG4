@@ -39,6 +39,8 @@ G4ThreeVector ComputeCosmicPosition(const G4ThreeVector& direction, double radiu
     return position;
 }
 
+std::mutex PrimaryGeneratorAction::fDistributionInitializationMutex = std::mutex();
+
 PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationManager)
     : G4VUserPrimaryGeneratorAction(), fSimulationManager(simulationManager) {
     fGeneratorSpatialDensityFunction = nullptr;
@@ -79,6 +81,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
         }
         fEnergyDistributionFunction->SetRange(newRangeXMin, newRangeXMax);
         fEnergyDistributionFunction->SetNpx(source->GetEnergyDistributionFormulaNPoints());
+        fDistributionInitialized = false;
     }
 
     if (angularDistTypeEnum == AngularDistributionTypes::TH1D) {
@@ -99,6 +102,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
         }
         fAngularDistributionFunction->SetRange(newRangeXMin, newRangeXMax);
         fAngularDistributionFunction->SetNpx(source->GetAngularDistributionFormulaNPoints());
+        fDistributionInitialized = false;
     }
 
     if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 &&
@@ -148,7 +152,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
             {newEnergyRangeXMin, newEnergyRangeXMax});
         fSimulationManager->GetRestMetadata()->GetParticleSource()->SetAngularDistributionRange(
             {newAngularRangeXMin, newAngularRangeXMax});
-
+        fDistributionInitialized = false;
     } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 ||
                energyDistTypeEnum == EnergyDistributionTypes::FORMULA2) {
         cout << "Energy/Angular distribution type 'formula2' should be used on both energy and angular"
@@ -208,6 +212,31 @@ void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
+    if (!fDistributionInitialized) {
+        fDistributionInitialized = true;
+        lock_guard<mutex> lock(fDistributionInitializationMutex);
+        cout << "Initializing random distributions for thread " << G4Threading::G4GetThreadId() << endl;
+
+        TRestGeant4ParticleSource* source = fSimulationManager->GetRestMetadata()->GetParticleSource(0);
+        const auto angularDistTypeEnum =
+            StringToAngularDistributionTypes(source->GetAngularDistributionType().Data());
+        const auto energyDistTypeEnum =
+            StringToEnergyDistributionTypes(source->GetEnergyDistributionType().Data());
+
+        if (energyDistTypeEnum == EnergyDistributionTypes::FORMULA) {
+            fEnergyDistributionFunction->GetRandom();
+        }
+        if (angularDistTypeEnum == AngularDistributionTypes::FORMULA) {
+            fAngularDistributionFunction->GetRandom();
+        }
+        if (energyDistTypeEnum == EnergyDistributionTypes::FORMULA2 ||
+            angularDistTypeEnum == AngularDistributionTypes::FORMULA2) {
+            double x, y;
+            fEnergyAndAngularDistributionFunction->GetRandom2(x, y);
+        }
+        cout << "Finished initialization of random distributions for thread " << G4Threading::G4GetThreadId()
+             << endl;
+    }
     std::lock_guard<std::mutex> lock(fMutex);  // TODO: remove this lock after fixing problems
 
     auto simulationManager = fSimulationManager;

@@ -37,6 +37,9 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     SimulationManager* fSimulationManager;
     std::mutex fMutex;
 
+    static std::mutex fDistributionInitializationMutex;
+    bool fDistributionInitialized = true;  // set to false on constructor if using formulas
+
     std::vector<TRestGeant4Particle> fTempParticles;
 
     G4ParticleGun fParticleGun;
