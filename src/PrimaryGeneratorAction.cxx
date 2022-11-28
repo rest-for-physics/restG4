@@ -216,8 +216,17 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         fDistributionInitialized = true;
         lock_guard<mutex> lock(fDistributionInitializationMutex);
         if (fSimulationManager->GetAbortFlag()) {
-            G4RunManager::GetRunManager()->AbortRun(false);  // Do a hard abort
+            // TODO: this is a hack to avoid a crash when the simulation is aborted.
+            //  The particle should not be recorded unless 'saveAllEvents' option is set to true
+            fParticleGun.SetParticleEnergy(1. * keV);
+            const auto largeDistance = fSimulationManager->GetRestMetadata()
+                                           ->GetGeant4PrimaryGeneratorInfo()
+                                           .GetSpatialGeneratorCosmicRadius();
+            fParticleGun.SetParticlePosition({0, 0, largeDistance});
+            fParticleGun.SetParticlePosition({0, 0, 1});
+            fParticleGun.SetParticleDefinition(G4Geantino::Definition());
             fParticleGun.GeneratePrimaryVertex(event);       // if this is not present, it won't work
+            G4RunManager::GetRunManager()->AbortRun(false);  // Do a hard abort
             return;
         }
         cout << "Initializing random distributions for thread " << G4Threading::G4GetThreadId() << endl;
