@@ -36,8 +36,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
    private:
     SimulationManager* fSimulationManager;
 
-    static std::mutex fDistributionInitializationMutex;
-    bool fDistributionInitialized = true;  // set to false on constructor if using formulas
+    static std::mutex fDistributionFormulaMutex;
 
     std::vector<TRestGeant4Particle> fTempParticles;
 
@@ -47,9 +46,9 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     const TH1D* fEnergyDistributionHistogram = nullptr;
     const TH1D* fAngularDistributionHistogram = nullptr;
 
-    TF1* fEnergyDistributionFunction = nullptr;
-    TF1* fAngularDistributionFunction = nullptr;
-    TF2* fEnergyAndAngularDistributionFunction = nullptr;
+    static TF1* fEnergyDistributionFunction;
+    static TF1* fAngularDistributionFunction;
+    static TF2* fEnergyAndAngularDistributionFunction;
 
     TF3* fGeneratorSpatialDensityFunction;
 
