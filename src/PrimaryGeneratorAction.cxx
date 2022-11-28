@@ -242,8 +242,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         cout << "Finished initialization of random distributions for thread " << G4Threading::G4GetThreadId()
              << endl;
     }
-    std::lock_guard<std::mutex> lock(fMutex);  // TODO: remove this lock after fixing problems
-
     auto simulationManager = fSimulationManager;
     TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
 

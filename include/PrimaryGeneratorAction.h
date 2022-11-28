@@ -35,7 +35,6 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
 
    private:
     SimulationManager* fSimulationManager;
-    std::mutex fMutex;
 
     static std::mutex fDistributionInitializationMutex;
     bool fDistributionInitialized = true;  // set to false on constructor if using formulas
