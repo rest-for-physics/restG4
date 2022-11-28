@@ -798,6 +798,7 @@ void PrimaryGeneratorAction::SetParticleEnergyAndDirection(Int_t particleSourceI
         lock_guard<mutex> lock(fDistributionFormulaMutex);
         fEnergyAndAngularDistributionFunction->GetRandom2(energy, angle, fRandom);
     }
+    energy *= keV;
 
     G4ThreeVector direction = {source->GetDirection().X(), source->GetDirection().Y(),
                                source->GetDirection().Z()};
