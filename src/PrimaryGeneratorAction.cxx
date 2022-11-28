@@ -86,7 +86,9 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
             }
             fEnergyDistributionFunction->SetRange(newRangeXMin, newRangeXMax);
             fEnergyDistributionFunction->SetNpx(source->GetEnergyDistributionFormulaNPoints());
+            cout << "Initializing energy distribution function" << endl;
             fEnergyDistributionFunction->GetRandom();
+            cout << "Energy distribution function initialization done" << endl;
         }
     }
 
@@ -110,7 +112,9 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
             }
             fAngularDistributionFunction->SetRange(newRangeXMin, newRangeXMax);
             fAngularDistributionFunction->SetNpx(source->GetAngularDistributionFormulaNPoints());
+            cout << "Initializing angular distribution function" << endl;
             fAngularDistributionFunction->GetRandom();
+            cout << "Angular distribution function initialization done" << endl;
         }
     }
 
@@ -164,7 +168,9 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
             fSimulationManager->GetRestMetadata()->GetParticleSource()->SetAngularDistributionRange(
                 {newAngularRangeXMin, newAngularRangeXMax});
             double x, y;
+            cout << "Initializing energy/angular distribution function" << endl;
             fEnergyAndAngularDistributionFunction->GetRandom2(x, y);
+            cout << "Energy/angular distribution function initialization done" << endl;
         }
     } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 ||
                energyDistTypeEnum == EnergyDistributionTypes::FORMULA2) {
@@ -792,7 +798,6 @@ void PrimaryGeneratorAction::SetParticleEnergyAndDirection(Int_t particleSourceI
         lock_guard<mutex> lock(fDistributionFormulaMutex);
         fEnergyAndAngularDistributionFunction->GetRandom2(energy, angle, fRandom);
     }
-    energy *= keV;
 
     G4ThreeVector direction = {source->GetDirection().X(), source->GetDirection().Y(),
                                source->GetDirection().Z()};
