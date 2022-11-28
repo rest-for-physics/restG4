@@ -215,6 +215,11 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     if (!fDistributionInitialized) {
         fDistributionInitialized = true;
         lock_guard<mutex> lock(fDistributionInitializationMutex);
+        if (fSimulationManager->GetAbortFlag()) {
+            G4RunManager::GetRunManager()->AbortRun(false);  // Do a hard abort
+            fParticleGun.GeneratePrimaryVertex(event);       // if this is not present, it won't work
+            return;
+        }
         cout << "Initializing random distributions for thread " << G4Threading::G4GetThreadId() << endl;
 
         TRestGeant4ParticleSource* source = fSimulationManager->GetRestMetadata()->GetParticleSource(0);
@@ -271,8 +276,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
             exit(1);
         }
     }
-    // Set the particle(s)' position, multiple particles generated from multiple
-    // sources shall always have a same origin
+    // Set the particle(s)' position, multiple particles generated from multiple sources shall always have a
+    // same origin
     SetParticlePosition();
 
     for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
