@@ -154,6 +154,11 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     const auto& volumeNameGeant4 = step->GetPreStepPoint()->GetPhysicalVolume()->GetName();
     const auto& volumeName = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(volumeNameGeant4);
 
+    if (!metadata->IsActiveVolume(volumeName) && step->GetTrack()->GetCurrentStepNumber() != 0) {
+        // we always store the first step
+        return;
+    }
+
     const bool kill = metadata->IsKillVolume(volumeName);
 
     const auto& particle = step->GetTrack()->GetDefinition();
