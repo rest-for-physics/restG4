@@ -17,12 +17,14 @@
         <parameter name="saveAllEvents" value="off"/>
         <parameter name="seed" value="17021981"/>
         <generator type="point" position="(0,0,-50)cm">
-            <source particle="mu-">
+            <source particle="geantino">
                 <energy type="mono" energy="100GeV"/>
                 <angular type="flux" direction="(0,0,1)"/>
             </source>
         </generator>
         <detector>
+            <parameter name="activateAllVolumes" value="false"/>
+
             <volume name="det_dw_01" sensitive="true" maxStepSize="1mm"/>
             <volume name="det_up_01" maxStepSize="1mm"/>
         </detector>

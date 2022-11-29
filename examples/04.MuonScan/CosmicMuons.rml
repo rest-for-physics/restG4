@@ -32,6 +32,8 @@
         </generator>
 
         <detector>
+            <parameter name="activateAllVolumes" value="false"/>
+
             <volume name="det_dw_01" sensitive="true" maxStepSize="1mm"/>
             <volume name="det_up_01" maxStepSize="1mm"/>
         </detector>

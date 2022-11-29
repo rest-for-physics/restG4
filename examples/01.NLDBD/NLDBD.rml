@@ -68,8 +68,9 @@ By default REST units are mm, keV and degrees
         </biasing>
 
         <detector>
-            <parameter name="energyRange" value="(0,5)" units="MeV"/>
             <parameter name="activateAllVolumes" value="false"/>
+            <parameter name="energyRange" value="(0,5)" units="MeV"/>
+
             <volume name="gas" sensitive="true" maxStepSize="1mm"/>
         </detector>
 

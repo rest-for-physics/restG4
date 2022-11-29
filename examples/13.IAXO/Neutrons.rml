@@ -26,15 +26,12 @@ Author: Luis Obis (lobis@unizar.es)
 
         <detector>
             <parameter name="maxStepSize" value="1mm"/>
-            <parameter name="activateAllVolumes" value="true"/>
-
             <removeUnwantedTracks enabled="true" keepZeroEnergyTracks="true"/>
 
             <volume name="gasVolume" sensitive="true" maxStepSize="0.05mm"/>
             <volume name="^scintillatorVolume" sensitive="false" keepTracks="true" maxStepSize="0.5mm"/>
             <volume name="^captureLayerVolume" sensitive="false" keepTracks="true" maxStepSize="0.05mm"/>
             <volume name="ShieldingVolume" sensitive="false" maxStepSize="5mm"/>
-
         </detector>
     </TRestGeant4Metadata>
 
