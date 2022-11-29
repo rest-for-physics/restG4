@@ -63,7 +63,7 @@ Int_t Validate(const char* filename) {
         "VetoSystem_vetoSystemWest_vetoLayerWest1_assembly-16.veto1_scintillatorVolume-1500.0mm-f1a5df6b";
     const auto scintillatorEnergy = event->GetEnergyInVolume(scintillatorVolumeName);
     const auto scintillatorEnergyRef = 12246.9;
-    if (TMath::Abs(scintillatorEnergy - scintillatorEnergyRef) > 1e-4) {
+    if (TMath::Abs(scintillatorEnergy - scintillatorEnergyRef) / scintillatorEnergyRef > 0.001) {
         cout << "Incorrect scintillator volume energy: " << scintillatorEnergy << endl;
         return 9;
     }
@@ -81,7 +81,7 @@ Int_t Validate(const char* filename) {
         }
     }
 
-    if (TMath::Abs(scintillatorEnergyFromTracks - scintillatorEnergyRef) > 1e-4) {
+    if (TMath::Abs(scintillatorEnergyFromTracks - scintillatorEnergyRef) / scintillatorEnergyRef > 0.001) {
         cout << "Incorrect scintillator volume energy from tracks: " << scintillatorEnergyFromTracks << endl;
         return 10;
     }
