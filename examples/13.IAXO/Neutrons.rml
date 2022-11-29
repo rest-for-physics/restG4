@@ -12,7 +12,7 @@ Author: Luis Obis (lobis@unizar.es)
     <TRestGeant4Metadata>
         <parameter name="gdmlFile" value="geometry/setup.gdml"/>
         <parameter name="seed" value="170211"/>
-        <parameter name="nEvents" value="10000"/>
+        <parameter name="nRequestedEntries" value="1"/>
 
         <generator type="surface" shape="circle"
                    position="(0,1250,0)mm" size="(100,0,0)mm"

@@ -428,7 +428,7 @@ jobs:
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
           cd ${{ env.REST_PATH }}/examples/restG4/13.IAXO/
-          restG4 Neutrons.rml -o Neutrons.root -e 1
+          restG4 Neutrons.rml -o Neutrons.root
           restRoot -b -q Validate.C'("Neutrons.root")'
 
   restG4-examples-14:
