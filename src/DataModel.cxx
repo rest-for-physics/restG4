@@ -156,11 +156,6 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
 
     const bool kill = metadata->IsKillVolume(volumeName);
 
-    if (!metadata->IsActiveVolume(volumeName) && step->GetTrack()->GetCurrentStepNumber() != 0) {
-        // we always store the first step
-        return;
-    }
-
     const auto& particle = step->GetTrack()->GetDefinition();
     const auto& particleID = particle->GetPDGEncoding();
     const auto& particleName = particle->GetParticleName();
