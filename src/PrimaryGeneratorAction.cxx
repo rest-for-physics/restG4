@@ -39,6 +39,11 @@ G4ThreeVector ComputeCosmicPosition(const G4ThreeVector& direction, double radiu
     return position;
 }
 
+std::mutex PrimaryGeneratorAction::fDistributionFormulaMutex = std::mutex();
+TF1* PrimaryGeneratorAction::fEnergyDistributionFunction = nullptr;
+TF1* PrimaryGeneratorAction::fAngularDistributionFunction = nullptr;
+TF2* PrimaryGeneratorAction::fEnergyAndAngularDistributionFunction = nullptr;
+
 PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationManager)
     : G4VUserPrimaryGeneratorAction(), fSimulationManager(simulationManager) {
     fGeneratorSpatialDensityFunction = nullptr;
@@ -64,91 +69,109 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
         SetEnergyDistributionHistogram(fSimulationManager->GetPrimaryEnergyDistribution(), minEnergy,
                                        maxEnergy);
     } else if (energyDistTypeEnum == EnergyDistributionTypes::FORMULA) {
-        fEnergyDistributionFunction = (TF1*)source->GetEnergyDistributionFunction()->Clone();
-        auto newRangeXMin = fEnergyDistributionFunction->GetXmin();
-        if (source->GetEnergyDistributionRangeMin() > fEnergyDistributionFunction->GetXmin()) {
-            newRangeXMin = source->GetEnergyDistributionRangeMin();
+        lock_guard<mutex> lock(fDistributionFormulaMutex);
+        if (fEnergyDistributionFunction == nullptr) {
+            fEnergyDistributionFunction = (TF1*)source->GetEnergyDistributionFunction()->Clone();
+            auto newRangeXMin = fEnergyDistributionFunction->GetXmin();
+            if (source->GetEnergyDistributionRangeMin() > fEnergyDistributionFunction->GetXmin()) {
+                newRangeXMin = source->GetEnergyDistributionRangeMin();
+            }
+            auto newRangeXMax = fEnergyDistributionFunction->GetXmax();
+            if (source->GetEnergyDistributionRangeMax() < fEnergyDistributionFunction->GetXmax()) {
+                newRangeXMax = source->GetEnergyDistributionRangeMax();
+            }
+            if (newRangeXMin == newRangeXMax || newRangeXMin > newRangeXMax) {
+                cout << "PrimaryGeneratorAction - ERROR: energy distribution range is invalid" << endl;
+                exit(1);
+            }
+            fEnergyDistributionFunction->SetRange(newRangeXMin, newRangeXMax);
+            fEnergyDistributionFunction->SetNpx(source->GetEnergyDistributionFormulaNPoints());
+            cout << "Initializing energy distribution function" << endl;
+            fEnergyDistributionFunction->GetRandom();
+            cout << "Energy distribution function initialization done" << endl;
         }
-        auto newRangeXMax = fEnergyDistributionFunction->GetXmax();
-        if (source->GetEnergyDistributionRangeMax() < fEnergyDistributionFunction->GetXmax()) {
-            newRangeXMax = source->GetEnergyDistributionRangeMax();
-        }
-        if (newRangeXMin == newRangeXMax || newRangeXMin > newRangeXMax) {
-            cout << "PrimaryGeneratorAction - ERROR: energy distribution range is invalid" << endl;
-            exit(1);
-        }
-        fEnergyDistributionFunction->SetRange(newRangeXMin, newRangeXMax);
-        fEnergyDistributionFunction->SetNpx(source->GetEnergyDistributionFormulaNPoints());
     }
 
     if (angularDistTypeEnum == AngularDistributionTypes::TH1D) {
         SetAngularDistributionHistogram(fSimulationManager->GetPrimaryAngularDistribution());
     } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA) {
-        fAngularDistributionFunction = (TF1*)source->GetAngularDistributionFunction()->Clone();
-        auto newRangeXMin = fAngularDistributionFunction->GetXmin();
-        if (source->GetAngularDistributionRangeMin() > fAngularDistributionFunction->GetXmin()) {
-            newRangeXMin = source->GetAngularDistributionRangeMin();
+        lock_guard<mutex> lock(fDistributionFormulaMutex);
+        if (fAngularDistributionFunction == nullptr) {
+            fAngularDistributionFunction = (TF1*)source->GetAngularDistributionFunction()->Clone();
+            auto newRangeXMin = fAngularDistributionFunction->GetXmin();
+            if (source->GetAngularDistributionRangeMin() > fAngularDistributionFunction->GetXmin()) {
+                newRangeXMin = source->GetAngularDistributionRangeMin();
+            }
+            auto newRangeXMax = fAngularDistributionFunction->GetXmax();
+            if (source->GetAngularDistributionRangeMax() < fAngularDistributionFunction->GetXmax()) {
+                newRangeXMax = source->GetAngularDistributionRangeMax();
+            }
+            if (newRangeXMin == newRangeXMax || newRangeXMin > newRangeXMax) {
+                cout << "PrimaryGeneratorAction - ERROR: angular distribution range is invalid" << endl;
+                exit(1);
+            }
+            fAngularDistributionFunction->SetRange(newRangeXMin, newRangeXMax);
+            fAngularDistributionFunction->SetNpx(source->GetAngularDistributionFormulaNPoints());
+            cout << "Initializing angular distribution function" << endl;
+            fAngularDistributionFunction->GetRandom();
+            cout << "Angular distribution function initialization done" << endl;
         }
-        auto newRangeXMax = fAngularDistributionFunction->GetXmax();
-        if (source->GetAngularDistributionRangeMax() < fAngularDistributionFunction->GetXmax()) {
-            newRangeXMax = source->GetAngularDistributionRangeMax();
-        }
-        if (newRangeXMin == newRangeXMax || newRangeXMin > newRangeXMax) {
-            cout << "PrimaryGeneratorAction - ERROR: angular distribution range is invalid" << endl;
-            exit(1);
-        }
-        fAngularDistributionFunction->SetRange(newRangeXMin, newRangeXMax);
-        fAngularDistributionFunction->SetNpx(source->GetAngularDistributionFormulaNPoints());
     }
 
     if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 &&
         energyDistTypeEnum == EnergyDistributionTypes::FORMULA2) {
-        fEnergyAndAngularDistributionFunction =
-            (TF2*)source->GetEnergyAndAngularDistributionFunction()->Clone();
+        lock_guard<mutex> lock(fDistributionFormulaMutex);
+        if (fEnergyAndAngularDistributionFunction == nullptr) {
+            fEnergyAndAngularDistributionFunction =
+                (TF2*)source->GetEnergyAndAngularDistributionFunction()->Clone();
 
-        // energy
-        auto newEnergyRangeXMin = fEnergyAndAngularDistributionFunction->GetXaxis()->GetXmin();
-        if (source->GetEnergyDistributionRangeMin() >
-            fEnergyAndAngularDistributionFunction->GetXaxis()->GetXmin()) {
-            newEnergyRangeXMin = source->GetEnergyDistributionRangeMin();
-        }
-        auto newEnergyRangeXMax = fEnergyAndAngularDistributionFunction->GetXaxis()->GetXmax();
-        if (source->GetEnergyDistributionRangeMax() <
-            fEnergyAndAngularDistributionFunction->GetXaxis()->GetXmax()) {
-            newEnergyRangeXMax = source->GetEnergyDistributionRangeMax();
-        }
-        if (newEnergyRangeXMin == newEnergyRangeXMax || newEnergyRangeXMin > newEnergyRangeXMax) {
-            cout << "PrimaryGeneratorAction - ERROR: energy distribution range is invalid" << endl;
-            exit(1);
-        }
+            // energy
+            auto newEnergyRangeXMin = fEnergyAndAngularDistributionFunction->GetXaxis()->GetXmin();
+            if (source->GetEnergyDistributionRangeMin() >
+                fEnergyAndAngularDistributionFunction->GetXaxis()->GetXmin()) {
+                newEnergyRangeXMin = source->GetEnergyDistributionRangeMin();
+            }
+            auto newEnergyRangeXMax = fEnergyAndAngularDistributionFunction->GetXaxis()->GetXmax();
+            if (source->GetEnergyDistributionRangeMax() <
+                fEnergyAndAngularDistributionFunction->GetXaxis()->GetXmax()) {
+                newEnergyRangeXMax = source->GetEnergyDistributionRangeMax();
+            }
+            if (newEnergyRangeXMin == newEnergyRangeXMax || newEnergyRangeXMin > newEnergyRangeXMax) {
+                cout << "PrimaryGeneratorAction - ERROR: energy distribution range is invalid" << endl;
+                exit(1);
+            }
 
-        // angular
-        auto newAngularRangeXMin = fEnergyAndAngularDistributionFunction->GetYaxis()->GetXmin();
-        if (source->GetAngularDistributionRangeMin() >
-            fEnergyAndAngularDistributionFunction->GetYaxis()->GetXmin()) {
-            newAngularRangeXMin = source->GetAngularDistributionRangeMin();
+            // angular
+            auto newAngularRangeXMin = fEnergyAndAngularDistributionFunction->GetYaxis()->GetXmin();
+            if (source->GetAngularDistributionRangeMin() >
+                fEnergyAndAngularDistributionFunction->GetYaxis()->GetXmin()) {
+                newAngularRangeXMin = source->GetAngularDistributionRangeMin();
+            }
+            auto newAngularRangeXMax = fEnergyAndAngularDistributionFunction->GetYaxis()->GetXmax();
+            if (source->GetAngularDistributionRangeMax() <
+                fEnergyAndAngularDistributionFunction->GetYaxis()->GetXmax()) {
+                newAngularRangeXMax = source->GetAngularDistributionRangeMax();
+            }
+            if (newAngularRangeXMin == newAngularRangeXMax || newAngularRangeXMin > newAngularRangeXMax) {
+                cout << "PrimaryGeneratorAction - ERROR: angular distribution range is invalid" << endl;
+                exit(1);
+            }
+
+            fEnergyAndAngularDistributionFunction->SetRange(newEnergyRangeXMin, newAngularRangeXMin,
+                                                            newEnergyRangeXMax, newAngularRangeXMax);
+
+            fEnergyAndAngularDistributionFunction->SetNpx(source->GetEnergyDistributionFormulaNPoints());
+            fEnergyAndAngularDistributionFunction->SetNpy(source->GetAngularDistributionFormulaNPoints());
+
+            fSimulationManager->GetRestMetadata()->GetParticleSource()->SetEnergyDistributionRange(
+                {newEnergyRangeXMin, newEnergyRangeXMax});
+            fSimulationManager->GetRestMetadata()->GetParticleSource()->SetAngularDistributionRange(
+                {newAngularRangeXMin, newAngularRangeXMax});
+            double x, y;
+            cout << "Initializing energy/angular distribution function" << endl;
+            fEnergyAndAngularDistributionFunction->GetRandom2(x, y);
+            cout << "Energy/angular distribution function initialization done" << endl;
         }
-        auto newAngularRangeXMax = fEnergyAndAngularDistributionFunction->GetYaxis()->GetXmax();
-        if (source->GetAngularDistributionRangeMax() <
-            fEnergyAndAngularDistributionFunction->GetYaxis()->GetXmax()) {
-            newAngularRangeXMax = source->GetAngularDistributionRangeMax();
-        }
-        if (newAngularRangeXMin == newAngularRangeXMax || newAngularRangeXMin > newAngularRangeXMax) {
-            cout << "PrimaryGeneratorAction - ERROR: angular distribution range is invalid" << endl;
-            exit(1);
-        }
-
-        fEnergyAndAngularDistributionFunction->SetRange(newEnergyRangeXMin, newAngularRangeXMin,
-                                                        newEnergyRangeXMax, newAngularRangeXMax);
-
-        fEnergyAndAngularDistributionFunction->SetNpx(source->GetEnergyDistributionFormulaNPoints());
-        fEnergyAndAngularDistributionFunction->SetNpy(source->GetAngularDistributionFormulaNPoints());
-
-        fSimulationManager->GetRestMetadata()->GetParticleSource()->SetEnergyDistributionRange(
-            {newEnergyRangeXMin, newEnergyRangeXMax});
-        fSimulationManager->GetRestMetadata()->GetParticleSource()->SetAngularDistributionRange(
-            {newAngularRangeXMin, newAngularRangeXMax});
-
     } else if (angularDistTypeEnum == AngularDistributionTypes::FORMULA2 ||
                energyDistTypeEnum == EnergyDistributionTypes::FORMULA2) {
         cout << "Energy/Angular distribution type 'formula2' should be used on both energy and angular"
@@ -208,8 +231,6 @@ void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
-    std::lock_guard<std::mutex> lock(fMutex);  // TODO: remove this lock after fixing problems
-
     auto simulationManager = fSimulationManager;
     TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
 
@@ -242,8 +263,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
             exit(1);
         }
     }
-    // Set the particle(s)' position, multiple particles generated from multiple
-    // sources shall always have a same origin
+    // Set the particle(s)' position, multiple particles generated from multiple sources shall always have a
+    // same origin
     SetParticlePosition();
 
     for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
@@ -365,8 +386,10 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
         G4ThreeVector referenceOrigin = direction;
 
         // We generate the distribution angle (theta) using a rotation around the orthogonal vector
-        direction.rotate(fAngularDistributionFunction->GetRandom(fRandom), direction.orthogonal());
-
+        {
+            lock_guard<mutex> lock(fDistributionFormulaMutex);
+            direction.rotate(fAngularDistributionFunction->GetRandom(fRandom), direction.orthogonal());
+        }
         // We rotate a full-2PI random angle along the original direction to generate a cone
         direction.rotate(G4UniformRand() * 2 * M_PI, referenceOrigin);
 
@@ -442,6 +465,7 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t particleSourceIndex,
             }
         }
     } else if (energyDistTypeEnum == EnergyDistributionTypes::FORMULA) {
+        lock_guard<mutex> lock(fDistributionFormulaMutex);
         energy = fEnergyDistributionFunction->GetRandom(fRandom) * keV;
     } else {
         G4cout << "WARNING! Energy distribution type was not recognized. Setting "
@@ -770,7 +794,10 @@ void PrimaryGeneratorAction::SetParticleEnergyAndDirection(Int_t particleSourceI
     }
 
     double energy, angle;
-    fEnergyAndAngularDistributionFunction->GetRandom2(energy, angle, fRandom);
+    {
+        lock_guard<mutex> lock(fDistributionFormulaMutex);
+        fEnergyAndAngularDistributionFunction->GetRandom2(energy, angle, fRandom);
+    }
     energy *= keV;
 
     G4ThreeVector direction = {source->GetDirection().X(), source->GetDirection().Y(),
