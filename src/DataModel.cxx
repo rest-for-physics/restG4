@@ -191,8 +191,6 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
 
     metadata->fGeant4PhysicsInfo.InsertProcessName(processID, processName, processTypeName);
 
-    const auto trackKineticEnergy = step->GetTrack()->GetKineticEnergy() / CLHEP::keV;
-
     auto sensitiveVolumeName =
         geometryInfo.GetAlternativeNameFromGeant4PhysicalName(metadata->GetSensitiveVolume());
 
@@ -203,14 +201,14 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     Double_t z = aTrack->GetPosition().z() / CLHEP::mm;
 
     const TVector3 hitPosition(x, y, z);
-    const Double_t hitGlobalTime = step->GetPreStepPoint()->GetGlobalTime() / CLHEP::microsecond;
-    const G4ThreeVector& momentum = step->GetPreStepPoint()->GetMomentumDirection();
+    const Double_t hitGlobalTime = track->GetGlobalTime() / CLHEP::microsecond;
+    const G4ThreeVector& momentum = track->GetMomentumDirection();
 
     AddHit(hitPosition, energy, hitGlobalTime);  // this increases fNHits
 
     fProcessID.emplace_back(processID);
     fVolumeID.emplace_back(geometryInfo.GetIDFromVolume(volumeName));
-    fKineticEnergy.emplace_back(trackKineticEnergy);
+    fKineticEnergy.emplace_back(track->GetKineticEnergy() / CLHEP::keV);
     fMomentumDirection.emplace_back(momentum.x(), momentum.y(), momentum.z());
 
     SimulationManager::GetOutputManager()->AddEnergyToVolumeForParticleForProcess(energy, volumeName,
