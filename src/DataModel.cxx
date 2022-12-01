@@ -202,7 +202,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
 
     const TVector3 hitPosition(x, y, z);
     const Double_t hitGlobalTime = track->GetGlobalTime() / CLHEP::microsecond;
-    const G4ThreeVector& momentum = track->GetMomentum();
+    const G4ThreeVector& momentum = track->GetMomentumDirection();
 
     AddHit(hitPosition, energy, hitGlobalTime);  // this increases fNHits
 
