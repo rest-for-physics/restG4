@@ -220,17 +220,17 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     return worldVolume;
 }
 
-G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physVolName) const {
-    G4PhysicalVolumeStore* physVolStore = G4PhysicalVolumeStore::GetInstance();
+G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physicalVolumeName) const {
+    G4PhysicalVolumeStore* physicalVolumeStore = G4PhysicalVolumeStore::GetInstance();
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
     const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
-    vector<G4VPhysicalVolume*>::const_iterator physVol;
-    for (physVol = physVolStore->begin(); physVol != physVolStore->end(); physVol++) {
-        auto name = (*physVol)->GetName();
+    vector<G4VPhysicalVolume*>::const_iterator physicalVolume;
+    for (physicalVolume = physicalVolumeStore->begin(); physicalVolume != physicalVolumeStore->end();
+         physicalVolume++) {
+        auto name = (*physicalVolume)->GetName();
         auto alternativeName = (G4String)geometryInfo.GetAlternativeNameFromGeant4PhysicalName(name);
-
-        if (name == physVolName || alternativeName == physVolName) {
-            return *physVol;
+        if (name == physicalVolumeName || alternativeName == physicalVolumeName) {
+            return *physicalVolume;
         }
     }
 
