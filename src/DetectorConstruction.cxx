@@ -103,7 +103,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     auto sensitiveVolume = (string)restG4Metadata->GetSensitiveVolume();
     G4VPhysicalVolume* physicalVolume = GetPhysicalVolume(sensitiveVolume);
-    if (!physicalVolume) {
+    if (physicalVolume == nullptr) {
         // sensitive volume was not found, perhaps the user specified a logical volume
         auto physicalVolumes = geometryInfo.GetAllPhysicalVolumesFromLogical(sensitiveVolume);
         if (physicalVolumes.size() == 1) {
@@ -114,7 +114,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         }
     }
 
-    if (!physicalVolume) {
+    if (physicalVolume == nullptr) {
         G4cout << "ERROR: Sensitive volume '" << sensitiveVolume << "' not found" << G4endl;
         exit(1);
     }
