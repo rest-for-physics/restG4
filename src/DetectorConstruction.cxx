@@ -129,17 +129,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     fieldMgr->SetDetectorField(magField);
     fieldMgr->CreateChordFinder(magField);
 
-    if (physicalVolume != nullptr) {
-        G4LogicalVolume* volume = physicalVolume->GetLogicalVolume();
-        G4Material* material = volume->GetMaterial();
-        G4cout << "Sensitive volume properties:" << G4endl;
-        G4cout << "\t- Material: " << material->GetName() << G4endl;
-        G4cout << "\t- Temperature: " << material->GetTemperature() << " K" << G4endl;
-        G4cout << "\t- Density: " << material->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
-    } else {
-        cerr << "Physical volume for sensitive volume '" << sensitiveVolume << "' not found!" << endl;
-        exit(1);
-    }
+    G4LogicalVolume* volume = physicalVolume->GetLogicalVolume();
+    G4Material* material = volume->GetMaterial();
+    G4cout << "Sensitive volume properties:" << G4endl;
+    G4cout << "\t- Material: " << material->GetName() << G4endl;
+    G4cout << "\t- Temperature: " << material->GetTemperature() << " K" << G4endl;
+    G4cout << "\t- Density: " << material->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
 
     const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
     // Getting generation volume
@@ -159,7 +154,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
             cout << "ERROR: The generator volume '" << primaryGeneratorInfo.GetSpatialGeneratorFrom()
                  << "'was not found in the geometry" << endl;
             exit(1);
-            return worldVolume;
+            // return worldVolume;
         }
 
         fGeneratorTranslation = pVol->GetTranslation();
