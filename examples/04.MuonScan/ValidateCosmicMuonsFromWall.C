@@ -29,8 +29,8 @@ Int_t ValidateCosmicMuonsFromWall(const char* filename) {
     }
 
     cout << "Run entries: " << run.GetEntries() << endl;
-    if (run.GetEntries() < 950 || run.GetEntries() > 1000) {
-        cout << "The number of entries is not between 950 and 1000!" << endl;
+    if (run.GetEntries() < 900 || run.GetEntries() > 1000) {
+        cout << "The number of entries is not in the required range!" << endl;
         cout << "Number of entries : " << run.GetEntries() << endl;
         return 3;
     }
