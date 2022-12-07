@@ -63,6 +63,42 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
     geometryInfo.Print();
 
+    // do some checks
+    {
+        // Check all physical volume names are unique
+        G4PhysicalVolumeStore* physicalVolumeStore = G4PhysicalVolumeStore::GetInstance();
+        set<string> physicalVolumeNames;
+        vector<G4VPhysicalVolume*>::const_iterator physicalVolume;
+        for (physicalVolume = physicalVolumeStore->begin(); physicalVolume != physicalVolumeStore->end();
+             physicalVolume++) {
+            auto name = (*physicalVolume)->GetName();
+            if (physicalVolumeNames.count(name)) {
+                cerr << "ERROR: physical volume name " << name
+                     << " is not unique. Please double check your geometry files. Be mindful of especial "
+                        "characters such as '0x'"
+                     << endl;
+                exit(1);
+            }
+            physicalVolumeNames.insert(name);
+        }
+
+        // Check all logical volume names are unique
+        G4LogicalVolumeStore* logicalVolumeStore = G4LogicalVolumeStore::GetInstance();
+        set<string> logicalVolumeNames;
+        vector<G4LogicalVolume*>::const_iterator logicalVolume;
+        for (logicalVolume = logicalVolumeStore->begin(); logicalVolume != logicalVolumeStore->end();
+             logicalVolume++) {
+            auto name = (*logicalVolume)->GetName();
+            if (logicalVolumeNames.count(name)) {
+                cerr << "ERROR: logical volume name " << name
+                     << " is not unique. Please double check your geometry files. Be mindful of especial "
+                        "characters such as '0x'"
+                     << endl;
+                exit(1);
+            }
+            logicalVolumeNames.insert(name);
+        }
+    }
     filesystem::current_path(startingPath);
 
     auto sensitiveVolume = (string)restG4Metadata->GetSensitiveVolume();
