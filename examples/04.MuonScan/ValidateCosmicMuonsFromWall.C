@@ -29,14 +29,15 @@ Int_t ValidateCosmicMuonsFromWall(const char* filename) {
     }
 
     cout << "Run entries: " << run.GetEntries() << endl;
-    if (run.GetEntries() < 900 || run.GetEntries() > 1000) {
-        cout << "The number of entries is not in the required range!" << endl;
-        cout << "Number of entries : " << run.GetEntries() << endl;
+    std::pair<double, double> nEntriesRange = {900., 1000.};
+    const int entries = run.GetEntries();
+    if (entries < nEntriesRange.first || entries > nEntriesRange.second) {
+        cout << "The number of entries (" << entries << ") is out of range: [" << nEntriesRange.first << " - "
+             << nEntriesRange.second << "]" << endl;
         return 3;
     }
 
     cout << "All tests passed! [\033[32mOK\033[0m]\n";
-    // Other tests like opening other metadata classes. Detector TGeoManager, etc.
 
     return 0;
 }
