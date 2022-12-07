@@ -124,7 +124,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     Double_t mz = restG4Metadata->GetMagneticField().Z() * tesla;
 
     G4MagneticField* magField = new G4UniformMagField(G4ThreeVector(mx, my, mz));
-    G4FieldManager* localFieldMgr = new G4FieldManager(magField);
+    // G4FieldManager* localFieldMgr = new G4FieldManager(magField);
     G4FieldManager* fieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
     fieldMgr->SetDetectorField(magField);
     fieldMgr->CreateChordFinder(magField);
