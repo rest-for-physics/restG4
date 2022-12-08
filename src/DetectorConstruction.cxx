@@ -63,11 +63,47 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
     geometryInfo.Print();
 
+    // do some checks
+    {
+        // Check all physical volume names are unique
+        G4PhysicalVolumeStore* physicalVolumeStore = G4PhysicalVolumeStore::GetInstance();
+        set<string> physicalVolumeNames;
+        vector<G4VPhysicalVolume*>::const_iterator physicalVolume;
+        for (physicalVolume = physicalVolumeStore->begin(); physicalVolume != physicalVolumeStore->end();
+             physicalVolume++) {
+            auto name = (*physicalVolume)->GetName();
+            if (physicalVolumeNames.count(name)) {
+                cerr << "ERROR: physical volume name " << name
+                     << " is not unique. Please double check your geometry files. Be mindful of especial "
+                        "characters such as '0x'"
+                     << endl;
+                exit(1);
+            }
+            physicalVolumeNames.insert(name);
+        }
+
+        // Check all logical volume names are unique
+        G4LogicalVolumeStore* logicalVolumeStore = G4LogicalVolumeStore::GetInstance();
+        set<string> logicalVolumeNames;
+        vector<G4LogicalVolume*>::const_iterator logicalVolume;
+        for (logicalVolume = logicalVolumeStore->begin(); logicalVolume != logicalVolumeStore->end();
+             logicalVolume++) {
+            auto name = (*logicalVolume)->GetName();
+            if (logicalVolumeNames.count(name)) {
+                cerr << "ERROR: logical volume name " << name
+                     << " is not unique. Please double check your geometry files. Be mindful of especial "
+                        "characters such as '0x'"
+                     << endl;
+                exit(1);
+            }
+            logicalVolumeNames.insert(name);
+        }
+    }
     filesystem::current_path(startingPath);
 
     auto sensitiveVolume = (string)restG4Metadata->GetSensitiveVolume();
     G4VPhysicalVolume* physicalVolume = GetPhysicalVolume(sensitiveVolume);
-    if (!physicalVolume) {
+    if (physicalVolume == nullptr) {
         // sensitive volume was not found, perhaps the user specified a logical volume
         auto physicalVolumes = geometryInfo.GetAllPhysicalVolumesFromLogical(sensitiveVolume);
         if (physicalVolumes.size() == 1) {
@@ -78,7 +114,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         }
     }
 
-    if (!physicalVolume) {
+    if (physicalVolume == nullptr) {
         G4cout << "ERROR: Sensitive volume '" << sensitiveVolume << "' not found" << G4endl;
         exit(1);
     }
@@ -88,22 +124,17 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     Double_t mz = restG4Metadata->GetMagneticField().Z() * tesla;
 
     G4MagneticField* magField = new G4UniformMagField(G4ThreeVector(mx, my, mz));
-    G4FieldManager* localFieldMgr = new G4FieldManager(magField);
+    // G4FieldManager* localFieldMgr = new G4FieldManager(magField);
     G4FieldManager* fieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
     fieldMgr->SetDetectorField(magField);
     fieldMgr->CreateChordFinder(magField);
 
-    if (physicalVolume != nullptr) {
-        G4LogicalVolume* volume = physicalVolume->GetLogicalVolume();
-        G4Material* material = volume->GetMaterial();
-        G4cout << "Sensitive volume properties:" << G4endl;
-        G4cout << "\t- Material: " << material->GetName() << G4endl;
-        G4cout << "\t- Temperature: " << material->GetTemperature() << " K" << G4endl;
-        G4cout << "\t- Density: " << material->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
-    } else {
-        cerr << "Physical volume for sensitive volume '" << sensitiveVolume << "' not found!" << endl;
-        exit(1);
-    }
+    G4LogicalVolume* volume = physicalVolume->GetLogicalVolume();
+    G4Material* material = volume->GetMaterial();
+    G4cout << "Sensitive volume properties:" << G4endl;
+    G4cout << "\t- Material: " << material->GetName() << G4endl;
+    G4cout << "\t- Temperature: " << material->GetTemperature() << " K" << G4endl;
+    G4cout << "\t- Density: " << material->GetDensity() / (g / cm3) << " g/cm3" << G4endl;
 
     const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
     // Getting generation volume
@@ -123,7 +154,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
             cout << "ERROR: The generator volume '" << primaryGeneratorInfo.GetSpatialGeneratorFrom()
                  << "'was not found in the geometry" << endl;
             exit(1);
-            return worldVolume;
+            // return worldVolume;
         }
 
         fGeneratorTranslation = pVol->GetTranslation();
@@ -189,17 +220,17 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
     return worldVolume;
 }
 
-G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physVolName) const {
-    G4PhysicalVolumeStore* physVolStore = G4PhysicalVolumeStore::GetInstance();
+G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physicalVolumeName) const {
+    G4PhysicalVolumeStore* physicalVolumeStore = G4PhysicalVolumeStore::GetInstance();
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
     const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
-    vector<G4VPhysicalVolume*>::const_iterator physVol;
-    for (physVol = physVolStore->begin(); physVol != physVolStore->end(); physVol++) {
-        auto name = (*physVol)->GetName();
+    vector<G4VPhysicalVolume*>::const_iterator physicalVolume;
+    for (physicalVolume = physicalVolumeStore->begin(); physicalVolume != physicalVolumeStore->end();
+         physicalVolume++) {
+        auto name = (*physicalVolume)->GetName();
         auto alternativeName = (G4String)geometryInfo.GetAlternativeNameFromGeant4PhysicalName(name);
-
-        if (name == physVolName || alternativeName == physVolName) {
-            return *physVol;
+        if (name == physicalVolumeName || alternativeName == physicalVolumeName) {
+            return *physicalVolume;
         }
     }
 
