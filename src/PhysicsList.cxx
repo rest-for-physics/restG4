@@ -45,9 +45,9 @@ PhysicsList::PhysicsList(SimulationManager* simulationManager, TRestGeant4Physic
     : G4VModularPhysicsList(), fSimulationManager(simulationManager) {
     // add new units for radioActive decays
     const G4double G4minute = 60 * second;
-    const G4double G4hour = 60 * minute;
-    const G4double G4day = 24 * hour;
-    const G4double G4year = 365 * day;
+    const G4double G4hour = 60 * G4minute;
+    const G4double G4day = 24 * G4hour;
+    const G4double G4year = 365 * G4day;
     new G4UnitDefinition("minute", "min", "Time", G4minute);
     new G4UnitDefinition("hour", "h", "Time", G4hour);
     new G4UnitDefinition("day", "d", "Time", G4day);
