@@ -269,7 +269,7 @@ void DetectorConstruction::ConstructSDandField() {
                 for (const auto& logicalVolumeName : logicalVolumes) {
                     auto logicalVolumeRegex =
                         G4LogicalVolumeStore::GetInstance()->GetVolume(logicalVolumeName.Data(), false);
-                    logicalVolumesSelected.insert(logicalVolume);
+                    logicalVolumesSelected.insert(logicalVolumeRegex);
                 }
                 continue;
             }

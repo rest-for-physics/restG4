@@ -332,8 +332,8 @@ void OutputManager::RecordTrack(const G4Track* track) {
     fEvent->InsertTrack(track);
 
     if (fEvent->fSubEventID > 0) {
-        const auto& lastTrack = fEvent->fTracks.back();
-        assert(lastTrack.GetTrackID() == track->GetTrackID());
+        //       const auto& lastTrack = ;
+        assert(fEvent->fTracks.back().GetTrackID() == track->GetTrackID());
         // TODO
         /*
         bool isSubEventPrimary = fEvent->IsTrackSubEventPrimary(lastTrack.fTrackID);
@@ -358,7 +358,7 @@ void OutputManager::UpdateTrack(const G4Track* track) {
 
 void OutputManager::RecordStep(const G4Step* step) { fEvent->InsertStep(step); }
 
-void OutputManager::AddSensitiveEnergy(Double_t energy, const char* physicalVolumeName) {
+void OutputManager::AddSensitiveEnergy(Double_t energy) {
     fEvent->AddEnergyToSensitiveVolume(energy);
     /*
         const TString physicalVolumeNameNew = fSimulationManager->GetRestMetadata()->GetGeant4GeometryInfo()

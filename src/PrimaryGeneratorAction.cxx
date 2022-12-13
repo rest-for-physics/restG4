@@ -53,7 +53,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
 
     const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
     const string& spatialGeneratorTypeName = primaryGeneratorInfo.GetSpatialGeneratorType().Data();
-    const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
+    //   const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
 
     const string angularDistTypeName = source->GetAngularDistributionType().Data();
     const auto angularDistTypeEnum = StringToAngularDistributionTypes(angularDistTypeName);
@@ -769,7 +769,7 @@ void PrimaryGeneratorAction::SetParticleEnergyAndDirection(Int_t particleSourceI
 
     TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
     TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
-    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
+    // const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
 
     const string angularDistTypeName =
         restG4Metadata->GetParticleSource(particleSourceIndex)->GetAngularDistributionType().Data();
