@@ -223,7 +223,7 @@ void PrimaryGeneratorAction::SetEnergyDistributionHistogram(const TH1D* h, doubl
 void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
     auto expression = (string)str;
     delete fGeneratorSpatialDensityFunction;
-    if (expression.find_first_of("xyz") == -1) {
+    if (expression.find_first_of("xyz") == string::npos) {
         fGeneratorSpatialDensityFunction = nullptr;
         return;
     }
@@ -248,6 +248,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
     const string& spatialGeneratorTypeName = primaryGeneratorInfo.GetSpatialGeneratorType().Data();
     const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
+    // Apparently not used. I comment to avoid compilation warning
+    // Int_t nParticles = restG4Metadata->GetNumberOfSources();
 
     if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::COSMIC) {
         if (fCosmicCircumscribedSphereRadius == 0.) {
@@ -318,7 +320,8 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t partic
         }
 
         if (!fParticle) {
-            cout << "Particle definition : " << particleName << " not found!" << endl;
+            G4cout << "Particle definition : " << particleName << " not found!" << G4endl;
+            G4cout << "Particle source index " << particleSourceIndex << G4endl;
             exit(1);
         }
     }
@@ -334,8 +337,6 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
     TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
     TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
 
-    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
-
     G4ThreeVector direction = {source->GetDirection().X(), source->GetDirection().Y(),
                                source->GetDirection().Z()};
 
@@ -347,11 +348,16 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
     }
 
     // generator type
-    const string& spatialGeneratorTypeName = primaryGeneratorInfo.GetSpatialGeneratorType().Data();
-    const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
+    /* Apparently not used
 
-    const string& spatialGeneratorShapeName = primaryGeneratorInfo.GetSpatialGeneratorShape().Data();
-    const auto spatialGeneratorShapeEnum = StringToSpatialGeneratorShapes(spatialGeneratorShapeName);
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
+
+const string& spatialGeneratorTypeName = primaryGeneratorInfo.GetSpatialGeneratorType().Data();
+const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
+
+const string& spatialGeneratorShapeName = primaryGeneratorInfo.GetSpatialGeneratorShape().Data();
+const auto spatialGeneratorShapeEnum = StringToSpatialGeneratorShapes(spatialGeneratorShapeName);
+    */
 
     if (angularDistTypeEnum == AngularDistributionTypes::ISOTROPIC) {
         direction = GetIsotropicVector();
@@ -402,6 +408,9 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
         // first source is back to back we set it to isotropic
         // TVector3 v = restG4Event->GetPrimaryEventDirection(particleSourceIndex - 1);
         // v = v.Unit();
+        //
+        G4cout << "Back to Back is not implemented now. particleSourceIndex: " << particleSourceIndex
+               << G4endl;
 
         // direction.set(-v.X(), -v.Y(), -v.Z());
         exit(1);
@@ -418,8 +427,9 @@ void PrimaryGeneratorAction::SetParticleEnergy(Int_t particleSourceIndex,
     auto simulationManager = fSimulationManager;
 
     TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
-    TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
-    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
+    // Apparently not used
+    // TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
+    // const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
 
     const string angularDistTypeName =
         restG4Metadata->GetParticleSource(particleSourceIndex)->GetAngularDistributionType().Data();
@@ -640,12 +650,12 @@ void PrimaryGeneratorAction::GenPositionOnBoxVolume(double& x, double& y, double
 }
 
 void PrimaryGeneratorAction::GenPositionOnBoxSurface(double& x, double& y, double& z) {
-    cout << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
+    cout << __PRETTY_FUNCTION__ << ": not implemented! -> " << x << "," << y << "," << z << endl;
     exit(1);
 }
 
 void PrimaryGeneratorAction::GenPositionOnSphereVolume(double& x, double& y, double& z) {
-    cout << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
+    cout << __PRETTY_FUNCTION__ << ": not implemented! -> " << x << "," << y << "," << z << endl;
     exit(1);
 }
 
@@ -665,7 +675,7 @@ void PrimaryGeneratorAction::GenPositionOnSphereSurface(double& x, double& y, do
 }
 
 void PrimaryGeneratorAction::GenPositionOnCylinderVolume(double& x, double& y, double& z) {
-    cout << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
+    cout << __PRETTY_FUNCTION__ << ": not implemented! -> " << x << "," << y << "," << z << endl;
     exit(1);
 }
 
