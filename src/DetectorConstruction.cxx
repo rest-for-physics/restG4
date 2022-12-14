@@ -200,7 +200,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         }
     }
 
-    for (int id = 0; id < restG4Metadata->GetNumberOfActiveVolumes(); id++) {
+    for (unsigned int id = 0; id < restG4Metadata->GetNumberOfActiveVolumes(); id++) {
         TString activeVolumeName = restG4Metadata->GetActiveVolumeName(id);
         G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)activeVolumeName);
         if (pVol != nullptr) {
