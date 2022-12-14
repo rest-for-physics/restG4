@@ -242,7 +242,9 @@ void DetectorConstruction::ConstructSDandField() {
 
     set<G4LogicalVolume*> logicalVolumesSelected;
     for (const auto& userSensitiveVolume : metadata.GetSensitiveVolumes()) {
-        G4LogicalVolume* logicalVolume = nullptr;
+        // Each sensitive detector declaration in the RML should correspond to at least one logical volume
+        G4LogicalVolume* logicalVolume;
+        // Check if user selected a Geant4 physical volume by name
         G4VPhysicalVolume* physicalVolume =
             G4PhysicalVolumeStore::GetInstance()->GetVolume(userSensitiveVolume.Data(), false);
         if (physicalVolume == nullptr) {
@@ -250,31 +252,34 @@ void DetectorConstruction::ConstructSDandField() {
                 metadata.GetGeant4GeometryInfo()
                     .GetGeant4PhysicalNameFromAlternativeName(userSensitiveVolume.Data())
                     .Data();
+            // Check if user selected a Geant4 physical volume by REST name (only relevant for assemblies)
             physicalVolume = G4PhysicalVolumeStore::GetInstance()->GetVolume(geant4VolumeName, false);
         }
         if (physicalVolume == nullptr) {
-            // perhaps user selected a logical volume with this name
+            // Check if user selected a Geant4 logical volume by name
             logicalVolume = G4LogicalVolumeStore::GetInstance()->GetVolume(userSensitiveVolume.Data(), false);
         } else {
+            // Sensitive detector already found
             logicalVolume = physicalVolume->GetLogicalVolume();
         }
-        if (logicalVolume == nullptr) {
-            auto logicalVolumes =
+        if (logicalVolume != nullptr) {
+            logicalVolumesSelected.insert(logicalVolume);
+        } else {
+            // Check if the user string matches a logical volume by expanding the input as a regex
+            // This can have multiple hits
+            const auto logicalVolumesMatchingExpression =
                 metadata.GetGeant4GeometryInfo().GetAllLogicalVolumesMatchingExpression(userSensitiveVolume);
-            if (logicalVolumes.empty()) {
-                cerr << "Error on sensitive detector setup for sensitive volume: " << userSensitiveVolume
-                     << endl;
+            if (logicalVolumesMatchingExpression.empty()) {
+                cerr << "Detector construction error: could not find matching logical volume(s) for '"
+                     << userSensitiveVolume << "'" << endl;
                 exit(1);
             } else {
-                for (const auto& logicalVolumeName : logicalVolumes) {
-                    auto logicalVolumeRegex =
-                        G4LogicalVolumeStore::GetInstance()->GetVolume(logicalVolumeName.Data(), false);
-                    logicalVolumesSelected.insert(logicalVolume);
+                for (const auto& logicalVolumeName : logicalVolumesMatchingExpression) {
+                    logicalVolumesSelected.insert(
+                        G4LogicalVolumeStore::GetInstance()->GetVolume(logicalVolumeName.Data(), false));
                 }
-                continue;
             }
         }
-        logicalVolumesSelected.insert(logicalVolume);
     }
 
     G4SDManager* SDManager = G4SDManager::GetSDMpointer();
