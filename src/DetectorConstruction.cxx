@@ -296,7 +296,7 @@ void DetectorConstruction::ConstructSDandField() {
 }
 
 void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* world) {
-    auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+    const auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
     TRestGeant4Metadata* restG4Metadata = detector->fSimulationManager->GetRestMetadata();
 
     const size_t n = int(world->GetLogicalVolume()->GetNoDaughters());
@@ -305,7 +305,7 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
         if (i == n) {
             volume = const_cast<G4VPhysicalVolume*>(world);
         } else {
-            volume = world->GetLogicalVolume()->GetDaughter(i);
+            volume = world->GetLogicalVolume()->GetDaughter(G4int(i));
         }
         TString namePhysical = (TString)volume->GetName();
         if (fGdmlNewPhysicalNames.size() > i) {
