@@ -170,14 +170,25 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     metadata->fGeant4PhysicsInfo.InsertParticleName(particleID, particleName);
 
     const auto process = step->GetPostStepPoint()->GetProcessDefinedStep();
-    G4String processName = "Init";
-    G4String processTypeName = "Init";
-    Int_t processID = 0;
-    if (track->GetCurrentStepNumber() != 0) {
+    G4String processName;
+    G4String processTypeName;
+    Int_t processID;
+    if (process != nullptr) {
         // 0 = Init step (G4SteppingVerbose) process is not defined for this step
         processName = process->GetProcessName();
         processTypeName = G4VProcess::GetProcessTypeName(process->GetProcessType());
         processID = TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(process);
+    } else {
+        if (track->GetCurrentStepNumber() == 0) {
+            processName = "Init";
+            processTypeName = "Init";
+            processID = 0;
+        } else {
+            cerr << "Cannot identify the process of track: " << track->GetTrackID() << " ("
+                 << track->GetParticleDefinition()->GetParticleName() << ") "
+                 << " at step number " << track->GetCurrentStepNumber() << endl;
+            // exit(1);
+        }
     }
 
     if (kill) {
