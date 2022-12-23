@@ -27,7 +27,7 @@ G4bool SensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*) {
         // Since geantinos don't deposit energy, the length traveled inside the volumes is stored as energy
         // (mm as keV)
         const auto length = step->GetStepLength() / CLHEP::mm;
-        fSimulationManager->GetOutputManager()->AddSensitiveEnergy(length, volumeName);
+        fSimulationManager->GetOutputManager()->AddSensitiveEnergy(length);
         return true;
     } else {
         auto energy = step->GetTotalEnergyDeposit() / keV;
@@ -35,7 +35,7 @@ G4bool SensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*) {
         if (energy <= 0) {
             return true;
         }
-        fSimulationManager->GetOutputManager()->AddSensitiveEnergy(energy, volumeName);
+        fSimulationManager->GetOutputManager()->AddSensitiveEnergy(energy);
         return true;
     }
 }

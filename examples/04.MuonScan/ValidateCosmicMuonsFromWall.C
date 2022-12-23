@@ -29,7 +29,7 @@ Int_t ValidateCosmicMuonsFromWall(const char* filename) {
     }
 
     cout << "Run entries: " << run.GetEntries() << endl;
-    std::pair<double, double> nEntriesRange = {900., 1000.};
+    std::pair<double, double> nEntriesRange = {900., 1050.};
     const int entries = run.GetEntries();
     if (entries < nEntriesRange.first || entries > nEntriesRange.second) {
         cout << "The number of entries (" << entries << ") is out of range: [" << nEntriesRange.first << " - "

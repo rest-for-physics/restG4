@@ -19,9 +19,11 @@ StackingAction::StackingAction(SimulationManager* simulationManager) : fSimulati
         G4NeutrinoE::Definition(),      G4AntiNeutrinoE::Definition(), G4NeutrinoMu::Definition(),
         G4AntiNeutrinoMu::Definition(), G4NeutrinoTau::Definition(),   G4AntiNeutrinoTau::Definition(),
     };
-    for (const auto& particle : fParticlesToIgnore) {
-        //
-    }
+
+    /*
+for (const auto& particle : fParticlesToIgnore) {
+}
+    */
 }
 
 G4ClassificationOfNewTrack StackingAction::ClassifyNewTrack(const G4Track* track) {
