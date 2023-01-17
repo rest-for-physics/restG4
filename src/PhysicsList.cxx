@@ -242,7 +242,8 @@ void PhysicsList::ConstructProcess() {
         radioactiveDecay->SetHLThreshold(decayTimeThreshold);
 #else
         radioactiveDecay->SetThresholdForVeryLongDecayTime(decayTimeThreshold);
-        // For ICM option
+        // ICM option not tested, if it does not work as expected please post an issue on
+        // https://github.com/rest-for-physics/restG4/issues
         auto photonEvaporation = new G4PhotonEvaporation();
 #endif
         // Setting Internal Conversion (ICM) option.
