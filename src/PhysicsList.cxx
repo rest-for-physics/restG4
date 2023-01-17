@@ -23,6 +23,7 @@
 #include <G4NeutronTrackingCut.hh>
 #include <G4ParticleTable.hh>
 #include <G4ParticleTypes.hh>
+#include <G4PhotonEvaporation.hh>
 #include <G4ProcessManager.hh>
 #include <G4ProductionCuts.hh>
 #include <G4RadioactiveDecay.hh>
@@ -241,12 +242,23 @@ void PhysicsList::ConstructProcess() {
         radioactiveDecay->SetHLThreshold(decayTimeThreshold);
 #else
         radioactiveDecay->SetThresholdForVeryLongDecayTime(decayTimeThreshold);
+        // ICM option not tested, if it does not work as expected please post an issue on
+        // https://github.com/rest-for-physics/restG4/issues
+        auto photonEvaporation = new G4PhotonEvaporation();
 #endif
         // Setting Internal Conversion (ICM) option.
         if (fRestPhysicsLists->GetPhysicsListOptionValue("G4RadioactiveDecay", "ICM") == "true") {
+#ifdef GEANT4_VERSION_LESS_11_0_0
             radioactiveDecay->SetICM(true);
+#else
+            photonEvaporation->SetICM(true);
+#endif
         } else if (fRestPhysicsLists->GetPhysicsListOptionValue("G4RadioactiveDecay", "ICM") == "false") {
+#ifdef GEANT4_VERSION_LESS_11_0_0
             radioactiveDecay->SetICM(false);
+#else
+            photonEvaporation->SetICM(false);
+#endif
         } else if (fRestPhysicsLists->GetVerboseLevel() >=
                    TRestStringOutput::REST_Verbose_Level::REST_Essential) {
             RESTWarning << "PhysicsList 'G4RadioactiveDecay' option 'ICM' not defined" << RESTendl;
