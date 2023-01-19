@@ -18,7 +18,7 @@ endif ()
 find_package(ROOT REQUIRED COMPONENTS RIO Geom)
 execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS)
 string(STRIP ${ROOT_CFLAGS} ROOT_CFLAGS)
-message(STATUS "-- Found ROOT version: ${ROOT_VERSION} with compilation flags: ${ROOT_CFLAGS} and libraries: ${ROOT_LIBRARIES}")
+message(STATUS "Found ROOT version: ${ROOT_VERSION} with compilation flags: ${ROOT_CFLAGS} and libraries: ${ROOT_LIBRARIES}")
 
 # Find Geant4
 find_package(Geant4 REQUIRED ui_all vis_all)
