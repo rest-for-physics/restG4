@@ -3,7 +3,7 @@
      File : config.rml
      First concept author J. Galan (26-Apr-2015)
  -->
-<!-- 
+<!--
 By default REST units are mm, keV and degrees
 -->
 <restG4>
