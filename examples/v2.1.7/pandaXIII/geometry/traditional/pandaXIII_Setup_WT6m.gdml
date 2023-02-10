@@ -40,7 +40,7 @@
     </define>
 
     <define>
-        <variable name="targetGasDensity" value="56.5884"/> <!-- mg/cm3 (This density corresponds to 200Kg in vessel volume) --> 
+        <variable name="targetGasDensity" value="56.5884"/> <!-- mg/cm3 (This density corresponds to 200Kg in vessel volume) -->
         <variable name="quencherDensity" value="0.254"/> <!-- mg/cm3 (Corresponds to 1% TMA) -->
         <variable name="quencherFraction" value="0.01"/>
         <variable name="gasTemperature" value="300"/> <!-- K -->
@@ -147,53 +147,53 @@
         <position name="ringPositionBottom_47" x="0" y="0" z="-ringSpacing*47" />
         <position name="ringPositionBottom_48" x="0" y="0" z="-ringSpacing*48" />
 
-        <position name="supporterPosition_00" unit="mm" 
+        <position name="supporterPosition_00" unit="mm"
             x="0" y="0" z="0" />
-        <position name="supporterPosition_01" unit="mm" 
+        <position name="supporterPosition_01" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(1*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(1*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_02" unit="mm" 
+        <position name="supporterPosition_02" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(2*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(2*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_03" unit="mm" 
+        <position name="supporterPosition_03" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(3*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(3*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_04" unit="mm" 
+        <position name="supporterPosition_04" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(4*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(4*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_05" unit="mm" 
+        <position name="supporterPosition_05" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(5*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(5*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_06" unit="mm" 
+        <position name="supporterPosition_06" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(6*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(6*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_07" unit="mm" 
+        <position name="supporterPosition_07" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(7*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(7*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_08" unit="mm" 
+        <position name="supporterPosition_08" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(8*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(8*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_09" unit="mm" 
+        <position name="supporterPosition_09" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(9*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(9*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_10" unit="mm" 
+        <position name="supporterPosition_10" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(10*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(10*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_11" unit="mm" 
+        <position name="supporterPosition_11" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(11*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(11*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_12" unit="mm" 
+        <position name="supporterPosition_12" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(12*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(12*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_13" unit="mm" 
+        <position name="supporterPosition_13" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(13*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(13*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_14" unit="mm" 
+        <position name="supporterPosition_14" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(14*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(14*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_15" unit="mm" 
+        <position name="supporterPosition_15" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(15*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(15*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_16" unit="mm" 
+        <position name="supporterPosition_16" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(16*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(16*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_17" unit="mm" 
+        <position name="supporterPosition_17" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(17*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(17*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_18" unit="mm" 
+        <position name="supporterPosition_18" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(18*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(18*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_19" unit="mm" 
+        <position name="supporterPosition_19" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(19*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(19*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_20" unit="mm" 
+        <position name="supporterPosition_20" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(20*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(20*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_21" unit="mm" 
+        <position name="supporterPosition_21" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(21*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(21*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_22" unit="mm" 
+        <position name="supporterPosition_22" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(22*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(22*degToRad*supporterAngle)" z="0" />
-        <position name="supporterPosition_23" unit="mm" 
+        <position name="supporterPosition_23" unit="mm"
             x="(ringInternalRadius+supporterThickness/2.)*(cos(23*degToRad*supporterAngle)-1)" y="(ringInternalRadius+supporterThickness/2.)*sin(23*degToRad*supporterAngle)" z="0" />
 
 
@@ -227,4 +227,3 @@
     &solids;
 
 </gdml>
-

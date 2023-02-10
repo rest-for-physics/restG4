@@ -25,4 +25,3 @@ restG4 singleDecay.rml
 ```
 
 See also `Validation.C` for validation routines executed in the pipeline.
-

@@ -10,18 +10,18 @@
 
     <tube name="anodeSolid" startphi="0" deltaphi="360" rmin="0" rmax="gasVolumeRadius" z="anodeThickness" aunit="deg" lunit="mm"/>
     <tube name="micromegasSolid" startphi="0" deltaphi="360" rmin="0" rmax="gasVolumeRadius" z="micromegasSupportThickness" aunit="deg" lunit="mm"/>
-    
+
 
     <subtraction name="waterTankSolid">
         <first ref="waterTankSolidBox"/>
         <second ref="vesselSolidFull"/>
     </subtraction>
-    
+
     <subtraction name="vesselSolid">
         <first ref="vesselSolidFull"/>
         <second ref="resistiveSolidFull"/>
     </subtraction>
-    
+
     <subtraction name="resistiveSolid">
         <first ref="resistiveSolidFull"/>
         <second ref="gasSolidFull"/>
@@ -122,7 +122,7 @@
 
     </volume>
     <!-- }}} -->
-    
+
 </structure>
 
 <setup name="Default" version="1.0">

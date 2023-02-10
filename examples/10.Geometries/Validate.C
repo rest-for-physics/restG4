@@ -57,7 +57,7 @@ Int_t Validate(const char* filename) {
                 return 3;
             }
 
-            if (TMath::Abs(momentum.Mag() - 1) > 1e-4){
+            if (TMath::Abs(momentum.Mag() - 1) > 1e-4) {
                 cout << "Incorrect momentum magnitude: " << momentum.Mag() << endl;
                 return 4;
             }

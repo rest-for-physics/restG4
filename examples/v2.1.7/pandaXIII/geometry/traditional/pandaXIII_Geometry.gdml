@@ -12,13 +12,13 @@
     <tube name="micromegasSupportSolid" startphi="0" deltaphi="360" rmin="0" rmax="ringInternalRadius" z="micromegasSupportThickness" aunit="deg" lunit="mm"/>
 
     <tube name="micromegasSolid" startphi="0" deltaphi="360" rmin="0" rmax="ringInternalRadius" z="micromegasThickness" aunit="deg" lunit="mm"/>
-    
+
 
     <subtraction name="waterTankSolid">
         <first ref="waterTankSolidBox"/>
         <second ref="vesselSolidFull"/>
     </subtraction>
-    
+
     <subtraction name="vesselSolid">
         <first ref="vesselSolidFull"/>
         <second ref="gasSolidFull"/>
@@ -601,7 +601,7 @@
         <positionref ref="ringPositionBottom_48" />
     </union>
     <!-- }}} -->
-    
+
     <!-- {{{ supporters definition -->
     <union name="supportersSolid_01" >
         <first ref="supporterSolid" />
@@ -770,7 +770,7 @@
         <position name="suppPosition" unit="mm" x="-(ringInternalRadius+supporterThickness/2.)" y="0" z="0"/>
     </subtraction>
     <!-- }}} -->
-    
+
 
     <!-- Change here the number of rings to be removed from the gas volume -->
     <subtraction name="gasSolid_01">
@@ -917,7 +917,7 @@
 
     </volume>
     <!-- }}} -->
-    
+
 </structure>
 
 <setup name="Default" version="1.0">
