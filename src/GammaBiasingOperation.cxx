@@ -62,10 +62,8 @@ ApplyFinalStateBiasing(const G4BiasingProcessInterface *callingProcess,
 
     // -- Now deal with the gamma's:
     // -- their common weight:
-    G4double gammaWeight = track->GetWeight() / fSplittingFactor;
 
     // -- inform we will have fSplittingFactor gamma's:
-    fParticleChange.SetNumberOfSecondaries(fSplittingFactor);
 
     // -- inform we take care of secondaries weight (otherwise these
     // -- secondaries are by default given the primary weight).
@@ -73,15 +71,39 @@ ApplyFinalStateBiasing(const G4BiasingProcessInterface *callingProcess,
 
     // -- Store first gamma:
     G4Track *gammaTrack = actualParticleChange->GetSecondary(0);
+
+
+    // print gamma info (energy, direction)
+    /*
+    G4cout << "Gamma info. Weight: " << gammaTrack->GetWeight()
+           << " Energy (keV): " << gammaTrack->GetKineticEnergy() / CLHEP::keV << " Direction: "
+           << gammaTrack->GetMomentumDirection() << G4endl;
+    */
+    // if direction points towards (0,0,0)
+    bool split = false;
+    const auto diff = gammaTrack->GetPosition() - G4ThreeVector(0, 0, 0);
+    if (gammaTrack->GetMomentumDirection().dot(diff) < 0) {
+        // G4cout << "Gamma points towards (0,0,0)" << G4endl;
+        split = true;
+    }
+
+    const int nSecondaries = split ? fSplittingFactor : 1;
+
+    G4double gammaWeight = track->GetWeight() / nSecondaries;
+    // G4cout << "Gamma weight: " << gammaWeight << " nSecondaries: " << nSecondaries << G4endl;
     gammaTrack->SetWeight(gammaWeight);
+
+
+    fParticleChange.SetNumberOfSecondaries(nSecondaries);
     fParticleChange.AddSecondary(gammaTrack);
     // -- and clean-up the brem. process particle change:
+
     actualParticleChange->Clear();
 
     // -- now start the fSplittingFactor-1 calls to the brem. process to store each
     // -- related gamma:
     G4int nCalls = 1;
-    while (nCalls < fSplittingFactor) {
+    while (nCalls < nSecondaries) {
         // ( note: we don't need to cast to actual type here, as methods for accessing
         //   secondary particles are from base class G4VParticleChange )
         processFinalState = callingProcess->GetWrappedProcess()->PostStepDoIt(*track, *step);

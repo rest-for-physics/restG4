@@ -10,7 +10,7 @@
 
 GammaBiasingOperator::GammaBiasingOperator()
         : G4VBiasingOperator("BremSplittingOperator"),
-          fSplittingFactor(10),
+          fSplittingFactor(2),
           fBiasPrimaryOnly(false),
           fBiasOnlyOnce(true) {
     fBremSplittingOperation = new GammaBiasingOperation("BremSplittingOperation");
