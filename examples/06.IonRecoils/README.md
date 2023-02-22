@@ -25,4 +25,3 @@ restG4 recoils.rml
 ```
 
 See also `Validation.C` for validation routines executed in the pipeline.
-

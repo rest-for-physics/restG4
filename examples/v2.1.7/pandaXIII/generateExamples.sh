@@ -5,7 +5,7 @@
 ## Date : 11-Mar-2016
 ## Authors : H. Liang/ J. Galan
 
-# Isotopes 
+# Isotopes
 Bi214='REST_ISOTOPE=Bi214;REST_FULLCHAIN=off'
 Tl208='REST_ISOTOPE=Tl208;REST_FULLCHAIN=off'
 Xe137='REST_ISOTOPE=Xe137;REST_FULLCHAIN=off'
@@ -38,7 +38,7 @@ mkdir gas -p
 
  ./../replaceRMLVars.py templates/decay0FromVolume.rml gas/Xe136bb0n.rml \
  "[REST_VOLUME=gas;$XeNLDBD;$GEO;$PARAMS]"
- 
+
  ./../replaceRMLVars.py templates/decay0FromVolume.rml gas/Xe136_0nubb_00.rml \
  "[REST_VOLUME=gas;REST_GENERATOR=Xe136_0nubb_00;REST_GENERATOR_FILE=0nubb_data_00_o.evt;$GEO;$PARAMS]"
 
@@ -252,8 +252,7 @@ PARAMS='REST_EMIN=0;REST_EMAX=50;REST_MAXSTEPSIZE=100;REST_EVENTDELAY=100'
 mkdir -p external
 
  ../replaceRMLVars.py templates/biasedIsotopeFromVirtualBox.rml external/gammaFromU238AfterBiasing.rml \
- "[REST_ISOTOPE=U238;$PARAMS;REST_BOXSIZE=3000]" 
+ "[REST_ISOTOPE=U238;$PARAMS;REST_BOXSIZE=3000]"
 
  ../replaceRMLVars.py templates/biasedIsotopeFromVirtualBox.rml external/gammaFromTh232AfterBiasing.rml \
- "[REST_ISOTOPE=Th232;$PARAMS;REST_BOXSIZE=3000]" 
-
+ "[REST_ISOTOPE=Th232;$PARAMS;REST_BOXSIZE=3000]"

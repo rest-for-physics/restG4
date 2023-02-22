@@ -5,7 +5,7 @@
      First concept author J. Galan (26-Apr-2015)
  -->
 
-<!-- 
+<!--
 By default REST units are mm, keV and degrees
 -->
 
@@ -66,7 +66,7 @@ By default REST units are mm, keV and degrees
 
         // Use only one EM physics list
         <!-- EM Physics lists -->
-        <!--<physicsList name="G4EmLivermorePhysics"> </physicsList>-->
+        <!-- <physicsList name="G4EmLivermorePhysics"> </physicsList>-->
         <!-- <physicsList name="G4EmPenelopePhysics"> </physicsList> -->
         <physicsList name="G4EmStandardPhysics_option4"/>
 

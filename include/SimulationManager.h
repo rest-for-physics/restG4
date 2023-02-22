@@ -106,7 +106,7 @@ class OutputManager {
 
     void RecordStep(const G4Step*);
 
-    void AddSensitiveEnergy(Double_t energy, const char* physicalVolumeName);
+    void AddSensitiveEnergy(Double_t energy);
     void AddEnergyToVolumeForParticleForProcess(Double_t energy, const char* volumeName,
                                                 const char* particleName, const char* processName);
 

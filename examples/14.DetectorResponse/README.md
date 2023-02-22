@@ -21,7 +21,7 @@ export GDML_PRESSURE=1.5
 export GDML_NEON_PCT=30
 export GDML_DRIFT=3
 export GDML_DETECTOR_SIZE=6
-restG4 DetectorResponse.rml 
+restG4 DetectorResponse.rml
 ```
 
 or simply use the bash script
@@ -50,4 +50,3 @@ restRoot Output.root
 The execution of the example should produce the following result for pure xenon.
 
 ![PureXenon](images/PureXenonResponse.png)
-

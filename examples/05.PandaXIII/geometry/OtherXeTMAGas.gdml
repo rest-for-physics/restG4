@@ -32,4 +32,3 @@
     <second ref="ResistanceSolid"/>
     <positionref ref="ResistancePosition" />
 </subtraction>
-
