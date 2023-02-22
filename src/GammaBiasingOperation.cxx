@@ -1,49 +1,37 @@
 
+#include "GammaBiasingOperation.h"
+
 #include <utility>
 
-#include "GammaBiasingOperation.h"
+#include "G4ParticleChangeForLoss.hh"
 #include "GammaBiasingOperator.h"
 
-#include "G4ParticleChangeForLoss.hh"
-
 GammaBiasingOperation::GammaBiasingOperation(G4String name)
-        : G4VBiasingOperation(std::move(name)),
-          fSplittingFactor(1),
-          fParticleChange() {
-}
-
+    : G4VBiasingOperation(std::move(name)), fSplittingFactor(1), fParticleChange() {}
 
 GammaBiasingOperation::~GammaBiasingOperation() = default;
 
-G4VParticleChange *GammaBiasingOperation::ApplyFinalStateBiasing(const G4BiasingProcessInterface *callingProcess,
-                                                                 const G4Track *track,
-                                                                 const G4Step *step,
-                                                                 G4bool &) {
-
-    G4VParticleChange *processFinalState =
-            callingProcess->GetWrappedProcess()->PostStepDoIt(*track, *step);
+G4VParticleChange* GammaBiasingOperation::ApplyFinalStateBiasing(
+    const G4BiasingProcessInterface* callingProcess, const G4Track* track, const G4Step* step, G4bool&) {
+    G4VParticleChange* processFinalState = callingProcess->GetWrappedProcess()->PostStepDoIt(*track, *step);
 
     if (fSplittingFactor == 1) return processFinalState;
 
     // special case: no secondaries
     if (processFinalState->GetNumberOfSecondaries() == 0) return processFinalState;
 
-    auto actualParticleChange = (G4ParticleChangeForLoss *) processFinalState;
+    auto actualParticleChange = (G4ParticleChangeForLoss*)processFinalState;
 
     fParticleChange.Initialize(*track);
 
     // -- Store electron final state:
-    fParticleChange.
-            ProposeTrackStatus(actualParticleChange->GetTrackStatus());
-    fParticleChange.
-            ProposeEnergy(actualParticleChange->GetProposedKineticEnergy());
-    fParticleChange.
-            ProposeMomentumDirection(actualParticleChange->GetProposedMomentumDirection());
+    fParticleChange.ProposeTrackStatus(actualParticleChange->GetTrackStatus());
+    fParticleChange.ProposeEnergy(actualParticleChange->GetProposedKineticEnergy());
+    fParticleChange.ProposeMomentumDirection(actualParticleChange->GetProposedMomentumDirection());
 
     fParticleChange.SetSecondaryWeightByProcess(true);
 
-    G4Track *gammaTrack = actualParticleChange->GetSecondary(0);
-
+    G4Track* gammaTrack = actualParticleChange->GetSecondary(0);
 
     // print gamma info (energy, direction)
     /*
@@ -65,7 +53,6 @@ G4VParticleChange *GammaBiasingOperation::ApplyFinalStateBiasing(const G4Biasing
     // G4cout << "Gamma weight: " << gammaWeight << " nSecondaries: " << nSecondaries << G4endl;
     gammaTrack->SetWeight(gammaWeight);
 
-
     fParticleChange.SetNumberOfSecondaries(nSecondaries);
     fParticleChange.AddSecondary(gammaTrack);
 
@@ -80,7 +67,7 @@ G4VParticleChange *GammaBiasingOperation::ApplyFinalStateBiasing(const G4Biasing
             fParticleChange.AddSecondary(gammaTrack);
             nCalls++;
         }
-            // -- very rare special case: we ignore for now.
+        // -- very rare special case: we ignore for now.
         else if (processFinalState->GetNumberOfSecondaries() > 1) {
             for (G4int i = 0; i < processFinalState->GetNumberOfSecondaries(); i++)
                 delete processFinalState->GetSecondary(i);

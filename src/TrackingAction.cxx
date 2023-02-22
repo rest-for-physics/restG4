@@ -9,14 +9,14 @@
 
 using namespace std;
 
-TrackingAction::TrackingAction(SimulationManager *simulationManager)
-        : G4UserTrackingAction(), fSimulationManager(simulationManager) {}
+TrackingAction::TrackingAction(SimulationManager* simulationManager)
+    : G4UserTrackingAction(), fSimulationManager(simulationManager) {}
 
-void TrackingAction::PreUserTrackingAction(const G4Track *track) {
+void TrackingAction::PreUserTrackingAction(const G4Track* track) {
     // G4cout << track->GetVolume()->GetLogicalVolume()->GetName() << G4endl;
     fSimulationManager->GetOutputManager()->RecordTrack(track);
 }
 
-void TrackingAction::PostUserTrackingAction(const G4Track *track) {
+void TrackingAction::PostUserTrackingAction(const G4Track* track) {
     fSimulationManager->GetOutputManager()->UpdateTrack(track);
 }

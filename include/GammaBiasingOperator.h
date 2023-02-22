@@ -10,38 +10,38 @@
 class GammaBiasingOperation;
 
 class GammaBiasingOperator : public G4VBiasingOperator {
-public:
+   public:
     GammaBiasingOperator();
 
     virtual ~GammaBiasingOperator() {}
 
-public:
+   public:
     virtual void StartRun();
 
-    virtual void StartTracking(const G4Track *track);
+    virtual void StartTracking(const G4Track* track);
 
-private:
-    virtual G4VBiasingOperation *
-    ProposeNonPhysicsBiasingOperation(const G4Track *,
-                                      const G4BiasingProcessInterface *) { return 0; }
+   private:
+    virtual G4VBiasingOperation* ProposeNonPhysicsBiasingOperation(const G4Track*,
+                                                                   const G4BiasingProcessInterface*) {
+        return 0;
+    }
 
-    virtual G4VBiasingOperation *
-    ProposeOccurenceBiasingOperation(const G4Track *,
-                                     const G4BiasingProcessInterface *) { return 0; }
+    virtual G4VBiasingOperation* ProposeOccurenceBiasingOperation(const G4Track*,
+                                                                  const G4BiasingProcessInterface*) {
+        return 0;
+    }
 
-    virtual G4VBiasingOperation *
-    ProposeFinalStateBiasingOperation(const G4Track *track,
-                                      const G4BiasingProcessInterface *callingProcess);
+    virtual G4VBiasingOperation* ProposeFinalStateBiasingOperation(
+        const G4Track* track, const G4BiasingProcessInterface* callingProcess);
 
-private:
+   private:
     using G4VBiasingOperator::OperationApplied;
 
-private:
-    GammaBiasingOperation *fBremSplittingOperation;
+   private:
+    GammaBiasingOperation* fBremSplittingOperation;
     G4int fSplittingFactor;
     G4bool fBiasOnlyOnce;
     G4int fNInteractions;
 };
 
-
-#endif //REST_GAMMABIASINGOPERATOR_H
+#endif  // REST_GAMMABIASINGOPERATOR_H
