@@ -39,7 +39,6 @@ private:
 private:
     GammaBiasingOperation *fBremSplittingOperation;
     G4int fSplittingFactor;
-    G4bool fBiasPrimaryOnly;
     G4bool fBiasOnlyOnce;
     G4int fNInteractions;
 };

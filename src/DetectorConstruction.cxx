@@ -296,20 +296,54 @@ void DetectorConstruction::ConstructSDandField() {
     }
 
     // Biasing
-    const auto biasingLogicalVolumeName = "ShieldingVolume";
-    G4LogicalVolume *biasingLogicalVolume =
-            G4LogicalVolumeStore::GetInstance()->GetVolume(biasingLogicalVolumeName, false);
-    if (biasingLogicalVolume == nullptr) {
-        cerr << "Detector construction error: could not find logical volume '" << biasingLogicalVolumeName << "'"
-             << endl;
-        exit(1);
-    }
+    const auto &biasingInfo = metadata.GetGeant4BiasingInfo();
+    if (biasingInfo.GetEnabled()) {
+        const auto &geometryInfo = metadata.GetGeant4GeometryInfo();
 
-    GammaBiasingOperator *bremSplittingOperator = new GammaBiasingOperator();
-    bremSplittingOperator->AttachTo(biasingLogicalVolume);
-    G4cout << " Attaching biasing operator " << bremSplittingOperator->GetName()
-           << " to logical volume " << biasingLogicalVolume->GetName()
-           << G4endl;
+        set<G4String> biasingVolumes;
+        for (const auto &biasingVolume: biasingInfo.GetBiasingVolumes()) {
+            auto name = biasingVolume;
+            if (!geometryInfo.IsValidLogicalVolume(name)) {
+                if (geometryInfo.IsValidPhysicalVolume(name)) {
+                    name = geometryInfo.GetLogicalVolumeFromPhysical(name);
+                    biasingVolumes.insert(name);
+                } else {
+                    RESTError << "volume name '" << name
+                              << "' inside biasing section is invalid. Please check it belongs to a logical volume"
+                              << RESTendl;
+                    exit(1);
+                }
+            }
+        }
+
+        for (const auto &biasingLogicalVolumeName: biasingVolumes) {
+            G4LogicalVolume *biasingLogicalVolume =
+                    G4LogicalVolumeStore::GetInstance()->GetVolume(biasingLogicalVolumeName, false);
+            if (biasingLogicalVolume == nullptr) {
+                cerr << "Detector construction error: could not find logical volume '" << biasingLogicalVolumeName
+                     << "'"
+                     << endl;
+                exit(1);
+            }
+
+            // TODO: better memory management
+            auto gammaBiasing = new GammaBiasingOperator();
+            gammaBiasing->AttachTo(biasingLogicalVolume);
+            G4cout << " Attaching biasing operator " << gammaBiasing->GetName()
+                   << " to logical volume " << biasingLogicalVolume->GetName()
+                   << G4endl;
+        }
+
+        // Print info
+        cout << "Biasing is enabled " << endl;
+        cout << "Splitting factor: " << biasingInfo.GetSplittingFactor() << endl;
+        cout << "Biasing volumes: " << endl;
+        for (const auto &volume: biasingVolumes) {
+            cout << "\t" << volume << endl;
+        }
+        const auto center = biasingInfo.GetBiasingCenter();
+        cout << "Biasing center: " << center.x() << ", " << center.y() << ", " << center.z() << endl;
+    }
 }
 
 void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume *world) {

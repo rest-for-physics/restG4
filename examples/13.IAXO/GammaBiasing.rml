@@ -22,6 +22,12 @@ Author: Luis Obis (lobis@unizar.es)
             </source>
         </generator>
 
+        <biasing>
+            <volume name="ShieldingVolume"/>
+            <parameter name="splittingFactor" value="2"/>
+            <parameter name="center" value="(0,0,0)mm"/>
+        </biasing>
+
         <detector>
             <parameter name="maxStepSize" value="1mm"/>
             <removeUnwantedTracks enabled="true" keepZeroEnergyTracks="true"/>

@@ -15,38 +15,18 @@ GammaBiasingOperation::GammaBiasingOperation(G4String name)
 
 GammaBiasingOperation::~GammaBiasingOperation() = default;
 
-G4VParticleChange *
-GammaBiasingOperation::
-ApplyFinalStateBiasing(const G4BiasingProcessInterface *callingProcess,
-                       const G4Track *track,
-                       const G4Step *step,
-                       G4bool &) {
+G4VParticleChange *GammaBiasingOperation::ApplyFinalStateBiasing(const G4BiasingProcessInterface *callingProcess,
+                                                                 const G4Track *track,
+                                                                 const G4Step *step,
+                                                                 G4bool &) {
 
     G4VParticleChange *processFinalState =
             callingProcess->GetWrappedProcess()->PostStepDoIt(*track, *step);
 
     if (fSplittingFactor == 1) return processFinalState;
 
-    // -- a special case here: the brem. process corrects for cross-section change
-    // -- over the step due to energy loss by sometimes "abandoning" the interaction,
-    // -- returning an unchanged incoming electron/positron.
-    // -- We respect this correction, and if no secondary is produced, its means this
-    // -- case is happening:
+    // special case: no secondaries
     if (processFinalState->GetNumberOfSecondaries() == 0) return processFinalState;
-
-    // -- Now start the biasing:
-    // --   - the electron state will be taken as the first one produced by the brem.
-    // --     process, hence the one stored in above processFinalState particle change.
-    // --     This state will be stored in our fParticleChange object.
-    // --   - the photon accompanying the electron will be stored also this way.
-    // --   - we will then do fSplittingFactor - 1 call to the brem. process to collect
-    // --     fSplittingFactor - 1 additional gammas. All these will be stored in our
-    // --     fParticleChange object.
-
-    // -- We called the brem. process above. Its concrete particle change is indeed
-    // -- a "G4ParticleChangeForLoss" object. We cast this particle change to access
-    // -- methods of the concrete G4ParticleChangeForLoss type:
-
 
     auto actualParticleChange = (G4ParticleChangeForLoss *) processFinalState;
 
@@ -60,16 +40,8 @@ ApplyFinalStateBiasing(const G4BiasingProcessInterface *callingProcess,
     fParticleChange.
             ProposeMomentumDirection(actualParticleChange->GetProposedMomentumDirection());
 
-    // -- Now deal with the gamma's:
-    // -- their common weight:
-
-    // -- inform we will have fSplittingFactor gamma's:
-
-    // -- inform we take care of secondaries weight (otherwise these
-    // -- secondaries are by default given the primary weight).
     fParticleChange.SetSecondaryWeightByProcess(true);
 
-    // -- Store first gamma:
     G4Track *gammaTrack = actualParticleChange->GetSecondary(0);
 
 
@@ -96,16 +68,11 @@ ApplyFinalStateBiasing(const G4BiasingProcessInterface *callingProcess,
 
     fParticleChange.SetNumberOfSecondaries(nSecondaries);
     fParticleChange.AddSecondary(gammaTrack);
-    // -- and clean-up the brem. process particle change:
 
     actualParticleChange->Clear();
 
-    // -- now start the fSplittingFactor-1 calls to the brem. process to store each
-    // -- related gamma:
     G4int nCalls = 1;
     while (nCalls < nSecondaries) {
-        // ( note: we don't need to cast to actual type here, as methods for accessing
-        //   secondary particles are from base class G4VParticleChange )
         processFinalState = callingProcess->GetWrappedProcess()->PostStepDoIt(*track, *step);
         if (processFinalState->GetNumberOfSecondaries() == 1) {
             gammaTrack = processFinalState->GetSecondary(0);
@@ -121,6 +88,5 @@ ApplyFinalStateBiasing(const G4BiasingProcessInterface *callingProcess,
         processFinalState->Clear();
     }
 
-    // -- we are done:
     return &fParticleChange;
 }
