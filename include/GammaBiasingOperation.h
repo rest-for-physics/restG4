@@ -5,13 +5,15 @@
 #ifndef REST_GAMMABIASINGOPERATION_H
 #define REST_GAMMABIASINGOPERATION_H
 
+#include <TVector3.h>
+
 #include "G4BiasingProcessInterface.hh"
 #include "G4ParticleChange.hh"
 #include "G4VBiasingOperation.hh"
 
 class GammaBiasingOperation : public G4VBiasingOperation {
    public:
-    GammaBiasingOperation(G4String name);
+    GammaBiasingOperation(const G4String& name, G4int splittingFactor, const TVector3& biasingCenter);
 
     virtual ~GammaBiasingOperation();
 
@@ -36,6 +38,7 @@ class GammaBiasingOperation : public G4VBiasingOperation {
    private:
     G4int fSplittingFactor;
     G4ParticleChange fParticleChange;
+    TVector3 fBiasingCenter;
 };
 
 #endif  // REST_GAMMABIASINGOPERATION_H

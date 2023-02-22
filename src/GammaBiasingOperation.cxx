@@ -6,8 +6,12 @@
 #include "G4ParticleChangeForLoss.hh"
 #include "GammaBiasingOperator.h"
 
-GammaBiasingOperation::GammaBiasingOperation(G4String name)
-    : G4VBiasingOperation(std::move(name)), fSplittingFactor(1), fParticleChange() {}
+GammaBiasingOperation::GammaBiasingOperation(const G4String& name, int splittingFactor,
+                                             const TVector3& biasingCenter)
+    : G4VBiasingOperation(name),
+      fSplittingFactor(splittingFactor),
+      fBiasingCenter(biasingCenter),
+      fParticleChange() {}
 
 GammaBiasingOperation::~GammaBiasingOperation() = default;
 

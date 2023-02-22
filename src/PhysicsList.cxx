@@ -129,10 +129,13 @@ void PhysicsList::InitializePhysicsLists() {
         emCounter++;
     }
 
-    fBiasingPhysicsList = new G4GenericBiasingPhysics();
-    std::vector<G4String> processToBias = {"eBrem"};
-    fBiasingPhysicsList->PhysicsBias("e-", processToBias);
-    fBiasingPhysicsList->PhysicsBias("e+", processToBias);
+    const auto& biasingInfo = fSimulationManager->GetRestMetadata()->GetGeant4BiasingInfo();
+    if (biasingInfo.GetEnabled()) {
+        fBiasingPhysicsList = new G4GenericBiasingPhysics();
+        std::vector<G4String> processToBias = {"eBrem"};
+        fBiasingPhysicsList->PhysicsBias("e-", processToBias);
+        fBiasingPhysicsList->PhysicsBias("e+", processToBias);
+    }
 
     if (fRestPhysicsLists->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Essential &&
         emCounter == 0) {

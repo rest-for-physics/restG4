@@ -314,6 +314,8 @@ void DetectorConstruction::ConstructSDandField() {
                         << RESTendl;
                     exit(1);
                 }
+            } else {
+                biasingVolumes.insert(name);
             }
         }
 
@@ -327,7 +329,8 @@ void DetectorConstruction::ConstructSDandField() {
             }
 
             // TODO: better memory management
-            auto gammaBiasing = new GammaBiasingOperator();
+            auto gammaBiasing = new GammaBiasingOperator(biasingInfo.GetSplittingFactor(), true,
+                                                         biasingInfo.GetBiasingCenter());
             gammaBiasing->AttachTo(biasingLogicalVolume);
             G4cout << " Attaching biasing operator " << gammaBiasing->GetName() << " to logical volume "
                    << biasingLogicalVolume->GetName() << G4endl;

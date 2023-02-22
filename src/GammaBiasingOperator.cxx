@@ -8,9 +8,14 @@
 #include "G4GenericMessenger.hh"
 #include "GammaBiasingOperation.h"
 
-GammaBiasingOperator::GammaBiasingOperator()
-    : G4VBiasingOperator("BremSplittingOperator"), fSplittingFactor(1), fBiasOnlyOnce(true) {
-    fBremSplittingOperation = new GammaBiasingOperation("BremSplittingOperation");
+GammaBiasingOperator::GammaBiasingOperator(int splittingFactor, bool biasOnlyOnce,
+                                           const TVector3& biasingCenter)
+    : G4VBiasingOperator("BremSplittingOperator"),
+      fSplittingFactor(splittingFactor),
+      fBiasOnlyOnce(biasOnlyOnce),
+      fBiasingCenter(biasingCenter) {
+    fBremSplittingOperation =
+        new GammaBiasingOperation("BremSplittingOperation", splittingFactor, biasingCenter);
 }
 
 void GammaBiasingOperator::StartRun() { fBremSplittingOperation->SetSplittingFactor(fSplittingFactor); }

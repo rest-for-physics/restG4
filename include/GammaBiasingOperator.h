@@ -5,13 +5,15 @@
 #ifndef REST_GAMMABIASINGOPERATOR_H
 #define REST_GAMMABIASINGOPERATOR_H
 
+#include <TVector3.h>
+
 #include "G4VBiasingOperator.hh"
 
 class GammaBiasingOperation;
 
 class GammaBiasingOperator : public G4VBiasingOperator {
    public:
-    GammaBiasingOperator();
+    GammaBiasingOperator(int splittingFactor, bool biasOnlyOnce, const TVector3& biasingCenter);
 
     virtual ~GammaBiasingOperator() {}
 
@@ -19,6 +21,8 @@ class GammaBiasingOperator : public G4VBiasingOperator {
     virtual void StartRun();
 
     virtual void StartTracking(const G4Track* track);
+
+    TVector3 GetBiasingCenter() const { return fBiasingCenter; }
 
    private:
     virtual G4VBiasingOperation* ProposeNonPhysicsBiasingOperation(const G4Track*,
@@ -42,6 +46,7 @@ class GammaBiasingOperator : public G4VBiasingOperator {
     G4int fSplittingFactor;
     G4bool fBiasOnlyOnce;
     G4int fNInteractions;
+    TVector3 fBiasingCenter;
 };
 
 #endif  // REST_GAMMABIASINGOPERATOR_H
