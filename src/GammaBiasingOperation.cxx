@@ -1,17 +1,19 @@
 
+#include <utility>
+
 #include "GammaBiasingOperation.h"
 #include "GammaBiasingOperator.h"
 
 #include "G4ParticleChangeForLoss.hh"
 
 GammaBiasingOperation::GammaBiasingOperation(G4String name)
-        : G4VBiasingOperation(name),
+        : G4VBiasingOperation(std::move(name)),
           fSplittingFactor(1),
           fParticleChange() {
 }
 
 
-GammaBiasingOperation::~GammaBiasingOperation() {}
+GammaBiasingOperation::~GammaBiasingOperation() = default;
 
 G4VParticleChange *
 GammaBiasingOperation::
@@ -20,12 +22,9 @@ ApplyFinalStateBiasing(const G4BiasingProcessInterface *callingProcess,
                        const G4Step *step,
                        G4bool &) {
 
-    // -- Collect brem. process (wrapped process) final state:
     G4VParticleChange *processFinalState =
             callingProcess->GetWrappedProcess()->PostStepDoIt(*track, *step);
 
-    // -- if no splitting requested, let the brem. process to return directly its
-    // -- generated final state:
     if (fSplittingFactor == 1) return processFinalState;
 
     // -- a special case here: the brem. process corrects for cross-section change
@@ -39,16 +38,17 @@ ApplyFinalStateBiasing(const G4BiasingProcessInterface *callingProcess,
     // --   - the electron state will be taken as the first one produced by the brem.
     // --     process, hence the one stored in above processFinalState particle change.
     // --     This state will be stored in our fParticleChange object.
-    // --   - the photon accompagnying the electron will be stored also this way.
+    // --   - the photon accompanying the electron will be stored also this way.
     // --   - we will then do fSplittingFactor - 1 call to the brem. process to collect
-    // --     fSplittingFactor - 1 additionnal gammas. All these will be stored in our
+    // --     fSplittingFactor - 1 additional gammas. All these will be stored in our
     // --     fParticleChange object.
 
     // -- We called the brem. process above. Its concrete particle change is indeed
     // -- a "G4ParticleChangeForLoss" object. We cast this particle change to access
     // -- methods of the concrete G4ParticleChangeForLoss type:
-    G4ParticleChangeForLoss *actualParticleChange =
-            (G4ParticleChangeForLoss *) processFinalState;
+
+
+    auto actualParticleChange = (G4ParticleChangeForLoss *) processFinalState;
 
     fParticleChange.Initialize(*track);
 

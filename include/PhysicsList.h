@@ -10,33 +10,43 @@
 
 #include "SimulationManager.h"
 
+
+class G4GenericBiasingPhysics;
+
 class PhysicsList : public G4VModularPhysicsList {
-   public:
+public:
     PhysicsList() = delete;
-    explicit PhysicsList(SimulationManager* simulationManager, TRestGeant4PhysicsLists* restPhysicsLists);
+
+    explicit PhysicsList(SimulationManager *simulationManager, TRestGeant4PhysicsLists *restPhysicsLists);
+
     ~PhysicsList() override;
 
-   protected:
+protected:
     // Construct particle and physics
     virtual void InitializePhysicsLists();
 
     void ConstructParticle() override;
+
     void ConstructProcess() override;
+
     void SetCuts() override;
 
-   private:
-    SimulationManager* fSimulationManager = nullptr;
+private:
+    SimulationManager *fSimulationManager = nullptr;
 
     G4EmConfigurator fEmConfig;
 
-    G4VPhysicsConstructor* fEmPhysicsList = nullptr;
+    G4VPhysicsConstructor *fEmPhysicsList = nullptr;
     std::string fEmPhysicsListName;  // Can be different from the output of GetPhysicsName
 
-    G4VPhysicsConstructor* fDecPhysicsList = nullptr;
-    G4VPhysicsConstructor* fRadDecPhysicsList = nullptr;
-    std::vector<G4VPhysicsConstructor*> fHadronPhys;
+    G4VPhysicsConstructor *fDecPhysicsList = nullptr;
+    G4VPhysicsConstructor *fRadDecPhysicsList = nullptr;
+    std::vector<G4VPhysicsConstructor *> fHadronPhys;
 
-    TRestGeant4PhysicsLists* fRestPhysicsLists = nullptr;
+    G4GenericBiasingPhysics *fBiasingPhysicsList = nullptr;
+
+    TRestGeant4PhysicsLists *fRestPhysicsLists = nullptr;
+
 };
 
 #endif

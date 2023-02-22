@@ -10,8 +10,8 @@
 
 GammaBiasingOperator::GammaBiasingOperator()
         : G4VBiasingOperator("BremSplittingOperator"),
-          fSplittingFactor(1),
-          fBiasPrimaryOnly(true),
+          fSplittingFactor(10),
+          fBiasPrimaryOnly(false),
           fBiasOnlyOnce(true) {
     fBremSplittingOperation = new GammaBiasingOperation("BremSplittingOperation");
 }
@@ -38,6 +38,7 @@ void GammaBiasingOperator::StartTracking(const G4Track * /* track */ ) {
 G4VBiasingOperation *
 GammaBiasingOperator::ProposeFinalStateBiasingOperation(const G4Track *track,
                                                         const G4BiasingProcessInterface * /* callingProcess */) {
+
     // -- Check if biasing of primary particle only is requested. If so, and
     // -- if particle is not a primary one, don't ask for biasing:
     if (fBiasPrimaryOnly && (track->GetParentID() != 0)) return nullptr;

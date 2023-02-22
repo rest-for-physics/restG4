@@ -3,6 +3,7 @@
 
 #include <CLHEP/Units/PhysicalConstants.h>
 
+#include <G4GenericBiasingPhysics.hh>
 #include <G4BetheBlochIonGasModel.hh>
 #include <G4BraggIonGasModel.hh>
 #include <G4DecayPhysics.hh>
@@ -42,8 +43,8 @@
 
 using namespace std;
 
-PhysicsList::PhysicsList(SimulationManager* simulationManager, TRestGeant4PhysicsLists* physicsLists)
-    : G4VModularPhysicsList(), fSimulationManager(simulationManager) {
+PhysicsList::PhysicsList(SimulationManager *simulationManager, TRestGeant4PhysicsLists *physicsLists)
+        : G4VModularPhysicsList(), fSimulationManager(simulationManager) {
     // add new units for radioActive decays
     const G4double G4minute = 60 * second;
     const G4double G4hour = 60 * G4minute;
@@ -60,8 +61,8 @@ PhysicsList::PhysicsList(SimulationManager* simulationManager, TRestGeant4Physic
     G4LossTableManager::Instance();
     // fix lower limit for cut
     G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(
-        fRestPhysicsLists->GetMinimumEnergyProductionCuts() * keV,
-        fRestPhysicsLists->GetMaximumEnergyProductionCuts() * keV);
+            fRestPhysicsLists->GetMinimumEnergyProductionCuts() * keV,
+            fRestPhysicsLists->GetMaximumEnergyProductionCuts() * keV);
 
     InitializePhysicsLists();
 }
@@ -70,7 +71,7 @@ PhysicsList::~PhysicsList() {
     delete fEmPhysicsList;
     delete fDecPhysicsList;
     delete fRadDecPhysicsList;
-    for (auto& hadronicPhysicsList : fHadronPhys) {
+    for (auto &hadronicPhysicsList: fHadronPhys) {
         delete hadronicPhysicsList;
     }
 }
@@ -128,6 +129,11 @@ void PhysicsList::InitializePhysicsLists() {
         emCounter++;
     }
 
+    fBiasingPhysicsList = new G4GenericBiasingPhysics();
+    std::vector<G4String> processToBias = {"eBrem"};
+    fBiasingPhysicsList->PhysicsBias("e-", processToBias);
+    fBiasingPhysicsList->PhysicsBias("e+", processToBias);
+
     if (fRestPhysicsLists->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Essential &&
         emCounter == 0) {
         RESTWarning << "PhysicsList: No EM physics list has been enabled" << RESTendl;
@@ -179,7 +185,11 @@ void PhysicsList::ConstructParticle() {
         fRadDecPhysicsList->ConstructParticle();
     }
 
-    for (auto& hadronicPhysicsList : fHadronPhys) {
+    if (fBiasingPhysicsList) {
+        fBiasingPhysicsList->ConstructParticle();
+    }
+
+    for (auto &hadronicPhysicsList: fHadronPhys) {
         hadronicPhysicsList->ConstructParticle();
     }
 }
@@ -192,27 +202,27 @@ void PhysicsList::ConstructProcess() {
         fEmPhysicsList->ConstructProcess();
         fEmConfig.AddModels();
 
-        G4UImanager* UI = G4UImanager::GetUIpointer();
+        G4UImanager *UI = G4UImanager::GetUIpointer();
         UI->ApplyCommand("/process/em/fluo true");
         UI->ApplyCommand("/process/em/auger true");
         UI->ApplyCommand("/process/em/pixe true");
 
         bool boolEmOptionPixe = StringToBool(
-            fRestPhysicsLists->GetPhysicsListOptionValue(fEmPhysicsListName.c_str(), "pixe", "false").Data());
+                fRestPhysicsLists->GetPhysicsListOptionValue(fEmPhysicsListName.c_str(), "pixe", "false").Data());
         string stringEmOptionPixe = (boolEmOptionPixe ? "true" : "false");
         G4cout << "Setting EM option '/process/em/pixe' to '" << stringEmOptionPixe << "' for physics list '"
                << fEmPhysicsListName << "'" << endl;
         UI->ApplyCommand(string("/process/em/pixe ") + stringEmOptionPixe);
 
         bool boolEmOptionFluo = StringToBool(
-            fRestPhysicsLists->GetPhysicsListOptionValue(fEmPhysicsListName.c_str(), "fluo", "true").Data());
+                fRestPhysicsLists->GetPhysicsListOptionValue(fEmPhysicsListName.c_str(), "fluo", "true").Data());
         string stringEmOptionFluo = (boolEmOptionFluo ? "true" : "false");
         G4cout << "Setting EM option '/process/em/fluo' to '" << stringEmOptionFluo << "' for physics list '"
                << fEmPhysicsListName << "'" << endl;
         UI->ApplyCommand(string("/process/em/fluo ") + stringEmOptionFluo);
 
         bool boolEmOptionAuger = StringToBool(
-            fRestPhysicsLists->GetPhysicsListOptionValue(fEmPhysicsListName.c_str(), "auger", "true").Data());
+                fRestPhysicsLists->GetPhysicsListOptionValue(fEmPhysicsListName.c_str(), "auger", "true").Data());
         string stringEmOptionAuger = (boolEmOptionAuger ? "true" : "false");
         G4cout << "Setting EM option '/process/em/auger' to '" << stringEmOptionAuger
                << "' for physics list '" << fEmPhysicsListName << "'" << endl;
@@ -229,8 +239,12 @@ void PhysicsList::ConstructProcess() {
         fRadDecPhysicsList->ConstructProcess();
     }
 
+    if (fBiasingPhysicsList) {
+        fBiasingPhysicsList->ConstructProcess();
+    }
+
     // Hadronic physics lists
-    for (auto& hadronicPhysicsList : fHadronPhys) {
+    for (auto &hadronicPhysicsList: fHadronPhys) {
         hadronicPhysicsList->ConstructProcess();
     }
 
@@ -282,15 +296,15 @@ void PhysicsList::ConstructProcess() {
         if (!(fRestPhysicsLists->GetPhysicsListOptionValue("G4RadioactiveDecay", "TritiumDecay") ==
               "false") &&
             (fRestPhysicsLists->GetPhysicsListOptionValue("G4RadioactiveDecay", "TritiumDecay", "false") ==
-                 "true" ||
+             "true" ||
              fSimulationManager->GetRestMetadata()->GetParticleSource()->GetParticleName() == "H3")) {
             // Tritium (H3) fix | https://geant4-forum.web.cern.ch/t/triton-decay-with-rdecay01-example/2616
-            G4ParticleDefinition* tritium = G4Triton::Definition();
+            G4ParticleDefinition *tritium = G4Triton::Definition();
             tritium->SetPDGStable(false);
 
-            G4VProcess* decay = nullptr;
-            G4ProcessManager* tritiumProcessManager = tritium->GetProcessManager();
-            G4ProcessVector* tritiumProcessVector = tritiumProcessManager->GetAtRestProcessVector();
+            G4VProcess *decay = nullptr;
+            G4ProcessManager *tritiumProcessManager = tritium->GetProcessManager();
+            G4ProcessVector *tritiumProcessVector = tritiumProcessManager->GetAtRestProcessVector();
             for (unsigned int i = 0; i < tritiumProcessVector->size() && decay == nullptr; i++) {
                 if ((*tritiumProcessVector)[i]->GetProcessName() == "Decay")
                     decay = (*tritiumProcessVector)[i];
@@ -311,9 +325,9 @@ void PhysicsList::ConstructProcess() {
     // To implement UserLimits to StepSize inside the gas
     theParticleIterator->reset();
     while ((*theParticleIterator)()) {
-        G4ParticleDefinition* particle = theParticleIterator->value();
-        const auto& particleName = particle->GetParticleName();
-        G4ProcessManager* processManager = particle->GetProcessManager();
+        G4ParticleDefinition *particle = theParticleIterator->value();
+        const auto &particleName = particle->GetParticleName();
+        G4ProcessManager *processManager = particle->GetProcessManager();
 
         if (particleName == "e-") {
             processManager->AddDiscreteProcess(new G4StepLimiter("e-Step"));
@@ -333,10 +347,10 @@ void PhysicsList::ConstructProcess() {
         for (int A = 2 * Z; A <= 3 * Z; A++) {
             for (unsigned int n = 0; n < fRestPhysicsLists->GetIonStepList().size(); n++) {
                 if (fRestPhysicsLists->GetIonStepList()[n] == G4IonTable::GetIonTable()->GetIonName(Z, A)) {
-                    G4ParticleDefinition* particle = G4IonTable::GetIonTable()->GetIon(Z, A, 0);
+                    G4ParticleDefinition *particle = G4IonTable::GetIonTable()->GetIon(Z, A, 0);
                     G4String particle_name = G4IonTable::GetIonTable()->GetIonName(Z, A, 0);
                     cout << "Found ion: " << particle_name << " Z " << Z << " A " << A << endl;
-                    G4ProcessManager* processManager = particle->GetProcessManager();
+                    G4ProcessManager *processManager = particle->GetProcessManager();
                     processManager->AddDiscreteProcess(new G4StepLimiter("ionStep"));
                 }
             }
