@@ -10,21 +10,21 @@
 
 using namespace std;
 
-TRestGeant4Event::TRestGeant4Event(const G4Event* event) : TRestGeant4Event() {
+TRestGeant4Event::TRestGeant4Event(const G4Event *event) : TRestGeant4Event() {
     SetID(event->GetEventID());
     SetOK(true);
     time_t system_time = time(nullptr);
 
-    SetTime((Double_t)system_time);
+    SetTime((Double_t) system_time);
 
     auto primaryVertex = event->GetPrimaryVertex();
-    const auto& position = primaryVertex->GetPosition();
+    const auto &position = primaryVertex->GetPosition();
     fPrimaryPosition = {position.x() / CLHEP::mm, position.y() / CLHEP::mm, position.z() / CLHEP::mm};
     for (int i = 0; i < primaryVertex->GetNumberOfParticle(); i++) {
-        const auto& primaryParticle = primaryVertex->GetPrimary(i);
+        const auto &primaryParticle = primaryVertex->GetPrimary(i);
         fPrimaryParticleNames.emplace_back(primaryParticle->GetParticleDefinition()->GetParticleName());
         fPrimaryEnergies.emplace_back(primaryParticle->GetKineticEnergy() / CLHEP::keV);
-        const auto& momentum = primaryParticle->GetMomentumDirection();
+        const auto &momentum = primaryParticle->GetMomentumDirection();
         fPrimaryDirections.emplace_back(momentum.x(), momentum.y(), momentum.z());
     }
 
@@ -49,7 +49,7 @@ TRestGeant4Event::TRestGeant4Event(const G4Event* event) : TRestGeant4Event() {
     */
 }
 
-bool TRestGeant4Event::InsertTrack(const G4Track* track) {
+bool TRestGeant4Event::InsertTrack(const G4Track *track) {
     if (fInitialStep.GetNumberOfHits() != 1) {
         cout << "fInitialStep does not have exactly one step! Problem with stepping verbose" << endl;
         exit(1);
@@ -60,10 +60,10 @@ bool TRestGeant4Event::InsertTrack(const G4Track* track) {
         // First track of sub-event (primary)
         fSubEventPrimaryParticleName = track->GetParticleDefinition()->GetParticleName();
         fSubEventPrimaryEnergy = track->GetKineticEnergy() / CLHEP::keV;
-        const auto& position = track->GetPosition();
+        const auto &position = track->GetPosition();
         fSubEventPrimaryPosition = {position.x() / CLHEP::mm, position.y() / CLHEP::mm,
                                     position.z() / CLHEP::mm};
-        const auto& momentum = track->GetMomentumDirection();
+        const auto &momentum = track->GetMomentumDirection();
         fSubEventPrimaryDirection = {momentum.x(), momentum.y(), momentum.z()};
     }
 
@@ -71,12 +71,12 @@ bool TRestGeant4Event::InsertTrack(const G4Track* track) {
 
     fTracks.emplace_back(track);
 
-    auto& insertedTrack = fTracks.back();
+    auto &insertedTrack = fTracks.back();
 
     insertedTrack.SetHits(fInitialStep);
     insertedTrack.SetEvent(this);
 
-    TRestGeant4Track* parentTrack = GetTrackByID(track->GetParentID());
+    TRestGeant4Track *parentTrack = GetTrackByID(track->GetParentID());
     if (parentTrack) {
         parentTrack->AddSecondaryTrackID(track->GetTrackID());
     }
@@ -84,9 +84,9 @@ bool TRestGeant4Event::InsertTrack(const G4Track* track) {
     return true;
 }
 
-void TRestGeant4Event::UpdateTrack(const G4Track* track) { fTracks.back().UpdateTrack(track); }
+void TRestGeant4Event::UpdateTrack(const G4Track *track) { fTracks.back().UpdateTrack(track); }
 
-void TRestGeant4Event::InsertStep(const G4Step* step) {
+void TRestGeant4Event::InsertStep(const G4Step *step) {
     if (step->GetTrack()->GetCurrentStepNumber() == 0) {
         // initial step (from SteppingVerbose) is generated before TrackingAction can insert the first track
         fInitialStep = TRestGeant4Hits();
@@ -97,11 +97,11 @@ void TRestGeant4Event::InsertStep(const G4Step* step) {
     }
 }
 
-bool OutputManager::IsValidTrack(const G4Track*) const { return true; }
+bool OutputManager::IsValidTrack(const G4Track *) const { return true; }
 
-bool OutputManager::IsValidStep(const G4Step*) const { return true; }
+bool OutputManager::IsValidStep(const G4Step *) const { return true; }
 
-TRestGeant4Track::TRestGeant4Track(const G4Track* track) : TRestGeant4Track() {
+TRestGeant4Track::TRestGeant4Track(const G4Track *track) : TRestGeant4Track() {
     fTrackID = track->GetTrackID();
     fParentID = track->GetParentID();
 
@@ -124,13 +124,13 @@ TRestGeant4Track::TRestGeant4Track(const G4Track* track) : TRestGeant4Track() {
 
     fGlobalTimestamp = track->GetGlobalTime() / CLHEP::microsecond;
 
-    const G4ThreeVector& trackOrigin = track->GetPosition();
+    const G4ThreeVector &trackOrigin = track->GetPosition();
     fInitialPosition = {trackOrigin.x(), trackOrigin.y(), trackOrigin.z()};
 }
 
-void TRestGeant4Track::InsertStep(const G4Step* step) { fHits.InsertStep(step); }
+void TRestGeant4Track::InsertStep(const G4Step *step) { fHits.InsertStep(step); }
 
-void TRestGeant4Track::UpdateTrack(const G4Track* track) {
+void TRestGeant4Track::UpdateTrack(const G4Track *track) {
     if (track->GetTrackID() != fTrackID) {
         G4cout << "Geant4Track::UpdateTrack - mismatch of trackID!" << endl;
         exit(1);
@@ -140,19 +140,19 @@ void TRestGeant4Track::UpdateTrack(const G4Track* track) {
     fTimeLength = track->GetGlobalTime() / CLHEP::microsecond - fGlobalTimestamp;
 }
 
-Int_t TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(const G4VProcess* process) {
+Int_t TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(const G4VProcess *process) {
     return process->GetProcessType() * 1000 + process->GetProcessSubType();
 }
 
-void TRestGeant4Hits::InsertStep(const G4Step* step) {
-    const G4Track* track = step->GetTrack();
+void TRestGeant4Hits::InsertStep(const G4Step *step) {
+    const G4Track *track = step->GetTrack();
 
-    TRestGeant4Metadata* metadata = GetGeant4Metadata();
+    TRestGeant4Metadata *metadata = GetGeant4Metadata();
 
-    const auto& geometryInfo = metadata->GetGeant4GeometryInfo();
+    const auto &geometryInfo = metadata->GetGeant4GeometryInfo();
 
-    const auto& volumeNameGeant4 = step->GetPreStepPoint()->GetPhysicalVolume()->GetName();
-    const auto& volumeName = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(volumeNameGeant4);
+    const auto &volumeNameGeant4 = step->GetPreStepPoint()->GetPhysicalVolume()->GetName();
+    const auto &volumeName = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(volumeNameGeant4);
 
     if (!metadata->IsActiveVolume(volumeName) && step->GetTrack()->GetCurrentStepNumber() != 0) {
         // we always store the first step
@@ -161,9 +161,9 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
 
     const bool kill = metadata->IsKillVolume(volumeName);
 
-    const auto& particle = step->GetTrack()->GetDefinition();
-    const auto& particleID = particle->GetPDGEncoding();
-    const auto& particleName = particle->GetParticleName();
+    const auto &particle = step->GetTrack()->GetDefinition();
+    const auto &particleID = particle->GetPDGEncoding();
+    const auto &particleName = particle->GetParticleName();
 
     auto energy = step->GetTotalEnergyDeposit() / CLHEP::keV;
 
@@ -195,7 +195,8 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
         processName = "REST-for-physics-kill";
         processTypeName = "REST-for-physics";
         processID = 1000000;  // use id out of range!
-        energy = 0;
+        const bool computeEnergy = metadata->GetKillVolumesComputeEnergy();
+        energy = computeEnergy ? step->GetTrack()->GetKineticEnergy() / CLHEP::keV : 0;
 
         step->GetTrack()->SetTrackStatus(fStopAndKill);
     }
@@ -203,9 +204,9 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     metadata->fGeant4PhysicsInfo.InsertProcessName(processID, processName, processTypeName);
 
     auto sensitiveVolumeName =
-        geometryInfo.GetAlternativeNameFromGeant4PhysicalName(metadata->GetSensitiveVolume());
+            geometryInfo.GetAlternativeNameFromGeant4PhysicalName(metadata->GetSensitiveVolume());
 
-    G4Track* aTrack = step->GetTrack();
+    G4Track *aTrack = step->GetTrack();
 
     Double_t x = aTrack->GetPosition().x() / CLHEP::mm;
     Double_t y = aTrack->GetPosition().y() / CLHEP::mm;
@@ -213,7 +214,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
 
     const TVector3 hitPosition(x, y, z);
     const Double_t hitGlobalTime = track->GetGlobalTime() / CLHEP::microsecond;
-    const G4ThreeVector& momentum = track->GetMomentumDirection();
+    const G4ThreeVector &momentum = track->GetMomentumDirection();
 
     AddHit(hitPosition, energy, hitGlobalTime);  // this increases fNHits
 
@@ -227,9 +228,9 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
 }
 
 void OutputManager::RemoveUnwantedTracks() {
-    const auto& metadata = fSimulationManager->GetRestMetadata();
+    const auto &metadata = fSimulationManager->GetRestMetadata();
     set<int> trackIDsToKeep;  // We populate this container with the tracks we want to keep
-    for (const auto& track : fEvent->fTracks) {
+    for (const auto &track: fEvent->fTracks) {
         // If one children track is kept, we keep all the parents
         if (trackIDsToKeep.count(track.GetTrackID()) > 0) {
             continue;
@@ -255,7 +256,7 @@ void OutputManager::RemoveUnwantedTracks() {
     // const size_t numberOfTracksBefore = fEvent->fTracks.size();
 
     vector<TRestGeant4Track> tracksAfterRemoval;
-    for (const auto& track : fEvent->fTracks) {
+    for (const auto &track: fEvent->fTracks) {
         // we do this to preserve original order
         if (trackIDsToKeep.count(track.GetTrackID()) > 0) {
             tracksAfterRemoval.push_back(*(fEvent->GetTrackByID(track.GetTrackID())));

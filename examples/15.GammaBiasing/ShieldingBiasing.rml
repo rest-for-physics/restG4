@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+
+<restG4>
+    <globals>
+        <parameter name="mainDataPath" value=""/>
+        <parameter name="verboseLevel" value="essential"/>
+    </globals>
+
+    <TRestRun>
+        <parameter name="experimentName" value="CosmicGenerator"/>
+        <parameter name="runType" value="simulation"/>
+        <parameter name="runNumber" value="1"/>
+        <parameter name="runTag" value="CosmicGenerator"/>
+        <parameter name="outputFileName" value="CosmicGenerator.root"/>
+        <parameter name="runDescription" value=""/>
+        <parameter name="user" value="${USER}"/>
+        <parameter name="overwrite" value="off"/>
+        <parameter name="readOnly" value="false"/>
+    </TRestRun>
+
+    <TRestGeant4Metadata>
+        <parameter name="gdmlFile" value="geometry/setup.gdml"/>
+        <parameter name="seed" value="137"/>
+        <parameter name="nRequestedEntries" value="100"/>
+        <parameter name="saveAllEvents" value="false"/>
+        <parameter name="killVolumesComputeEnergy" value="true"/>
+        <generator type="point" position="(0,0,-100)" units="mm">
+            <source particle="gamma">
+                <energy type="mono" value="1GeV"/>
+                <angular type="flux" direction="(0,0,1)"/>
+            </source>
+        </generator>
+
+        <detector>
+            <volume name="target" sensitive="true" maxStepSize="1mm"/>
+        </detector>
+
+    </TRestGeant4Metadata>
+
+    <TRestGeant4PhysicsLists name="default" title="First physics list implementation"/>
+</restG4>
