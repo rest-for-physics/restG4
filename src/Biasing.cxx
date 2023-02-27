@@ -5,25 +5,25 @@
 
 // Operation
 
-GammaBiasingOperation::GammaBiasingOperation(const G4String &name, int splittingFactor,
-                                             const TVector3 &biasingCenter)
-        : G4VBiasingOperation(name),
-          fSplittingFactor(splittingFactor),
-          fParticleChange(),
-          fBiasingCenter(biasingCenter) {}
+GammaBiasingOperation::GammaBiasingOperation(const G4String& name, int splittingFactor,
+                                             const TVector3& biasingCenter)
+    : G4VBiasingOperation(name),
+      fSplittingFactor(splittingFactor),
+      fParticleChange(),
+      fBiasingCenter(biasingCenter) {}
 
 GammaBiasingOperation::~GammaBiasingOperation() = default;
 
-G4VParticleChange *GammaBiasingOperation::ApplyFinalStateBiasing(
-        const G4BiasingProcessInterface *callingProcess, const G4Track *track, const G4Step *step, G4bool &) {
-    G4VParticleChange *processFinalState = callingProcess->GetWrappedProcess()->PostStepDoIt(*track, *step);
+G4VParticleChange* GammaBiasingOperation::ApplyFinalStateBiasing(
+    const G4BiasingProcessInterface* callingProcess, const G4Track* track, const G4Step* step, G4bool&) {
+    G4VParticleChange* processFinalState = callingProcess->GetWrappedProcess()->PostStepDoIt(*track, *step);
 
     if (fSplittingFactor == 1) return processFinalState;
 
     // special case: no secondaries
     if (processFinalState->GetNumberOfSecondaries() == 0) return processFinalState;
 
-    auto actualParticleChange = (G4ParticleChangeForLoss *) processFinalState;
+    auto actualParticleChange = (G4ParticleChangeForLoss*)processFinalState;
 
     fParticleChange.Initialize(*track);
 
@@ -34,13 +34,13 @@ G4VParticleChange *GammaBiasingOperation::ApplyFinalStateBiasing(
 
     fParticleChange.SetSecondaryWeightByProcess(true);
 
-    G4Track *gammaTrack = actualParticleChange->GetSecondary(0);
+    G4Track* gammaTrack = actualParticleChange->GetSecondary(0);
 
     int nSecondaries = 1;
     double weightFactor = 1.0;
 
     const auto diff =
-            gammaTrack->GetPosition() - G4ThreeVector(fBiasingCenter.X(), fBiasingCenter.Y(), fBiasingCenter.Z());
+        gammaTrack->GetPosition() - G4ThreeVector(fBiasingCenter.X(), fBiasingCenter.Y(), fBiasingCenter.Z());
     if (gammaTrack->GetMomentumDirection().dot(diff) < 0) {
         // pointing towards point of interest
         nSecondaries = fSplittingFactor;
@@ -78,7 +78,7 @@ G4VParticleChange *GammaBiasingOperation::ApplyFinalStateBiasing(
             fParticleChange.AddSecondary(gammaTrack);
             nCalls++;
         }
-            // -- very rare special case: we ignore for now.
+        // -- very rare special case: we ignore for now.
         else if (processFinalState->GetNumberOfSecondaries() > 1) {
             for (G4int i = 0; i < processFinalState->GetNumberOfSecondaries(); i++)
                 delete processFinalState->GetSecondary(i);
