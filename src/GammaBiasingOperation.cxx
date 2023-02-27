@@ -6,25 +6,25 @@
 #include "G4ParticleChangeForLoss.hh"
 #include "GammaBiasingOperator.h"
 
-GammaBiasingOperation::GammaBiasingOperation(const G4String& name, int splittingFactor,
-                                             const TVector3& biasingCenter)
-    : G4VBiasingOperation(name),
-      fSplittingFactor(splittingFactor),
-      fParticleChange(),
-      fBiasingCenter(biasingCenter) {}
+GammaBiasingOperation::GammaBiasingOperation(const G4String &name, int splittingFactor,
+                                             const TVector3 &biasingCenter)
+        : G4VBiasingOperation(name),
+          fSplittingFactor(splittingFactor),
+          fParticleChange(),
+          fBiasingCenter(biasingCenter) {}
 
 GammaBiasingOperation::~GammaBiasingOperation() = default;
 
-G4VParticleChange* GammaBiasingOperation::ApplyFinalStateBiasing(
-    const G4BiasingProcessInterface* callingProcess, const G4Track* track, const G4Step* step, G4bool&) {
-    G4VParticleChange* processFinalState = callingProcess->GetWrappedProcess()->PostStepDoIt(*track, *step);
+G4VParticleChange *GammaBiasingOperation::ApplyFinalStateBiasing(
+        const G4BiasingProcessInterface *callingProcess, const G4Track *track, const G4Step *step, G4bool &) {
+    G4VParticleChange *processFinalState = callingProcess->GetWrappedProcess()->PostStepDoIt(*track, *step);
 
     if (fSplittingFactor == 1) return processFinalState;
 
     // special case: no secondaries
     if (processFinalState->GetNumberOfSecondaries() == 0) return processFinalState;
 
-    auto actualParticleChange = (G4ParticleChangeForLoss*)processFinalState;
+    auto actualParticleChange = (G4ParticleChangeForLoss *) processFinalState;
 
     fParticleChange.Initialize(*track);
 
@@ -35,30 +35,39 @@ G4VParticleChange* GammaBiasingOperation::ApplyFinalStateBiasing(
 
     fParticleChange.SetSecondaryWeightByProcess(true);
 
-    G4Track* gammaTrack = actualParticleChange->GetSecondary(0);
+    G4Track *gammaTrack = actualParticleChange->GetSecondary(0);
 
-    // print gamma info (energy, direction)
-    /*
-    G4cout << "Gamma info. Weight: " << gammaTrack->GetWeight()
-           << " Energy (keV): " << gammaTrack->GetKineticEnergy() / CLHEP::keV << " Direction: "
-           << gammaTrack->GetMomentumDirection() << G4endl;
-    */
-    // if direction points towards (0,0,0)
-    bool split = false;
-    const auto diff = gammaTrack->GetPosition() - G4ThreeVector(0, 0, 0);
+    int nSecondaries = 1;
+    double weightFactor = 1.0;
+
+    const auto diff =
+            gammaTrack->GetPosition() - G4ThreeVector(fBiasingCenter.X(), fBiasingCenter.Y(), fBiasingCenter.Z());
     if (gammaTrack->GetMomentumDirection().dot(diff) < 0) {
-        // G4cout << "Gamma points towards (0,0,0)" << G4endl;
-        split = true;
+        // pointing towards point of interest
+        nSecondaries = fSplittingFactor;
+        weightFactor = 1.0 / fSplittingFactor;
+    } else {
+        // pointing away from point of interest
+        // random number between 0 and 1
+        const double rand = G4UniformRand();
+        // if random number is less than 1 / fSplittingFactor, keep alive
+        if (rand < 1.0 / fSplittingFactor) {
+            nSecondaries = 1;
+            weightFactor = fSplittingFactor; // increase weight
+        } else {
+            nSecondaries = 0;
+            weightFactor = 0;
+        }
     }
 
-    const int nSecondaries = split ? fSplittingFactor : 1;
-
-    G4double gammaWeight = track->GetWeight() / nSecondaries;
+    G4double gammaWeight = track->GetWeight() * weightFactor;
     // G4cout << "Gamma weight: " << gammaWeight << " nSecondaries: " << nSecondaries << G4endl;
     gammaTrack->SetWeight(gammaWeight);
 
     fParticleChange.SetNumberOfSecondaries(nSecondaries);
-    fParticleChange.AddSecondary(gammaTrack);
+    if (nSecondaries > 0) {
+        fParticleChange.AddSecondary(gammaTrack);
+    }
 
     actualParticleChange->Clear();
 
@@ -71,7 +80,7 @@ G4VParticleChange* GammaBiasingOperation::ApplyFinalStateBiasing(
             fParticleChange.AddSecondary(gammaTrack);
             nCalls++;
         }
-        // -- very rare special case: we ignore for now.
+            // -- very rare special case: we ignore for now.
         else if (processFinalState->GetNumberOfSecondaries() > 1) {
             for (G4int i = 0; i < processFinalState->GetNumberOfSecondaries(); i++)
                 delete processFinalState->GetSecondary(i);
