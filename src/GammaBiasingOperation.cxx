@@ -10,8 +10,8 @@ GammaBiasingOperation::GammaBiasingOperation(const G4String& name, int splitting
                                              const TVector3& biasingCenter)
     : G4VBiasingOperation(name),
       fSplittingFactor(splittingFactor),
-      fBiasingCenter(biasingCenter),
-      fParticleChange() {}
+      fParticleChange(),
+      fBiasingCenter(biasingCenter) {}
 
 GammaBiasingOperation::~GammaBiasingOperation() = default;
 
