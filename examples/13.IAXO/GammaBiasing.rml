@@ -29,14 +29,15 @@ Author: Luis Obis (lobis@unizar.es)
             <volume name="gasVolume" sensitive="true" maxStepSize="0.05mm"/>
             <volume name="^scintillatorVolume" sensitive="false" keepTracks="true" maxStepSize="0.5mm"/>
             <volume name="^captureLayerVolume" sensitive="false" keepTracks="true" maxStepSize="0.05mm"/>
-            <volume name="ShieldingVolume" sensitive="false" maxStepSize="5mm"/>
+            <volume name="shieldingVolume" sensitive="false" maxStepSize="5mm"/>
         </detector>
 
         <biasing type="split">
             <volume name="shieldingVolume"/>
             <parameter name="splittingFactor" value="2"/>
             <parameter name="center" value="(0,0,0)mm"/>
-        </biasing>l
+        </biasing>
+        l
 
     </TRestGeant4Metadata>
 
