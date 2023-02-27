@@ -15,10 +15,10 @@ Author: Luis Obis (lobis@unizar.es)
         <parameter name="nRequestedEntries" value="1"/>
         <parameter name="saveAllEvents" value="false"/>
 
-        <generator type="point" position="(0,2000,0)mm">
+        <generator type="cosmic">
             <source particle="gamma">
-                <energy type="mono" energy="1.0" units="GeV"/>
-                <angular type="flux" direction="(0,-1,0)"/>
+                <energy type="formula" name="cosmic" range="(1, 100)GeV"/>
+                <angular type="formula" name="Cos2" direction="(0,-1,0)" nPoints="1000"/>
             </source>
         </generator>
 
@@ -27,8 +27,8 @@ Author: Luis Obis (lobis@unizar.es)
             <removeUnwantedTracks enabled="true" keepZeroEnergyTracks="true"/>
 
             <volume name="gasVolume" sensitive="true" maxStepSize="0.05mm"/>
-            <volume name="^scintillatorVolume" sensitive="false" keepTracks="true" maxStepSize="0.5mm"/>
-            <volume name="^captureLayerVolume" sensitive="false" keepTracks="true" maxStepSize="0.05mm"/>
+            <volume name="^scintillatorVolume" sensitive="false" keepTracks="false" maxStepSize="0.5mm"/>
+            <volume name="^captureLayerVolume" sensitive="false" keepTracks="false" maxStepSize="0.05mm"/>
             <volume name="shieldingVolume" sensitive="false" maxStepSize="5mm"/>
         </detector>
 
