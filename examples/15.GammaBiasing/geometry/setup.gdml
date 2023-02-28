@@ -20,8 +20,15 @@
     <define>
         <constant name="world_size" value="2000"/>
 
-        <variable name="shieldingThickness" value="100"/>
+        <variable name="shieldingThickness" value="200"/>
         <variable name="shieldingSide" value="1000"/>
+
+        <!-- This should not be required because it's not relevant -->
+        <variable name="targetGasDensity" value="1.78"/> <!-- mg/cm3 -->
+        <variable name="quencherDensity" value="2.51*0.01"/> <!-- mg/cm3 -->
+        <variable name="quencherFraction" value="0.01"/>
+        <variable name="gasTemperature" value="300"/>
+        <variable name="gasPressure" value="1"/>
 
     </define>
 
@@ -62,7 +69,7 @@
         </volume>
 
     </structure>
-    
+
     <setup name="Default" version="1.0">
         <world ref="World"/>
     </setup>

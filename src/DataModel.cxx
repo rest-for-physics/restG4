@@ -196,7 +196,12 @@ void TRestGeant4Hits::InsertStep(const G4Step *step) {
         processTypeName = "REST-for-physics";
         processID = 1000000;  // use id out of range!
         const bool computeEnergy = metadata->GetKillVolumesComputeEnergy();
-        energy = computeEnergy ? step->GetTrack()->GetKineticEnergy() / CLHEP::keV : 0;
+        energy = 0;
+        if (computeEnergy) {
+            // needs to be here because track is killed before entering sensitive detector
+            energy = step->GetTrack()->GetKineticEnergy() / CLHEP::keV;
+            SimulationManager::GetOutputManager()->AddSensitiveEnergy(energy);
+        }
 
         step->GetTrack()->SetTrackStatus(fStopAndKill);
     }

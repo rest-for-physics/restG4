@@ -4,22 +4,21 @@
 #include <G4Geantino.hh>
 #include <G4Step.hh>
 #include <G4SystemOfUnits.hh>
-#include <G4Track.hh>
 #include <G4VProcess.hh>
 
 #include "SimulationManager.h"
 
 using namespace std;
 
-SensitiveDetector::SensitiveDetector(SimulationManager* simulationManager, const G4String& name)
-    : G4VSensitiveDetector(name), fSimulationManager(simulationManager) {}
+SensitiveDetector::SensitiveDetector(SimulationManager *simulationManager, const G4String &name)
+        : G4VSensitiveDetector(name), fSimulationManager(simulationManager) {}
 
-G4bool SensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*) {
+G4bool SensitiveDetector::ProcessHits(G4Step *step, G4TouchableHistory *) {
     // return value will always be ignored, its present for backwards compatibility (I guess)
     const auto volumeName = fSimulationManager->GetRestMetadata()
-                                ->GetGeant4GeometryInfo()
-                                .GetAlternativeNameFromGeant4PhysicalName(
-                                    step->GetPreStepPoint()->GetPhysicalVolume()->GetName());
+            ->GetGeant4GeometryInfo()
+            .GetAlternativeNameFromGeant4PhysicalName(
+                    step->GetPreStepPoint()->GetPhysicalVolume()->GetName());
 
     const bool isGeantino = step->GetTrack()->GetParticleDefinition() == G4Geantino::Definition();
 
