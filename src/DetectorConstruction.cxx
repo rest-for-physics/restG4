@@ -149,22 +149,34 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     if (spatialGeneratorTypeEnum == TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::VOLUME &&
         primaryGeneratorInfo.GetSpatialGeneratorFrom() != "Not defined") {
-        G4VPhysicalVolume* pVol = GetPhysicalVolume(primaryGeneratorInfo.GetSpatialGeneratorFrom().Data());
-        if (pVol == nullptr) {
-            cout << "ERROR: The generator volume '" << primaryGeneratorInfo.GetSpatialGeneratorFrom()
-                 << "'was not found in the geometry" << endl;
+        G4VPhysicalVolume* physicalVolume =
+            GetPhysicalVolume(primaryGeneratorInfo.GetSpatialGeneratorFrom().Data());
+        if (physicalVolume == nullptr) {
+            // perhaps the user selected a logical volume instead
+            auto physicalVolumes = geometryInfo.GetAllPhysicalVolumesFromLogical(
+                primaryGeneratorInfo.GetSpatialGeneratorFrom().Data());
+            if (physicalVolumes.size() == 1) {
+                physicalVolume = GetPhysicalVolume(physicalVolumes[0].Data());
+                cout << "Generator volume '" << primaryGeneratorInfo.GetSpatialGeneratorFrom()
+                     << "' was not found in the geometry. Using the physical volume '" << physicalVolumes[0]
+                     << "' instead, which was obtained from logical volume '"
+                     << primaryGeneratorInfo.GetSpatialGeneratorFrom() << "'" << endl;
+            }
+        }
+        if (physicalVolume == nullptr) {
+            cerr << "ERROR: The generator volume '" << primaryGeneratorInfo.GetSpatialGeneratorFrom()
+                 << "' was not found in the geometry" << endl;
             exit(1);
-            // return worldVolume;
         }
 
-        fGeneratorTranslation = pVol->GetTranslation();
+        fGeneratorTranslation = physicalVolume->GetTranslation();
         if (spatialGeneratorTypeEnum == TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::SURFACE ||
             spatialGeneratorTypeEnum == TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::VOLUME) {
             restG4Metadata->fGeant4PrimaryGeneratorInfo.fSpatialGeneratorPosition = {
                 fGeneratorTranslation.x(), fGeneratorTranslation.y(), fGeneratorTranslation.z()};
         }
 
-        fGeneratorSolid = pVol->GetLogicalVolume()->GetSolid();
+        fGeneratorSolid = physicalVolume->GetLogicalVolume()->GetSolid();
 
         fBoundBoxXMax = -1.e30;
         fBoundBoxYMax = -1.e30;
@@ -202,13 +214,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     for (unsigned int id = 0; id < restG4Metadata->GetNumberOfActiveVolumes(); id++) {
         TString activeVolumeName = restG4Metadata->GetActiveVolumeName(id);
-        G4VPhysicalVolume* pVol = GetPhysicalVolume((G4String)activeVolumeName);
-        if (pVol != nullptr) {
-            G4LogicalVolume* lVol = pVol->GetLogicalVolume();
+        G4VPhysicalVolume* physicalVolume = GetPhysicalVolume((G4String)activeVolumeName);
+        if (physicalVolume != nullptr) {
+            G4LogicalVolume* logicalVolume = physicalVolume->GetLogicalVolume();
             if (restG4Metadata->GetMaxStepSize(activeVolumeName) > 0) {
                 RESTInfo << "Setting maxStepSize of " << restG4Metadata->GetMaxStepSize(activeVolumeName) * mm
                          << "mm for volume '" << activeVolumeName << "'" << RESTendl;
-                lVol->SetUserLimits(new G4UserLimits(restG4Metadata->GetMaxStepSize(activeVolumeName) * mm));
+                logicalVolume->SetUserLimits(
+                    new G4UserLimits(restG4Metadata->GetMaxStepSize(activeVolumeName) * mm));
             }
         } else {
             cerr << "DetectorConstruction::Construct - Volume '" << activeVolumeName
