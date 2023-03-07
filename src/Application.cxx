@@ -546,4 +546,4 @@ void Application::ValidateOutputFile(const string& filename) const {
     }
 }
 
-Application::~Application() { delete fSteppingVerbose; }
+Application::~Application() = default;
