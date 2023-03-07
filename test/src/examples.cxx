@@ -167,6 +167,50 @@ TEST(restG4, Example_04_Muons) {
     cout << "Number of entries: " << run.GetEntries() << endl;
 }
 
+TEST(restG4, MergeFiles) {
+    // cd into example
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "04.MuonScan";
+    fs::current_path(thisExamplePath);
+
+    CommandLineOptions::Options options;
+    options.rmlFile = "CosmicMuonsFromWall.rml";
+
+    // create "merge" directory
+    auto mergeDirectory = fs::create_directory(thisExamplePath / "merge");
+    options.nEvents = 1000;
+
+    options.outputFile = mergeDirectory / "muons1.root";
+    {
+        Application app;
+        app.Run(options);
+    }
+
+    options.nEvents = 500;
+    options.outputFile = mergeDirectory / "muons2.root";
+    {
+        Application app;
+        app.Run(options);
+    }
+
+    options.nEvents = 200;
+    options.outputFile = mergeDirectory / "muons3.root";
+    {
+        Application app;
+        app.Run(options);
+    }
+
+    // run system command to merge files
+    const auto command = "restMergeFiles merge.root " + mergeDirectory.string();
+    cout << "Running command: " << command << endl;
+    const auto result = system(command.c_str());
+    EXPECT_EQ(result, 0);
+
+    TRestRun run("merge.root");
+    cout << "Number of entries: " << run.GetEntries() << endl;
+    EXPECT_EQ(run.GetEntries(), 1700);
+}
+
 TEST(restG4, Example_04_Muons_MT) {
     // cd into example
     const auto originalPath = fs::current_path();
