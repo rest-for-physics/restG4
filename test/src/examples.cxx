@@ -177,50 +177,59 @@ TEST(restG4, MergeFiles) {
     options.rmlFile = "CosmicMuonsFromWall.rml";
 
     // create "merge" directory
-    auto mergeDirectory = fs::create_directory(thisExamplePath / "merge");
+    auto mergeDirectory = thisExamplePath / "merge";
+    fs::create_directory(mergeDirectory);
     options.nEvents = 1000;
 
     options.outputFile = mergeDirectory / "muons1.root";
     {
-        Application app;
-        app.Run(options);
+        string command =
+            "restG4 CosmicMuonsFromWall.rml -n " + to_string(options.nEvents) + " -o " + options.outputFile;
+        const auto result = system(command.c_str());
+        EXPECT_EQ(result, 0);
     }
 
     options.nEvents = 500;
     options.outputFile = mergeDirectory / "muons2.root";
     {
-        Application app;
-        app.Run(options);
+        string command =
+            "restG4 CosmicMuonsFromWall.rml -n " + to_string(options.nEvents) + " -o " + options.outputFile;
+        const auto result = system(command.c_str());
+        EXPECT_EQ(result, 0);
     }
 
     options.nEvents = 200;
     options.outputFile = mergeDirectory / "muons3.root";
     {
-        Application app;
-        app.Run(options);
+        string command =
+            "restG4 CosmicMuonsFromWall.rml -n " + to_string(options.nEvents) + " -o " + options.outputFile;
+        const auto result = system(command.c_str());
+        EXPECT_EQ(result, 0);
     }
-
-    // run system command to merge files
-    const auto command = "restMergeFiles merge.root " + mergeDirectory.string();
-    cout << "Running command: " << command << endl;
-    const auto result = system(command.c_str());
-    EXPECT_EQ(result, 0);
 
     int nEntries = 0;
     {
-        TRestRun run("muons1.root");
+        TRestRun run(mergeDirectory / "muons1.root");
         nEntries += run.GetEntries();
     }
     {
-        TRestRun run("muons2.root");
+        TRestRun run(mergeDirectory / "muons2.root");
         nEntries += run.GetEntries();
     }
     {
-        TRestRun run("muons3.root");
+        TRestRun run(mergeDirectory / "muons3.root");
         nEntries += run.GetEntries();
     }
 
     cout << "Computed number of entries: " << nEntries << endl;
+
+    // run system command to merge files
+    const auto command =
+        "root -b -q \"$REST_PATH/macros/geant4/REST_Geant4_MergeRestG4Files.C(\\\"merge.root\\\", \\\"" +
+        mergeDirectory.string() + "\\\")\"";
+    cout << "Running command: " << command << endl;
+    const auto result = system(command.c_str());
+    EXPECT_EQ(result, 0);
 
     TRestRun run("merge.root");
     auto metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
