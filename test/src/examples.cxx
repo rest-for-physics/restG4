@@ -206,9 +206,29 @@ TEST(restG4, MergeFiles) {
     const auto result = system(command.c_str());
     EXPECT_EQ(result, 0);
 
+    int nEntries = 0;
+    {
+        TRestRun run("muons1.root");
+        nEntries += run.GetEntries();
+    }
+    {
+        TRestRun run("muons2.root");
+        nEntries += run.GetEntries();
+    }
+    {
+        TRestRun run("muons3.root");
+        nEntries += run.GetEntries();
+    }
+
+    cout << "Computed number of entries: " << nEntries << endl;
+
     TRestRun run("merge.root");
+    auto metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
     cout << "Number of entries: " << run.GetEntries() << endl;
-    EXPECT_EQ(run.GetEntries(), 1700);
+    cout << "Number of primaries: " << metadata->GetNumberOfEvents() << endl;
+
+    EXPECT_EQ(metadata->GetNumberOfEvents(), 1700);
+    EXPECT_EQ(run.GetEntries(), nEntries);
 }
 
 TEST(restG4, Example_04_Muons_MT) {
