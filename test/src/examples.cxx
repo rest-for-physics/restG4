@@ -232,7 +232,11 @@ TEST(restG4, MergeFiles) {
     EXPECT_EQ(result, 0);
 
     TRestRun run("merge.root");
-    auto metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
+    TRestGeant4Metadata* metadata = (TRestGeant4Metadata*)run.GetMetadataClass("TRestGeant4Metadata");
+    if (metadata == nullptr) {
+        cerr << "TRestGeant4Metadata not found!" << endl;
+        exit(1);
+    }
     cout << "Number of entries: " << run.GetEntries() << endl;
     cout << "Number of primaries: " << metadata->GetNumberOfEvents() << endl;
 
