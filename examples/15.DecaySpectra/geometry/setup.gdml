@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+
+<!DOCTYPE gdml [
+        <!ENTITY materials SYSTEM "https://rest-for-physics.github.io/materials/materials.xml">
+        ]>
+
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+
+    <define>
+        <constant name="worldSize" value="100"/>
+    </define>
+
+    &materials;
+
+    <solids>
+        <box name="worldSolid" x="worldSize" y="worldSize" z="worldSize" lunit="mm"/>
+        <orb name="detectorSphereSolid" r="50" lunit="mm"/>
+    </solids>
+
+    <structure>
+
+        <volume name="detectorVolume">
+            <materialref ref="Vacuum"/>
+            <solidref ref="detectorSphereSolid"/>
+        </volume>
+
+        <volume name="World">
+            <materialref ref="Vacuum"/>
+            <solidref ref="worldSolid"/>
+
+            <physvol name="detector">
+                <volumeref ref="detectorVolume"/>
+                <position name="detectorPosition" unit="mm" x="0" y="0" z="0"/>
+            </physvol>
+        </volume>
+
+    </structure>
+
+    <setup name="Default" version="1.0">
+        <world ref="World"/>
+    </setup>
+
+</gdml>
