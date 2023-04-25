@@ -335,7 +335,7 @@ void PhysicsList::ConstructProcess() {
                 if (fRestPhysicsLists->GetIonStepList()[n] == G4IonTable::GetIonTable()->GetIonName(Z, A)) {
                     G4ParticleDefinition* particle = G4IonTable::GetIonTable()->GetIon(Z, A, 0);
                     G4String particle_name = G4IonTable::GetIonTable()->GetIonName(Z, A, 0);
-                    cout << "Found ion: " << particle_name << " Z " << Z << " A " << A << endl;
+                    RESTDebug << "Found ion: " << particle_name << " Z " << Z << " A " << A << RESTendl;
                     G4ProcessManager* processManager = particle->GetProcessManager();
                     processManager->AddDiscreteProcess(new G4StepLimiter("ionStep"));
                 }
