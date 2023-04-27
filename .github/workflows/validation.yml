@@ -13,7 +13,7 @@ on:
 env:
   CMAKE_BUILD_TYPE: Release
   REST_PATH: /rest/framework/install
-  REST_FRAMEWORK_SOURCE_DIR: /rest/framework/source
+  RESTG4_PATH: restG4
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 defaults:
@@ -33,10 +33,10 @@ jobs:
         with:
           branch: ${{ env.BRANCH_NAME }}
           repository: rest-for-physics/restG4
-          path: ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
+          path: ${{ env.RESTG4_PATH }}
       - name: Verify pre-commit config files match
         run: |
-          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
+          cd ${{ env.RESTG4_PATH }}
           curl https://raw.githubusercontent.com/rest-for-physics/framework/master/scripts/validatePreCommitConfig.py | python
 
   framework-install:
