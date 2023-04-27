@@ -6,7 +6,7 @@ on:
 
 env:
   CMAKE_BUILD_TYPE: Release
-  REST_PATH: /rest/framework/install
+  REST_PATH: /rest/restG4/install
   RESTG4_PATH: restG4
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
