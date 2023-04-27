@@ -6,7 +6,7 @@ on:
 
 env:
   CMAKE_BUILD_TYPE: Release
-  REST_PATH: /rest/restG4/install
+  REST_INSTALL_PATH: /rest/restG4/install
   RESTG4_PATH: restG4
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
@@ -43,13 +43,13 @@ jobs:
       - name: Build and install
         uses: rest-for-physics/framework/.github/actions/build@master
         with:
-          cmake-flags: "-DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}"
+          cmake-flags: "-DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_INSTALL_PATH }}"
           branch: ${{ env.BRANCH_NAME }}
       - name: Cache framework installation
         id: framework-install-restG4-cache
         uses: actions/cache@v3
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
 
   check-installation:
@@ -63,27 +63,27 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Check libraries
         run: |
           echo $LD_LIBRARY_PATH
-          ls -lht ${{ env.REST_PATH }}
-          ls -lht ${{ env.REST_PATH }}/lib | grep .so
-          ls -lht ${{ env.REST_PATH }}/bin
+          ls -lht ${{ env.REST_INSTALL_PATH }}
+          ls -lht ${{ env.REST_INSTALL_PATH }}/lib | grep .so
+          ls -lht ${{ env.REST_INSTALL_PATH }}/bin
       - name: Check root
         run: |
           root-config --version
           root -b -q
       - name: Check framework
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cat ${{ env.REST_PATH }}/thisREST.sh
-          cat ${{ env.REST_PATH }}/bin/rest-config
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cat ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cat ${{ env.REST_INSTALL_PATH }}/bin/rest-config
           rest-config --welcome
       - name: Check restG4
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
           restG4 --help
 
   restG4-standalone-install:
@@ -103,11 +103,11 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Build as standalone
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
           cd ${{ env.RESTG4_PATH }}
           mkdir -p build-standalone && cd build-standalone
           cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=/rest/restG4-standalone/install
@@ -126,12 +126,12 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/01.NLDBD/
           restG4 NLDBD.rml -o Run00001_NLDBD_Test.root
           restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
 
@@ -147,12 +147,12 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/03.Fluorescence/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/03.Fluorescence/
           restG4 gamma.rml -o gamma_fluorescence.root
           restManager --c g4Analysis.rml --f gamma_fluorescence.root -o gamma_fluorescence_analysis.root
           restRoot -b -q Validate.C'("gamma_fluorescence_analysis.root")'
@@ -169,12 +169,12 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/04.MuonScan/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/04.MuonScan/
           restG4 MuonsFromPoint.rml -o MuonsFromPoint.root
           restRoot -b -q ValidateMuonsFromPoint.C'("MuonsFromPoint.root")'
           restG4 CosmicMuonsFromWall.rml -o CosmicMuonsFromWall.root
@@ -196,12 +196,12 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/05.PandaXIII/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/05.PandaXIII/
           restG4 Xe136bb0n.rml -o Xe136bb0n.root
           restRoot -b -q Validate.C'("Xe136bb0n.root")'
 
@@ -217,12 +217,12 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/06.IonRecoils/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/06.IonRecoils/
           restG4 recoils.rml -o Run00001_F20_Recoils.root
           restRoot -b -q Validate.C'("Run00001_F20_Recoils.root")'
 
@@ -238,12 +238,12 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/07.FullChainDecay/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/07.FullChainDecay/
           restG4 fullChain.rml -o Run00001_U238_FullChainDecay.root
           restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 15)'
           restG4 singleDecay.rml -o Run00002_U238_SingleChainDecay.root
@@ -264,12 +264,12 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/08.Alphas/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/08.Alphas/
           mkdir data
           export REST_ENERGY=5
           export REST_FOIL=1
@@ -298,12 +298,12 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/09.Pb210_Shield/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/09.Pb210_Shield/
           restG4 Pb210.rml -o Run00001_Pb210_Shielding.root
           restRoot -b -q Validate.C'("Run00001_Pb210_Shielding.root")'
 
@@ -319,12 +319,12 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/10.Geometries/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/10.Geometries/
           restG4 Assembly.rml -o Run00001_Assembly_Assembly.root
           restRoot -b -q Validate.C'("Run00001_Assembly_Assembly.root")'
 
@@ -340,19 +340,19 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Launching Gammas
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/11.Xrays/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/11.Xrays/
           restG4 xrays.rml -o xrays_simulation.root
           restManager --c analysis.rml --f xrays_simulation.root --o xrays_simulation_analysis.root
           restRoot -b -q GetQE.C'("xrays_simulation_analysis.root")'
       - name: Launching Fe55 source
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/11.Xrays/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/11.Xrays/
           restG4 Fe55.rml -o Fe55_simulation.root
           restManager --c analysis.rml --f Fe55_simulation.root --o Fe55_simulation_analysis.root
           restRoot -b -q ValidateFe55.C'("Fe55_simulation_analysis.root")'
@@ -369,12 +369,12 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/12.Generators/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/12.Generators/
           restG4 CosineSquaredCircle.rml -o CosineSquaredCircle.root
           restRoot -b -q ValidateCosineSquared.C'("CosineSquaredCircle.root")'
           restG4 CosmicGenerator.rml -o CosmicGenerator.root
@@ -392,12 +392,12 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/13.IAXO/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/13.IAXO/
           restG4 Neutrons.rml -o Neutrons.root
           restRoot -b -q Validate.C'("Neutrons.root")'
 
@@ -413,12 +413,12 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/14.DetectorResponse/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/14.DetectorResponse/
           source launchResponse.sh
           restManager --c analysis.rml --f RestG4_XenonNeon_30Pct_1.5bar_Drift3cm_Size6cm.root
           restRoot -b -q ValidateResponse.C'("G4Analysis_XenonNeon_30Pct_1.5bar_Drift3cm_Size6cm.root")'
@@ -436,17 +436,17 @@ jobs:
       - name: Build and install
         uses: rest-for-physics/framework/.github/actions/build@master
         with:
-          cmake-flags: "-DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}"
+          cmake-flags: "-DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_INSTALL_PATH }}"
           branch: ${{ env.BRANCH_NAME }}
       - name: Use old materials for reference Geant4 version
         run: |
-          cd ${{ env.REST_PATH }}
+          cd ${{ env.REST_INSTALL_PATH }}
           find . -name "*.gdml" | xargs sed -i 's/https:\/\/rest-for-physics.github.io\/materials\/rest.xml/https:\/\/rest-for-physics.github.io\/materials\/legacy\/v1.4\/rest.xml/g'
       - name: Cache framework installation
         id: framework-install-restG4-cache-reference
         uses: actions/cache@v3
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
 
   check-installation-reference:
@@ -460,7 +460,7 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache-reference
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Check root
         run: |
@@ -468,13 +468,13 @@ jobs:
           root -b -q
       - name: Check framework
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cat ${{ env.REST_PATH }}/thisREST.sh
-          cat ${{ env.REST_PATH }}/bin/rest-config
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cat ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cat ${{ env.REST_INSTALL_PATH }}/bin/rest-config
           rest-config --welcome
       - name: Check restG4
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
           restG4 --help
 
   restG4-examples-01-reference:
@@ -489,12 +489,12 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache-reference
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/01.NLDBD/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/01.NLDBD/
           restG4 NLDBD.rml -o Run00001_NLDBD_Test.root
           restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
 
@@ -510,12 +510,12 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache-reference
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/06.IonRecoils/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/06.IonRecoils/
           restG4 recoils.rml -o Run00001_F20_Recoils.root
           restRoot -b -q Validate.C'("Run00001_F20_Recoils.root")'
 
@@ -531,12 +531,12 @@ jobs:
         uses: actions/cache@v3
         id: framework-install-restG4-cache-reference
         with:
-          path: ${{ env.REST_PATH }}
+          path: ${{ env.REST_INSTALL_PATH }}
           key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
-          source ${{ env.REST_PATH }}/thisREST.sh
-          cd ${{ env.REST_PATH }}/examples/restG4/07.FullChainDecay/
+          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/07.FullChainDecay/
           restG4 fullChain.rml -o Run00001_U238_FullChainDecay.root
           restRoot -b -q Validate.C'("Run00001_U238_FullChainDecay.root", 15)'
           restG4 singleDecay.rml -o Run00002_U238_SingleChainDecay.root
