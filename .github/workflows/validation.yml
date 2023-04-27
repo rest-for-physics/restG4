@@ -4,12 +4,6 @@ on:
   workflow_dispatch:
   workflow_call:
 
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  release:
-
 env:
   CMAKE_BUILD_TYPE: Release
   REST_PATH: /rest/framework/install
