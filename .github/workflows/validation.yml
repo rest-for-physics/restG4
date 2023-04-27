@@ -15,7 +15,6 @@ defaults:
     shell: bash
 
 jobs:
-
   precommit-config:
     name: Validate pre-commit config
     runs-on: ubuntu-latest
@@ -94,7 +93,12 @@ jobs:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics
     needs: [ framework-install, check-installation ]
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout restG4
+        uses: rest-for-physics/framework/.github/actions/checkout@master
+        with:
+          branch: ${{ env.BRANCH_NAME }}
+          repository: rest-for-physics/restG4
+          path: ${{ env.RESTG4_PATH }}
       - name: Restore cache
         uses: actions/cache@v3
         id: framework-install-restG4-cache
@@ -104,6 +108,7 @@ jobs:
       - name: Build as standalone
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
+          cd ${{ env.RESTG4_PATH }}
           mkdir -p build-standalone && cd build-standalone
           cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=/rest/restG4-standalone/install
           make -j4 install
