@@ -47,26 +47,28 @@ Int_t Validate() {
         return 30;
     }
 
-    if (TMath::Abs(thetaSample - thetaSampleRef) / thetaSampleRef >= 0.01) {
+    std::cout << "Theta sample : " << thetaSample << " Theta sample (ref): " << thetaSampleRef << std::endl;
+    if (TMath::Abs(thetaSample - thetaSampleRef) / TMath::Abs(thetaSampleRef) >= 0.01) {
         cout << "Wrong theta angle value for entry 100!" << endl;
         cout << "Theta value is : " << thetaSample << " while it should be : " << thetaSampleRef << endl;
         return 60;
     }
 
-    if (TMath::Abs(phiSample - phiSampleRef) / phiSampleRef >= 0.01) {
+    std::cout << "Phi sample : " << phiSample << " Phi sample (ref): " << phiSampleRef << std::endl;
+    if (TMath::Abs(phiSample - phiSampleRef) / TMath::Abs(phiSampleRef) >= 0.01) {
         cout << "Wrong phi angle value for entry 100!" << endl;
         cout << "Phi value is : " << phiSample << " while it should be : " << phiSampleRef << endl;
         return 60;
     }
 
-    if (TMath::Abs(thetaAverage - thetaAverageRef) / thetaAverageRef >= 0.01) {
+    if (TMath::Abs(thetaAverage - thetaAverageRef) / TMath::Abs(thetaAverageRef) >= 0.01) {
         cout << "Wrong theta angle average!" << endl;
         cout << "Theta angle average : " << thetaAverage << " while it should be : " << thetaAverageRef
              << endl;
         return 80;
     }
 
-    if (TMath::Abs(phiAverage - phiAverageRef) / phiAverageRef >= 0.01) {
+    if (TMath::Abs(phiAverage - phiAverageRef) / TMath::Abs(phiAverageRef) >= 0.01) {
         cout << "Wrong phi angle average!" << endl;
         cout << "Phi angle average : " << phiAverage << " while it should be : " << phiAverageRef << endl;
         return 90;
