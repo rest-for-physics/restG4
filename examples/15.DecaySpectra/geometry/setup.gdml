@@ -15,13 +15,13 @@
 
     <solids>
         <box name="worldSolid" x="worldSize" y="worldSize" z="worldSize" lunit="mm"/>
-        <orb name="detectorSphereSolid" r="50" lunit="mm"/>
+        <orb name="detectorSphereSolid" r="5" lunit="mm"/>
     </solids>
 
     <structure>
 
         <volume name="detectorVolume">
-            <materialref ref="Vacuum"/>
+            <materialref ref="G4_Pb"/>
             <solidref ref="detectorSphereSolid"/>
         </volume>
 
