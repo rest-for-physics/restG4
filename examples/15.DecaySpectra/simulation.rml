@@ -20,7 +20,7 @@
         <parameter name="readOnly" value="false"/>
     </TRestRun>
 
-    <TRestGeant4Metadata name="DecaySpectra" title="DecaySpectra_{REST_ISOTOPE}">
+    <TRestGeant4Metadata name="DecaySpectra" title="DecaySpectra">
 
         <parameter name="gdmlFile" value="geometry/setup.gdml"/>
         <parameter name="subEventTimeDelay" value="100" units="us"/>

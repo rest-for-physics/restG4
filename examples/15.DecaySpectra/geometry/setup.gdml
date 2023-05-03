@@ -8,14 +8,14 @@
       xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
 
     <define>
-        <constant name="worldSize" value="100"/>
+        <constant name="worldSize" value="10"/>
     </define>
 
     &materials;
 
     <solids>
         <box name="worldSolid" x="worldSize" y="worldSize" z="worldSize" lunit="mm"/>
-        <orb name="detectorSphereSolid" r="5" lunit="mm"/>
+        <orb name="detectorSphereSolid" r="2.5" lunit="mm"/>
     </solids>
 
     <structure>
