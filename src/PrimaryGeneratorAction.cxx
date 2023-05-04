@@ -566,12 +566,12 @@ void PrimaryGeneratorAction::SetParticlePosition() {
 }
 
 G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() const {
-    double u1 = G4UniformRand();
-    double u2 = G4UniformRand();
+    double z = 2 * G4UniformRand() - 1;                      // random uniform in [-1, 1]
+    double theta = TMath::Pi() * (2 * G4UniformRand() - 1);  // random uniform in [-pi, pi]
 
-    double x = TMath::Sqrt(-2 * TMath::Log(u1)) * TMath::Cos(2 * TMath::Pi() * u2);
-    double y = TMath::Sqrt(-2 * TMath::Log(u1)) * TMath::Sin(2 * TMath::Pi() * u2);
-    double z = TMath::Sqrt(1 - x * x - y * y);
+    const double sqrt = TMath::Sqrt(1 - z * z);
+    double x = TMath::Sin(theta) * sqrt;
+    double y = TMath::Cos(theta) * sqrt;
 
     return {x, y, z};
 }
