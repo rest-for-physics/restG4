@@ -9,7 +9,7 @@
 <gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
 
-    <!-- Just an example of main geometry file : myGeometryTemplate.gdml 
+    <!-- Just an example of main geometry file : myGeometryTemplate.gdml
          This file just defines de parameters of the geometry.
          The geometry it is defined in geometry/myGeometryDefinition.gdml
          The materials are defined in geometry/materials.xml
@@ -31,9 +31,7 @@
     </define>
 
     &materials;
-
     &geometry;
-
 
     <setup name="Default" version="1.0">
         <world ref="World"/>

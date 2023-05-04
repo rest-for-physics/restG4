@@ -70,6 +70,10 @@ jobs:
           ./scripts/checkoutRemoteBranch.sh ${{ env.BRANCH_NAME }}
           git log -1 --stat
       - uses: actions/checkout@v3
+      - name: Verify pre-commit config files match
+        run: |
+          cd $GITHUB_WORKSPACE
+          python ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/scripts/validatePreCommitConfig.py
       - name: Setup, build and install
         run: |
           cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}

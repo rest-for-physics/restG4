@@ -13,7 +13,7 @@
 		<!-- All lenghts should be in mm -->
         <constant name="world_size" value="20000"/>
 
-		<variable name="targetGasDensity" value="(100-${GDML_QUENCHER_PCT})/100. * ${GDML_PRESSURE} * ${GDML_TARGET_DENSITY} * (273.15+15) / 273.15 / 1.01325"/> 
+		<variable name="targetGasDensity" value="(100-${GDML_QUENCHER_PCT})/100. * ${GDML_PRESSURE} * ${GDML_TARGET_DENSITY} * (273.15+15) / 273.15 / 1.01325"/>
 
 		<variable name="quencherDensity" value="${GDML_QUENCHER_PCT} / 100. * ${GDML_PRESSURE} * ${GDML_QUENCHER_DENSITY}  * (273.15+15) / 273.15 / 1.01325"/>
 		<variable name="quencherFraction" value="${GDML_QUENCHER_PCT} / 100."/>
