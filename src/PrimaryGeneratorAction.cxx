@@ -337,8 +337,8 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
     TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
     TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
 
-    G4ThreeVector direction = {source->GetDirection().X(), source->GetDirection().Y(),
-                               source->GetDirection().Z()};
+    const auto sourceDirection = source->GetDirection();
+    G4ThreeVector direction = {sourceDirection.X(), sourceDirection.Y(), sourceDirection.Z()};
 
     const string angularDistTypeName = source->GetAngularDistributionType().Data();
     const auto angularDistTypeEnum = StringToAngularDistributionTypes(angularDistTypeName);
@@ -347,20 +347,16 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
         cout << "DEBUG: Angular distribution: " << angularDistTypeName << endl;
     }
 
-    // generator type
-    /* Apparently not used
-
-    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
-
-const string& spatialGeneratorTypeName = primaryGeneratorInfo.GetSpatialGeneratorType().Data();
-const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
-
-const string& spatialGeneratorShapeName = primaryGeneratorInfo.GetSpatialGeneratorShape().Data();
-const auto spatialGeneratorShapeEnum = StringToSpatialGeneratorShapes(spatialGeneratorShapeName);
-    */
-
     if (angularDistTypeEnum == AngularDistributionTypes::ISOTROPIC) {
-        direction = GetIsotropicVector();
+        if (source->GetAngularDistributionIsotropicConeHalfAngle() > 0) {
+            const auto originalDirection = direction;
+            do {
+                direction = GetIsotropicVector();
+            } while (originalDirection.angle(direction) >
+                     source->GetAngularDistributionIsotropicConeHalfAngle());
+        } else {
+            direction = GetIsotropicVector();
+        }
     } else if (angularDistTypeEnum == AngularDistributionTypes::TH1D) {
         Double_t angle = 0;
         Double_t value = G4UniformRand() * fAngularDistributionHistogram->Integral();
