@@ -570,20 +570,14 @@ void PrimaryGeneratorAction::SetParticlePosition() {
 }
 
 G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() const {
-    G4double a, b, c;
-    G4double n;
-    do {
-        a = (G4UniformRand() - 0.5) / 0.5;
-        b = (G4UniformRand() - 0.5) / 0.5;
-        c = (G4UniformRand() - 0.5) / 0.5;
-        n = a * a + b * b + c * c;
-    } while (n > 1 || n == 0.0);
+    double u1 = G4UniformRand();
+    double u2 = G4UniformRand();
 
-    n = sqrt(n);
-    a /= n;
-    b /= n;
-    c /= n;
-    return {a, b, c};
+    double x = TMath::Sqrt(-2 * TMath::Log(u1)) * TMath::Cos(2 * TMath::Pi() * u2);
+    double y = TMath::Sqrt(-2 * TMath::Log(u1)) * TMath::Sin(2 * TMath::Pi() * u2);
+    double z = TMath::Sqrt(1 - x * x - y * y);
+
+    return {x, y, z};
 }
 
 void PrimaryGeneratorAction::GenPositionOnGDMLVolume(double& x, double& y, double& z) {
