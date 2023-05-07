@@ -593,4 +593,3 @@ jobs:
           export REST_ISOTOPE=Be7
           restG4 singleDecay.rml
           restRoot -b -q Validate.C'("Run00002_Be7_SingleChainDecay.root", 1)'
-
