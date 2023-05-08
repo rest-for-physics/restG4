@@ -494,7 +494,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-ref-${{ github.sha }}
 
   check-installation-reference:
     name: Check framework and restG4 are accessible
@@ -508,7 +508,7 @@ jobs:
         id: framework-install-restG4-cache-reference
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-ref-${{ github.sha }}
       - name: Check root
         run: |
           root-config --version
@@ -538,7 +538,7 @@ jobs:
         id: framework-install-restG4-cache-reference
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-ref-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -560,7 +560,7 @@ jobs:
         id: framework-install-restG4-cache-reference
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-ref-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
@@ -581,7 +581,7 @@ jobs:
         id: framework-install-restG4-cache-reference
         with:
           path: ${{ env.REST_PATH }}
-          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-ref-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_PATH }}/thisREST.sh
