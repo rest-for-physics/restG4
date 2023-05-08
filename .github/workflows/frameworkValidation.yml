@@ -21,4 +21,4 @@ defaults:
 
 jobs:
   framework-validation:
-    uses: rest-for-physics/framework/.github/workflows/validation.yml@validation_framework
+    uses: rest-for-physics/framework/.github/workflows/validation.yml@master
