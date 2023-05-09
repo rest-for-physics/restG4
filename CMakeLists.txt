@@ -111,11 +111,11 @@ install(
     COMPONENT install)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
-if( CMAKE_SYSTEM_NAME MATCHES "Darwin")
+if (CMAKE_SYSTEM_NAME MATCHES "Darwin")
     install(TARGETS ${LIBRARY} DESTINATION bin)
-else()
+else ()
     install(TARGETS ${LIBRARY} DESTINATION lib)
-endif()
+endif ()
 
 if (NOT ${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
     set(package_added "${PROJECT_NAME} ")
