@@ -1,0 +1,17 @@
+name: "Merge PR from framework is required"
+
+on:
+  pull_request:
+    types: [ "opened", "reopened", "created", "closed", "synchronize", "labeled", "unlabeled"]
+# Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+jobs:
+  label-check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check label
+      if: "contains(github.event.pull_request.labels.*.name, 'framework-pr')"
+      run: |
+        echo "framework-pr label is present and this PR can only be merged from framework"
+        exit 1
+      shell: bash
