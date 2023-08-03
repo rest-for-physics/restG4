@@ -5,7 +5,7 @@ Author: Luis Obis (lobis@unizar.es)
 -->
 
 <restG4>
-    <TRestRun title="CosmicNeutrons">
+    <TRestRun title="CosmicMuons">
         <parameter name="experimentName" value="IAXO"/>
     </TRestRun>
 
