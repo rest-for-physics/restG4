@@ -11,7 +11,7 @@
     <box name="fieldCageSolidOutBox" x="fieldCageSize+fieldCageThickness" y="fieldCageSize+fieldCageThickness"
          z="fieldCageLength" lunit="mm"/>
 
-    <!-- We MUST substract the vessel so that the "volume" generator will produce events only in the water tank -->
+    <!-- We MUST subtract the vessel so that the "volume" generator will produce events only in the water tank -->
     <subtraction name="vesselSolid">
         <first ref="vesselSolidTube"/>
         <second ref="gasSolidTube"/>
