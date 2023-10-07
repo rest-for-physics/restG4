@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!-- ##VERSION REST Example 01.NLDBD Version 1.0## -->
+
+<!DOCTYPE gdml [
+        <!ENTITY materials SYSTEM "https://rest-for-physics.github.io/materials/rest.xml">
+        ]>
+
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+
+    <!-- Just an example of main geometry file : myGeometryTemplate.gdml
+         This file just defines de parameters of the geometry.
+         The geometry it is defined in geometry/myGeometryDefinition.gdml
+         The materials are defined in geometry/materials.xml
+         Author :   J. Galan    Date : 09-Jul-2015
+    -->
+
+    <!-- All values should be in mm -->
+
+    <define>
+        <constant name="world_size" value="2000"/>
+
+        <variable name="shieldingThickness" value="200"/>
+        <variable name="shieldingSide" value="1000"/>
+
+        <!-- This should not be required because it's not relevant -->
+        <variable name="targetGasDensity" value="1.78"/> <!-- mg/cm3 -->
+        <variable name="quencherDensity" value="2.51*0.01"/> <!-- mg/cm3 -->
+        <variable name="quencherFraction" value="0.01"/>
+        <variable name="gasTemperature" value="300"/>
+        <variable name="gasPressure" value="1"/>
+
+    </define>
+
+    &materials;
+
+    <solids>
+        <box name="WorldSolid" x="world_size" y="world_size" z="world_size" lunit="mm"/>
+        <box name="shieldingSolid" x="shieldingSide" y="shieldingSide" z="shieldingThickness" lunit="mm"/>
+        <box name="targetSolid" x="shieldingSide / 2" y="shieldingSide / 2" z="shieldingThickness / 2" lunit="mm"/>
+
+    </solids>
+
+    <structure>
+
+        <volume name="targetVolume">
+            <materialref ref="Lead"/>
+            <solidref ref="targetSolid"/>
+        </volume>
+
+        <volume name="shieldingVolume">
+            <materialref ref="Lead"/>
+            <solidref ref="shieldingSolid"/>
+        </volume>
+
+        <volume name="World">
+            <materialref ref="Vacuum"/>
+            <solidref ref="WorldSolid"/>
+
+            <physvol name="target">
+                <volumeref ref="targetVolume"/>
+                <position name="targetPosition" unit="mm" x="0" y="0" z="2 * shieldingThickness"/>
+            </physvol>
+
+            <physvol name="shielding">
+                <volumeref ref="shieldingVolume"/>
+                <position name="shieldingPosition" unit="mm" x="0" y="0" z="1 * shieldingThickness"/>
+            </physvol>
+        </volume>
+
+    </structure>
+
+    <setup name="Default" version="1.0">
+        <world ref="World"/>
+    </setup>
+
+</gdml>

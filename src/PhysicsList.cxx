@@ -12,6 +12,7 @@
 #include <G4EmPenelopePhysics.hh>
 #include <G4EmStandardPhysics_option3.hh>
 #include <G4EmStandardPhysics_option4.hh>
+#include <G4GenericBiasingPhysics.hh>
 #include <G4HadronElasticPhysics.hh>
 #include <G4HadronElasticPhysicsHP.hh>
 #include <G4HadronPhysicsQGSP_BIC_HP.hh>
@@ -128,6 +129,14 @@ void PhysicsList::InitializePhysicsLists() {
         emCounter++;
     }
 
+    const auto& biasingInfo = fSimulationManager->GetRestMetadata()->GetGeant4BiasingInfo();
+    if (biasingInfo.GetEnabled()) {
+        fBiasingPhysicsList = new G4GenericBiasingPhysics();
+        std::vector<G4String> processToBias = {"eBrem"};
+        fBiasingPhysicsList->PhysicsBias("e-", processToBias);
+        fBiasingPhysicsList->PhysicsBias("e+", processToBias);
+    }
+
     if (fRestPhysicsLists->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Essential &&
         emCounter == 0) {
         RESTWarning << "PhysicsList: No EM physics list has been enabled" << RESTendl;
@@ -179,6 +188,10 @@ void PhysicsList::ConstructParticle() {
         fRadDecPhysicsList->ConstructParticle();
     }
 
+    if (fBiasingPhysicsList) {
+        fBiasingPhysicsList->ConstructParticle();
+    }
+
     for (auto& hadronicPhysicsList : fHadronPhys) {
         hadronicPhysicsList->ConstructParticle();
     }
@@ -227,6 +240,10 @@ void PhysicsList::ConstructProcess() {
     // Radioactive decay
     if (fRadDecPhysicsList) {
         fRadDecPhysicsList->ConstructProcess();
+    }
+
+    if (fBiasingPhysicsList) {
+        fBiasingPhysicsList->ConstructProcess();
     }
 
     // Hadronic physics lists
