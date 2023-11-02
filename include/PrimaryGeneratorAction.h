@@ -70,7 +70,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     TRandom* fRandom = nullptr;
 
 #ifdef USE_CRY
-	CRYGenerator* fCRYGenerator = nullptr;
+    CRYGenerator* fCRYGenerator = nullptr;
 #endif
 
     void SetParticlePosition();

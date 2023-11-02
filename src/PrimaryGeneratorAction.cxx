@@ -180,10 +180,12 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
     }
 
 #ifdef USE_CRY
-	/// Of course, we should be able to configure this inside the RML
-	std::string setupString = "returnNeutrons 1\nreturnProtons 1\nreturnGammas 1\ndate 7-1-2012\nlatitude 90.0\naltitude 0\nsubboxLength 100\n";
-	CRYSetup* setup = new CRYSetup(setupString, CRY_DATA_PATH);
-	fCRYGenerator = new CRYGenerator(setup);
+    /// Of course, we should be able to configure this inside the RML
+    std::string setupString =
+        "returnNeutrons 1\nreturnProtons 1\nreturnGammas 1\ndate 7-1-2012\nlatitude 90.0\naltitude "
+        "0\nsubboxLength 100\n";
+    CRYSetup* setup = new CRYSetup(setupString, CRY_DATA_PATH);
+    fCRYGenerator = new CRYGenerator(setup);
 #endif
 }
 
