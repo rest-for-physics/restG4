@@ -96,9 +96,21 @@ endif ()
 # Add the executable
 add_executable(${PROJECT_NAME} main.cxx)
 if (DEFINED REST_CRY_PATH)
-	target_link_libraries(${PROJECT_NAME} PUBLIC ${REST_CRY_PATH}/lib/libCRY.a)
-	target_include_directories(${PROJECT_NAME} PUBLIC ${REST_CRY_PATH}/src/)
-endif ()
+	find_path(CRY_LIB_PATH libCRY.a HINTS ${REST_CRY_PATH}/lib)
+
+	find_path(CRY_INC_PATH CRYGenerator.h HINTS ${REST_CRY_PATH}/src)
+
+	if (CRY_LIB_PATH AND CRY_INC_PATH)
+		message(STATUS "Found CRY includes in ${CRY_INC_PATH}")
+		message(STATUS "Found CRY library in ${CRY_LIB_PATH}")
+
+		add_definitions(-DUSE_CRY)
+		target_link_libraries(${PROJECT_NAME} PUBLIC ${REST_CRY_PATH}/lib/libCRY.a)
+		target_include_directories(${PROJECT_NAME} PUBLIC ${REST_CRY_PATH}/src/)
+	else()
+		message( FATAL_ERROR "REST_CRY_PATH was defined with path ${REST_CRY_PATH}, but CRY library was not found there!\n")
+	endif ()
+endif (DEFINED REST_CRY_PATH)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBRARY} )
 
