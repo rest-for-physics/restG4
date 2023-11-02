@@ -104,13 +104,17 @@ if (DEFINED REST_CRY_PATH)
         message(STATUS "Found CRY includes in ${CRY_INC_PATH}")
         message(STATUS "Found CRY library in ${CRY_LIB_PATH}")
 
-		add_definitions(-DUSE_CRY)
-		add_compile_definitions("CRY_DATA_PATH=\"${REST_CRY_PATH}/data\"")
-		target_link_libraries(${PROJECT_NAME} PUBLIC ${REST_CRY_PATH}/lib/libCRY.a)
-		include_directories(${REST_CRY_PATH}/src/)
-	else()
-		message( FATAL_ERROR "REST_CRY_PATH was defined with path ${REST_CRY_PATH}, but CRY library was not found there!\n")
-	endif ()
+        add_definitions(-DUSE_CRY)
+        add_compile_definitions("CRY_DATA_PATH=\"${REST_CRY_PATH}/data\"")
+        target_link_libraries(${PROJECT_NAME}
+                              PUBLIC ${REST_CRY_PATH}/lib/libCRY.a)
+        include_directories(${REST_CRY_PATH}/src/)
+    else ()
+        message(
+            FATAL_ERROR
+                "REST_CRY_PATH was defined with path ${REST_CRY_PATH}, but CRY library was not found there!\n"
+        )
+    endif ()
 endif (DEFINED REST_CRY_PATH)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBRARY})
