@@ -95,7 +95,12 @@ endif ()
 
 # Add the executable
 add_executable(${PROJECT_NAME} main.cxx)
-target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBRARY})
+if (DEFINED REST_CRY_PATH)
+	target_link_libraries(${PROJECT_NAME} PUBLIC ${REST_CRY_PATH}/lib/libCRY.a)
+	target_include_directories(${PROJECT_NAME} PUBLIC ${REST_CRY_PATH}/src/)
+endif ()
+
+target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBRARY} )
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
