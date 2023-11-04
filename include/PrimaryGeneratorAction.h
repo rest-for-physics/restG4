@@ -17,10 +17,6 @@
 
 #include "DetectorConstruction.h"
 
-#ifdef USE_CRY
-#include <CRYGenerator.h>
-#include <CRYSetup.h>
-#endif
 
 class G4Event;
 class SimulationManager;
@@ -68,10 +64,6 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     Double_t lastEnergy;
 
     TRandom* fRandom = nullptr;
-
-#ifdef USE_CRY
-	CRYGenerator* fCRYGenerator = nullptr;
-#endif
 
     void SetParticlePosition();
     G4ParticleDefinition* SetParticleDefinition(Int_t particleSourceIndex,
