@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+
+<restG4>
+    <globals>
+        <parameter name="mainDataPath" value=""/>
+        <parameter name="verboseLevel" value="essential"/>
+    </globals>
+
+    <TRestRun>
+        <parameter name="experimentName" value="CryGenerator"/>
+        <parameter name="runType" value="simulation"/>
+        <parameter name="runNumber" value="1"/>
+        <parameter name="runTag" value="CryGenerator"/>
+        <parameter name="outputFileName" value="CryGenerator.root"/>
+        <parameter name="runDescription" value=""/>
+        <parameter name="user" value="${USER}"/>
+        <parameter name="overwrite" value="off"/>
+        <parameter name="readOnly" value="false"/>
+    </TRestRun>
+
+    <TRestGeant4Metadata>
+        <parameter name="gdmlFile" value="geometry/setup.gdml"/>
+        <parameter name="seed" value="137"/>
+        <parameter name="nRequestedEntries" value="10"/>
+        <parameter name="saveAllEvents" value="true"/>
+        <generator type="cry">
+			<source use="cry" />
+        </generator>
+
+        <detector>
+            <volume name="gasVolume" sensitive="true" maxStepSize="1mm"/>
+        </detector>
+
+    </TRestGeant4Metadata>
+
+    <TRestGeant4PhysicsLists name="physList" title="EM physics lists. No hadron physics!">
+
+		<physicsList name="G4EmLivermorePhysics">
+			<option name="pixe" value="false"/>
+		</physicsList>
+
+		<physicsList name="G4EmExtraPhysics"/>
+
+		<physicsList name="G4DecayPhysics"/>
+		<physicsList name="G4RadioactiveDecayPhysics"/>
+		<physicsList name="G4RadioactiveDecay">
+			<option name="ICM" value="true"/>
+			<option name="ARM" value="true"/>
+		</physicsList>
+
+	</TRestGeant4PhysicsLists>
+</restG4>
