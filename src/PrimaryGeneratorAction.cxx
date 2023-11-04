@@ -178,7 +178,6 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationMana
              << endl;
         exit(1);
     }
-
 }
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction() = default;
