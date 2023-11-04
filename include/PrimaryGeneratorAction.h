@@ -17,7 +17,6 @@
 
 #include "DetectorConstruction.h"
 
-
 class G4Event;
 class SimulationManager;
 
