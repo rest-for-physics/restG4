@@ -231,69 +231,68 @@ void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
-	auto simulationManager = fSimulationManager;
-	TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
+    auto simulationManager = fSimulationManager;
+    TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
 
-	if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
-		cout << "DEBUG: Primary generation" << endl;
-	}
-	// We have to initialize here and not in start of the event because
-	// GeneratePrimaries is called first, and we want to store event origin and position inside
-	// we should have already written the information from previous event to disk (in endOfEventAction)
+    if (restG4Metadata->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
+        cout << "DEBUG: Primary generation" << endl;
+    }
+    // We have to initialize here and not in start of the event because
+    // GeneratePrimaries is called first, and we want to store event origin and position inside
+    // we should have already written the information from previous event to disk (in endOfEventAction)
 
-	for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
-		restG4Metadata->GetParticleSource(i)->Update();
-	}
+    for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
+        restG4Metadata->GetParticleSource(i)->Update();
+    }
 
-	const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
-	const string& spatialGeneratorTypeName = primaryGeneratorInfo.GetSpatialGeneratorType().Data();
-	const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
-	// Apparently not used. I comment to avoid compilation warning
-	// Int_t nParticles = restG4Metadata->GetNumberOfSources();
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
+    const string& spatialGeneratorTypeName = primaryGeneratorInfo.GetSpatialGeneratorType().Data();
+    const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
+    // Apparently not used. I comment to avoid compilation warning
+    // Int_t nParticles = restG4Metadata->GetNumberOfSources();
 
-	if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::COSMIC) {
-		if (fCosmicCircumscribedSphereRadius == 0.) {
-			// radius in mm
-			fCosmicCircumscribedSphereRadius = fSimulationManager->GetRestMetadata()
-				->GetGeant4PrimaryGeneratorInfo()
-				.GetSpatialGeneratorCosmicRadius();
-		}
+    if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::COSMIC) {
+        if (fCosmicCircumscribedSphereRadius == 0.) {
+            // radius in mm
+            fCosmicCircumscribedSphereRadius = fSimulationManager->GetRestMetadata()
+                                                   ->GetGeant4PrimaryGeneratorInfo()
+                                                   .GetSpatialGeneratorCosmicRadius();
+        }
 
-		// This generator has correlated position / direction, so we need to use a different approach
-		if (restG4Metadata->GetNumberOfSources() != 1) {
-			cout << "PrimaryGeneratorAction - ERROR: cosmic generator only supports one source" << endl;
-			exit(1);
-		}
-	}
-	// Set the particle(s)' position, multiple particles generated from multiple sources shall always have a
-	// same origin
-	SetParticlePosition();
+        // This generator has correlated position / direction, so we need to use a different approach
+        if (restG4Metadata->GetNumberOfSources() != 1) {
+            cout << "PrimaryGeneratorAction - ERROR: cosmic generator only supports one source" << endl;
+            exit(1);
+        }
+    }
+    // Set the particle(s)' position, multiple particles generated from multiple sources shall always have a
+    // same origin
+    SetParticlePosition();
 
-	for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
-		vector<TRestGeant4Particle> particles = restG4Metadata->GetParticleSource(i)->GetParticles();
-		//std::cout << "Source : " << i << std::endl;
-		for (const auto& p : particles) {
-			// ParticleDefinition should be always declared first (after position).
-			SetParticleDefinition(i, p);
-			SetParticleEnergyAndDirection(i, p);
+    for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
+        vector<TRestGeant4Particle> particles = restG4Metadata->GetParticleSource(i)->GetParticles();
+        // std::cout << "Source : " << i << std::endl;
+        for (const auto& p : particles) {
+            // ParticleDefinition should be always declared first (after position).
+            SetParticleDefinition(i, p);
+            SetParticleEnergyAndDirection(i, p);
 
-			//p.Print();
+            // p.Print();
 
-			if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::COSMIC) {
-				const auto position = ComputeCosmicPosition(fParticleGun.GetParticleMomentumDirection(),
-						fCosmicCircumscribedSphereRadius);
-				fParticleGun.SetParticlePosition(position);
-			}
+            if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::COSMIC) {
+                const auto position = ComputeCosmicPosition(fParticleGun.GetParticleMomentumDirection(),
+                                                            fCosmicCircumscribedSphereRadius);
+                fParticleGun.SetParticlePosition(position);
+            }
 
-			if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::CRY)
-			{
-				G4ThreeVector position = {p.GetOrigin().X(), p.GetOrigin().Y(), p.GetOrigin().Z()};
-				fParticleGun.SetParticlePosition(position);
-			}
+            if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::CRY) {
+                G4ThreeVector position = {p.GetOrigin().X(), p.GetOrigin().Y(), p.GetOrigin().Z()};
+                fParticleGun.SetParticlePosition(position);
+            }
 
-			fParticleGun.GeneratePrimaryVertex(event);
-		}
-	}
+            fParticleGun.GeneratePrimaryVertex(event);
+        }
+    }
 }
 
 G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t particleSourceIndex,
@@ -313,7 +312,7 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t partic
     }
 
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-	fParticle = particleTable->FindParticle(particleName);
+    fParticle = particleTable->FindParticle(particleName);
     if (!fParticle) {
         fParticle = particleTable->FindParticle(particleName);
 
