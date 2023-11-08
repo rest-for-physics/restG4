@@ -26,8 +26,8 @@
 
         <generator type="cry">
 			<source use="cry" returnNeutrons="1" returnProtons="1" returnGammas="1" returnElectrons="1"
-			   				  returnPions="1" returnKaons="1" returnMuons="1"  
-						      nParticlesMin="1" nParticlesMax="1000" 
+			   				  returnPions="1" returnKaons="1" returnMuons="1"
+						      nParticlesMin="1" nParticlesMax="1000"
 							  subboxLength="100" xoffset="0" yoffset="0" zoffset="0"
 							  date="07\01\2012" latitude="90.0" altitude="2100" />
         </generator>
