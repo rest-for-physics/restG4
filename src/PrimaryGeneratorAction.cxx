@@ -285,7 +285,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
                 fParticleGun.SetParticlePosition(position);
             }
 
-            if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::CRY) {
+            if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::SOURCE) {
                 G4ThreeVector position = {p.GetOrigin().X(), p.GetOrigin().Y(), p.GetOrigin().Z()};
                 fParticleGun.SetParticlePosition(position);
             }
@@ -551,8 +551,8 @@ void PrimaryGeneratorAction::SetParticlePosition() {
             }
         } else if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::COSMIC) {
             // position will be defined after direction
-        } else if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::CRY) {
-            // position will be defined for each particle
+        } else if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::SOURCE) {
+            // position will be defined by the source generator
         } else {
             G4cout << "WARNING! Generator type \"" << spatialGeneratorTypeName
                    << "\" was not recognized. Launching particle "
