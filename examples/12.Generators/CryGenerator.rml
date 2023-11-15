@@ -24,7 +24,7 @@
         <parameter name="nRequestedEntries" value="10"/>
         <parameter name="saveAllEvents" value="true"/>
 
-        <generator type="cry">
+        <generator type="source">
 			<source use="cry" returnNeutrons="1" returnProtons="1" returnGammas="1" returnElectrons="1"
 			   				  returnPions="1" returnKaons="1" returnMuons="1"
 						      nParticlesMin="1" nParticlesMax="1000"
