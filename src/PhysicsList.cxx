@@ -21,6 +21,7 @@
 #include <G4IonTable.hh>
 #include <G4LossTableManager.hh>
 #include <G4NeutronTrackingCut.hh>
+#include <G4OpticalPhysics.hh>
 #include <G4ParticleTable.hh>
 #include <G4ParticleTypes.hh>
 #include <G4PhotonEvaporation.hh>
@@ -37,8 +38,6 @@
 #include <G4UImanager.hh>
 #include <G4UnitsTable.hh>
 #include <G4UniversalFluctuation.hh>
-
-#include <G4OpticalPhysics.hh>
 
 #include "Particles.h"
 
@@ -72,7 +71,7 @@ PhysicsList::~PhysicsList() {
     delete fEmPhysicsList;
     delete fDecPhysicsList;
     delete fRadDecPhysicsList;
-	delete fOptPhysList;
+    delete fOptPhysList;
     for (auto& hadronicPhysicsList : fHadronPhys) {
         delete hadronicPhysicsList;
     }
@@ -164,16 +163,17 @@ void PhysicsList::InitializePhysicsLists() {
 
     G4cout << "Number of hadronic physics lists added " << fHadronPhys.size() << G4endl;
 
-
-	// Optical PhysicsList
-	if (fRestPhysicsLists->FindPhysicsList("G4OpticalPhysics") >= 0){
-		fOptPhysList = new G4OpticalPhysics(); //by default all processes are activated and optical photons are tracked first
-        //posible aditional configuration
-        //fOptPhysList->Configure(kCerenkov,true); //to activate each process
-        //fOptPhysList->SetCerenkovStackPhotons(false);
-        //fOptPhysList->SetTrackSecondariesFirst(kScintillation,true); 
-        //fOptPhysList->SetScintillationStackPhotons(false);//only relevant if we actually stack and trace optical photons
-	} else if (fRestPhysicsLists->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
+    // Optical PhysicsList
+    if (fRestPhysicsLists->FindPhysicsList("G4OpticalPhysics") >= 0) {
+        fOptPhysList = new G4OpticalPhysics();  // by default all processes are activated and optical photons
+                                                // are tracked first
+        // posible aditional configuration
+        // fOptPhysList->Configure(kCerenkov,true); //to activate each process
+        // fOptPhysList->SetCerenkovStackPhotons(false);
+        // fOptPhysList->SetTrackSecondariesFirst(kScintillation,true);
+        // fOptPhysList->SetScintillationStackPhotons(false);//only relevant if we actually stack and trace
+        // optical photons
+    } else if (fRestPhysicsLists->GetVerboseLevel() >= TRestStringOutput::REST_Verbose_Level::REST_Debug) {
         G4cout << "restG4. PhysicsList. G4DecayPhysics is not enabled!!" << G4endl;
     }
 }
@@ -199,20 +199,19 @@ void PhysicsList::ConstructParticle() {
         hadronicPhysicsList->ConstructParticle();
     }
 
-	// Optical physics list
-	if (fOptPhysList) {
-		fOptPhysList->ConstructParticle();
-	}
-
+    // Optical physics list
+    if (fOptPhysList) {
+        fOptPhysList->ConstructParticle();
+    }
 }
 
 void PhysicsList::ConstructProcess() {
     AddTransportation();
 
-	//Optical physics list
-	if (fOptPhysList) {
-		fOptPhysList->ConstructProcess();
-	}
+    // Optical physics list
+    if (fOptPhysList) {
+        fOptPhysList->ConstructProcess();
+    }
 
     // Electromagnetic physics list
     if (fEmPhysicsList) {

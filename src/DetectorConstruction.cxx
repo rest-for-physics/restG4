@@ -15,9 +15,9 @@
 #include <G4SystemOfUnits.hh>
 #include <G4UniformMagField.hh>
 #include <G4UserLimits.hh>
-//optical surfaces
-#include <G4LogicalSurface.hh>
+// optical surfaces
 #include <G4LogicalSkinSurface.hh>
+#include <G4LogicalSurface.hh>
 #include <G4OpticalSurface.hh>
 #include <filesystem>
 

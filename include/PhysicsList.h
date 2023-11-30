@@ -36,7 +36,7 @@ class PhysicsList : public G4VModularPhysicsList {
     G4VPhysicsConstructor* fRadDecPhysicsList = nullptr;
     std::vector<G4VPhysicsConstructor*> fHadronPhys;
 
-	G4VPhysicsConstructor* fOptPhysList = nullptr;
+    G4VPhysicsConstructor* fOptPhysList = nullptr;
 
     TRestGeant4PhysicsLists* fRestPhysicsLists = nullptr;
 };
