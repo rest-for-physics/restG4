@@ -380,7 +380,8 @@ void Application::Run(const CommandLineOptions::Options& options) {
     long seed = metadata->GetSeed();
     CLHEP::HepRandom::setTheSeed(seed);
 
-    G4VSteppingVerbose::SetInstance(new SteppingVerbose(&fSimulationManager));
+    fSteppingVerbose = new SteppingVerbose(&fSimulationManager);
+    G4VSteppingVerbose::SetInstance(fSteppingVerbose);
 
 #ifndef GEANT4_WITHOUT_G4RunManagerFactory
     auto runManagerType = G4RunManagerType::Default;
@@ -544,3 +545,5 @@ void Application::ValidateOutputFile(const string& filename) const {
         exit(1);
     }
 }
+
+Application::~Application() = default;

@@ -37,15 +37,17 @@ void ShowUsage();
 
 }  // namespace CommandLineOptions
 
+class G4VSteppingVerbose;
+
 class Application {
    public:
     void Run(const CommandLineOptions::Options& options);
 
-    ~Application() = default;
+    ~Application();
 
    private:
     SimulationManager fSimulationManager;
-
+    G4VSteppingVerbose* fSteppingVerbose;
     void ValidateOutputFile(const std::string& outputFile) const;
 };
 
