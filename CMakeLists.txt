@@ -96,6 +96,7 @@ endif ()
 
 # Add the executable
 add_executable(${PROJECT_NAME} main.cxx)
+
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBRARY})
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples

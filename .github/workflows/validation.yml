@@ -2,21 +2,12 @@ name: Validation
 
 on:
   workflow_dispatch:
-
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  release:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  workflow_call:
 
 env:
   CMAKE_BUILD_TYPE: Release
-  REST_PATH: /rest/framework/install
-  REST_FRAMEWORK_SOURCE_DIR: /rest/framework/source
+  REST_INSTALL_PATH: /rest/restG4/install
+  RESTG4_PATH: restG4
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 defaults:
@@ -24,36 +15,22 @@ defaults:
     shell: bash
 
 jobs:
-
-  framework-test:
-    name: Build and run tests
+  precommit-config:
+    name: Validate pre-commit config
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/rest-for-physics/root-geant4:latest
     steps:
-      - name: Checkout framework
+      - name: Checkout restG4
+        uses: rest-for-physics/framework/.github/actions/checkout@master
+        with:
+          branch: ${{ env.BRANCH_NAME }}
+          repository: rest-for-physics/restG4
+          path: ${{ env.RESTG4_PATH }}
+      - name: Verify pre-commit config files match
         run: |
-          git clone https://github.com/rest-for-physics/framework.git ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          ./scripts/checkoutRemoteBranch.sh ${{ env.BRANCH_NAME }}
-          git log -1 --stat
-      - uses: actions/checkout@v3
-      - name: Setup, build and install
-        run: |
-          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          git submodule init source/libraries/geant4 && git submodule update source/libraries/geant4
-          cd source/libraries/geant4/ && ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/scripts/checkoutRemoteBranch.sh ${{ env.BRANCH_NAME }}
-          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          rm -rf source/packages/restG4/ && cp -r $GITHUB_WORKSPACE source/packages/restG4
-          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
-          cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DTEST=ON -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_INSTALL_PATH }}
-          make -j4 install
-      - name: Run tests
-        run: |
-          source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
-          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
-          ctest --output-on-failure
+          cd ${{ env.RESTG4_PATH }}
+          curl https://raw.githubusercontent.com/rest-for-physics/framework/master/scripts/validatePreCommitConfig.py | python
 
   framework-install:
     name: Install framework with restG4
@@ -63,34 +40,17 @@ jobs:
     steps:
       - name: Print version of dependencies for image
         run: version.sh
-      - name: Checkout framework
-        run: |
-          git clone https://github.com/rest-for-physics/framework.git ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          ./scripts/checkoutRemoteBranch.sh ${{ env.BRANCH_NAME }}
-          git log -1 --stat
-      - uses: actions/checkout@v3
-      - name: Verify pre-commit config files match
-        run: |
-          cd $GITHUB_WORKSPACE
-          python ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/scripts/validatePreCommitConfig.py
-      - name: Setup, build and install
-        run: |
-          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          git submodule init source/libraries/geant4 && git submodule update source/libraries/geant4
-          cd source/libraries/geant4/ && ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/scripts/checkoutRemoteBranch.sh ${{ env.BRANCH_NAME }}
-          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          rm -rf source/packages/restG4/ && cp -r $GITHUB_WORKSPACE source/packages/restG4
-          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
-          cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_INSTALL_PATH }}
-          make -j4 install
+      - name: Build and install
+        uses: rest-for-physics/framework/.github/actions/build@master
+        with:
+          cmake-flags: "-DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_INSTALL_PATH }}"
+          branch: ${{ env.BRANCH_NAME }}
       - name: Cache framework installation
         id: framework-install-restG4-cache
         uses: actions/cache@v3
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
 
   check-installation:
     name: Check framework and restG4 are accessible
@@ -104,7 +64,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Check libraries
         run: |
           echo $LD_LIBRARY_PATH
@@ -133,16 +93,22 @@ jobs:
       image: ghcr.io/rest-for-physics/root-geant4:latest
     needs: [ framework-install, check-installation ]
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout restG4
+        uses: rest-for-physics/framework/.github/actions/checkout@master
+        with:
+          branch: ${{ env.BRANCH_NAME }}
+          repository: rest-for-physics/restG4
+          path: ${{ env.RESTG4_PATH }}
       - name: Restore cache
         uses: actions/cache@v3
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Build as standalone
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
+          cd ${{ env.RESTG4_PATH }}
           mkdir -p build-standalone && cd build-standalone
           cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=/rest/restG4-standalone/install
           make -j4 install
@@ -161,7 +127,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
@@ -182,7 +148,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
@@ -204,7 +170,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
@@ -231,7 +197,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
@@ -252,7 +218,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
@@ -273,7 +239,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
@@ -299,7 +265,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
@@ -333,7 +299,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
@@ -354,7 +320,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
@@ -375,7 +341,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Launching Gammas
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
@@ -404,7 +370,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
@@ -427,7 +393,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
@@ -448,7 +414,7 @@ jobs:
         id: framework-install-restG4-cache
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
@@ -467,24 +433,11 @@ jobs:
     steps:
       - name: Print version of dependencies for image
         run: version.sh
-      - name: Checkout framework
-        run: |
-          git clone https://github.com/rest-for-physics/framework.git ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          ./scripts/checkoutRemoteBranch.sh ${{ env.BRANCH_NAME }}
-          git log -1 --stat
-      - uses: actions/checkout@v3
-      - name: Setup, build and install
-        run: |
-          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          git submodule init source/libraries/geant4 && git submodule update source/libraries/geant4
-          cd source/libraries/geant4/ && ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/scripts/checkoutRemoteBranch.sh ${{ env.BRANCH_NAME }}
-          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          rm -rf source/packages/restG4/ && cp -r $GITHUB_WORKSPACE source/packages/restG4
-          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
-          mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
-          cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_INSTALL_PATH }}
-          make -j4 install
+      - name: Build and install
+        uses: rest-for-physics/framework/.github/actions/build@master
+        with:
+          cmake-flags: "-DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_INSTALL_PATH }}"
+          branch: ${{ env.BRANCH_NAME }}
       - name: Use old materials for reference Geant4 version
         run: |
           cd ${{ env.REST_INSTALL_PATH }}
@@ -494,10 +447,10 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-ref-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
 
   check-installation-reference:
-    name: Check framework and restG4 are accessible
+    name: Check ref framework and restG4 are accessible
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-reference-jun2022
@@ -508,7 +461,7 @@ jobs:
         id: framework-install-restG4-cache-reference
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-ref-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Check root
         run: |
           root-config --version
@@ -524,7 +477,6 @@ jobs:
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
           restG4 --help
 
-
   restG4-examples-01-reference:
     name: "Reference Example 01: NLDBD"
     runs-on: ubuntu-latest
@@ -538,14 +490,13 @@ jobs:
         id: framework-install-restG4-cache-reference
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-ref-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
           cd ${{ env.REST_INSTALL_PATH }}/examples/restG4/01.NLDBD/
           restG4 NLDBD.rml -o Run00001_NLDBD_Test.root
           restRoot -b -q Validate.C'("Run00001_NLDBD_Test.root")'
-
 
   restG4-examples-06-reference:
     name: "Reference Example 06: Ion recoils"
@@ -560,7 +511,7 @@ jobs:
         id: framework-install-restG4-cache-reference
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-ref-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
@@ -581,7 +532,7 @@ jobs:
         id: framework-install-restG4-cache-reference
         with:
           path: ${{ env.REST_INSTALL_PATH }}
-          key: ${{ env.BRANCH_NAME }}-restG4-ref-${{ github.sha }}
+          key: ${{ env.BRANCH_NAME }}-${{ github.sha }}
       - name: Run example
         run: |
           source ${{ env.REST_INSTALL_PATH }}/thisREST.sh
