@@ -38,7 +38,8 @@ G4ThreeVector ComputeCosmicPosition(const G4ThreeVector& direction, double radiu
     return position;
 }
 
-std::mutex PrimaryGeneratorAction::fDistributionFormulaMutex = std::mutex();
+std::mutex PrimaryGeneratorAction::fDistributionFormulaMutex;
+std::mutex PrimaryGeneratorAction::fPrimaryGenerationMutex;
 TF1* PrimaryGeneratorAction::fEnergyDistributionFunction = nullptr;
 TF1* PrimaryGeneratorAction::fAngularDistributionFunction = nullptr;
 TF2* PrimaryGeneratorAction::fEnergyAndAngularDistributionFunction = nullptr;
@@ -230,6 +231,7 @@ void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
+    lock_guard<mutex> lock(fPrimaryGenerationMutex);
     auto simulationManager = fSimulationManager;
     TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
 
