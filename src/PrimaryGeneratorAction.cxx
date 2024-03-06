@@ -3,12 +3,11 @@
 
 #include <TF1.h>
 #include <TF2.h>
-#include <TRestGeant4Event.h>
 #include <TRestGeant4Metadata.h>
+#include <TRestGeant4ParticleSourceCosmics.h>
 #include <TRestGeant4PrimaryGeneratorInfo.h>
 
 #include <G4Event.hh>
-#include <G4Geantino.hh>
 #include <G4IonTable.hh>
 #include <G4ParticleDefinition.hh>
 #include <G4ParticleTable.hh>
@@ -39,7 +38,8 @@ G4ThreeVector ComputeCosmicPosition(const G4ThreeVector& direction, double radiu
     return position;
 }
 
-std::mutex PrimaryGeneratorAction::fDistributionFormulaMutex = std::mutex();
+std::mutex PrimaryGeneratorAction::fDistributionFormulaMutex;
+std::mutex PrimaryGeneratorAction::fPrimaryGenerationMutex;
 TF1* PrimaryGeneratorAction::fEnergyDistributionFunction = nullptr;
 TF1* PrimaryGeneratorAction::fAngularDistributionFunction = nullptr;
 TF2* PrimaryGeneratorAction::fEnergyAndAngularDistributionFunction = nullptr;
@@ -231,6 +231,7 @@ void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
+    lock_guard<mutex> lock(fPrimaryGenerationMutex);
     auto simulationManager = fSimulationManager;
     TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
 
@@ -240,6 +241,51 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     // We have to initialize here and not in start of the event because
     // GeneratePrimaries is called first, and we want to store event origin and position inside
     // we should have already written the information from previous event to disk (in endOfEventAction)
+
+    if (restG4Metadata->GetNumberOfSources() == 1 &&
+        string(restG4Metadata->GetParticleSource(0)->GetName()) == "TRestGeant4ParticleSourceCosmics") {
+        auto source = dynamic_cast<TRestGeant4ParticleSourceCosmics*>(restG4Metadata->GetParticleSource(0));
+
+        if (string(restG4Metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorType().Data()) !=
+            "Cosmic") {
+            cerr << "PrimaryGeneratorAction - ERROR: cosmic generator only supports cosmic type: "
+                 << restG4Metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorType().Data() << endl;
+            exit(1);
+        }
+
+        source->Update();
+
+        const auto particle = source->GetParticles().at(0);
+
+        fParticleGun.SetParticleDefinition(
+            G4ParticleTable::GetParticleTable()->FindParticle(particle.GetParticleName().Data()));
+
+        if (fCosmicCircumscribedSphereRadius == 0.) {
+            // radius in mm
+            fCosmicCircumscribedSphereRadius = fSimulationManager->GetRestMetadata()
+                                                   ->GetGeant4PrimaryGeneratorInfo()
+                                                   .GetSpatialGeneratorCosmicRadius();
+        }
+
+        const auto position = ComputeCosmicPosition(fParticleGun.GetParticleMomentumDirection(),
+                                                    fCosmicCircumscribedSphereRadius);
+
+        fParticleGun.SetParticlePosition(position);
+        fParticleGun.SetParticleEnergy(particle.GetEnergy() * keV);
+        fParticleGun.SetParticleMomentumDirection({particle.GetMomentumDirection().X(),
+                                                   particle.GetMomentumDirection().Y(),
+                                                   particle.GetMomentumDirection().Z()});
+        fParticleGun.GeneratePrimaryVertex(event);
+
+        /*
+        cout << "PrimaryGeneratorAction - INFO: cosmic particle generated: "
+             << fParticleGun.GetParticleDefinition()->GetParticleName()
+             << " energy: " << fParticleGun.GetParticleEnergy() / keV << " keV"
+             << " position: " << fParticleGun.GetParticlePosition() / mm << " mm"
+             << " direction: " << fParticleGun.GetParticleMomentumDirection() << endl;
+        */
+        return;
+    }
 
     for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
         restG4Metadata->GetParticleSource(i)->Update();
