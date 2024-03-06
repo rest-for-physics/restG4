@@ -211,18 +211,27 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     fKineticEnergy.emplace_back(track->GetKineticEnergy() / CLHEP::keV);
     fMomentumDirection.emplace_back(momentum.x(), momentum.y(), momentum.z());
 
-    if (metadata->GetStoreHadronicTargetInfo() && process->GetProcessType() == G4ProcessType::fHadronic) {
+    string isotopeName;
+    int atomicNumber = 0;
+    double atomicMass = 0;
+
+    if (metadata->GetStoreHadronicTargetInfo() && track->GetCurrentStepNumber() != 0 &&
+        process->GetProcessType() == G4ProcessType::fHadronic) {
         auto hadronicProcess = dynamic_cast<const G4HadronicProcess*>(process);
         G4Nucleus nucleus = *(hadronicProcess->GetTargetNucleus());
+
         auto isotope = nucleus.GetIsotope();
         if (isotope) {
-            fHadronicTargetIsotopeName.emplace_back(nucleus.GetIsotope()->GetName());
-            fHadronicTargetIsotopeA.emplace_back(nucleus.GetIsotope()->GetA());
-            fHadronicTargetIsotopeZ.emplace_back(nucleus.GetIsotope()->GetZ());
-        } else {
-            G4cout << "No isotope found for target nucleus" << G4endl;
-            exit(1);
+            isotopeName = isotope->GetName();
+            atomicNumber = isotope->GetZ();
+            atomicMass = isotope->GetN();
         }
+    }
+
+    if (metadata->GetStoreHadronicTargetInfo()) {
+        fHadronicTargetIsotopeName.emplace_back(isotopeName);
+        fHadronicTargetIsotopeA.emplace_back(atomicMass);
+        fHadronicTargetIsotopeZ.emplace_back(atomicNumber);
     }
 
     SimulationManager::GetOutputManager()->AddEnergyToVolumeForParticleForProcess(energy, volumeName,
