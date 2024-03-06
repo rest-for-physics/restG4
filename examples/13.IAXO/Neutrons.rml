@@ -16,7 +16,7 @@ Author: Luis Obis (lobis@unizar.es)
         -->
 
         <parameter name="seed" value="17022"/>
-        <parameter name="nRequestedEntries" value="1"/>
+        <parameter name="storeHadronicTargetInfo" value="true"/>
 
         <generator type="cosmic">
             <source particle="neutron">
