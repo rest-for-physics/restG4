@@ -211,6 +211,20 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     fKineticEnergy.emplace_back(track->GetKineticEnergy() / CLHEP::keV);
     fMomentumDirection.emplace_back(momentum.x(), momentum.y(), momentum.z());
 
+    if (metadata->GetStoreHadronicTargetInfo() && process->GetProcessType() == G4ProcessType::fHadronic) {
+        auto hadronicProcess = dynamic_cast<const G4HadronicProcess*>(process);
+        G4Nucleus nucleus = *(hadronicProcess->GetTargetNucleus());
+        auto isotope = nucleus.GetIsotope();
+        if (isotope) {
+            fHadronicTargetIsotopeName.emplace_back(nucleus.GetIsotope()->GetName());
+            fHadronicTargetIsotopeA.emplace_back(nucleus.GetIsotope()->GetA());
+            fHadronicTargetIsotopeZ.emplace_back(nucleus.GetIsotope()->GetZ());
+        } else {
+            G4cout << "No isotope found for target nucleus" << G4endl;
+            exit(1);
+        }
+    }
+
     SimulationManager::GetOutputManager()->AddEnergyToVolumeForParticleForProcess(energy, volumeName,
                                                                                   particleName, processName);
 }
