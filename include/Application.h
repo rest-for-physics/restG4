@@ -26,6 +26,8 @@ struct Options {
     int nRequestedEntries = 0;
     int timeLimitSeconds = 0;
 
+    int runNumber = -1;
+
     // reference to original argc and argv necessary to pass to G4UIExecutive
     int argc;
     char** argv;
