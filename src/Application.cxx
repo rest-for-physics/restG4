@@ -248,7 +248,7 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
             if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
                 options.runNumber =
                     stoi(argv[++i]);  // Increment 'i' so we don't get the argument as the next argv[i].
-                if (options.runNumber <= 0) {
+                if (options.runNumber < 0) {
                     cout << "--seed option error: seed must be positive number" << endl;
                     exit(1);
                 }
@@ -359,7 +359,7 @@ void Application::Run(const CommandLineOptions::Options& options) {
 
     run->LoadConfigFromFile(inputRmlClean);
 
-    if (options.runNumber > 0) {
+    if (options.runNumber >= 0) {
         run->SetRunNumber(options.runNumber);
     }
 
