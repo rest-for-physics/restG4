@@ -249,7 +249,7 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
                 options.runNumber =
                     stoi(argv[++i]);  // Increment 'i' so we don't get the argument as the next argv[i].
                 if (options.runNumber < 0) {
-                    cout << "--seed option error: seed must be positive number" << endl;
+                    cout << "--runNumber option error: runNumber cannot be negative" << endl;
                     exit(1);
                 }
             } else {
