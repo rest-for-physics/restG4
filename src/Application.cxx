@@ -244,6 +244,18 @@ Options ProcessCommandLineOptions(int argc, char* const argv[]) {
                 cerr << "--time option requires one argument." << endl;
                 exit(1);
             }
+        } else if (arg == "--runNumber") {
+            if (i + 1 < argc) {  // Make sure we aren't at the end of argv!
+                options.runNumber =
+                    stoi(argv[++i]);  // Increment 'i' so we don't get the argument as the next argv[i].
+                if (options.runNumber < 0) {
+                    cout << "--runNumber option error: runNumber cannot be negative" << endl;
+                    exit(1);
+                }
+            } else {
+                cerr << "--runNumber option requires one argument." << endl;
+                exit(1);
+            }
         } else {
             const string argument = argv[i];
             if (argument[0] == '-') {
@@ -347,6 +359,10 @@ void Application::Run(const CommandLineOptions::Options& options) {
 
     run->LoadConfigFromFile(inputRmlClean);
 
+    if (options.runNumber >= 0) {
+        run->SetRunNumber(options.runNumber);
+    }
+
     if (!options.outputFile.empty()) {
         run->SetOutputFileName(options.outputFile);
     }
@@ -362,7 +378,6 @@ void Application::Run(const CommandLineOptions::Options& options) {
 
     run->AddMetadata(fSimulationManager.GetRestMetadata());
     run->AddMetadata(fSimulationManager.GetRestPhysicsLists());
-
     run->PrintMetadata();
 
     run->FormOutputFile();
