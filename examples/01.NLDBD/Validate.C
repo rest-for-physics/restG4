@@ -117,9 +117,8 @@ Int_t Validate(const char* filename) {
     }
 
     if (TMath::Abs(averagePosition.Mag() - averagePositionRef.Mag()) / averagePositionRef.Mag() > tolerance) {
-        cout << "The average position does not match the reference value of "
-             << "(" << averagePositionRef.x() << ", " << averagePositionRef.y() << ", "
-             << averagePositionRef.z() << ") mm" << endl;
+        cout << "The average position does not match the reference value of " << "(" << averagePositionRef.x()
+             << ", " << averagePositionRef.y() << ", " << averagePositionRef.z() << ") mm" << endl;
         return 12;
     }
 
