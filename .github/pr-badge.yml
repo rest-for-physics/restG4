@@ -13,5 +13,5 @@
   message: "Ok: $additions"
   color: "green"
   when: "$additions < 100"
-- imageUrl: "https://github.com/rest-for-physics/restG4/actions/workflows/validation.yml/badge.svg?branch=$branchName"
+- imageUrl: "https://github.com/rest-for-physics/restG4/actions/workflows/frameworkValidation.yml/badge.svg?branch=$branchName"
   url: "https://github.com/rest-for-physics/restG4/commits/$branchName"

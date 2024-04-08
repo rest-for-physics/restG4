@@ -37,6 +37,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
     SimulationManager* fSimulationManager;
 
     static std::mutex fDistributionFormulaMutex;
+    static std::mutex fPrimaryGenerationMutex;
 
     std::vector<TRestGeant4Particle> fTempParticles;
 

@@ -11,7 +11,12 @@ Author: Luis Obis (lobis@unizar.es)
 
     <TRestGeant4Metadata>
         <parameter name="gdmlFile" value="geometry/setup.gdml"/>
+        <!-- Replace geometry with this once it is publicly accessible
+                <parameter name="gdmlFile" value="https://github.com/iaxo/iaxo-geometry/raw/master/gdml/IAXO-D1/Default.gdml"/>
+        -->
+
         <parameter name="seed" value="17022"/>
+        <parameter name="storeHadronicTargetInfo" value="true"/>
         <parameter name="nRequestedEntries" value="1"/>
 
         <generator type="cosmic">
