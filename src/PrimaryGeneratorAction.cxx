@@ -230,6 +230,30 @@ void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
     fGeneratorSpatialDensityFunction = new TF3("GeneratorDistFunc", str);
 }
 
+TVector2 PointOnUnitDisk() {
+    double r = TMath::Sqrt(G4UniformRand());
+    double theta = G4UniformRand() * 2 * TMath::Pi();
+    return {r * TMath::Cos(theta), r * TMath::Sin(theta)};
+}
+
+pair<bool, TVector3> IntersectionLineSphere(const TVector3& lineOrigin, const TVector3& lineDirection) {
+    // sphere origin is always (0,0)
+    // return the first intersection point
+    // https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
+    const double a = lineDirection.Dot(lineDirection);
+    const double b = 2 * lineDirection.Dot(lineOrigin);
+    const double c = lineOrigin.Dot(lineOrigin) - 1;
+
+    const double discriminant = b * b - 4 * a * c;
+    if (discriminant < 0) {
+        return {false, {0, 0, 0}};
+    }
+    const double t1 = (-b + sqrt(discriminant)) / (2 * a);
+    const double t2 = (-b - sqrt(discriminant)) / (2 * a);
+    const double t = min(t1, t2);
+    return {true, lineOrigin + t * lineDirection};
+}
+
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     lock_guard<mutex> lock(fPrimaryGenerationMutex);
     auto simulationManager = fSimulationManager;
@@ -267,23 +291,32 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
                                                    .GetSpatialGeneratorCosmicRadius();
         }
 
+        while (true) {
+            const TVector2 diskPosition = PointOnUnitDisk() * fCosmicCircumscribedSphereRadius;
+            const TVector3 position = {
+                diskPosition.X(),
+                fCosmicCircumscribedSphereRadius,
+                diskPosition.Y(),
+            };
+            const auto& direction = particle.GetMomentumDirection();
+            const auto [intersectionFlag, intersection] = IntersectionLineSphere(position, direction);
+            if (intersectionFlag) {
+                fParticleGun.SetParticlePosition({
+                    intersection.X() * mm,
+                    intersection.Y() * mm,
+                    intersection.Z() * mm,
+                });
+                fParticleGun.SetParticleEnergy(particle.GetEnergy() * keV);
+                fParticleGun.SetParticleMomentumDirection({direction.X(), direction.Y(), direction.Z()});
+                break;
+            }
+            source->Update();
+        }
         const auto position = ComputeCosmicPosition(fParticleGun.GetParticleMomentumDirection(),
                                                     fCosmicCircumscribedSphereRadius);
 
-        fParticleGun.SetParticlePosition(position);
-        fParticleGun.SetParticleEnergy(particle.GetEnergy() * keV);
-        fParticleGun.SetParticleMomentumDirection({particle.GetMomentumDirection().X(),
-                                                   particle.GetMomentumDirection().Y(),
-                                                   particle.GetMomentumDirection().Z()});
         fParticleGun.GeneratePrimaryVertex(event);
 
-        /*
-        cout << "PrimaryGeneratorAction - INFO: cosmic particle generated: "
-             << fParticleGun.GetParticleDefinition()->GetParticleName()
-             << " energy: " << fParticleGun.GetParticleEnergy() / keV << " keV"
-             << " position: " << fParticleGun.GetParticlePosition() / mm << " mm"
-             << " direction: " << fParticleGun.GetParticleMomentumDirection() << endl;
-        */
         return;
     }
 
@@ -317,13 +350,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
 
     for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
         vector<TRestGeant4Particle> particles = restG4Metadata->GetParticleSource(i)->GetParticles();
-        // std::cout << "Source : " << i << std::endl;
         for (const auto& p : particles) {
-            // ParticleDefinition should be always declared first (after position).
             SetParticleDefinition(i, p);
             SetParticleEnergyAndDirection(i, p);
-
-            // p.Print();
 
             if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::COSMIC) {
                 const auto position = ComputeCosmicPosition(fParticleGun.GetParticleMomentumDirection(),
@@ -331,7 +360,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
                 fParticleGun.SetParticlePosition(position);
             }
 
-            if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::SOURCE) {
+            else if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::SOURCE) {
                 G4ThreeVector position = {p.GetOrigin().X(), p.GetOrigin().Y(), p.GetOrigin().Z()};
                 fParticleGun.SetParticlePosition(position);
             }
