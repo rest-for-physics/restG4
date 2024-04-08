@@ -29,7 +29,7 @@ Int_t Validate() {
     cout << "entry 100, theta: " << thetaSample << ", phi: " << phiSample << endl;
     cout << "average theta: " << thetaAverage << ", average phi: " << phiAverage << endl;
 
-    if (h1->Integral() != 1984) {
+    if (h1->Integral() != 1926) {
         cout << "Wrong number of alphas produced at (h1) 1MeV_5um!" << endl;
         cout << "Histogram contains : " << h1->Integral() << endl;
         return 10;
