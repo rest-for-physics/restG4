@@ -15,7 +15,7 @@ Int_t Validate() {
     run.GetEntry(100);
 
     Double_t thetaSample = analysisTree->GetObservableValue<Double_t>("g4Ana_thetaPrimary");
-    constexpr Double_t thetaSampleRef = 2.85884;
+    constexpr Double_t thetaSampleRef = 2.29387;
 
     Double_t phiSample = analysisTree->GetObservableValue<Double_t>("g4Ana_phiPrimary");
     constexpr Double_t phiSampleRef = -1.59582;
