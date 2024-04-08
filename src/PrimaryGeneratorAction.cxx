@@ -623,14 +623,10 @@ void PrimaryGeneratorAction::SetParticlePosition() {
 }
 
 G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() const {
-    double z = 2 * G4UniformRand() - 1;                      // random uniform in [-1, 1]
-    double theta = TMath::Pi() * (2 * G4UniformRand() - 1);  // random uniform in [-pi, pi]
+    double phi = 2 * M_PI * G4UniformRand();
+    double theta = TMath::ACos(1 - 2 * G4UniformRand());
 
-    const double sqrt = TMath::Sqrt(1 - z * z);
-    double x = TMath::Sin(theta) * sqrt;
-    double y = TMath::Cos(theta) * sqrt;
-
-    return {x, y, z};
+    return {TMath::Sin(theta) * TMath::Cos(phi), TMath::Sin(theta) * TMath::Sin(phi), TMath::Cos(theta)};
 }
 
 void PrimaryGeneratorAction::GenPositionOnGDMLVolume(double& x, double& y, double& z) {
