@@ -276,7 +276,7 @@ TEST(restG4, Example_07_Decay_FullChain) {
     gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
     int error = 0;
     const int result =
-        gROOT->ProcessLine(TString::Format("Validate(\"%s\", %d)", options.outputFile.c_str(), 15), &error);
+        gROOT->ProcessLine(TString::Format("Validate(\"%s\", %d)", options.outputFile.c_str(), 16), &error);
     EXPECT_EQ(error, 0);
     EXPECT_EQ(result, 0);
 
@@ -411,6 +411,30 @@ TEST(restG4, Example_12_Generators_EnergyAndAngularCorrelated) {
     const int result = gROOT->ProcessLine(
         TString::Format("ValidateCosmicMuonsEnergyAngularCorrelated(\"%s\")", options.outputFile.c_str()),
         &error);
+    EXPECT_EQ(error, 0);
+    EXPECT_EQ(result, 0);
+
+    fs::current_path(originalPath);
+}
+
+TEST(restG4, Example_12_Generators_IsotropicWithRange) {
+    const auto originalPath = fs::current_path();
+    const auto thisExamplePath = examplesPath / "12.Generators";
+    fs::current_path(thisExamplePath);
+
+    CommandLineOptions::Options options;
+    options.rmlFile = "IsotropicWithRange.rml";
+    options.outputFile = thisExamplePath / "IsotropicWithRange.root";
+
+    Application app;
+    app.Run(options);
+
+    // Run validation macro
+    const TString macro(thisExamplePath / "ValidateIsotropicWithRange.C");
+    gROOT->ProcessLine(TString::Format(".L %s", macro.Data()));  // Load macro
+    int error = 0;
+    const int result = gROOT->ProcessLine(
+        TString::Format("ValidateIsotropicWithRange(\"%s\")", options.outputFile.c_str()), &error);
     EXPECT_EQ(error, 0);
     EXPECT_EQ(result, 0);
 
