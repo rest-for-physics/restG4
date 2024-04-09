@@ -1,6 +1,6 @@
 #include <TRestGeant4Event.h>
 
-Int_t ValidateEnergyAndAngularRange(const char* filename) {
+Int_t ValidateIsotropicWithRange(const char* filename) {
     cout << "Starting validation for '" << filename << "'" << endl;
 
     TRestRun run(filename);
