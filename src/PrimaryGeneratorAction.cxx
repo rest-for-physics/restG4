@@ -421,8 +421,8 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
     TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
     TRestGeant4ParticleSource* source = restG4Metadata->GetParticleSource(0);
 
-    G4ThreeVector direction = {source->GetDirection().X(), source->GetDirection().Y(),
-                               source->GetDirection().Z()};
+    const auto sourceDirection = source->GetDirection();
+    G4ThreeVector direction = {sourceDirection.X(), sourceDirection.Y(), sourceDirection.Z()};
 
     const string angularDistTypeName = source->GetAngularDistributionType().Data();
     const auto angularDistTypeEnum = StringToAngularDistributionTypes(angularDistTypeName);
@@ -431,20 +431,16 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
         cout << "DEBUG: Angular distribution: " << angularDistTypeName << endl;
     }
 
-    // generator type
-    /* Apparently not used
-
-    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
-
-const string& spatialGeneratorTypeName = primaryGeneratorInfo.GetSpatialGeneratorType().Data();
-const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
-
-const string& spatialGeneratorShapeName = primaryGeneratorInfo.GetSpatialGeneratorShape().Data();
-const auto spatialGeneratorShapeEnum = StringToSpatialGeneratorShapes(spatialGeneratorShapeName);
-    */
-
     if (angularDistTypeEnum == AngularDistributionTypes::ISOTROPIC) {
-        direction = GetIsotropicVector();
+        if (source->GetAngularDistributionIsotropicConeHalfAngle() > 0) {
+            const auto originalDirection = direction;
+            do {
+                direction = GetIsotropicVector();
+            } while (originalDirection.angle(direction) >
+                     source->GetAngularDistributionIsotropicConeHalfAngle());
+        } else {
+            direction = GetIsotropicVector();
+        }
     } else if (angularDistTypeEnum == AngularDistributionTypes::TH1D) {
         Double_t angle = 0;
         Double_t value = G4UniformRand() * fAngularDistributionHistogram->Integral();
@@ -656,20 +652,10 @@ void PrimaryGeneratorAction::SetParticlePosition() {
 }
 
 G4ThreeVector PrimaryGeneratorAction::GetIsotropicVector() const {
-    G4double a, b, c;
-    G4double n;
-    do {
-        a = (G4UniformRand() - 0.5) / 0.5;
-        b = (G4UniformRand() - 0.5) / 0.5;
-        c = (G4UniformRand() - 0.5) / 0.5;
-        n = a * a + b * b + c * c;
-    } while (n > 1 || n == 0.0);
+    double phi = 2 * M_PI * G4UniformRand();
+    double theta = TMath::ACos(1 - 2 * G4UniformRand());
 
-    n = sqrt(n);
-    a /= n;
-    b /= n;
-    c /= n;
-    return {a, b, c};
+    return {TMath::Sin(theta) * TMath::Cos(phi), TMath::Sin(theta) * TMath::Sin(phi), TMath::Cos(theta)};
 }
 
 void PrimaryGeneratorAction::GenPositionOnGDMLVolume(double& x, double& y, double& z) {
