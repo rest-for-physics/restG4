@@ -20,11 +20,11 @@ Int_t ValidateIsotropicWithRange(const char* filename) {
     constexpr double tolerance = 0.1;
 
     double thetaAverage = 0, thetaMin = TMath::Infinity(), thetaMax = 0;
-    constexpr double thetaAverageRef = 23.1283, thetaMinRef = 0.0, thetaMaxRef = 55.0;
+    constexpr double thetaAverageRef = 10.0, thetaMinRef = 0.0, thetaMaxRef = 15.0;
 
     double energyPrimaryAverage = 0, energyPrimaryMin = TMath::Infinity(), energyPrimaryMax = 0;
-    constexpr double energyPrimaryAverageRef = 2915.84, energyPrimaryMinRef = 100,
-                     energyPrimaryMaxRef = 15000.0;
+    constexpr double energyPrimaryAverageRef = 10000.0, energyPrimaryMinRef = 10000.0,
+                     energyPrimaryMaxRef = 10000.0;
 
     for (int i = 0; i < run.GetEntries(); i++) {
         run.GetEntry(i);
