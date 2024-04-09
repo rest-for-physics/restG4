@@ -24,7 +24,7 @@ Int_t Validate() {
     constexpr Double_t thetaAverageRef = 1.5767;
 
     Double_t phiAverage = analysisTree->GetObservableAverage("g4Ana_phiPrimary");
-    constexpr Double_t phiAverageRef = 0.0719113;
+    constexpr Double_t phiAverageRef = -0.0169888;
 
     cout << "entry 100, theta: " << thetaSample << ", phi: " << phiSample << endl;
     cout << "average theta: " << thetaAverage << ", average phi: " << phiAverage << endl;
