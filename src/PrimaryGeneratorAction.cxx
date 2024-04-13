@@ -281,6 +281,11 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
 
         const auto particle = source->GetParticles().at(0);
 
+        // print energy and direction
+        cout << "PrimaryGeneratorAction: cosmic generator energy: " << particle.GetEnergy() << " keV"
+             << " direction: " << particle.GetMomentumDirection().X() << " "
+             << particle.GetMomentumDirection().Y() << " " << particle.GetMomentumDirection().Z() << endl;
+
         fParticleGun.SetParticleDefinition(
             G4ParticleTable::GetParticleTable()->FindParticle(particle.GetParticleName().Data()));
 
@@ -296,19 +301,25 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         // zenith from dot product on (0,-1,0). TODO: if we want a different direction than (0,-1,0) we
         // probably need to change some things
         const double zenith = TMath::ACos(direction.Dot({0, -1, 0}));
+        cout << "PrimaryGeneratorAction: cosmic generator zenith (deg): " << zenith * 180 / TMath::Pi()
+             << endl;
+
         const TVector2 positionOnDisk = PointOnUnitDisk();
         const TVector2 positionOnEllipse = {positionOnDisk.X() / TMath::Cos(zenith) + TMath::Tan(zenith),
                                             positionOnDisk.Y()};
-        const double phi = G4UniformRand() * TMath::TwoPi();
+        double phi = TMath::ACos(direction.X() /
+                                 TMath::Sqrt(direction.X() * direction.X() + direction.Z() * direction.Z()));
         const TVector2 positionOnEllipseRotated = {
             positionOnEllipse.X() * TMath::Cos(phi) - positionOnEllipse.Y() * TMath::Sin(phi),
             positionOnEllipse.X() * TMath::Sin(phi) + positionOnEllipse.Y() * TMath::Cos(phi),
         };
         const TVector3 positionOrigin = {
-            fCosmicCircumscribedSphereRadius * positionOnEllipseRotated.X(),
-            fCosmicCircumscribedSphereRadius,
-            fCosmicCircumscribedSphereRadius * positionOnEllipseRotated.Y(),
+            positionOnEllipseRotated.X(),
+            1.0,
+            positionOnEllipseRotated.Y(),
         };
+        cout << "PrimaryGeneratorAction: cosmic generator position: " << positionOrigin.X() << " "
+             << positionOrigin.Y() << " " << positionOrigin.Z() << endl;
         const auto [intersectionFlag, intersection] = IntersectionLineSphere(positionOrigin, direction);
         if (!intersectionFlag) {
             cerr << "PrimaryGeneratorAction: cosmic generator intersection not found (this should never "
@@ -317,12 +328,12 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
             exit(1);
         }
         fParticleGun.SetParticlePosition({
-            intersection.X() * mm,
-            intersection.Y() * mm,
-            intersection.Z() * mm,
+            intersection.X() * fCosmicCircumscribedSphereRadius,
+            intersection.Y() * fCosmicCircumscribedSphereRadius,
+            intersection.Z() * fCosmicCircumscribedSphereRadius,
         });
 
-        source->Update();
+        // source->Update();
 
         fParticleGun.GeneratePrimaryVertex(event);
 
