@@ -281,11 +281,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
 
         const auto particle = source->GetParticles().at(0);
 
-        // print energy and direction
-        cout << "PrimaryGeneratorAction: cosmic generator energy: " << particle.GetEnergy() << " keV"
-             << " direction: " << particle.GetMomentumDirection().X() << " "
-             << particle.GetMomentumDirection().Y() << " " << particle.GetMomentumDirection().Z() << endl;
-
         fParticleGun.SetParticleDefinition(
             G4ParticleTable::GetParticleTable()->FindParticle(particle.GetParticleName().Data()));
 
