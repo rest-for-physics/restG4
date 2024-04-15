@@ -43,6 +43,7 @@ std::mutex PrimaryGeneratorAction::fPrimaryGenerationMutex;
 TF1* PrimaryGeneratorAction::fEnergyDistributionFunction = nullptr;
 TF1* PrimaryGeneratorAction::fAngularDistributionFunction = nullptr;
 TF2* PrimaryGeneratorAction::fEnergyAndAngularDistributionFunction = nullptr;
+TH2D* energyAndAngularDistributionHistogram = nullptr;
 
 PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationManager)
     : G4VUserPrimaryGeneratorAction(), fSimulationManager(simulationManager) {
@@ -291,8 +292,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         }
 
         const auto& direction = particle.GetMomentumDirection();
-        fParticleGun.SetParticleEnergy(particle.GetEnergy() * keV);
-        fParticleGun.SetParticleMomentumDirection({direction.X(), direction.Y(), direction.Z()});
         // zenith from dot product on (0,-1,0). TODO: if we want a different direction than (0,-1,0) we
         // probably need to change some things
         const double zenith = TMath::ACos(direction.Dot({0, -1, 0}));
@@ -319,11 +318,19 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
                  << endl;
             exit(1);
         }
+
+        G4ThreeVector sourceDirection = {source->GetDirection().X(), source->GetDirection().Y(),
+                                         source->GetDirection().Z()};
+
+        // TODO: Rotate position and direction for source directions not (0,-1,0)
+
         fParticleGun.SetParticlePosition({
             intersection.X() * fCosmicCircumscribedSphereRadius,
             intersection.Y() * fCosmicCircumscribedSphereRadius,
             intersection.Z() * fCosmicCircumscribedSphereRadius,
         });
+        fParticleGun.SetParticleEnergy(particle.GetEnergy() * keV);
+        fParticleGun.SetParticleMomentumDirection({direction.X(), direction.Y(), direction.Z()});
 
         fParticleGun.GeneratePrimaryVertex(event);
 
@@ -861,36 +868,42 @@ void PrimaryGeneratorAction::SetParticleEnergyAndDirection(Int_t particleSourceI
         restG4Metadata->GetParticleSource(particleSourceIndex)->GetEnergyDistributionType().Data();
     const auto energyDistTypeEnum = StringToEnergyDistributionTypes(energyDistTypeName);
 
-    if (energyDistTypeEnum != EnergyDistributionTypes::FORMULA2 &&
-        angularDistTypeEnum != AngularDistributionTypes::FORMULA2) {
-        // when not using 'FORMULA2'
+    if ((energyDistTypeEnum != EnergyDistributionTypes::FORMULA2 &&
+         angularDistTypeEnum != AngularDistributionTypes::FORMULA2) &&
+        (energyDistTypeEnum != EnergyDistributionTypes::TH2D &&
+         angularDistTypeEnum != AngularDistributionTypes::TH2D)) {
         SetParticleEnergy(particleSourceIndex, particle);
         SetParticleDirection(particleSourceIndex, particle);
         return;
     }
 
-    // this function should only be invoked when both energy and angular dist are "formula2"
-    if (energyDistTypeEnum != EnergyDistributionTypes::FORMULA2 ||
-        angularDistTypeEnum != AngularDistributionTypes::FORMULA2) {
-        cout << "PrimaryGeneratorAction::SetParticleEnergyAndDirection - this method should only invoked "
-                "when both angular and energy dist are 'formula2'"
+    double energy, angle;
+    if (energyDistTypeEnum == EnergyDistributionTypes::FORMULA2 &&
+        angularDistTypeEnum == AngularDistributionTypes::FORMULA2) {
+        {
+            lock_guard<mutex> lock(fDistributionFormulaMutex);
+            fEnergyAndAngularDistributionFunction->GetRandom2(energy, angle, fRandom);
+            energy *= keV;
+        }
+    } else if (energyDistTypeEnum == EnergyDistributionTypes::TH2D &&
+               angularDistTypeEnum == AngularDistributionTypes::TH2D) {
+        if (energyAndAngularDistributionHistogram == nullptr) {
+            const auto filename = source->GetEnergyDistributionFilename();
+            const auto name = source->GetEnergyDistributionNameInFile();
+            cout << "Loading energy and angular distribution from file " << filename << " with name " << name
+                 << endl;
+            TFile* file = TFile::Open(filename);
+            energyAndAngularDistributionHistogram =
+                file->Get<TH2D>(name);  // it's the same for both angular and energy
+        }
+        energyAndAngularDistributionHistogram->GetRandom2(energy, angle);
+        energy *= MeV;  // energy in these histograms is in MeV. TODO: parse energy from axis label
+    } else {
+        cout << "Energy/Angular distribution type 'formula2' or 'TH2D' should be used on both energy and "
+                "angular"
              << endl;
         exit(1);
     }
-
-    if (fEnergyAndAngularDistributionFunction == nullptr) {
-        RESTError << "PrimaryGeneratorAction::SetParticleEnergyAndDirection - energy and angular "
-                     "distribution function is not set"
-                  << RESTendl;
-        exit(1);
-    }
-
-    double energy, angle;
-    {
-        lock_guard<mutex> lock(fDistributionFormulaMutex);
-        fEnergyAndAngularDistributionFunction->GetRandom2(energy, angle, fRandom);
-    }
-    energy *= keV;
 
     G4ThreeVector direction = {source->GetDirection().X(), source->GetDirection().Y(),
                                source->GetDirection().Z()};
