@@ -305,8 +305,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         const TVector2 positionOnDisk = PointOnUnitDisk();
         const TVector2 positionOnEllipse = {positionOnDisk.X() / TMath::Cos(zenith) + TMath::Tan(zenith),
                                             positionOnDisk.Y()};
-        double phi = TMath::ACos(direction.X() /
-                                 TMath::Sqrt(direction.X() * direction.X() + direction.Z() * direction.Z()));
+
+        double phi = TVector2(direction.X(), direction.Z()).Phi();
         const TVector2 positionOnEllipseRotated = {
             positionOnEllipse.X() * TMath::Cos(phi) - positionOnEllipse.Y() * TMath::Sin(phi),
             positionOnEllipse.X() * TMath::Sin(phi) + positionOnEllipse.Y() * TMath::Cos(phi),
