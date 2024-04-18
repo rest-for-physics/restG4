@@ -898,6 +898,7 @@ void PrimaryGeneratorAction::SetParticleEnergyAndDirection(Int_t particleSourceI
         }
         energyAndAngularDistributionHistogram->GetRandom2(energy, angle);
         energy *= MeV;  // energy in these histograms is in MeV. TODO: parse energy from axis label
+        angle *= TMath::DegToRad();
     } else {
         cout << "Energy/Angular distribution type 'formula2' or 'TH2D' should be used on both energy and "
                 "angular"
