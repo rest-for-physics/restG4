@@ -310,12 +310,12 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
             1.0,
             -1 * positionOnEllipseRotated.Y(),
         };
-        const auto [intersectionFlag, intersection] = IntersectionLineSphere(positionOrigin, direction);
+        auto [intersectionFlag, intersection] = IntersectionLineSphere(positionOrigin, direction);
         if (!intersectionFlag) {
-            cerr << "PrimaryGeneratorAction: cosmic generator intersection not found (this should never "
-                    "happen)"
+            cout << "PrimaryGeneratorAction - ERROR: cosmic generator failed to find intersection. This "
+                    "could happen very rarely. If it happens often, it's a bug."
                  << endl;
-            exit(1);
+            intersection = positionOrigin;  // just use the origin position (this should almost never happen)
         }
 
         fParticleGun.SetParticleEnergy(particle.GetEnergy() * keV);
