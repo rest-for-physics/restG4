@@ -290,11 +290,10 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
                                                    ->GetGeant4PrimaryGeneratorInfo()
                                                    .GetSpatialGeneratorCosmicRadius();  // radius in mm
         }
-
+        const G4ThreeVector referenceDirection = {0, -1, 0};
         const auto& direction = particle.GetMomentumDirection();
-        // zenith from dot product on (0,-1,0). TODO: if we want a different direction than (0,-1,0) we
-        // probably need to change some things
-        const double zenith = TMath::ACos(direction.Dot({0, -1, 0}));
+        const double zenith = TMath::ACos(
+            direction.Dot({referenceDirection.x(), referenceDirection.y(), referenceDirection.z()}));
 
         const TVector2 positionOnDisk = PointOnUnitDisk();
         const TVector2 positionOnEllipse = {positionOnDisk.X() / TMath::Cos(zenith) + TMath::Tan(zenith),
@@ -319,18 +318,26 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
             exit(1);
         }
 
-        G4ThreeVector sourceDirection = {source->GetDirection().X(), source->GetDirection().Y(),
-                                         source->GetDirection().Z()};
+        fParticleGun.SetParticleEnergy(particle.GetEnergy() * keV);
 
-        // TODO: Rotate position and direction for source directions not (0,-1,0)
-
-        fParticleGun.SetParticlePosition({
+        G4ThreeVector particlePosition = {
             intersection.X() * fCosmicCircumscribedSphereRadius,
             intersection.Y() * fCosmicCircumscribedSphereRadius,
             intersection.Z() * fCosmicCircumscribedSphereRadius,
-        });
-        fParticleGun.SetParticleEnergy(particle.GetEnergy() * keV);
-        fParticleGun.SetParticleMomentumDirection({direction.X(), direction.Y(), direction.Z()});
+        };
+        G4ThreeVector sourceDirection = {source->GetDirection().X(), source->GetDirection().Y(),
+                                         source->GetDirection().Z()};
+        G4ThreeVector particleDirection = {direction.X(), direction.Y(), direction.Z()};
+
+        const double angleBetweenDirections = sourceDirection.angle(referenceDirection);
+        if (angleBetweenDirections > 0) {
+            const G4ThreeVector cross = referenceDirection.cross(sourceDirection);
+            particleDirection.rotate(angleBetweenDirections, cross);
+            particlePosition.rotate(angleBetweenDirections, cross);
+        }
+
+        fParticleGun.SetParticleMomentumDirection(particleDirection);
+        fParticleGun.SetParticlePosition(particlePosition);
 
         fParticleGun.GeneratePrimaryVertex(event);
 
