@@ -512,6 +512,7 @@ void Application::Run(const CommandLineOptions::Options& options) {
         cout << "Total particles per second per cm2: " << totalParticlesPerUnitTimePerSurface << endl;
         cout << "Equivalent surface: " << equivalentSurface << " cm2" << endl;
         cout << "Total time to launch all particles: " << time << " s" << endl;
+        cout << "Counts per second: " << double(run->GetEntries()) / time << endl;
         metadata->SetSimulationTime(time);
     }
     run->PrintMetadata();
@@ -523,13 +524,14 @@ void Application::Run(const CommandLineOptions::Options& options) {
     ValidateOutputFile(filename);
 
     cout << "\n\t- Total simulation time is " << ToTimeStringLong(fSimulationManager.GetElapsedTime()) << ", "
-         << nEventsAtEnd << " processed events (" << nEventsAtEnd / fSimulationManager.GetElapsedTime()
-         << " per second) and " << nEntries << " events saved to output file ("
-         << nEntries / fSimulationManager.GetElapsedTime() << " per second)" << endl;
+         << nEventsAtEnd << " processed events ("
+         << double(nEventsAtEnd) / fSimulationManager.GetElapsedTime() << " per second) and " << nEntries
+         << " events saved to output file (" << double(nEntries) / fSimulationManager.GetElapsedTime()
+         << " per second)" << endl;
     cout << "\t- Output file: " << filename << endl << endl;
 }
 
-void Application::ValidateOutputFile(const string& filename) const {
+void Application::ValidateOutputFile(const string& filename) {
     bool error = false;
 
     const auto run = TRestRun(filename);
