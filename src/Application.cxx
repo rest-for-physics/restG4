@@ -15,6 +15,8 @@
 #ifndef GEANT4_WITHOUT_G4RunManagerFactory
 #include <G4RunManagerFactory.hh>
 #endif
+#include <TRestGeant4ParticleSourceCosmics.h>
+
 #include <G4UImanager.hh>
 #include <G4VSteppingVerbose.hh>
 #include <cstdlib>
@@ -26,7 +28,6 @@
 #include "PhysicsList.h"
 #include "PrimaryGeneratorAction.h"
 #include "RunAction.h"
-#include "SimulationManager.h"
 #include "SteppingAction.h"
 #include "SteppingVerbose.h"
 
@@ -495,7 +496,24 @@ void Application::Run(const CommandLineOptions::Options& options) {
     run->UpdateOutputFile();
     run->CloseFile();
 
-    metadata->PrintMetadata();
+    if (metadata->GetNumberOfSources() == 1 &&
+        string(metadata->GetParticleSource(0)->GetName()) == "TRestGeant4ParticleSourceCosmics") {
+        auto source = dynamic_cast<TRestGeant4ParticleSourceCosmics*>(metadata->GetParticleSource(0));
+        auto histogramsTransformed = source->GetHistogramsTransformed();
+        double totalParticlesPerUnitTimePerSurface = 0;
+        for (const auto& [name, histogram] : histogramsTransformed) {
+            totalParticlesPerUnitTimePerSurface += histogram->Integral();
+        }
+        const double nParticlesLaunched = metadata->GetNumberOfEvents();
+        const double equivalentSurface =
+            metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTermCm2();
+        const double time = nParticlesLaunched / (totalParticlesPerUnitTimePerSurface * equivalentSurface);
+        cout << "Total particles launched: " << nParticlesLaunched << endl;
+        cout << "Total particles per second per cm2: " << totalParticlesPerUnitTimePerSurface << endl;
+        cout << "Equivalent surface: " << equivalentSurface << " cm2" << endl;
+        cout << "Total time to launch all particles: " << time << " s" << endl;
+        metadata->SetSimulationTime(time);
+    }
     run->PrintMetadata();
 
     const auto nEventsAtEnd =
