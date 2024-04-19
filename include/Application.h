@@ -48,7 +48,7 @@ class Application {
    private:
     SimulationManager fSimulationManager;
 
-    void ValidateOutputFile(const std::string& outputFile) const;
+    static void ValidateOutputFile(const std::string& outputFile);
 };
 
 #endif  // REST_APPLICATION_H

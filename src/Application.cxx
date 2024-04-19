@@ -15,6 +15,8 @@
 #ifndef GEANT4_WITHOUT_G4RunManagerFactory
 #include <G4RunManagerFactory.hh>
 #endif
+#include <TRestGeant4ParticleSourceCosmics.h>
+
 #include <G4UImanager.hh>
 #include <G4VSteppingVerbose.hh>
 #include <cstdlib>
@@ -26,7 +28,6 @@
 #include "PhysicsList.h"
 #include "PrimaryGeneratorAction.h"
 #include "RunAction.h"
-#include "SimulationManager.h"
 #include "SteppingAction.h"
 #include "SteppingVerbose.h"
 
@@ -492,10 +493,31 @@ void Application::Run(const CommandLineOptions::Options& options) {
 
     const auto nEntries = run->GetEntries();
 
+    if (metadata->GetNumberOfSources() == 1 &&
+        string(metadata->GetParticleSource(0)->GetName()) == "TRestGeant4ParticleSourceCosmics") {
+        auto source = dynamic_cast<TRestGeant4ParticleSourceCosmics*>(metadata->GetParticleSource(0));
+        auto histogramsTransformed = source->GetHistogramsTransformed();
+        double totalParticlesPerUnitTimePerSurface = 0;
+        for (const auto& [name, histogram] : histogramsTransformed) {
+            totalParticlesPerUnitTimePerSurface += histogram->Integral();
+        }
+        const double nParticlesLaunched = metadata->GetNumberOfEvents();
+        const double equivalentSurface =
+            metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTermCm2();
+        const double time = nParticlesLaunched / (totalParticlesPerUnitTimePerSurface * equivalentSurface);
+        cout << "Total particles launched: " << nParticlesLaunched << endl;
+        cout << "Total particles per second per cm2: " << totalParticlesPerUnitTimePerSurface << endl;
+        cout << "Equivalent surface: " << equivalentSurface << " cm2" << endl;
+        cout << "Total time to launch all particles: " << time << " s" << endl;
+        cout << "Counts per second: " << double(run->GetEntries()) / time << endl;
+        cout << "Counts per second (wall time): "
+             << double(run->GetEntries()) / fSimulationManager.GetElapsedTime() << endl;
+        metadata->SetSimulationTime(time);
+    }
+
     run->UpdateOutputFile();
     run->CloseFile();
 
-    metadata->PrintMetadata();
     run->PrintMetadata();
 
     const auto nEventsAtEnd =
@@ -505,13 +527,14 @@ void Application::Run(const CommandLineOptions::Options& options) {
     ValidateOutputFile(filename);
 
     cout << "\n\t- Total simulation time is " << ToTimeStringLong(fSimulationManager.GetElapsedTime()) << ", "
-         << nEventsAtEnd << " processed events (" << nEventsAtEnd / fSimulationManager.GetElapsedTime()
-         << " per second) and " << nEntries << " events saved to output file ("
-         << nEntries / fSimulationManager.GetElapsedTime() << " per second)" << endl;
+         << nEventsAtEnd << " processed events ("
+         << double(nEventsAtEnd) / fSimulationManager.GetElapsedTime() << " per second) and " << nEntries
+         << " events saved to output file (" << double(nEntries) / fSimulationManager.GetElapsedTime()
+         << " per second)" << endl;
     cout << "\t- Output file: " << filename << endl << endl;
 }
 
-void Application::ValidateOutputFile(const string& filename) const {
+void Application::ValidateOutputFile(const string& filename) {
     bool error = false;
 
     const auto run = TRestRun(filename);

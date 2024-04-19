@@ -43,6 +43,7 @@ std::mutex PrimaryGeneratorAction::fPrimaryGenerationMutex;
 TF1* PrimaryGeneratorAction::fEnergyDistributionFunction = nullptr;
 TF1* PrimaryGeneratorAction::fAngularDistributionFunction = nullptr;
 TF2* PrimaryGeneratorAction::fEnergyAndAngularDistributionFunction = nullptr;
+TH2D* energyAndAngularDistributionHistogram = nullptr;
 
 PrimaryGeneratorAction::PrimaryGeneratorAction(SimulationManager* simulationManager)
     : G4VUserPrimaryGeneratorAction(), fSimulationManager(simulationManager) {
@@ -230,6 +231,30 @@ void PrimaryGeneratorAction::SetGeneratorSpatialDensity(TString str) {
     fGeneratorSpatialDensityFunction = new TF3("GeneratorDistFunc", str);
 }
 
+TVector2 PointOnUnitDisk() {
+    double r = TMath::Sqrt(G4UniformRand());
+    double theta = G4UniformRand() * 2 * TMath::Pi();
+    return {r * TMath::Cos(theta), r * TMath::Sin(theta)};
+}
+
+pair<bool, TVector3> IntersectionLineSphere(const TVector3& lineOrigin, const TVector3& lineDirection) {
+    // sphere origin is always (0,0)
+    // return the first intersection point
+    // https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
+    const double a = lineDirection.Dot(lineDirection);
+    const double b = 2 * lineDirection.Dot(lineOrigin);
+    const double c = lineOrigin.Dot(lineOrigin) - 1;
+
+    const double discriminant = b * b - 4 * a * c;
+    if (discriminant < 0) {
+        return {false, {0, 0, 0}};
+    }
+    const double t1 = (-b + sqrt(discriminant)) / (2 * a);
+    const double t2 = (-b - sqrt(discriminant)) / (2 * a);
+    const double t = min(t1, t2);
+    return {true, lineOrigin + t * lineDirection};
+}
+
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     lock_guard<mutex> lock(fPrimaryGenerationMutex);
     auto simulationManager = fSimulationManager;
@@ -261,29 +286,61 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
             G4ParticleTable::GetParticleTable()->FindParticle(particle.GetParticleName().Data()));
 
         if (fCosmicCircumscribedSphereRadius == 0.) {
-            // radius in mm
             fCosmicCircumscribedSphereRadius = fSimulationManager->GetRestMetadata()
                                                    ->GetGeant4PrimaryGeneratorInfo()
-                                                   .GetSpatialGeneratorCosmicRadius();
+                                                   .GetSpatialGeneratorCosmicRadius();  // radius in mm
+        }
+        const G4ThreeVector referenceDirection = {0, -1, 0};
+        const auto& direction = particle.GetMomentumDirection();
+        const double zenith = TMath::ACos(
+            direction.Dot({referenceDirection.x(), referenceDirection.y(), referenceDirection.z()}));
+
+        const TVector2 positionOnDisk = PointOnUnitDisk();
+        const TVector2 positionOnEllipse = {positionOnDisk.X() / TMath::Cos(zenith) + TMath::Tan(zenith),
+                                            positionOnDisk.Y()};
+
+        double phi = TVector2(direction.X(), direction.Z()).Phi();
+        const TVector2 positionOnEllipseRotated = {
+            positionOnEllipse.X() * TMath::Cos(phi) - positionOnEllipse.Y() * TMath::Sin(phi),
+            positionOnEllipse.X() * TMath::Sin(phi) + positionOnEllipse.Y() * TMath::Cos(phi),
+        };
+        const TVector3 positionOrigin = {
+            // this may be wrong, or how phi is derived from direction
+            -1 * positionOnEllipseRotated.X(),
+            1.0,
+            -1 * positionOnEllipseRotated.Y(),
+        };
+        const auto [intersectionFlag, intersection] = IntersectionLineSphere(positionOrigin, direction);
+        if (!intersectionFlag) {
+            cerr << "PrimaryGeneratorAction: cosmic generator intersection not found (this should never "
+                    "happen)"
+                 << endl;
+            exit(1);
         }
 
-        const auto position = ComputeCosmicPosition(fParticleGun.GetParticleMomentumDirection(),
-                                                    fCosmicCircumscribedSphereRadius);
-
-        fParticleGun.SetParticlePosition(position);
         fParticleGun.SetParticleEnergy(particle.GetEnergy() * keV);
-        fParticleGun.SetParticleMomentumDirection({particle.GetMomentumDirection().X(),
-                                                   particle.GetMomentumDirection().Y(),
-                                                   particle.GetMomentumDirection().Z()});
+
+        G4ThreeVector particlePosition = {
+            intersection.X() * fCosmicCircumscribedSphereRadius,
+            intersection.Y() * fCosmicCircumscribedSphereRadius,
+            intersection.Z() * fCosmicCircumscribedSphereRadius,
+        };
+        G4ThreeVector sourceDirection = {source->GetDirection().X(), source->GetDirection().Y(),
+                                         source->GetDirection().Z()};
+        G4ThreeVector particleDirection = {direction.X(), direction.Y(), direction.Z()};
+
+        const double angleBetweenDirections = sourceDirection.angle(referenceDirection);
+        if (angleBetweenDirections > 0) {
+            const G4ThreeVector cross = referenceDirection.cross(sourceDirection);
+            particleDirection.rotate(angleBetweenDirections, cross);
+            particlePosition.rotate(angleBetweenDirections, cross);
+        }
+
+        fParticleGun.SetParticleMomentumDirection(particleDirection);
+        fParticleGun.SetParticlePosition(particlePosition);
+
         fParticleGun.GeneratePrimaryVertex(event);
 
-        /*
-        cout << "PrimaryGeneratorAction - INFO: cosmic particle generated: "
-             << fParticleGun.GetParticleDefinition()->GetParticleName()
-             << " energy: " << fParticleGun.GetParticleEnergy() / keV << " keV"
-             << " position: " << fParticleGun.GetParticlePosition() / mm << " mm"
-             << " direction: " << fParticleGun.GetParticleMomentumDirection() << endl;
-        */
         return;
     }
 
@@ -317,13 +374,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
 
     for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
         vector<TRestGeant4Particle> particles = restG4Metadata->GetParticleSource(i)->GetParticles();
-        // std::cout << "Source : " << i << std::endl;
         for (const auto& p : particles) {
-            // ParticleDefinition should be always declared first (after position).
             SetParticleDefinition(i, p);
             SetParticleEnergyAndDirection(i, p);
-
-            // p.Print();
 
             if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::COSMIC) {
                 const auto position = ComputeCosmicPosition(fParticleGun.GetParticleMomentumDirection(),
@@ -331,7 +384,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
                 fParticleGun.SetParticlePosition(position);
             }
 
-            if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::SOURCE) {
+            else if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::SOURCE) {
                 G4ThreeVector position = {p.GetOrigin().X(), p.GetOrigin().Y(), p.GetOrigin().Z()};
                 fParticleGun.SetParticlePosition(position);
             }
@@ -822,36 +875,43 @@ void PrimaryGeneratorAction::SetParticleEnergyAndDirection(Int_t particleSourceI
         restG4Metadata->GetParticleSource(particleSourceIndex)->GetEnergyDistributionType().Data();
     const auto energyDistTypeEnum = StringToEnergyDistributionTypes(energyDistTypeName);
 
-    if (energyDistTypeEnum != EnergyDistributionTypes::FORMULA2 &&
-        angularDistTypeEnum != AngularDistributionTypes::FORMULA2) {
-        // when not using 'FORMULA2'
+    if ((energyDistTypeEnum != EnergyDistributionTypes::FORMULA2 &&
+         angularDistTypeEnum != AngularDistributionTypes::FORMULA2) &&
+        (energyDistTypeEnum != EnergyDistributionTypes::TH2D &&
+         angularDistTypeEnum != AngularDistributionTypes::TH2D)) {
         SetParticleEnergy(particleSourceIndex, particle);
         SetParticleDirection(particleSourceIndex, particle);
         return;
     }
 
-    // this function should only be invoked when both energy and angular dist are "formula2"
-    if (energyDistTypeEnum != EnergyDistributionTypes::FORMULA2 ||
-        angularDistTypeEnum != AngularDistributionTypes::FORMULA2) {
-        cout << "PrimaryGeneratorAction::SetParticleEnergyAndDirection - this method should only invoked "
-                "when both angular and energy dist are 'formula2'"
+    double energy, angle;
+    if (energyDistTypeEnum == EnergyDistributionTypes::FORMULA2 &&
+        angularDistTypeEnum == AngularDistributionTypes::FORMULA2) {
+        {
+            lock_guard<mutex> lock(fDistributionFormulaMutex);
+            fEnergyAndAngularDistributionFunction->GetRandom2(energy, angle, fRandom);
+            energy *= keV;
+        }
+    } else if (energyDistTypeEnum == EnergyDistributionTypes::TH2D &&
+               angularDistTypeEnum == AngularDistributionTypes::TH2D) {
+        if (energyAndAngularDistributionHistogram == nullptr) {
+            const auto filename = source->GetEnergyDistributionFilename();
+            const auto name = source->GetEnergyDistributionNameInFile();
+            cout << "Loading energy and angular distribution from file " << filename << " with name " << name
+                 << endl;
+            TFile* file = TFile::Open(filename);
+            energyAndAngularDistributionHistogram =
+                file->Get<TH2D>(name);  // it's the same for both angular and energy
+        }
+        energyAndAngularDistributionHistogram->GetRandom2(energy, angle);
+        energy *= MeV;  // energy in these histograms is in MeV. TODO: parse energy from axis label
+        angle *= TMath::DegToRad();
+    } else {
+        cout << "Energy/Angular distribution type 'formula2' or 'TH2D' should be used on both energy and "
+                "angular"
              << endl;
         exit(1);
     }
-
-    if (fEnergyAndAngularDistributionFunction == nullptr) {
-        RESTError << "PrimaryGeneratorAction::SetParticleEnergyAndDirection - energy and angular "
-                     "distribution function is not set"
-                  << RESTendl;
-        exit(1);
-    }
-
-    double energy, angle;
-    {
-        lock_guard<mutex> lock(fDistributionFormulaMutex);
-        fEnergyAndAngularDistributionFunction->GetRandom2(energy, angle, fRandom);
-    }
-    energy *= keV;
 
     G4ThreeVector direction = {source->GetDirection().X(), source->GetDirection().Y(),
                                source->GetDirection().Z()};
