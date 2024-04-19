@@ -493,9 +493,6 @@ void Application::Run(const CommandLineOptions::Options& options) {
 
     const auto nEntries = run->GetEntries();
 
-    run->UpdateOutputFile();
-    run->CloseFile();
-
     if (metadata->GetNumberOfSources() == 1 &&
         string(metadata->GetParticleSource(0)->GetName()) == "TRestGeant4ParticleSourceCosmics") {
         auto source = dynamic_cast<TRestGeant4ParticleSourceCosmics*>(metadata->GetParticleSource(0));
@@ -513,8 +510,14 @@ void Application::Run(const CommandLineOptions::Options& options) {
         cout << "Equivalent surface: " << equivalentSurface << " cm2" << endl;
         cout << "Total time to launch all particles: " << time << " s" << endl;
         cout << "Counts per second: " << double(run->GetEntries()) / time << endl;
+        cout << "Counts per second (wall time): "
+             << double(run->GetEntries()) / fSimulationManager.GetElapsedTime() << endl;
         metadata->SetSimulationTime(time);
     }
+
+    run->UpdateOutputFile();
+    run->CloseFile();
+
     run->PrintMetadata();
 
     const auto nEventsAtEnd =
