@@ -292,6 +292,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         }
         const G4ThreeVector referenceDirection = {0, -1, 0};
         const auto& direction = particle.GetMomentumDirection();
+        // Compute zenith angle between Y axis and direction of the incoming particle.
         const double zenith = TMath::ACos(
             direction.Dot({referenceDirection.x(), referenceDirection.y(), referenceDirection.z()}));
 
@@ -299,7 +300,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         const TVector2 positionOnDisk = PointOnUnitDisk();
         const TVector2 positionOnEllipse = {positionOnDisk.X() / TMath::Cos(zenith) + TMath::Tan(zenith),
                                             positionOnDisk.Y()};
-
+        // Rotate the point generated in the ellipse acording phi angle
         double phi = TVector2(direction.X(), direction.Z()).Phi();
         const TVector2 positionOnEllipseRotated = {
             positionOnEllipse.X() * TMath::Cos(phi) - positionOnEllipse.Y() * TMath::Sin(phi),
