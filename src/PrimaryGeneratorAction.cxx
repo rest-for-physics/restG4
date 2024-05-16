@@ -292,7 +292,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         }
         const G4ThreeVector referenceDirection = {0, -1, 0};
         const auto& direction = particle.GetMomentumDirection();
-        // Compute zenit angle between Y axis and direction of the incoming particle.
+        // Compute zenith angle between Y axis and direction of the incoming particle.
         const double zenith = TMath::ACos(
             direction.Dot({referenceDirection.x(), referenceDirection.y(), referenceDirection.z()}));
 
