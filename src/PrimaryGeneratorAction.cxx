@@ -294,7 +294,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         const auto& direction = particle.GetMomentumDirection();
         const double zenith = TMath::ACos(
             direction.Dot({referenceDirection.x(), referenceDirection.y(), referenceDirection.z()}));
-        
+
         // Uniform sampling in an ellipse
         const TVector2 positionOnDisk = PointOnUnitDisk();
         const TVector2 positionOnEllipse = {positionOnDisk.X() / TMath::Cos(zenith) + TMath::Tan(zenith),
