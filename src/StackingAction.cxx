@@ -27,8 +27,8 @@ for (const auto& particle : fParticlesToIgnore) {
 }
 
 G4ClassificationOfNewTrack StackingAction::ClassifyNewTrack(const G4Track* track) {
-    const G4ClassificationOfNewTrack decayClassification =
-        fSimulationManager->GetRestMetadata()->isFullChainActivated() ? fWaiting : fKill;
+    const bool isFullChain = fSimulationManager->GetRestMetadata()->isFullChainActivated();
+    const G4ClassificationOfNewTrack decayClassification = isFullChain ? fWaiting : fKill;
     if (track->GetParentID() <= 0) {
         // always process the first track regardless
         return fUrgent;
@@ -37,6 +37,11 @@ G4ClassificationOfNewTrack StackingAction::ClassifyNewTrack(const G4Track* track
     auto particle = track->GetParticleDefinition();
     if (fParticlesToIgnore.find(particle) != fParticlesToIgnore.end()) {
         // ignore this track
+        return fKill;
+    }
+
+    if (isFullChain &&
+        fSimulationManager->GetRestMetadata()->IsIsotopeFullChainStop(particle->GetParticleName())) {
         return fKill;
     }
 
