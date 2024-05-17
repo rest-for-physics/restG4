@@ -269,8 +269,11 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
 
     if (restG4Metadata->GetNumberOfSources() == 1 &&
         string(restG4Metadata->GetParticleSource(0)->GetName()) == "TRestGeant4ParticleSourceCosmics") {
+        // This block is the cosmic generator
+
         auto source = dynamic_cast<TRestGeant4ParticleSourceCosmics*>(restG4Metadata->GetParticleSource(0));
 
+        // rml source and generator must both be "cosmic", otherwise raise an exception
         if (string(restG4Metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorType().Data()) !=
             "Cosmic") {
             cerr << "PrimaryGeneratorAction - ERROR: cosmic generator only supports cosmic type: "
@@ -278,6 +281,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
             exit(1);
         }
 
+        // update particle with energy and momentum from input histogram. The input histogram zenith component
+        // is multiplied by sec(zenith) to account for geometric effect.
         source->Update();
 
         const auto particle = source->GetParticles().at(0);
@@ -285,6 +290,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         fParticleGun.SetParticleDefinition(
             G4ParticleTable::GetParticleTable()->FindParticle(particle.GetParticleName().Data()));
 
+        // radius of the disk used in sampling. A sphere with this radius will contain the whole geometry
         if (fCosmicCircumscribedSphereRadius == 0.) {
             fCosmicCircumscribedSphereRadius = fSimulationManager->GetRestMetadata()
                                                    ->GetGeant4PrimaryGeneratorInfo()
@@ -297,24 +303,25 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
             direction.Dot({referenceDirection.x(), referenceDirection.y(), referenceDirection.z()}));
 
         // Uniform sampling in an ellipse
-        const TVector2 positionOnDisk = PointOnUnitDisk();
+        const TVector2 positionOnDisk = PointOnUnitDisk();  // unit disk
         const TVector2 positionOnEllipse = {positionOnDisk.X() / TMath::Cos(zenith) + TMath::Tan(zenith),
                                             positionOnDisk.Y()};
-        // Rotate the point generated in the ellipse acording phi angle
+
+        // Rotate the point generated in the ellipse according phi angle
         double phi = TVector2(direction.X(), direction.Z()).Phi();
         const TVector2 positionOnEllipseRotated = {
             positionOnEllipse.X() * TMath::Cos(phi) - positionOnEllipse.Y() * TMath::Sin(phi),
             positionOnEllipse.X() * TMath::Sin(phi) + positionOnEllipse.Y() * TMath::Cos(phi),
         };
         const TVector3 positionOrigin = {
-            // this may be wrong, or how phi is derived from direction
             -1 * positionOnEllipseRotated.X(),
             1.0,
             -1 * positionOnEllipseRotated.Y(),
         };
+        // find intersection point with the unit sphere
         auto [intersectionFlag, intersection] = IntersectionLineSphere(positionOrigin, direction);
         if (!intersectionFlag) {
-            cout << "PrimaryGeneratorAction - ERROR: cosmic generator failed to find intersection. This "
+            cerr << "PrimaryGeneratorAction - ERROR: cosmic generator failed to find intersection. This "
                     "could happen very rarely. If it happens often, it's a bug."
                  << endl;
             intersection = positionOrigin;  // just use the origin position (this should almost never happen)
