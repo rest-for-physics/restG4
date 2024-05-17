@@ -3,12 +3,14 @@
 
 #include <G4ParticleTable.hh>
 #include <G4ParticleTypes.hh>
-#include <G4SystemOfUnits.hh>
 #include <G4Track.hh>
 #include <G4UnitsTable.hh>
 #include <G4VProcess.hh>
+#include <regex>
 
 #include "SimulationManager.h"
+
+using namespace std;
 
 StackingAction::StackingAction(SimulationManager* simulationManager) : fSimulationManager(simulationManager) {
     fMaxAllowedLifetime = 100;  // TODO: update this
@@ -19,16 +21,11 @@ StackingAction::StackingAction(SimulationManager* simulationManager) : fSimulati
         G4NeutrinoE::Definition(),      G4AntiNeutrinoE::Definition(), G4NeutrinoMu::Definition(),
         G4AntiNeutrinoMu::Definition(), G4NeutrinoTau::Definition(),   G4AntiNeutrinoTau::Definition(),
     };
-
-    /*
-for (const auto& particle : fParticlesToIgnore) {
-}
-    */
 }
 
 G4ClassificationOfNewTrack StackingAction::ClassifyNewTrack(const G4Track* track) {
-    const G4ClassificationOfNewTrack decayClassification =
-        fSimulationManager->GetRestMetadata()->isFullChainActivated() ? fWaiting : fKill;
+    const bool isFullChain = fSimulationManager->GetRestMetadata()->isFullChainActivated();
+    const G4ClassificationOfNewTrack decayClassification = isFullChain ? fWaiting : fKill;
     if (track->GetParentID() <= 0) {
         // always process the first track regardless
         return fUrgent;
@@ -38,6 +35,17 @@ G4ClassificationOfNewTrack StackingAction::ClassifyNewTrack(const G4Track* track
     if (fParticlesToIgnore.find(particle) != fParticlesToIgnore.end()) {
         // ignore this track
         return fKill;
+    }
+
+    if (isFullChain) {
+        const string particleName = particle->GetParticleName();
+        // the particle may be an excited state of an isotope we want to remove
+        // strip the excited state which is assumed to always be inside some "[]"
+        regex pattern("\\[.*\\]");
+        std::string particleNameStripped = regex_replace(particleName, pattern, "");
+        if (fSimulationManager->GetRestMetadata()->IsIsotopeFullChainStop(particleNameStripped)) {
+            return fKill;
+        }
     }
 
     if (track->GetCreatorProcess()->GetProcessType() != G4ProcessType::fDecay) {
@@ -62,7 +70,7 @@ void StackingAction::NewStage() {
      * Close event and start a new sub event if there are waiting tracks
      */
 
-    const auto outputManager = fSimulationManager->GetOutputManager();
+    const auto outputManager = SimulationManager::GetOutputManager();
 
     const Int_t subEventID = outputManager->fEvent->GetSubID();
     outputManager->FinishAndSubmitEvent();
