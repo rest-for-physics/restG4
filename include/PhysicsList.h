@@ -5,6 +5,7 @@
 #include <TRestGeant4PhysicsLists.h>
 
 #include <G4EmConfigurator.hh>
+#include <G4StepLimiterPhysics.hh>
 #include <G4VModularPhysicsList.hh>
 #include <globals.hh>
 
@@ -17,7 +18,6 @@ class PhysicsList : public G4VModularPhysicsList {
     ~PhysicsList() override;
 
    protected:
-    // Construct particle and physics
     virtual void InitializePhysicsLists();
 
     void ConstructParticle() override;
@@ -34,6 +34,8 @@ class PhysicsList : public G4VModularPhysicsList {
 
     G4VPhysicsConstructor* fDecPhysicsList = nullptr;
     G4VPhysicsConstructor* fRadDecPhysicsList = nullptr;
+    G4StepLimiterPhysics* fStepLimiterPhysics = nullptr;
+
     std::vector<G4VPhysicsConstructor*> fHadronPhys;
 
     TRestGeant4PhysicsLists* fRestPhysicsLists = nullptr;
