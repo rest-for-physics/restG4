@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+
+<restG4>
+    <globals>
+        <parameter name="mainDataPath" value=""/>
+        <parameter name="verboseLevel" value="essential"/>
+    </globals>
+
+    <TRestRun>
+        <parameter name="experimentName" value="CosmicGenerator"/>
+        <parameter name="runType" value="simulation"/>
+        <parameter name="runNumber" value="1"/>
+        <parameter name="runTag" value="CosmicGenerator"/>
+        <parameter name="outputFileName" value="CosmicGenerator.root"/>
+        <parameter name="runDescription" value=""/>
+        <parameter name="user" value="${USER}"/>
+        <parameter name="overwrite" value="off"/>
+        <parameter name="readOnly" value="false"/>
+    </TRestRun>
+
+    <TRestGeant4Metadata>
+        <parameter name="gdmlFile" value="geometry/setup.gdml"/>
+        <parameter name="seed" value="137"/>
+        <parameter name="nRequestedEntries" value="1000000"/>
+        <parameter name="saveAllEvents" value="false"/>
+
+        <generator type="cosmic">
+            <source use="cosmics" direction="(0,-1,0)" filename="./cosmics.root"
+                    particles="muon_minus"/>
+        </generator>
+
+        <detector>
+            <volume name="gasVolume" sensitive="true" maxStepSize="1mm"/>
+        </detector>
+
+    </TRestGeant4Metadata>
+
+    <TRestGeant4PhysicsLists>
+        <parameter name="cutForGamma" value="1" units="mm"/>
+        <parameter name="cutForElectron" value="1" units="mm"/>
+        <parameter name="cutForPositron" value="1" units="mm"/>
+        <parameter name="cutForMuon" value="1" units="mm"/>
+        <parameter name="cutForNeutron" value="1" units="mm"/>
+
+        <parameter name="minEnergyRangeProductionCuts" value="1" units="keV"/>
+        <parameter name="maxEnergyRangeProductionCuts" value="1" units="GeV"/>
+
+        <physicsList name="G4EmLivermorePhysics">
+            <option name="pixe" value="false"/>
+        </physicsList>
+
+        <physicsList name="G4HadronElasticPhysicsHP"/>
+        <physicsList name="G4IonBinaryCascadePhysics"/>
+        <physicsList name="G4HadronPhysicsQGSP_BIC_HP"/>
+        <physicsList name="G4EmExtraPhysics"/>
+
+        <physicsList name="G4DecayPhysics"/>
+        <physicsList name="G4RadioactiveDecayPhysics"/>
+        <physicsList name="G4RadioactiveDecay">
+            <option name="ICM" value="true"/>
+            <option name="ARM" value="true"/>
+        </physicsList>
+
+        <!--
+        <physicsList name="G4NeutronTrackingCut"/>
+         -->
+
+    </TRestGeant4PhysicsLists>
+</restG4>
+    
