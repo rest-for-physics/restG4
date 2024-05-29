@@ -26,7 +26,6 @@ class SimulationManager {
     void InsertEvent(std::unique_ptr<TRestGeant4Event>& event);
 
     void WriteEvents();
-    void WriteEventsAndCloseFile();
 
     std::unique_ptr<std::thread> fPeriodicPrintThread = nullptr;
     bool fPeriodicPrintThreadEndFlag = false;
@@ -77,6 +76,8 @@ class SimulationManager {
 
     std::vector<OutputManager*> fOutputManagerContainer = {};
     long fTimeStartUnix = 0;
+
+    TTree* benchmarkTree = nullptr;
 
     /* Primary generation */
    public:
