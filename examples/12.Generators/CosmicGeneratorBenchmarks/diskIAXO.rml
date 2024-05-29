@@ -19,7 +19,7 @@
     </TRestRun>
 
     <TRestGeant4Metadata>
-        <parameter name="gdmlFile" value="../13.IAXO/geometry/setup.gdml"/>
+        <parameter name="gdmlFile" value="../../13.IAXO/geometry/setup.gdml"/>
         <parameter name="seed" value="137"/>
         <parameter name="nRequestedEntries" value="1000000"/>
         <parameter name="saveAllEvents" value="false"/>
