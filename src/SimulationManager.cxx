@@ -256,6 +256,8 @@ void OutputManager::BeginOfEventAction() {
     // This should only be executed once at BeginOfEventAction
     UpdateEvent();
     fProcessedEventsCounter++;
+    fEventTimeWall = std::chrono::high_resolution_clock::now();
+    fEventTimeWallPrimaryGeneration = fEventTimeWall;
 
     if (fSimulationManager->GetAbortFlag()) {
         G4RunManager::GetRunManager()->AbortRun(true);
@@ -319,6 +321,11 @@ void OutputManager::FinishAndSubmitEvent() {
         if (fSimulationManager->GetRestMetadata()->GetRemoveUnwantedTracks()) {
             RemoveUnwantedTracks();
         }
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> elapsed = end - fEventTimeWall;
+
+        fEvent->fEventTimeWall = elapsed.count() / 1000;  // seconds
+
         fSimulationManager->InsertEvent(fEvent);
         fSimulationManager->WriteEvents();
     }

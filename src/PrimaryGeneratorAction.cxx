@@ -256,6 +256,8 @@ pair<bool, TVector3> IntersectionLineSphere(const TVector3& lineOrigin, const TV
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
+    auto start = std::chrono::high_resolution_clock::now();
+
     lock_guard<mutex> lock(fPrimaryGenerationMutex);
     auto simulationManager = fSimulationManager;
     TRestGeant4Metadata* restG4Metadata = simulationManager->GetRestMetadata();
@@ -348,6 +350,11 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         fParticleGun.SetParticleMomentumDirection(particleDirection);
         fParticleGun.SetParticlePosition(particlePosition);
 
+        std::chrono::duration<double, std::milli> elapsed = std::chrono::high_resolution_clock::now() - start;
+        // get output manager
+        auto outputManager = SimulationManager::GetOutputManager();
+        outputManager->SetEventTimeWallPrimaryGeneration(elapsed.count() / 1000.);
+
         fParticleGun.GeneratePrimaryVertex(event);
 
         return;
@@ -397,6 +404,12 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
                 G4ThreeVector position = {p.GetOrigin().X(), p.GetOrigin().Y(), p.GetOrigin().Z()};
                 fParticleGun.SetParticlePosition(position);
             }
+
+            std::chrono::duration<double, std::milli> elapsed =
+                std::chrono::high_resolution_clock::now() - start;
+            // get output manager
+            auto outputManager = SimulationManager::GetOutputManager();
+            outputManager->SetEventTimeWallPrimaryGeneration(elapsed.count() / 1000.);
 
             fParticleGun.GeneratePrimaryVertex(event);
         }

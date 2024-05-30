@@ -77,8 +77,6 @@ class SimulationManager {
     std::vector<OutputManager*> fOutputManagerContainer = {};
     long fTimeStartUnix = 0;
 
-    TTree* benchmarkTree = nullptr;
-
     /* Primary generation */
    public:
     void InitializeUserDistributions();
@@ -118,11 +116,20 @@ class OutputManager {
 
     int GetCurrentEventID() const { return fEvent->GetID(); }
 
+    void SetEventTimeWallPrimaryGeneration(double durationSeconds) {
+        fEvent->fEventTimeWallPrimaryGeneration = durationSeconds;
+    }
+
    private:
     std::unique_ptr<TRestGeant4Event> fEvent{};
     SimulationManager* fSimulationManager = nullptr;
 
     int fProcessedEventsCounter = 0;
+
+    std::chrono::time_point<std::chrono::system_clock, std::chrono::duration<double, std::milli> >
+        fEventTimeWall;
+    std::chrono::time_point<std::chrono::system_clock, std::chrono::duration<double, std::milli> >
+        fEventTimeWallPrimaryGeneration;
 
     void RemoveUnwantedTracks();
 
