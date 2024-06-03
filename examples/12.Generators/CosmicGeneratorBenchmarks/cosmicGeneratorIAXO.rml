@@ -25,7 +25,7 @@
         <parameter name="saveAllEvents" value="false"/>
 
         <generator type="cosmic">
-            <source use="cosmics" direction="(0,-1,0)" filename="./cosmics.root"
+            <source use="cosmics" direction="(0,-1,0)" filename="${REST_PATH}/data/distributions/CosmicsCry.root"
                     particles="muon_minus"/>
         </generator>
 
