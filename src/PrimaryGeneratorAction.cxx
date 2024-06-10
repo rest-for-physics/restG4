@@ -257,6 +257,8 @@ pair<bool, TVector3> IntersectionLineSphere(const TVector3& lineOrigin, const TV
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     auto start = std::chrono::high_resolution_clock::now();
+    auto outputManager = SimulationManager::GetOutputManager();
+    outputManager->SetEventTimeStart(start);
 
     lock_guard<mutex> lock(fPrimaryGenerationMutex);
     auto simulationManager = fSimulationManager;
@@ -351,8 +353,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         fParticleGun.SetParticlePosition(particlePosition);
 
         std::chrono::duration<double, std::milli> elapsed = std::chrono::high_resolution_clock::now() - start;
-        // get output manager
-        auto outputManager = SimulationManager::GetOutputManager();
+
         outputManager->SetEventTimeWallPrimaryGeneration(elapsed.count() / 1000.);
 
         fParticleGun.GeneratePrimaryVertex(event);

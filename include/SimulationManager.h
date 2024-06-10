@@ -117,8 +117,10 @@ class OutputManager {
     int GetCurrentEventID() const { return fEvent->GetID(); }
 
     void SetEventTimeWallPrimaryGeneration(double durationSeconds) {
-        fEvent->fEventTimeWallPrimaryGeneration = durationSeconds;
+        fEventTimeWallPrimaryGeneration = durationSeconds;
     }
+
+    void SetEventTimeStart(std::chrono::high_resolution_clock::time_point time) { fEventTimeStart = time; }
 
    private:
     std::unique_ptr<TRestGeant4Event> fEvent{};
@@ -126,10 +128,9 @@ class OutputManager {
 
     int fProcessedEventsCounter = 0;
 
-    std::chrono::time_point<std::chrono::system_clock, std::chrono::duration<double, std::milli> >
-        fEventTimeWall;
-    std::chrono::time_point<std::chrono::system_clock, std::chrono::duration<double, std::milli> >
-        fEventTimeWallPrimaryGeneration;
+    // start time
+    double fEventTimeWallPrimaryGeneration = 0;
+    std::chrono::high_resolution_clock::time_point fEventTimeStart;
 
     void RemoveUnwantedTracks();
 
