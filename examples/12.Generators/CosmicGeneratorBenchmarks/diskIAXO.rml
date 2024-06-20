@@ -28,8 +28,10 @@
                    position="(0,1777.9904,0)mm" size="(1777.9904,0,0)mm"
                    rotationAngle="90deg" rotationAxis="(1,0,0)">
             <source particle="mu-">
-                <energy type="TH2D" name="muon_minus_energy_zenith" file="${REST_PATH}/data/distributions/CosmicsCry.root"/>
-                <angular type="TH2D" name="muon_minus_energy_zenith" file="${REST_PATH}/data/distributions/CosmicsCry.root"/>
+                <energy type="TH2D" name="muon_minus_energy_zenith"
+                        file="${REST_PATH}/data/distributions/CosmicsCry.root"/>
+                <angular type="TH2D" name="muon_minus_energy_zenith" direction="(0,-1,0)"
+                         file="${REST_PATH}/data/distributions/CosmicsCry.root" />
             </source>
         </generator>
 
