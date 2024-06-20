@@ -409,7 +409,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
             std::chrono::duration<double, std::milli> elapsed =
                 std::chrono::high_resolution_clock::now() - start;
             // get output manager
-            auto outputManager = SimulationManager::GetOutputManager();
             outputManager->SetEventTimeWallPrimaryGeneration(elapsed.count() / 1000.);
 
             fParticleGun.GeneratePrimaryVertex(event);
