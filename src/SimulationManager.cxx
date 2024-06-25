@@ -162,6 +162,10 @@ void SimulationManager::WriteEvents() {
     while (!fEventContainer.empty()) {
         fEvent = *fEventContainer.front();
 
+        if (!fRestGeant4Metadata->GetStoreTracks()) {
+            fEvent.ClearTracks();
+        }
+
         const auto eventTree = fRestRun->GetEventTree();
         if (eventTree != nullptr) {
             eventTree->Fill();
@@ -319,6 +323,12 @@ void OutputManager::FinishAndSubmitEvent() {
         if (fSimulationManager->GetRestMetadata()->GetRemoveUnwantedTracks()) {
             RemoveUnwantedTracks();
         }
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> elapsed = end - fEventTimeStart;
+
+        fEvent->fEventTimeWall = elapsed.count() / 1000;  // seconds
+        fEvent->fEventTimeWallPrimaryGeneration = fEventTimeWallPrimaryGeneration;
+
         fSimulationManager->InsertEvent(fEvent);
         fSimulationManager->WriteEvents();
     }
