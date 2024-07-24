@@ -462,9 +462,7 @@ void Application::Run(const CommandLineOptions::Options& options) {
         UI->ApplyCommand("/tracking/verbose 0");
         UI->ApplyCommand("/run/initialize");
         UI->ApplyCommand("/run/beamOn " + to_string(nEvents));
-    }
-
-    else if (nEvents == 0)  // define visualization and UI terminal for interactive mode
+    } else  // define visualization and UI terminal for interactive mode
     {
 #ifdef G4UI_USE
         cout << "Entering vis mode.." << endl;
@@ -493,6 +491,8 @@ void Application::Run(const CommandLineOptions::Options& options) {
 
     const auto nEntries = run->GetEntries();
 
+    metadata->SetSimulationWallTime(fSimulationManager.GetElapsedTime());
+
     if (metadata->GetNumberOfSources() == 1 &&
         string(metadata->GetParticleSource(0)->GetName()) == "TRestGeant4ParticleSourceCosmics") {
         auto source = dynamic_cast<TRestGeant4ParticleSourceCosmics*>(metadata->GetParticleSource(0));
@@ -505,12 +505,13 @@ void Application::Run(const CommandLineOptions::Options& options) {
         const double equivalentSurface =
             metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTermCm2();
         const double time = nParticlesLaunched / (totalParticlesPerUnitTimePerSurface * equivalentSurface);
-        cout << "Total particles launched: " << nParticlesLaunched << endl;
-        cout << "Total particles per second per cm2: " << totalParticlesPerUnitTimePerSurface << endl;
-        cout << "Equivalent surface: " << equivalentSurface << " cm2" << endl;
-        cout << "Total time to launch all particles: " << time << " s" << endl;
-        cout << "Counts per second: " << double(run->GetEntries()) / time << endl;
-        cout << "Counts per second (wall time): "
+        cout << "Cosmic generator summary:" << endl;
+        cout << " - Total particles launched: " << nParticlesLaunched << endl;
+        cout << " - Total particles per second per cm2: " << totalParticlesPerUnitTimePerSurface << endl;
+        cout << " - Equivalent surface: " << equivalentSurface << " cm2" << endl;
+        cout << " - Total time to launch all particles: " << time << " s" << endl;
+        cout << " - Counts per second: " << double(run->GetEntries()) / time << endl;
+        cout << " - Counts per second (wall time): "
              << double(run->GetEntries()) / fSimulationManager.GetElapsedTime() << endl;
     }
 
