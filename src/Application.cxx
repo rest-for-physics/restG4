@@ -501,7 +501,7 @@ void Application::Run(const CommandLineOptions::Options& options) {
         for (const auto& [name, histogram] : histogramsTransformed) {
             totalParticlesPerUnitTimePerSurface += histogram->Integral();
         }
-        const double nParticlesLaunched = metadata->GetNumberOfEvents();
+        const auto nParticlesLaunched = static_cast<double>(metadata->GetNumberOfEvents());
         const double equivalentSurface =
             metadata->GetGeant4PrimaryGeneratorInfo().GetSpatialGeneratorCosmicSurfaceTermCm2();
         const double time = nParticlesLaunched / (totalParticlesPerUnitTimePerSurface * equivalentSurface);
@@ -512,8 +512,9 @@ void Application::Run(const CommandLineOptions::Options& options) {
         cout << "Counts per second: " << double(run->GetEntries()) / time << endl;
         cout << "Counts per second (wall time): "
              << double(run->GetEntries()) / fSimulationManager.GetElapsedTime() << endl;
-        metadata->SetSimulationTime(time);
     }
+
+    metadata->SetSimulationTime(fSimulationManager.GetElapsedTime());
 
     run->UpdateOutputFile();
     run->CloseFile();
