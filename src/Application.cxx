@@ -515,7 +515,7 @@ void Application::Run(const CommandLineOptions::Options& options) {
              << double(run->GetEntries()) / fSimulationManager.GetElapsedTime() << endl;
     }
 
-    metadata->SetSimulationTime(fSimulationManager.GetElapsedTime());
+    metadata->SetSimulationWallTime(fSimulationManager.GetElapsedTime());
 
     run->UpdateOutputFile();
     run->CloseFile();
