@@ -30,4 +30,6 @@ with open("output.txt", "w") as f:
         print(f"Surface: {surface}")
         print(f"Ratio: {ratio}")
 
-        f.write(f"{file}\t{wall_time}\t{simulation_time}\t{entries}\t{primaries}\t{surface}\t{ratio}\n")
+        f.write(
+            f"{file}\t{wall_time}\t{simulation_time}\t{entries}\t{primaries}\t{surface}\t{ratio}\n"
+        )
