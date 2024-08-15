@@ -3,9 +3,9 @@ from REST import ROOT
 from pathlib import Path
 import numpy as np
 
-files = Path("disk_simple").rglob("*.root")
+files = Path("disk_sphere").rglob("*.root")
 
-with open("output.txt", "w") as f:
+with open("output2.txt", "w") as f:
     f.write("file\twall_time\tsimulation_time\tentries\tprimaries\tsurface\tratio\n")
 
     for file in files:
@@ -20,7 +20,7 @@ with open("output.txt", "w") as f:
         primaries = metadata.GetNumberOfEvents()
         surface = metadata.GetGeneratorSurfaceCm2()
         radius = np.sqrt(surface / np.pi)
-        reference_radius = 17.320508
+        reference_radius = 5
         ratio = radius / reference_radius
 
         print(f"Wall time: {wall_time}")
