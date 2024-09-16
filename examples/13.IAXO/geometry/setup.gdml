@@ -465,7 +465,7 @@
             <materialref ref="G4_Galactic"/>
             <solidref ref="detectorPipeInside"/>
         </volume>
-        <assembly name="DetectorPipe">
+        <assembly name="detectorPipe">
             <physvol name="detectorPipe">
                 <volumeref ref="detectorPipeVolume"/>
             </physvol>
@@ -474,13 +474,13 @@
                 <position name="detectorPipeFilling.position" z="82.675" unit="mm"/>
             </physvol>
         </assembly>
-        <volume name="ShieldingVolume">
+        <volume name="shieldingVolume">
             <materialref ref="G4_Pb"/>
             <solidref ref="leadBoxWithShaftSolid"/>
         </volume>
-        <assembly name="Shielding">
+        <assembly name="shielding">
             <physvol name="shielding20cm">
-                <volumeref ref="ShieldingVolume"/>
+                <volumeref ref="shieldingVolume"/>
                 <position name="shielding20cm.position" z="29.5" unit="mm"/>
             </physvol>
         </assembly>
@@ -895,11 +895,11 @@
                 <volumeref ref="Chamber"/>
             </physvol>
             <physvol name="DetectorPipe">
-                <volumeref ref="DetectorPipe"/>
+                <volumeref ref="detectorPipe"/>
                 <position name="DetectorPipe.position" z="27.0" unit="mm"/>
             </physvol>
             <physvol name="Shielding">
-                <volumeref ref="Shielding"/>
+                <volumeref ref="shielding"/>
             </physvol>
             <physvol name="VetoSystem">
                 <volumeref ref="assembly-3"/>
