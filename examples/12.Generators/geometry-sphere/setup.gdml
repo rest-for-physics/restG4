@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!-- ##VERSION REST Example 01.NLDBD Version 1.0## -->
+
+<!DOCTYPE gdml [
+        <!ENTITY geometry SYSTEM "geometry.gdml">
+        <!ENTITY materials SYSTEM "https://rest-for-physics.github.io/materials/rest.xml">
+        ]>
+
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+
+    <!-- Just an example of main geometry file : myGeometryTemplate.gdml
+         This file just defines de parameters of the geometry.
+         The geometry it is defined in geometry/myGeometryDefinition.gdml
+         The materials are defined in geometry/materials.xml
+         Author :   J. Galan    Date : 09-Jul-2015
+    -->
+
+    <!-- All values should be in mm -->
+
+    <define>
+        <constant name="world_size" value="100"/>
+
+        <!-- Rough density values taken from wikipedia -->
+        <!-- Density values is what matters, pressure and temperature are irrelevant -->
+        <variable name="targetGasDensity" value="1.78"/> <!-- mg/cm3 -->
+        <variable name="quencherDensity" value="2.51*0.01"/> <!-- mg/cm3 -->
+        <variable name="quencherFraction" value="0.01"/>
+        <variable name="gasTemperature" value="300"/>
+        <variable name="gasPressure" value="1"/>
+    </define>
+
+    &materials;
+
+    &geometry;
+
+
+    <setup name="Default" version="1.0">
+        <world ref="World"/>
+    </setup>
+
+</gdml>

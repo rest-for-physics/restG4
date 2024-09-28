@@ -26,7 +26,6 @@ class SimulationManager {
     void InsertEvent(std::unique_ptr<TRestGeant4Event>& event);
 
     void WriteEvents();
-    void WriteEventsAndCloseFile();
 
     std::unique_ptr<std::thread> fPeriodicPrintThread = nullptr;
     bool fPeriodicPrintThreadEndFlag = false;
@@ -117,11 +116,21 @@ class OutputManager {
 
     int GetCurrentEventID() const { return fEvent->GetID(); }
 
+    void SetEventTimeWallPrimaryGeneration(double durationSeconds) {
+        fEventTimeWallPrimaryGeneration = durationSeconds;
+    }
+
+    void SetEventTimeStart(std::chrono::high_resolution_clock::time_point time) { fEventTimeStart = time; }
+
    private:
     std::unique_ptr<TRestGeant4Event> fEvent{};
     SimulationManager* fSimulationManager = nullptr;
 
     int fProcessedEventsCounter = 0;
+
+    // start time
+    double fEventTimeWallPrimaryGeneration = 0;
+    std::chrono::high_resolution_clock::time_point fEventTimeStart;
 
     void RemoveUnwantedTracks();
 

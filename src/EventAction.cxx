@@ -19,7 +19,7 @@ EventAction::EventAction(SimulationManager* simulationManager)
 EventAction::~EventAction() {}
 
 void EventAction::BeginOfEventAction(const G4Event* event) {
-    fSimulationManager->GetOutputManager()->BeginOfEventAction();
+    SimulationManager::GetOutputManager()->BeginOfEventAction();
 
     const auto eventID = event->GetEventID();
     TRestRun* restRun = fSimulationManager->GetRestRun();
@@ -54,5 +54,5 @@ void EventAction::BeginOfEventAction(const G4Event* event) {
 }
 
 void EventAction::EndOfEventAction(const G4Event*) {
-    fSimulationManager->GetOutputManager()->FinishAndSubmitEvent();
+    SimulationManager::GetOutputManager()->FinishAndSubmitEvent();
 }
