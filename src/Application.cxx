@@ -62,6 +62,7 @@ void ShowUsage() {
          << "\t--geometry (-g) geometry.gdml | specify geometry file" << endl
          << "\t--seed (-s) seed | specify random seed (positive integer)" << endl
          << "\t--interactive (-i) | set interactive mode (disabled by default)" << endl
+         << "\t--runNumber | explicitly set runNumber" << endl
          << "\t--threads (-t, -j) | set the number of threads, also enables multithreading which is disabled "
             "by default"
          << endl;
