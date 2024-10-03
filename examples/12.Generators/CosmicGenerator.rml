@@ -36,5 +36,5 @@
 
     </TRestGeant4Metadata>
 
-    <TRestGeant4PhysicsLists name="default" title="First physics list implementation"/>
+    <TRestGeant4PhysicsLists title="First physics list implementation"/>
 </restG4>
