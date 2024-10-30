@@ -308,6 +308,7 @@ bool OutputManager::IsValidEvent() const {
     if (energy <= 0) {
         return false;
     }
+    // TODO: additional checks
     if (energy < fSimulationManager->GetRestMetadata()->GetMinimumEnergyStored() ||
         energy > fSimulationManager->GetRestMetadata()->GetMaximumEnergyStored()) {
         return false;
