@@ -1,34 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 
-<!--
-Author: Luis Obis (lobis@unizar.es)
--->
-
 <restG4>
-    <TRestRun title="CosmicMuons">
+    <TRestRun title="Signal X-Ray Cuts">
         <parameter name="experimentName" value="IAXO"/>
     </TRestRun>
 
     <TRestGeant4Metadata>
         <parameter name="gdmlFile" value="geometry/setup.gdml"/>
         <parameter name="seed" value="17022"/>
-        <parameter name="nRequestedEntries" value="1"/>
+        <parameter name="nRequestedEntries" value="10000000"/>
 
-        <generator type="cosmic">
-            <source particle="mu-">
-                <energy type="formula2" name="CosmicMuons" nPoints="10000"/>
-                <angular type="formula2" direction="(0,-1,0)"/>
+        <generator type="point" position="(0,0,400)mm">
+            <source particle="gamma">
+                <energy type="flat" range="(0.1,10)keV"/>
+                <angular type="flux" direction="(0,0,-1)"/>
             </source>
         </generator>
 
         <detector>
             <parameter name="maxStepSize" value="1mm"/>
-            <removeUnwantedTracks enabled="true" keepZeroEnergyTracks="true"/>
+            <parameter name="activateAllVolumes" value="true"/>
 
             <volume name="gasVolume" sensitive="true" maxStepSize="0.05mm"/>
-            <volume name="^scintillatorVolume" sensitive="false" keepTracks="true" maxStepSize="0.5mm"/>
-            <volume name="^captureLayerVolume" sensitive="false" keepTracks="true" maxStepSize="0.05mm"/>
-            <volume name="shieldingVolume" sensitive="false" maxStepSize="5mm"/>
         </detector>
     </TRestGeant4Metadata>
 
@@ -58,9 +51,7 @@ Author: Luis Obis (lobis@unizar.es)
             <option name="ARM" value="true"/>
         </physicsList>
 
-        <!--
         <physicsList name="G4NeutronTrackingCut"/>
-         -->
 
     </TRestGeant4PhysicsLists>
 </restG4>

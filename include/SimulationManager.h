@@ -49,6 +49,7 @@ class SimulationManager {
     inline bool GetAbortFlag() const { return fAbortFlag; }
     void StopSimulation();
 
+    /// \brief Get the elapsed time since the start of the simulation in seconds
     inline double GetElapsedTime() const {
         return 1E-9 * (std::chrono::steady_clock::now().time_since_epoch().count() - fTimeStartUnix);
     }
