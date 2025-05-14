@@ -368,6 +368,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
     const string& spatialGeneratorTypeName = primaryGeneratorInfo.GetSpatialGeneratorType().Data();
     const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
+    const auto spatialGeneratorShapeEnum =
+        StringToSpatialGeneratorShapes(primaryGeneratorInfo.GetSpatialGeneratorShape().Data());
     // Apparently not used. I comment to avoid compilation warning
     // Int_t nParticles = restG4Metadata->GetNumberOfSources();
 
@@ -387,7 +389,13 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     }
     // Set the particle(s)' position, multiple particles generated from multiple sources shall always have a
     // same origin
-    SetParticlePosition();
+
+    // if sphere surface generator
+    if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::SURFACE && spatialGeneratorShapeEnum == SpatialGeneratorShapes::SPHERE){
+        // DO NOTHING! This is set elsewhere
+    }else {
+        SetParticlePosition();
+    }
 
     for (int i = 0; i < restG4Metadata->GetNumberOfSources(); i++) {
         vector<TRestGeant4Particle> particles = restG4Metadata->GetParticleSource(i)->GetParticles();
@@ -469,6 +477,30 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
 
     const auto sourceDirection = source->GetDirection();
     G4ThreeVector direction = {sourceDirection.X(), sourceDirection.Y(), sourceDirection.Z()};
+
+    const auto& primaryGeneratorInfo = restG4Metadata->GetGeant4PrimaryGeneratorInfo();
+
+    const string& spatialGeneratorTypeName = primaryGeneratorInfo.GetSpatialGeneratorType().Data();
+    const auto spatialGeneratorTypeEnum = StringToSpatialGeneratorTypes(spatialGeneratorTypeName);
+    const auto spatialGeneratorShapeEnum =
+        StringToSpatialGeneratorShapes(primaryGeneratorInfo.GetSpatialGeneratorShape().Data());
+
+    if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::SURFACE && spatialGeneratorShapeEnum == SpatialGeneratorShapes::SPHERE){
+        SetParticlePosition();
+
+        const TVector3 sourcePositionReference = {0,0,0}; // TODO: use the source position
+        const TVector3 particlePosition =   {fParticleGun.GetParticlePosition().x(),
+                                             fParticleGun.GetParticlePosition().y(),
+                                             fParticleGun.GetParticlePosition().z()};
+
+        const TVector3 directionSphere = (sourcePositionReference - particlePosition).Unit();
+        direction = {directionSphere.X(), directionSphere.Y(), directionSphere.Z()};
+    }
+
+    const TVector3 particlePosition =   {fParticleGun.GetParticlePosition().x(),
+                                         fParticleGun.GetParticlePosition().y(),
+                                         fParticleGun.GetParticlePosition().z()};
+
 
     const string angularDistTypeName = source->GetAngularDistributionType().Data();
     const auto angularDistTypeEnum = StringToAngularDistributionTypes(angularDistTypeName);
