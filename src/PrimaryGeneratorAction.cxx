@@ -391,9 +391,10 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
     // same origin
 
     // if sphere surface generator
-    if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::SURFACE && spatialGeneratorShapeEnum == SpatialGeneratorShapes::SPHERE){
+    if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::SURFACE &&
+        spatialGeneratorShapeEnum == SpatialGeneratorShapes::SPHERE) {
         // DO NOTHING! This is set elsewhere
-    }else {
+    } else {
         SetParticlePosition();
     }
 
@@ -485,22 +486,22 @@ void PrimaryGeneratorAction::SetParticleDirection(Int_t particleSourceIndex,
     const auto spatialGeneratorShapeEnum =
         StringToSpatialGeneratorShapes(primaryGeneratorInfo.GetSpatialGeneratorShape().Data());
 
-    if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::SURFACE && spatialGeneratorShapeEnum == SpatialGeneratorShapes::SPHERE){
+    if (spatialGeneratorTypeEnum == SpatialGeneratorTypes::SURFACE &&
+        spatialGeneratorShapeEnum == SpatialGeneratorShapes::SPHERE) {
         SetParticlePosition();
 
-        const TVector3 sourcePositionReference = {0,0,0}; // TODO: use the source position
-        const TVector3 particlePosition =   {fParticleGun.GetParticlePosition().x(),
-                                             fParticleGun.GetParticlePosition().y(),
-                                             fParticleGun.GetParticlePosition().z()};
+        const TVector3 sourcePositionReference = {0, 0, 0};  // TODO: use the source position
+        const TVector3 particlePosition = {fParticleGun.GetParticlePosition().x(),
+                                           fParticleGun.GetParticlePosition().y(),
+                                           fParticleGun.GetParticlePosition().z()};
 
         const TVector3 directionSphere = (sourcePositionReference - particlePosition).Unit();
         direction = {directionSphere.X(), directionSphere.Y(), directionSphere.Z()};
     }
 
-    const TVector3 particlePosition =   {fParticleGun.GetParticlePosition().x(),
-                                         fParticleGun.GetParticlePosition().y(),
-                                         fParticleGun.GetParticlePosition().z()};
-
+    const TVector3 particlePosition = {fParticleGun.GetParticlePosition().x(),
+                                       fParticleGun.GetParticlePosition().y(),
+                                       fParticleGun.GetParticlePosition().z()};
 
     const string angularDistTypeName = source->GetAngularDistributionType().Data();
     const auto angularDistTypeEnum = StringToAngularDistributionTypes(angularDistTypeName);
