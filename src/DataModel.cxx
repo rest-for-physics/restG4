@@ -69,7 +69,7 @@ bool TRestGeant4Event::InsertTrack(const G4Track* track) {
         fSubEventPrimaryDirection = {momentum.x(), momentum.y(), momentum.z()};
     }
 
-    if (fTracks.empty() && fSubEventID==0 )globalTimeOffset = 0;
+    if (fTracks.empty() && fSubEventID == 0) globalTimeOffset = 0;
 
     fTrackIDToTrackIndex[track->GetTrackID()] = int(fTracks.size());  // before insertion
 
@@ -153,19 +153,18 @@ void TRestGeant4Track::UpdateTrack(const G4Track* track) {
     const double globalTime = track->GetGlobalTime() / CLHEP::microsecond;
 
     const auto processName = track->GetStep()->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
-    //ResetGloblal time in case of long Radioactive decay
+    // ResetGloblal time in case of long Radioactive decay
     if (processName == "RadioactiveDecay")
-    if(globalTime + precision == globalTime){
-      auto secondaries = track->GetStep()->GetSecondary();
-      size_t nSeco = secondaries->size();
-      globalTimeOffset += globalTime;
-        if (nSeco >0 )
-          for(size_t i=0; i < nSeco; i++) {
-          G4Track *tck = (G4Track*) (*secondaries)[i];
-          tck->SetGlobalTime(0.); // Reset global time for secondaries
+        if (globalTime + precision == globalTime) {
+            auto secondaries = track->GetStep()->GetSecondary();
+            size_t nSeco = secondaries->size();
+            globalTimeOffset += globalTime;
+            if (nSeco > 0)
+                for (size_t i = 0; i < nSeco; i++) {
+                    G4Track* tck = (G4Track*)(*secondaries)[i];
+                    tck->SetGlobalTime(0.);  // Reset global time for secondaries
+                }
         }
-    }
-
 }
 
 Int_t TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(const G4VProcess* process) {
