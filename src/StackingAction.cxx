@@ -13,7 +13,7 @@
 using namespace std;
 
 StackingAction::StackingAction(SimulationManager* simulationManager) : fSimulationManager(simulationManager) {
-    fMaxAllowedLifetime = fSimulationManager->GetRestMetadata()->GetSubEventTimeDelay();
+    fMaxAllowedLifetime = fSimulationManager->GetRestMetadata()->GetSubEventTimeDelay() * CLHEP::us;
 
     fMaxAllowedLifetimeWithUnit = G4BestUnit(fMaxAllowedLifetime, "Time");
 
