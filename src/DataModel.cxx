@@ -149,7 +149,7 @@ void TRestGeant4Track::UpdateTrack(const G4Track* track) {
 
     SetTimeOffset(globalTimeOffset);
 
-    const double precision = metadata->GetResetTimePrecision();
+    const double precision = metadata->GetResetTimePrecision() / CLHEP::microsecond;
     const double globalTime = track->GetGlobalTime() / CLHEP::microsecond;
 
     const auto processName = track->GetStep()->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
