@@ -17,6 +17,7 @@
 #include <G4UserLimits.hh>
 #include <filesystem>
 
+#include "Biasing.h"
 #include "SimulationManager.h"
 
 using namespace std;
@@ -306,10 +307,62 @@ void DetectorConstruction::ConstructSDandField() {
         auto region = new G4Region(name);
         logicalVolume->SetRegion(region);
     }
+
+    // Biasing
+    const auto& biasingInfo = metadata.GetGeant4BiasingInfo();
+    if (biasingInfo.GetEnabled()) {
+        const auto& geometryInfo = metadata.GetGeant4GeometryInfo();
+
+        set<G4String> biasingVolumes;
+        for (const auto& biasingVolume : biasingInfo.GetBiasingVolumes()) {
+            auto name = biasingVolume;
+            if (!geometryInfo.IsValidLogicalVolume(name)) {
+                if (geometryInfo.IsValidPhysicalVolume(name)) {
+                    name = geometryInfo.GetLogicalVolumeFromPhysical(name);
+                    biasingVolumes.insert(name);
+                } else {
+                    RESTError
+                        << "volume name '" << name
+                        << "' inside biasing section is invalid. Please check it belongs to a logical volume"
+                        << RESTendl;
+                    exit(1);
+                }
+            } else {
+                biasingVolumes.insert(name);
+            }
+        }
+
+        for (const auto& biasingLogicalVolumeName : biasingVolumes) {
+            G4LogicalVolume* biasingLogicalVolume =
+                G4LogicalVolumeStore::GetInstance()->GetVolume(biasingLogicalVolumeName, false);
+            if (biasingLogicalVolume == nullptr) {
+                cerr << "Detector construction error: could not find logical volume '"
+                     << biasingLogicalVolumeName << "'" << endl;
+                exit(1);
+            }
+
+            // TODO: better memory management
+            auto gammaBiasing = new GammaBiasingOperator(biasingInfo.GetSplittingFactor(), true,
+                                                         biasingInfo.GetBiasingCenter());
+            gammaBiasing->AttachTo(biasingLogicalVolume);
+            G4cout << " Attaching biasing operator " << gammaBiasing->GetName() << " to logical volume "
+                   << biasingLogicalVolume->GetName() << G4endl;
+        }
+
+        // Print info
+        cout << "Biasing is enabled " << endl;
+        cout << "Splitting factor: " << biasingInfo.GetSplittingFactor() << endl;
+        cout << "Biasing volumes: " << endl;
+        for (const auto& volume : biasingVolumes) {
+            cout << "\t" << volume << endl;
+        }
+        const auto center = biasingInfo.GetBiasingCenter();
+        cout << "Biasing center: " << center.x() << ", " << center.y() << ", " << center.z() << endl;
+    }
 }
 
 void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* world) {
-    auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+    const auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
     TRestGeant4Metadata* restG4Metadata = detector->fSimulationManager->GetRestMetadata();
 
     const size_t n = int(world->GetLogicalVolume()->GetNoDaughters());
@@ -318,7 +371,7 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
         if (i == n) {
             volume = const_cast<G4VPhysicalVolume*>(world);
         } else {
-            volume = world->GetLogicalVolume()->GetDaughter(i);
+            volume = world->GetLogicalVolume()->GetDaughter(G4int(i));
         }
         TString namePhysical = (TString)volume->GetName();
         if (fGdmlNewPhysicalNames.size() > i) {

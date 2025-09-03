@@ -10,10 +10,14 @@
 
 #include "SimulationManager.h"
 
+class G4GenericBiasingPhysics;
+
 class PhysicsList : public G4VModularPhysicsList {
    public:
     PhysicsList() = delete;
+
     explicit PhysicsList(SimulationManager* simulationManager, TRestGeant4PhysicsLists* restPhysicsLists);
+
     ~PhysicsList() override;
 
    protected:
@@ -21,7 +25,9 @@ class PhysicsList : public G4VModularPhysicsList {
     virtual void InitializePhysicsLists();
 
     void ConstructParticle() override;
+
     void ConstructProcess() override;
+
     void SetCuts() override;
 
    private:
@@ -35,6 +41,8 @@ class PhysicsList : public G4VModularPhysicsList {
     G4VPhysicsConstructor* fDecPhysicsList = nullptr;
     G4VPhysicsConstructor* fRadDecPhysicsList = nullptr;
     std::vector<G4VPhysicsConstructor*> fHadronPhys;
+
+    G4GenericBiasingPhysics* fBiasingPhysicsList = nullptr;
 
     TRestGeant4PhysicsLists* fRestPhysicsLists = nullptr;
 };
