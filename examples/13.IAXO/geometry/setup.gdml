@@ -1,5 +1,6 @@
 <?xml version='1.0'?>
-<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
     <define/>
     <materials>
         <isotope Z="29.0" N="63" name="Cu63">
@@ -205,30 +206,37 @@
     </materials>
     <solids>
         <box lunit="mm" aunit="rad" name="chamberBodyBaseSolid" x="134.0" y="134.0" z="30.0"/>
-        <tube lunit="mm" aunit="rad" name="chamberBodyHoleSolid" rmax="51.0" z="30.0" rmin="0.0" startphi="0.0" deltaphi="6.283185307179586"/>
+        <tube lunit="mm" aunit="rad" name="chamberBodyHoleSolid" rmax="51.0" z="30.0" rmin="0.0" startphi="0.0"
+              deltaphi="6.283185307179586"/>
         <subtraction lunit="mm" aunit="rad" name="chamberBodySolid">
             <first ref="chamberBodyBaseSolid"/>
             <second ref="chamberBodyHoleSolid"/>
         </subtraction>
         <box lunit="mm" aunit="rad" name="chamberBackplateSolid" x="134.0" y="134.0" z="15.0"/>
-        <tube lunit="mm" aunit="rad" name="chamberTeflonWallSolid" rmax="51.0" z="30.0" rmin="50.0" startphi="0.0" deltaphi="6.283185307179586"/>
+        <tube lunit="mm" aunit="rad" name="chamberTeflonWallSolid" rmax="51.0" z="30.0" rmin="50.0" startphi="0.0"
+              deltaphi="6.283185307179586"/>
         <box lunit="mm" aunit="rad" name="kaptonReadoutSolid" x="134.0" y="134.0" z="0.5"/>
         <box lunit="mm" aunit="rad" name="copperReadoutSolid" x="60.0" y="60.0" z="0.2"/>
-        <tube lunit="mm" aunit="rad" name="cathodeTeflonDiskBaseSolid" rmax="67.0" z="5.0" rmin="15.0" startphi="0.0" deltaphi="6.283185307179586"/>
-        <tube lunit="mm" aunit="rad" name="cathodeCopperDiskSolid" rmax="45.0" z="1.0" rmin="8.5" startphi="0.0" deltaphi="6.283185307179586"/>
+        <tube lunit="mm" aunit="rad" name="cathodeTeflonDiskBaseSolid" rmax="67.0" z="5.0" rmin="15.0" startphi="0.0"
+              deltaphi="6.283185307179586"/>
+        <tube lunit="mm" aunit="rad" name="cathodeCopperDiskSolid" rmax="45.0" z="1.0" rmin="8.5" startphi="0.0"
+              deltaphi="6.283185307179586"/>
         <subtraction lunit="mm" aunit="rad" name="cathodeTeflonDiskSolid">
             <position name="cathodeTeflonDiskSolid.position" z="-2.0" unit="mm"/>
             <first ref="cathodeTeflonDiskBaseSolid"/>
             <second ref="cathodeCopperDiskSolid"/>
         </subtraction>
-        <tube lunit="mm" aunit="rad" name="cathodeWindowSolid" rmax="15.0" z="0.004" rmin="0.0" startphi="0.0" deltaphi="6.283185307179586"/>
+        <tube lunit="mm" aunit="rad" name="cathodeWindowSolid" rmax="15.0" z="0.004" rmin="0.0" startphi="0.0"
+              deltaphi="6.283185307179586"/>
         <box lunit="mm" aunit="rad" name="cathodePatternLineAux" x="0.3" y="17.0" z="1.0"/>
-        <tube lunit="mm" aunit="rad" name="cathodePatternCentralHole" rmax="4.25" z="1.1" rmin="0.0" startphi="0.0" deltaphi="6.283185307179586"/>
+        <tube lunit="mm" aunit="rad" name="cathodePatternCentralHole" rmax="4.25" z="1.1" rmin="0.0" startphi="0.0"
+              deltaphi="6.283185307179586"/>
         <subtraction lunit="mm" aunit="rad" name="cathodePatternLine">
             <first ref="cathodePatternLineAux"/>
             <second ref="cathodePatternCentralHole"/>
         </subtraction>
-        <tube lunit="mm" aunit="rad" name="cathodePatternDisk" rmax="4.25" z="1.0" rmin="3.95" startphi="0.0" deltaphi="6.283185307179586"/>
+        <tube lunit="mm" aunit="rad" name="cathodePatternDisk" rmax="4.25" z="1.0" rmin="3.95" startphi="0.0"
+              deltaphi="6.283185307179586"/>
         <union lunit="mm" aunit="rad" name="cathodeCopperDiskSolidAux0">
             <rotation name="cathodeCopperDiskSolidAux0.rotation" unit="deg"/>
             <first ref="cathodeCopperDiskSolid"/>
@@ -253,13 +261,15 @@
             <first ref="cathodeCopperDiskSolidAux3"/>
             <second ref="cathodePatternDisk"/>
         </union>
-        <tube lunit="mm" aunit="rad" name="cathodeFillingBaseSolid" rmax="15.0" z="5.0" rmin="0.0" startphi="0.0" deltaphi="6.283185307179586"/>
+        <tube lunit="mm" aunit="rad" name="cathodeFillingBaseSolid" rmax="15.0" z="5.0" rmin="0.0" startphi="0.0"
+              deltaphi="6.283185307179586"/>
         <subtraction lunit="mm" aunit="rad" name="cathodeFillingSolid">
             <position name="cathodeFillingSolid.position" z="-2.0" unit="mm"/>
             <first ref="cathodeFillingBaseSolid"/>
             <second ref="cathodeCopperDiskFinal.solid"/>
         </subtraction>
-        <tube lunit="mm" aunit="rad" name="gasSolidOriginal" rmax="50.0" z="30.0" rmin="0.0" startphi="0.0" deltaphi="6.283185307179586"/>
+        <tube lunit="mm" aunit="rad" name="gasSolidOriginal" rmax="50.0" z="30.0" rmin="0.0" startphi="0.0"
+              deltaphi="6.283185307179586"/>
         <subtraction lunit="mm" aunit="rad" name="gasSolidAux">
             <position name="gasSolidAux.position" z="-14.9" unit="mm"/>
             <rotation name="gasSolidAux.rotation" z="45.0" unit="deg"/>
@@ -271,10 +281,14 @@
             <first ref="gasSolidAux"/>
             <second ref="cathodeWindowSolid"/>
         </subtraction>
-        <tube lunit="mm" aunit="rad" name="detectorPipeChamberFlangeSolid" rmax="67.0" z="14.0" rmin="0.0" startphi="0.0" deltaphi="6.283185307179586"/>
-        <tube lunit="mm" aunit="rad" name="detectorPipeTelescopeFlangeSolid" rmax="75.0" z="18.0" rmin="0.0" startphi="0.0" deltaphi="6.283185307179586"/>
-        <tube lunit="mm" aunit="rad" name="detectorPipeSection1of2Solid" rmax="46.0" z="327.0" rmin="0.0" startphi="0.0" deltaphi="6.283185307179586"/>
-        <tube lunit="mm" aunit="rad" name="detectorPipeSection2of2Solid" rmax="54.0" z="132.0" rmin="0.0" startphi="0.0" deltaphi="6.283185307179586"/>
+        <tube lunit="mm" aunit="rad" name="detectorPipeChamberFlangeSolid" rmax="67.0" z="14.0" rmin="0.0"
+              startphi="0.0" deltaphi="6.283185307179586"/>
+        <tube lunit="mm" aunit="rad" name="detectorPipeTelescopeFlangeSolid" rmax="75.0" z="18.0" rmin="0.0"
+              startphi="0.0" deltaphi="6.283185307179586"/>
+        <tube lunit="mm" aunit="rad" name="detectorPipeSection1of2Solid" rmax="46.0" z="327.0" rmin="0.0" startphi="0.0"
+              deltaphi="6.283185307179586"/>
+        <tube lunit="mm" aunit="rad" name="detectorPipeSection2of2Solid" rmax="54.0" z="132.0" rmin="0.0" startphi="0.0"
+              deltaphi="6.283185307179586"/>
         <union lunit="mm" aunit="rad" name="detectorPipeAux1">
             <position name="detectorPipeAux1.position" z="170.5" unit="mm"/>
             <first ref="detectorPipeChamberFlangeSolid"/>
@@ -290,12 +304,18 @@
             <first ref="detectorPipeAux2"/>
             <second ref="detectorPipeTelescopeFlangeSolid"/>
         </union>
-        <tube lunit="mm" aunit="rad" name="detectorPipeInside1of3Solid" rmax="21.5" z="179.35" rmin="0.0" startphi="0.0" deltaphi="6.283185307179586"/>
-        <tube lunit="mm" aunit="rad" name="detectorPipeInside2of3Solid" rmax="34.0" z="160.28" rmin="0.0" startphi="0.0" deltaphi="6.283185307179586"/>
-        <tube lunit="mm" aunit="rad" name="detectorPipeInside3of3Solid" rmax="42.5" z="106.0" rmin="0.0" startphi="0.0" deltaphi="6.283185307179586"/>
-        <cone lunit="mm" aunit="rad" name="detectorPipeInsideCone1of3Solid" z="21.65" rmax1="21.5" rmax2="34.0" deltaphi="6.283185307179586"/>
-        <cone lunit="mm" aunit="rad" name="detectorPipeInsideCone2of3Solid" z="14.72" rmax1="34.0" rmax2="42.5" deltaphi="6.283185307179586"/>
-        <cone lunit="mm" aunit="rad" name="detectorPipeInsideCone3of3Solid" z="9.0" rmax1="42.5" rmax2="54.0" deltaphi="6.283185307179586"/>
+        <tube lunit="mm" aunit="rad" name="detectorPipeInside1of3Solid" rmax="21.5" z="179.35" rmin="0.0" startphi="0.0"
+              deltaphi="6.283185307179586"/>
+        <tube lunit="mm" aunit="rad" name="detectorPipeInside2of3Solid" rmax="34.0" z="160.28" rmin="0.0" startphi="0.0"
+              deltaphi="6.283185307179586"/>
+        <tube lunit="mm" aunit="rad" name="detectorPipeInside3of3Solid" rmax="42.5" z="106.0" rmin="0.0" startphi="0.0"
+              deltaphi="6.283185307179586"/>
+        <cone lunit="mm" aunit="rad" name="detectorPipeInsideCone1of3Solid" z="21.65" rmax1="21.5" rmax2="34.0"
+              deltaphi="6.283185307179586"/>
+        <cone lunit="mm" aunit="rad" name="detectorPipeInsideCone2of3Solid" z="14.72" rmax1="34.0" rmax2="42.5"
+              deltaphi="6.283185307179586"/>
+        <cone lunit="mm" aunit="rad" name="detectorPipeInsideCone3of3Solid" z="9.0" rmax1="42.5" rmax2="54.0"
+              deltaphi="6.283185307179586"/>
         <union lunit="mm" aunit="rad" name="detectorPipeInsideAux1">
             <position name="detectorPipeInsideAux1.position" z="100.5" unit="mm"/>
             <first ref="detectorPipeInside1of3Solid"/>
@@ -347,8 +367,10 @@
             <first ref="scintillatorWrappingFullSolid-1500.0mm"/>
             <second ref="scintillatorWrappingRemoveSideSolid"/>
         </subtraction>
-        <trd lunit="mm" aunit="rad" name="scintillatorLightGuide1Solid-1500.0mm" x1="200.0" x2="200.0" y1="60.0" y2="50.0" z="130.0"/>
-        <trd lunit="mm" aunit="rad" name="scintillatorLightGuide2Solid-1500.0mm" x1="70.0" x2="200.0" y1="70.0" y2="60.0" z="80.0"/>
+        <trd lunit="mm" aunit="rad" name="scintillatorLightGuide1Solid-1500.0mm" x1="200.0" x2="200.0" y1="60.0"
+             y2="50.0" z="130.0"/>
+        <trd lunit="mm" aunit="rad" name="scintillatorLightGuide2Solid-1500.0mm" x1="70.0" x2="200.0" y1="70.0"
+             y2="60.0" z="80.0"/>
         <union lunit="mm" aunit="rad" name="scintillatorLightGuideSolid-1500.0mm">
             <position name="scintillatorLightGuideSolid-1500.0mm.position" z="-105.0" unit="mm"/>
             <first ref="scintillatorLightGuide1Solid-1500.0mm"/>
@@ -367,8 +389,10 @@
             <first ref="scintillatorWrappingFullSolid-800.0mm"/>
             <second ref="scintillatorWrappingRemoveSideSolid"/>
         </subtraction>
-        <trd lunit="mm" aunit="rad" name="scintillatorLightGuide1Solid-800.0mm" x1="200.0" x2="200.0" y1="60.0" y2="50.0" z="130.0"/>
-        <trd lunit="mm" aunit="rad" name="scintillatorLightGuide2Solid-800.0mm" x1="70.0" x2="200.0" y1="70.0" y2="60.0" z="80.0"/>
+        <trd lunit="mm" aunit="rad" name="scintillatorLightGuide1Solid-800.0mm" x1="200.0" x2="200.0" y1="60.0"
+             y2="50.0" z="130.0"/>
+        <trd lunit="mm" aunit="rad" name="scintillatorLightGuide2Solid-800.0mm" x1="70.0" x2="200.0" y1="70.0" y2="60.0"
+             z="80.0"/>
         <union lunit="mm" aunit="rad" name="scintillatorLightGuideSolid-800.0mm">
             <position name="scintillatorLightGuideSolid-800.0mm.position" z="-105.0" unit="mm"/>
             <first ref="scintillatorLightGuide1Solid-800.0mm"/>
@@ -474,13 +498,13 @@
                 <position name="detectorPipeFilling.position" z="82.675" unit="mm"/>
             </physvol>
         </assembly>
-        <volume name="ShieldingVolume">
+        <volume name="shieldingVolume">
             <materialref ref="G4_Pb"/>
             <solidref ref="leadBoxWithShaftSolid"/>
         </volume>
-        <assembly name="Shielding">
+        <assembly name="shielding">
             <physvol name="shielding20cm">
-                <volumeref ref="ShieldingVolume"/>
+                <volumeref ref="shieldingVolume"/>
                 <position name="shielding20cm.position" z="29.5" unit="mm"/>
             </physvol>
         </assembly>
@@ -695,20 +719,20 @@
             </physvol>
         </assembly>
         <assembly name="assembly-14">
-            <physvol name="vetoLayerEast1">
+            <physvol name="vetoLayerRight1">
                 <volumeref ref="assembly-13"/>
-                <position name="vetoLayerEast1.position" x="-0.0" unit="mm"/>
-                <rotation name="vetoLayerEast1.rotation" x="180.0" z="-90.0" unit="deg"/>
+                <position name="vetoLayerRight1.position" x="-0.0" unit="mm"/>
+                <rotation name="vetoLayerRight1.rotation" x="180.0" z="-90.0" unit="deg"/>
             </physvol>
-            <physvol name="vetoLayerEast2">
+            <physvol name="vetoLayerRight2">
                 <volumeref ref="assembly-13"/>
-                <position name="vetoLayerEast2.position" x="-74.0" unit="mm"/>
-                <rotation name="vetoLayerEast2.rotation" x="180.0" z="-90.0" unit="deg"/>
+                <position name="vetoLayerRight2.position" x="-74.0" unit="mm"/>
+                <rotation name="vetoLayerRight2.rotation" x="180.0" z="-90.0" unit="deg"/>
             </physvol>
-            <physvol name="vetoLayerEast3">
+            <physvol name="vetoLayerRight3">
                 <volumeref ref="assembly-13"/>
-                <position name="vetoLayerEast3.position" x="-148.0" unit="mm"/>
-                <rotation name="vetoLayerEast3.rotation" x="180.0" z="-90.0" unit="deg"/>
+                <position name="vetoLayerRight3.position" x="-148.0" unit="mm"/>
+                <rotation name="vetoLayerRight3.rotation" x="180.0" z="-90.0" unit="deg"/>
             </physvol>
         </assembly>
         <assembly name="assembly-15">
@@ -746,20 +770,20 @@
             </physvol>
         </assembly>
         <assembly name="assembly-17">
-            <physvol name="vetoLayerWest1">
+            <physvol name="vetoLayerLeft1">
                 <volumeref ref="assembly-16"/>
-                <position name="vetoLayerWest1.position" unit="mm"/>
-                <rotation name="vetoLayerWest1.rotation" z="90.0" unit="deg"/>
+                <position name="vetoLayerLeft1.position" unit="mm"/>
+                <rotation name="vetoLayerLeft1.rotation" z="90.0" unit="deg"/>
             </physvol>
-            <physvol name="vetoLayerWest2">
+            <physvol name="vetoLayerLeft2">
                 <volumeref ref="assembly-16"/>
-                <position name="vetoLayerWest2.position" x="74.0" unit="mm"/>
-                <rotation name="vetoLayerWest2.rotation" z="90.0" unit="deg"/>
+                <position name="vetoLayerLeft2.position" x="74.0" unit="mm"/>
+                <rotation name="vetoLayerLeft2.rotation" z="90.0" unit="deg"/>
             </physvol>
-            <physvol name="vetoLayerWest3">
+            <physvol name="vetoLayerLeft3">
                 <volumeref ref="assembly-16"/>
-                <position name="vetoLayerWest3.position" x="148.0" unit="mm"/>
-                <rotation name="vetoLayerWest3.rotation" z="90.0" unit="deg"/>
+                <position name="vetoLayerLeft3.position" x="148.0" unit="mm"/>
+                <rotation name="vetoLayerLeft3.rotation" z="90.0" unit="deg"/>
             </physvol>
         </assembly>
         <assembly name="assembly-18">
@@ -873,13 +897,13 @@
                 <volumeref ref="assembly-11"/>
                 <position name="vetoSystemBottom.position" y="-432.0" z="29.5" unit="mm"/>
             </physvol>
-            <physvol name="vetoSystemEast">
+            <physvol name="vetoSystemRight">
                 <volumeref ref="assembly-14"/>
-                <position name="vetoSystemEast.position" x="-382.0" z="129.5" unit="mm"/>
+                <position name="vetoSystemRight.position" x="-382.0" z="129.5" unit="mm"/>
             </physvol>
-            <physvol name="vetoSystemWest">
+            <physvol name="vetoSystemLeft">
                 <volumeref ref="assembly-17"/>
-                <position name="vetoSystemWest.position" x="382.0" z="-70.5" unit="mm"/>
+                <position name="vetoSystemLeft.position" x="382.0" z="-70.5" unit="mm"/>
             </physvol>
             <physvol name="vetoSystemBack">
                 <volumeref ref="assembly-20"/>
@@ -898,8 +922,8 @@
                 <volumeref ref="DetectorPipe"/>
                 <position name="DetectorPipe.position" z="27.0" unit="mm"/>
             </physvol>
-            <physvol name="Shielding">
-                <volumeref ref="Shielding"/>
+            <physvol name="shielding">
+                <volumeref ref="shielding"/>
             </physvol>
             <physvol name="VetoSystem">
                 <volumeref ref="assembly-3"/>
