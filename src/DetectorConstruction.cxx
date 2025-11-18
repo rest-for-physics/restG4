@@ -309,43 +309,106 @@ void DetectorConstruction::ConstructSDandField() {
 }
 
 void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* world) {
+
+    std::map<G4String, G4String> pvNameToPathMap;
+    // === RECURSIVE LAMBDA: Build map[name → path] ===
+    std::function<void(const G4VPhysicalVolume*, const G4String&)> TraverseVolume =
+        [&](const G4VPhysicalVolume* pv, const G4String& pathSoFar) {
+            // Build current full path
+            G4String currentPath = pathSoFar;
+            if (pv->GetName()!=world->GetName()){ //avoid all paths including 'world_PV/' at the beginning
+                currentPath += (currentPath.empty() ? "" : fPathSeparator.Data()) + pv->GetName();
+            }
+
+            // Store: name → full path
+            //std::cout <<  pv->GetName() << ": " << pv <<", " << pv->GetCopyNo() << " | " << currentPath << std::endl;
+            if (!pvNameToPathMap.insert(std::make_pair(pv->GetName(), currentPath)).second) {
+                RESTWarning << "Duplicate physical volume name found during traversal of volume: " << pv->GetName() << RESTendl;
+            }
+
+            // Traverse daughters
+            G4LogicalVolume* logVol = pv->GetLogicalVolume();
+            for (size_t i = 0; i < logVol->GetNoDaughters(); ++i) {
+                G4VPhysicalVolume* daughter = logVol->GetDaughter(i);
+                TraverseVolume(daughter, currentPath);
+            }
+    };
+
+    //std::cout << "----------------------------------------" << std::endl;
+    RESTDebug << "Traversing volumes to get their paths" << RESTendl;
+    TraverseVolume(world, "");
+    /*
+    for (const auto& [pvName, path] : pvNameToPathMap) {
+         std::cout << pvName << " -> " << path << std::endl;
+    }
+    std::cout << std::endl;
+    */
+
+    //std::cout << "----------------------------------------" << std::endl;
+    RESTDebug << "Converting paths to GDML names" << RESTendl;
+    for (auto& [pvName, path] : pvNameToPathMap) {
+        path = GetAlternativePathFromGeant4Path(path);
+        //cout << pvName << " → " << path << endl;
+    }
+
     auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
     TRestGeant4Metadata* restG4Metadata = detector->fSimulationManager->GetRestMetadata();
 
-    const size_t n = int(world->GetLogicalVolume()->GetNoDaughters());
-    for (size_t i = 0; i < n + 1; i++) {  // world is the + 1
-        G4VPhysicalVolume* volume;
-        if (i == n) {
-            volume = const_cast<G4VPhysicalVolume*>(world);
-        } else {
-            volume = world->GetLogicalVolume()->GetDaughter(i);
-        }
-        TString namePhysical = (TString)volume->GetName();
-        if (fGdmlNewPhysicalNames.size() > i) {
-            // it has been filled
-            fGeant4PhysicalNameToNewPhysicalNameMap[namePhysical] = fGdmlNewPhysicalNames[i];
-        }
-        TString physicalNewName = GetAlternativeNameFromGeant4PhysicalName(namePhysical);
-        TString nameLogical = (TString)volume->GetLogicalVolume()->GetName();
-        TString nameMaterial = (TString)volume->GetLogicalVolume()->GetMaterial()->GetName();
-        auto position = volume->GetTranslation();
-
-        fPhysicalToLogicalVolumeMap[physicalNewName] = nameLogical;
-        fLogicalToMaterialMap[nameLogical] = nameMaterial;
-        fLogicalToPhysicalMap[nameLogical].emplace_back(namePhysical);
-        fPhysicalToPositionInWorldMap[physicalNewName] = {position.x(), position.y(), position.z()};
-        InsertVolumeName(i, physicalNewName);
-
-        if (!fIsAssembly && GetAlternativeNameFromGeant4PhysicalName(namePhysical) != namePhysical) {
-            fIsAssembly = true;
-
-            const auto geant4MajorVersionNumber = restG4Metadata->GetGeant4VersionMajor();
-            if (geant4MajorVersionNumber < 11) {
-                cout << "User geometry consists of assembly which is not supported for this rest / Geant4 "
-                        "version combination. Please upgrade to Geant4 11.0.0 or more to use this feature"
-                     << endl;
-                // exit(1);
+    // === RECURSIVE FUNCTION TO PROCESS ALL VOLUMES ===
+    std::function<void(const G4VPhysicalVolume*, size_t&)> ProcessVolumeRecursively =
+        [&](const G4VPhysicalVolume* volume, size_t& index) {
+            // --- Your original block (unchanged) ---
+            G4String namePhysical = volume->GetName();
+            TString physicalNewName = namePhysical;
+            if (pvNameToPathMap.count(namePhysical) > 0) {
+                physicalNewName = pvNameToPathMap[namePhysical].c_str();
+            } else {
+                RESTError << "Physical volume name '" << namePhysical
+                          << "' not found in path map during geometry population" << RESTendl;
+                //exit(1);
             }
-        }
-    }
+            fGeant4PhysicalNameToNewPhysicalNameMap[namePhysical] = physicalNewName;
+
+            TString nameLogical = (TString)volume->GetLogicalVolume()->GetName();
+            TString nameMaterial = (TString)volume->GetLogicalVolume()->GetMaterial()->GetName();
+            auto position = volume->GetTranslation();
+            fPhysicalToLogicalVolumeMap[physicalNewName] = nameLogical;
+            fLogicalToMaterialMap[nameLogical] = nameMaterial;
+            fLogicalToPhysicalMap[nameLogical].emplace_back(namePhysical);
+            fPhysicalToPositionInWorldMap[physicalNewName] = {position.x(), position.y(), position.z()};
+            InsertVolumeName(index, physicalNewName);
+            /*
+            std::cout << "Index: " << index << std::endl;
+            std::cout << "\tG4name: " << namePhysical << std::endl;
+            std::cout << "\tgdmlName: " << physicalNewName << std::endl;
+            std::cout << "\tLogical: " << nameLogical << std::endl;
+            std::cout << "\tMaterial: " << nameMaterial << std::endl;
+            std::cout << "\tPosition: (" << position.x() << ", " << position.y() << ", " << position.z() << ") mm" << std::endl;
+            */
+            if (!fIsAssembly && GetAlternativeNameFromGeant4PhysicalName(namePhysical).Data() != namePhysical) {
+                fIsAssembly = true;
+                const auto geant4MajorVersionNumber = restG4Metadata->GetGeant4VersionMajor();
+                if (geant4MajorVersionNumber < 11) {
+                    cout << "User geometry consists of assembly which is not supported for this rest / Geant4 "
+                            "version combination. Please upgrade to Geant4 11.0.0 or more to use this feature"
+                        << endl;
+                    // exit(1);
+                }
+            }
+            // --- End of your original block ---
+
+            // Increment index for next volume
+            ++index;
+
+            // === RECURSE INTO DAUGHTERS ===
+            G4LogicalVolume* logVol = volume->GetLogicalVolume();
+            for (size_t i = 0; i < logVol->GetNoDaughters(); ++i) {
+                G4VPhysicalVolume* daughter = logVol->GetDaughter(i);
+                ProcessVolumeRecursively(daughter, index);
+            }
+        };
+
+    // === START RECURSION FROM WORLD ===
+    size_t index = 0;
+    ProcessVolumeRecursively(world, index);
 }
