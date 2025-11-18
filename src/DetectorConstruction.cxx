@@ -309,21 +309,23 @@ void DetectorConstruction::ConstructSDandField() {
 }
 
 void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* world) {
-
     std::map<G4String, G4String> pvNameToPathMap;
     // === RECURSIVE LAMBDA: Build map[name → path] ===
     std::function<void(const G4VPhysicalVolume*, const G4String&)> TraverseVolume =
         [&](const G4VPhysicalVolume* pv, const G4String& pathSoFar) {
             // Build current full path
             G4String currentPath = pathSoFar;
-            if (pv->GetName()!=world->GetName()){ //avoid all paths including 'world_PV/' at the beginning
+            if (pv->GetName() != world->GetName()) {  // avoid all paths including 'world_PV/' at the
+                                                      // beginning
                 currentPath += (currentPath.empty() ? "" : fPathSeparator.Data()) + pv->GetName();
             }
 
             // Store: name → full path
-            //std::cout <<  pv->GetName() << ": " << pv <<", " << pv->GetCopyNo() << " | " << currentPath << std::endl;
+            // std::cout <<  pv->GetName() << ": " << pv <<", " << pv->GetCopyNo() << " | " << currentPath <<
+            // std::endl;
             if (!pvNameToPathMap.insert(std::make_pair(pv->GetName(), currentPath)).second) {
-                RESTWarning << "Duplicate physical volume name found during traversal of volume: " << pv->GetName() << RESTendl;
+                RESTWarning << "Duplicate physical volume name found during traversal of volume: "
+                            << pv->GetName() << RESTendl;
             }
 
             // Traverse daughters
@@ -332,9 +334,9 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
                 G4VPhysicalVolume* daughter = logVol->GetDaughter(i);
                 TraverseVolume(daughter, currentPath);
             }
-    };
+        };
 
-    //std::cout << "----------------------------------------" << std::endl;
+    // std::cout << "----------------------------------------" << std::endl;
     RESTDebug << "Traversing volumes to get their paths" << RESTendl;
     TraverseVolume(world, "");
     /*
@@ -344,11 +346,11 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
     std::cout << std::endl;
     */
 
-    //std::cout << "----------------------------------------" << std::endl;
+    // std::cout << "----------------------------------------" << std::endl;
     RESTDebug << "Converting paths to GDML names" << RESTendl;
     for (auto& [pvName, path] : pvNameToPathMap) {
         path = GetAlternativePathFromGeant4Path(path);
-        //cout << pvName << " → " << path << endl;
+        // cout << pvName << " → " << path << endl;
     }
 
     auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
@@ -365,7 +367,7 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
             } else {
                 RESTError << "Physical volume name '" << namePhysical
                           << "' not found in path map during geometry population" << RESTendl;
-                //exit(1);
+                // exit(1);
             }
             fGeant4PhysicalNameToNewPhysicalNameMap[namePhysical] = physicalNewName;
 
@@ -383,14 +385,17 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
             std::cout << "\tgdmlName: " << physicalNewName << std::endl;
             std::cout << "\tLogical: " << nameLogical << std::endl;
             std::cout << "\tMaterial: " << nameMaterial << std::endl;
-            std::cout << "\tPosition: (" << position.x() << ", " << position.y() << ", " << position.z() << ") mm" << std::endl;
+            std::cout << "\tPosition: (" << position.x() << ", " << position.y() << ", " << position.z() << ")
+            mm" << std::endl;
             */
-            if (!fIsAssembly && GetAlternativeNameFromGeant4PhysicalName(namePhysical).Data() != namePhysical) {
+            if (!fIsAssembly &&
+                GetAlternativeNameFromGeant4PhysicalName(namePhysical).Data() != namePhysical) {
                 fIsAssembly = true;
                 const auto geant4MajorVersionNumber = restG4Metadata->GetGeant4VersionMajor();
                 if (geant4MajorVersionNumber < 11) {
-                    cout << "User geometry consists of assembly which is not supported for this rest / Geant4 "
-                            "version combination. Please upgrade to Geant4 11.0.0 or more to use this feature"
+                    cout
+                        << "User geometry consists of assembly which is not supported for this rest / Geant4 "
+                           "version combination. Please upgrade to Geant4 11.0.0 or more to use this feature"
                         << endl;
                     // exit(1);
                 }
