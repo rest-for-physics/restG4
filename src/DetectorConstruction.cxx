@@ -359,7 +359,14 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
     // === RECURSIVE FUNCTION TO PROCESS ALL VOLUMES ===
     std::function<void(const G4VPhysicalVolume*, size_t&)> ProcessVolumeRecursively =
         [&](const G4VPhysicalVolume* volume, size_t& index) {
-            // --- Your original block (unchanged) ---
+            // First process the daughters to have the same order in volume IDs as before
+            G4LogicalVolume* logVol = volume->GetLogicalVolume();
+            for (size_t i = 0; i < logVol->GetNoDaughters(); ++i) {
+                G4VPhysicalVolume* daughter = logVol->GetDaughter(i);
+                ProcessVolumeRecursively(daughter, index);
+            }
+
+            // Process this volume
             G4String namePhysical = volume->GetName();
             TString physicalNewName = namePhysical;
             if (pvNameToPathMap.count(namePhysical) > 0) {
@@ -400,17 +407,7 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
                     // exit(1);
                 }
             }
-            // --- End of your original block ---
-
-            // Increment index for next volume
             ++index;
-
-            // === RECURSE INTO DAUGHTERS ===
-            G4LogicalVolume* logVol = volume->GetLogicalVolume();
-            for (size_t i = 0; i < logVol->GetNoDaughters(); ++i) {
-                G4VPhysicalVolume* daughter = logVol->GetDaughter(i);
-                ProcessVolumeRecursively(daughter, index);
-            }
         };
 
     // === START RECURSION FROM WORLD ===
