@@ -350,6 +350,9 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
     RESTDebug << "Converting paths to GDML names" << RESTendl;
     for (auto& [pvName, path] : pvNameToPathMap) {
         path = GetAlternativePathFromGeant4Path(path);
+        if (pvName == world->GetName()) {
+            path = pvName;  // avoid blank name for World_PV
+        }
         // cout << pvName << " → " << path << endl;
     }
 
