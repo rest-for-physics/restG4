@@ -319,20 +319,21 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
     TRestGeant4Metadata* restG4Metadata = detector->fSimulationManager->GetRestMetadata();
 
     // Recursive function to traverse the nested volume geometry
-    std::function<void(const G4VPhysicalVolume*, size_t&, const G4String pathSoFar)>
+    std::function<void(const G4VPhysicalVolume*, size_t&, const G4String pathSoFar, const G4ThreeVector&)>
         ProcessVolumeRecursively = [&](const G4VPhysicalVolume* volume, size_t& index,
-                                       const G4String pathSoFar) {
+                                       const G4String pathSoFar, const G4ThreeVector& parentPosition) {
             G4String currentPath = pathSoFar;
             if (volume->GetName() != world->GetName()) {  // avoid all paths including 'world_PV/' at the
                                                           // beginning
                 currentPath += (currentPath.empty() ? "" : fPathSeparator.Data()) + volume->GetName();
             }
+            G4ThreeVector positionInWorld = volume->GetTranslation() + parentPosition;
 
             // First process the daughters to have the same order in volume IDs as before
             G4LogicalVolume* logVol = volume->GetLogicalVolume();
             for (size_t i = 0; i < logVol->GetNoDaughters(); ++i) {
                 G4VPhysicalVolume* daughter = logVol->GetDaughter(i);
-                ProcessVolumeRecursively(daughter, index, currentPath);
+                ProcessVolumeRecursively(daughter, index, currentPath, positionInWorld);
             }
 
             // Process this volume
@@ -345,11 +346,10 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
 
             TString nameLogical = (TString)volume->GetLogicalVolume()->GetName();
             TString nameMaterial = (TString)volume->GetLogicalVolume()->GetMaterial()->GetName();
-            auto position = volume->GetTranslation();
             fPhysicalToLogicalVolumeMap[physicalNewName] = nameLogical;
             fLogicalToMaterialMap[nameLogical] = nameMaterial;
             fLogicalToPhysicalMap[nameLogical].emplace_back(namePhysical);
-            fPhysicalToPositionInWorldMap[physicalNewName] = {position.x(), position.y(), position.z()};
+            fPhysicalToPositionInWorldMap[physicalNewName] = {positionInWorld.x(), positionInWorld.y(), positionInWorld.z()};
             InsertVolumeName(index, physicalNewName);
             /*
             std::cout << "Index: " << index << std::endl;
@@ -357,8 +357,7 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
             std::cout << "\tgdmlName: " << physicalNewName << std::endl;
             std::cout << "\tLogical: " << nameLogical << std::endl;
             std::cout << "\tMaterial: " << nameMaterial << std::endl;
-            std::cout << "\tPosition: (" << position.x() << ", " << position.y() << ", " << position.z() << ")
-            mm" << std::endl;
+            std::cout << "\tPosition: (" << positionInWorld.x() << ", " << positionInWorld.y() << ", " << positionInWorld.z() << ")mm" << std::endl;
             */
             if (!fIsAssembly &&
                 GetAlternativeNameFromGeant4PhysicalName(namePhysical).Data() != namePhysical) {
@@ -377,5 +376,5 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
 
     // Start recursion from world volume
     size_t index = 0;
-    ProcessVolumeRecursively(world, index, "");
+    ProcessVolumeRecursively(world, index, "", G4ThreeVector(0, 0, 0));
 }
