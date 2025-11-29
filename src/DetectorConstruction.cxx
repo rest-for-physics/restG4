@@ -241,9 +241,15 @@ G4VPhysicalVolume* DetectorConstruction::GetPhysicalVolume(const G4String& physi
     for (physicalVolume = physicalVolumeStore->begin(); physicalVolume != physicalVolumeStore->end();
          physicalVolume++) {
         auto name = (*physicalVolume)->GetName();
-        auto alternativeName = (G4String)geometryInfo.GetAlternativeNameFromGeant4PhysicalName(name);
-        if (name == physicalVolumeName || alternativeName == physicalVolumeName) {
+        if (name == physicalVolumeName) {
             return *physicalVolume;
+        }
+        // physical volumes with the same Geant4 name are the same G4VPhysicalVolume pointer
+        auto alternativeNames = geometryInfo.GetAlternativeNamesFromGeant4PhysicalName(name);
+        for (const auto& alternativeName : alternativeNames) {
+            if ((G4String)alternativeName == physicalVolumeName) {
+                return *physicalVolume;
+            }
         }
     }
 
@@ -309,77 +315,33 @@ void DetectorConstruction::ConstructSDandField() {
 }
 
 void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* world) {
-    std::map<G4String, G4String> pvNameToPathMap;
-    // === RECURSIVE LAMBDA: Build map[name → path] ===
-    std::function<void(const G4VPhysicalVolume*, const G4String&)> TraverseVolume =
-        [&](const G4VPhysicalVolume* pv, const G4String& pathSoFar) {
-            // Build current full path
-            G4String currentPath = pathSoFar;
-            if (pv->GetName() != world->GetName()) {  // avoid all paths including 'world_PV/' at the
-                                                      // beginning
-                currentPath += (currentPath.empty() ? "" : fPathSeparator.Data()) + pv->GetName();
-            }
-
-            // Store: name → full path
-            // std::cout <<  pv->GetName() << ": " << pv <<", " << pv->GetCopyNo() << " | " << currentPath <<
-            // std::endl;
-            if (!pvNameToPathMap.insert(std::make_pair(pv->GetName(), currentPath)).second) {
-                RESTWarning << "Duplicate physical volume name found during traversal of volume: "
-                            << pv->GetName() << RESTendl;
-            }
-
-            // Traverse daughters
-            G4LogicalVolume* logVol = pv->GetLogicalVolume();
-            for (size_t i = 0; i < logVol->GetNoDaughters(); ++i) {
-                G4VPhysicalVolume* daughter = logVol->GetDaughter(i);
-                TraverseVolume(daughter, currentPath);
-            }
-        };
-
-    // std::cout << "----------------------------------------" << std::endl;
-    RESTDebug << "Traversing volumes to get their paths" << RESTendl;
-    TraverseVolume(world, "");
-    /*
-    for (const auto& [pvName, path] : pvNameToPathMap) {
-         std::cout << pvName << " -> " << path << std::endl;
-    }
-    std::cout << std::endl;
-    */
-
-    // std::cout << "----------------------------------------" << std::endl;
-    RESTDebug << "Converting paths to GDML names" << RESTendl;
-    for (auto& [pvName, path] : pvNameToPathMap) {
-        path = GetAlternativePathFromGeant4Path(path);
-        if (pvName == world->GetName()) {
-            path = pvName;  // avoid blank name for World_PV
-        }
-        // cout << pvName << " → " << path << endl;
-    }
 
     auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
     TRestGeant4Metadata* restG4Metadata = detector->fSimulationManager->GetRestMetadata();
 
-    // === RECURSIVE FUNCTION TO PROCESS ALL VOLUMES ===
-    std::function<void(const G4VPhysicalVolume*, size_t&)> ProcessVolumeRecursively =
-        [&](const G4VPhysicalVolume* volume, size_t& index) {
+    // Recursive function to traverse the nested volume geometry
+    std::function<void(const G4VPhysicalVolume*, size_t&, const G4String pathSoFar)> ProcessVolumeRecursively =
+        [&](const G4VPhysicalVolume* volume, size_t& index, const G4String pathSoFar) {
+            G4String currentPath = pathSoFar;
+            if (volume->GetName() != world->GetName()) {  // avoid all paths including 'world_PV/' at the
+                                                      // beginning
+                currentPath += (currentPath.empty() ? "" : fPathSeparator.Data()) + volume->GetName();
+            }
+
             // First process the daughters to have the same order in volume IDs as before
             G4LogicalVolume* logVol = volume->GetLogicalVolume();
             for (size_t i = 0; i < logVol->GetNoDaughters(); ++i) {
                 G4VPhysicalVolume* daughter = logVol->GetDaughter(i);
-                ProcessVolumeRecursively(daughter, index);
+                ProcessVolumeRecursively(daughter, index, currentPath);
             }
 
             // Process this volume
             G4String namePhysical = volume->GetName();
-            TString physicalNewName = namePhysical;
-            if (pvNameToPathMap.count(namePhysical) > 0) {
-                physicalNewName = pvNameToPathMap[namePhysical].c_str();
-            } else {
-                RESTError << "Physical volume name '" << namePhysical
-                          << "' not found in path map during geometry population" << RESTendl;
-                // exit(1);
+            TString physicalNewName = GetAlternativePathFromGeant4Path(currentPath);
+            if (namePhysical == world->GetName()) {
+                physicalNewName = namePhysical;  // avoid blank name for World_PV
             }
-            fGeant4PhysicalNameToNewPhysicalNameMap[namePhysical] = physicalNewName;
+            fNewPhysicalToGeant4PhysicalNameMap[physicalNewName] = namePhysical;
 
             TString nameLogical = (TString)volume->GetLogicalVolume()->GetName();
             TString nameMaterial = (TString)volume->GetLogicalVolume()->GetMaterial()->GetName();
@@ -413,7 +375,7 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
             ++index;
         };
 
-    // === START RECURSION FROM WORLD ===
+    // Start recursion from world volume
     size_t index = 0;
-    ProcessVolumeRecursively(world, index);
+    ProcessVolumeRecursively(world, index, "");
 }
