@@ -349,7 +349,8 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
             fPhysicalToLogicalVolumeMap[physicalNewName] = nameLogical;
             fLogicalToMaterialMap[nameLogical] = nameMaterial;
             fLogicalToPhysicalMap[nameLogical].emplace_back(namePhysical);
-            fPhysicalToPositionInWorldMap[physicalNewName] = {positionInWorld.x(), positionInWorld.y(), positionInWorld.z()};
+            fPhysicalToPositionInWorldMap[physicalNewName] = {positionInWorld.x(), positionInWorld.y(),
+                                                              positionInWorld.z()};
             InsertVolumeName(index, physicalNewName);
             /*
             std::cout << "Index: " << index << std::endl;
@@ -357,7 +358,8 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
             std::cout << "\tgdmlName: " << physicalNewName << std::endl;
             std::cout << "\tLogical: " << nameLogical << std::endl;
             std::cout << "\tMaterial: " << nameMaterial << std::endl;
-            std::cout << "\tPosition: (" << positionInWorld.x() << ", " << positionInWorld.y() << ", " << positionInWorld.z() << ")mm" << std::endl;
+            std::cout << "\tPosition: (" << positionInWorld.x() << ", " << positionInWorld.y() << ", " <<
+            positionInWorld.z() << ")mm" << std::endl;
             */
             if (!fIsAssembly &&
                 GetAlternativeNameFromGeant4PhysicalName(namePhysical).Data() != namePhysical) {
