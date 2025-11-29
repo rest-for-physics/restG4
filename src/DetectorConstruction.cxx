@@ -315,16 +315,16 @@ void DetectorConstruction::ConstructSDandField() {
 }
 
 void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* world) {
-
     auto detector = (DetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
     TRestGeant4Metadata* restG4Metadata = detector->fSimulationManager->GetRestMetadata();
 
     // Recursive function to traverse the nested volume geometry
-    std::function<void(const G4VPhysicalVolume*, size_t&, const G4String pathSoFar)> ProcessVolumeRecursively =
-        [&](const G4VPhysicalVolume* volume, size_t& index, const G4String pathSoFar) {
+    std::function<void(const G4VPhysicalVolume*, size_t&, const G4String pathSoFar)>
+        ProcessVolumeRecursively = [&](const G4VPhysicalVolume* volume, size_t& index,
+                                       const G4String pathSoFar) {
             G4String currentPath = pathSoFar;
             if (volume->GetName() != world->GetName()) {  // avoid all paths including 'world_PV/' at the
-                                                      // beginning
+                                                          // beginning
                 currentPath += (currentPath.empty() ? "" : fPathSeparator.Data()) + volume->GetName();
             }
 
