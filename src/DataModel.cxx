@@ -178,8 +178,22 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
 
     const auto& geometryInfo = metadata->GetGeant4GeometryInfo();
 
-    const auto& volumeNameGeant4 = step->GetPreStepPoint()->GetPhysicalVolume()->GetName();
-    const auto& volumeName = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(volumeNameGeant4);
+    // Get the full name (path) of the physical volume which uniquely identifies it
+    auto th = step->GetPreStepPoint()->GetTouchable();
+    G4int depth = th->GetHistoryDepth();
+    G4String geant4path = "";
+    for (G4int i = 1; i <= depth; ++i) { // start from 1 to skip world volume
+        // Move the touchable to level i (0 = current volume, depth = world)
+        G4VPhysicalVolume* pv = th->GetVolume(depth - i);
+        if (pv) {
+            if (geant4path != ""){
+                geant4path += geometryInfo.GetPathSeparator().Data();
+            }
+            geant4path += pv->GetName();
+        }
+    }
+    // convert to the names used in gdml (due to assemblies)
+    const auto volumeName = geometryInfo.GetAlternativePathFromGeant4Path(geant4path);
 
     if (!metadata->IsActiveVolume(volumeName) && step->GetTrack()->GetCurrentStepNumber() != 0) {
         // we always store the first step
