@@ -182,11 +182,11 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     auto th = step->GetPreStepPoint()->GetTouchable();
     G4int depth = th->GetHistoryDepth();
     G4String geant4path = "";
-    for (G4int i = 1; i <= depth; ++i) { // start from 1 to skip world volume
+    for (G4int i = 1; i <= depth; ++i) {  // start from 1 to skip world volume
         // Move the touchable to level i (0 = current volume, depth = world)
         G4VPhysicalVolume* pv = th->GetVolume(depth - i);
         if (pv) {
-            if (geant4path != ""){
+            if (geant4path != "") {
                 geant4path += geometryInfo.GetPathSeparator().Data();
             }
             geant4path += pv->GetName();

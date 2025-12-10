@@ -19,7 +19,7 @@ G4bool SensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*) {
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
     const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
     const auto volumeName = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(
-                                    step->GetPreStepPoint()->GetPhysicalVolume()->GetName());
+        step->GetPreStepPoint()->GetPhysicalVolume()->GetName());
 
     /* Sensitive detector are assigned to logical volumes, but several physical volumes
     can share the same logical volume. Now we get the physical volume where the pre-step
@@ -29,11 +29,11 @@ G4bool SensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*) {
     auto th = step->GetPreStepPoint()->GetTouchable();
     G4int depth = th->GetHistoryDepth();
     G4String geant4path = "";
-    for (G4int i = 1; i <= depth; ++i) { // start from 1 to skip world volume
+    for (G4int i = 1; i <= depth; ++i) {  // start from 1 to skip world volume
         // Move the touchable to level i (0 = current volume, depth = world)
         G4VPhysicalVolume* pv = th->GetVolume(depth - i);
         if (pv) {
-            if (geant4path != ""){
+            if (geant4path != "") {
                 geant4path += geometryInfo.GetPathSeparator().Data();
             }
             geant4path += pv->GetName();
