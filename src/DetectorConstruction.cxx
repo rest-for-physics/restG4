@@ -319,21 +319,30 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
     TRestGeant4Metadata* restG4Metadata = detector->fSimulationManager->GetRestMetadata();
 
     // Recursive function to traverse the nested volume geometry
-    std::function<void(const G4VPhysicalVolume*, size_t&, const G4String pathSoFar, const G4ThreeVector&)>
+    std::function<void(const G4VPhysicalVolume*, size_t&, const G4String pathSoFar, const G4ThreeVector&, const G4RotationMatrix&)>
         ProcessVolumeRecursively = [&](const G4VPhysicalVolume* volume, size_t& index,
-                                       const G4String pathSoFar, const G4ThreeVector& parentPosition) {
+                                       const G4String pathSoFar, const G4ThreeVector& parentPosition, const G4RotationMatrix& parentRotation) {
             G4String currentPath = pathSoFar;
             if (volume->GetName() != world->GetName()) {  // avoid all paths including 'world_PV/' at the
                                                           // beginning
                 currentPath += (currentPath.empty() ? "" : fPathSeparator.Data()) + volume->GetName();
             }
-            G4ThreeVector positionInWorld = volume->GetTranslation() + parentPosition;
+            G4ThreeVector localPosition = volume->GetTranslation();
+            localPosition = parentRotation * localPosition;
+            G4RotationMatrix localRotation = volume->GetRotation() ? *volume->GetRotation() : G4RotationMatrix(); // identity if nullptr
+
+            // accumulate the position
+            G4ThreeVector positionInWorld = parentPosition + localPosition;
+
+            // accumulate the rotation
+            G4RotationMatrix rotationInWorld = parentRotation;
+            rotationInWorld *= localRotation;
 
             // First process the daughters to have the same order in volume IDs as before
             G4LogicalVolume* logVol = volume->GetLogicalVolume();
             for (size_t i = 0; i < logVol->GetNoDaughters(); ++i) {
                 G4VPhysicalVolume* daughter = logVol->GetDaughter(i);
-                ProcessVolumeRecursively(daughter, index, currentPath, positionInWorld);
+                ProcessVolumeRecursively(daughter, index, currentPath, positionInWorld, rotationInWorld);
             }
 
             // Process this volume
@@ -351,6 +360,13 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
             fLogicalToPhysicalMap[nameLogical].emplace_back(namePhysical);
             fPhysicalToPositionInWorldMap[physicalNewName] = {positionInWorld.x(), positionInWorld.y(),
                                                               positionInWorld.z()};
+            // Convert G4RotationMatrix to TRotation and store it
+            double angle; G4ThreeVector axis;
+            rotationInWorld.getAngleAxis(angle, axis);
+            TRotation rotInWorld;
+            rotInWorld.Rotate(angle, TVector3(axis.x(), axis.y(), axis.z()));
+            fPhysicalToRotationInWorldMap[physicalNewName] = rotInWorld;
+
             InsertVolumeName(index, physicalNewName);
             /*
             std::cout << "Index: " << index << std::endl;
@@ -360,6 +376,8 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
             std::cout << "\tMaterial: " << nameMaterial << std::endl;
             std::cout << "\tPosition: (" << positionInWorld.x() << ", " << positionInWorld.y() << ", " <<
             positionInWorld.z() << ")mm" << std::endl;
+            std::cout << "\tRotation (angle, axis): (" << angle << ", (" << axis.x() << ", " << axis.y() << ", "
+                      << axis.z() << "))" << std::endl;
             */
             if (!fIsAssembly &&
                 GetAlternativeNameFromGeant4PhysicalName(namePhysical).Data() != namePhysical) {
@@ -378,5 +396,5 @@ void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* w
 
     // Start recursion from world volume
     size_t index = 0;
-    ProcessVolumeRecursively(world, index, "", G4ThreeVector(0, 0, 0));
+    ProcessVolumeRecursively(world, index, "", G4ThreeVector(0, 0, 0), G4RotationMatrix());
 }
