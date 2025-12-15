@@ -169,7 +169,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
             exit(1);
         }
 
-        fGeneratorTranslation = gdmlPhysicalVolume->GetTranslation();
+        TVector3 genTranslation = geometryInfo.GetPosition(
+            primaryGeneratorInfo.GetSpatialGeneratorFrom().Data()); // in world coordinates
+        fGeneratorTranslation = {genTranslation.x(), genTranslation.y(), genTranslation.z()};
+        TRotation genRotation =
+            geometryInfo.GetRotation(primaryGeneratorInfo.GetSpatialGeneratorFrom().Data()); // in world coordinates
+        double angle; TVector3 axis;
+        genRotation.AngleAxis(angle, axis);
+        fGeneratorRotation = G4RotationMatrix(G4ThreeVector(axis.X(), axis.Y(), axis.Z()), angle);
         if (spatialGeneratorTypeEnum == TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::SURFACE ||
             spatialGeneratorTypeEnum == TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::VOLUME) {
             restG4Metadata->fGeant4PrimaryGeneratorInfo.fSpatialGeneratorPosition = {
