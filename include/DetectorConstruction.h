@@ -18,6 +18,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
     G4GDMLParser* fGdmlParser;
     G4VSolid* fGeneratorSolid;
     G4ThreeVector fGeneratorTranslation;
+    G4RotationMatrix fGeneratorRotation;
 
     Double_t fBoundBoxXMin, fBoundBoxXMax, fBoundBoxYMin, fBoundBoxYMax, fBoundBoxZMin, fBoundBoxZMax;
 
@@ -25,6 +26,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
     G4VPhysicalVolume* GetPhysicalVolume(const G4String& physVolName) const;
     inline G4VSolid* GetGeneratorSolid() const { return fGeneratorSolid; }
     inline G4ThreeVector GetGeneratorTranslation() const { return fGeneratorTranslation; }
+    inline G4RotationMatrix GetGeneratorRotation() const { return fGeneratorRotation; }
 
     inline Double_t GetBoundBoxXMin() const { return fBoundBoxXMin; }
     inline Double_t GetBoundBoxXMax() const { return fBoundBoxXMax; }
