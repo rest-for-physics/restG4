@@ -29,6 +29,9 @@ G4bool SensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*) {
     auto th = step->GetPreStepPoint()->GetTouchable();
     G4int depth = th->GetHistoryDepth();
     G4String geant4path = "";
+    if (depth == 0) { // it is the world volume
+        geant4path = th->GetVolume()->GetName();
+    }
     for (G4int i = 1; i <= depth; ++i) {  // start from 1 to skip world volume
         // Move the touchable to level i (0 = current volume, depth = world)
         G4VPhysicalVolume* pv = th->GetVolume(depth - i);
