@@ -751,11 +751,17 @@ void PrimaryGeneratorAction::GenPositionOnGDMLVolume(double& x, double& y, doubl
         x = xMin + (xMax - xMin) * G4UniformRand();
         y = yMin + (yMax - yMin) * G4UniformRand();
         z = zMin + (zMax - zMin) * G4UniformRand();
-    } while (detector->GetGeneratorSolid()->Inside(G4ThreeVector(x, y, z)) != kInside);
+    } while (detector->GetGeneratorSolid()->Inside(G4ThreeVector(x, y, z)) != kInside ||
+             detector->IsPointInsideAnyDaughterVolume(detector->GetGeneratorLogicalVolume(),
+                                                      G4ThreeVector(x, y, z)));
 
-    x = x + detector->GetGeneratorTranslation().x();
-    y = y + detector->GetGeneratorTranslation().y();
-    z = z + detector->GetGeneratorTranslation().z();
+    // Rotate and translate since the solid has no sense of the physical volume rotation or translation
+    G4ThreeVector position = G4ThreeVector(x, y, z);
+    position = detector->GetGeneratorRotation() * position;
+
+    x = position.x() + detector->GetGeneratorTranslation().x();
+    y = position.y() + detector->GetGeneratorTranslation().y();
+    z = position.z() + detector->GetGeneratorTranslation().z();
 }
 
 void PrimaryGeneratorAction::GenPositionOnGDMLSurface(double& x, double& y, double& z) {
@@ -766,13 +772,12 @@ void PrimaryGeneratorAction::GenPositionOnGDMLSurface(double& x, double& y, doub
 
     G4ThreeVector position = detector->GetGeneratorSolid()->GetPointOnSurface();
 
-    x = position.x();
-    y = position.y();
-    z = position.z();
+    // Rotate and translate since the solid has no sense of the physical volume rotation or translation
+    position = detector->GetGeneratorRotation() * position;
 
-    x = x + detector->GetGeneratorTranslation().x();
-    y = y + detector->GetGeneratorTranslation().y();
-    z = z + detector->GetGeneratorTranslation().z();
+    x = position.x() + detector->GetGeneratorTranslation().x();
+    y = position.y() + detector->GetGeneratorTranslation().y();
+    z = position.z() + detector->GetGeneratorTranslation().z();
 }
 
 void PrimaryGeneratorAction::GenPositionOnBoxVolume(double& x, double& y, double& z) {
