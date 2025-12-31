@@ -182,8 +182,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
             spatialGeneratorTypeEnum == TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::VOLUME) {
             restG4Metadata->fGeant4PrimaryGeneratorInfo.fSpatialGeneratorPosition = {
                 fGeneratorTranslation.x(), fGeneratorTranslation.y(), fGeneratorTranslation.z()};
-            restG4Metadata->fGeant4PrimaryGeneratorInfo.fSpatialGeneratorRotationAxis = {
-                axis.X(), axis.Y(), axis.Z()};
+            restG4Metadata->fGeant4PrimaryGeneratorInfo.fSpatialGeneratorRotationAxis = {axis.X(), axis.Y(),
+                                                                                         axis.Z()};
             restG4Metadata->fGeant4PrimaryGeneratorInfo.fSpatialGeneratorRotationValue = angle;
         }
 
@@ -327,7 +327,7 @@ void DetectorConstruction::ConstructSDandField() {
 }
 
 bool DetectorConstruction::IsPointInsideAnyDaughterVolume(const G4LogicalVolume* logVol,
-                                                            const G4ThreeVector& point) const {
+                                                          const G4ThreeVector& point) const {
     if (!logVol) {
         G4cout << "DetectorConstruction::IsPointInsideAnyDaughterVolume : logVol is nullptr" << G4endl;
         return false;
