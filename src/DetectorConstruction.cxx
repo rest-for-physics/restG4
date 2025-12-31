@@ -185,6 +185,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         }
 
         fGeneratorSolid = gdmlPhysicalVolume->GetLogicalVolume()->GetSolid();
+        fGeneratorLogicalVolume = gdmlPhysicalVolume->GetLogicalVolume();
 
         fBoundBoxXMax = -1.e30;
         fBoundBoxYMax = -1.e30;
@@ -320,6 +321,32 @@ void DetectorConstruction::ConstructSDandField() {
         auto region = new G4Region(name);
         logicalVolume->SetRegion(region);
     }
+}
+
+bool DetectorConstruction::IsPointInsideAnyDaughterVolume(const G4LogicalVolume* logVol,
+                                                            const G4ThreeVector& point) const {
+    if (!logVol) {
+        G4cout << "DetectorConstruction::IsPointInsideAnyDaughterVolume : logVol is nullptr" << G4endl;
+        return false;
+    }
+
+    for (size_t i = 0; i < logVol->GetNoDaughters(); ++i) {
+        G4VPhysicalVolume* daughter = logVol->GetDaughter(i);
+        G4LogicalVolume* daughterLogVol = daughter->GetLogicalVolume();
+        G4VSolid* daughterSolid = daughterLogVol->GetSolid();
+
+        // localPoint will be the point in the daughter volume reference system
+        // which is the one used by the solid to determine if the point is inside or not
+        G4ThreeVector localPoint = point - daughter->GetTranslation();
+        if (daughter->GetRotation()) {
+            localPoint = daughter->GetRotation()->inverse() * localPoint;
+        }
+
+        if (daughterSolid->Inside(localPoint) == kInside) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void TRestGeant4GeometryInfo::PopulateFromGeant4World(const G4VPhysicalVolume* world) {

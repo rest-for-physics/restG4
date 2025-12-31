@@ -17,6 +17,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
 
     G4GDMLParser* fGdmlParser;
     G4VSolid* fGeneratorSolid;
+    G4LogicalVolume* fGeneratorLogicalVolume;
     G4ThreeVector fGeneratorTranslation;
     G4RotationMatrix fGeneratorRotation;
 
@@ -24,7 +25,9 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
 
    public:
     G4VPhysicalVolume* GetPhysicalVolume(const G4String& physVolName) const;
+    bool IsPointInsideAnyDaughterVolume(const G4LogicalVolume* logVol, const G4ThreeVector& point) const;
     inline G4VSolid* GetGeneratorSolid() const { return fGeneratorSolid; }
+    inline G4LogicalVolume* GetGeneratorLogicalVolume() const { return fGeneratorLogicalVolume; }
     inline G4ThreeVector GetGeneratorTranslation() const { return fGeneratorTranslation; }
     inline G4RotationMatrix GetGeneratorRotation() const { return fGeneratorRotation; }
 

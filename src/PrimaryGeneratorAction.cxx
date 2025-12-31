@@ -751,7 +751,8 @@ void PrimaryGeneratorAction::GenPositionOnGDMLVolume(double& x, double& y, doubl
         x = xMin + (xMax - xMin) * G4UniformRand();
         y = yMin + (yMax - yMin) * G4UniformRand();
         z = zMin + (zMax - zMin) * G4UniformRand();
-    } while (detector->GetGeneratorSolid()->Inside(G4ThreeVector(x, y, z)) != kInside);
+    } while (detector->GetGeneratorSolid()->Inside(G4ThreeVector(x, y, z)) != kInside
+             || detector->IsPointInsideAnyDaughterVolume(detector->GetGeneratorLogicalVolume(), G4ThreeVector(x, y, z)));
 
     // Rotate and translate since the solid has no sense of the physical volume rotation or translation
     G4ThreeVector position = G4ThreeVector(x, y, z);
