@@ -182,6 +182,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
             spatialGeneratorTypeEnum == TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::VOLUME) {
             restG4Metadata->fGeant4PrimaryGeneratorInfo.fSpatialGeneratorPosition = {
                 fGeneratorTranslation.x(), fGeneratorTranslation.y(), fGeneratorTranslation.z()};
+            restG4Metadata->fGeant4PrimaryGeneratorInfo.fSpatialGeneratorRotationAxis = {
+                axis.X(), axis.Y(), axis.Z()};
+            restG4Metadata->fGeant4PrimaryGeneratorInfo.fSpatialGeneratorRotationValue = angle;
         }
 
         fGeneratorSolid = gdmlPhysicalVolume->GetLogicalVolume()->GetSolid();
