@@ -443,7 +443,7 @@ G4ParticleDefinition* PrimaryGeneratorAction::SetParticleDefinition(Int_t partic
 
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
     fParticle = particleTable->FindParticle(particleName);
-    if (!fParticle) {
+    if (!fParticle || excitedEnergy > 0 || charge != 0) {
         fParticle = particleTable->FindParticle(particleName);
 
         // There might be a better way to do this
