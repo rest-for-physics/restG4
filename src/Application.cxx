@@ -526,6 +526,9 @@ void Application::Run(const CommandLineOptions::Options& options) {
     const auto nEventsAtEnd =
         metadata->GetNumberOfEvents();  // This could be different from original if exit early
 
+    // TODO: uncomment this once the field is added to TRestGeant4Metadata
+    // metadata->SetSimulationTime(fSimulationManager.GetElapsedTime());
+
     // Do some checks
     ValidateOutputFile(filename);
 
