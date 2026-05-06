@@ -157,7 +157,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
         }
         if (gdmlPhysicalVolume == nullptr) {
             // perhaps the user selected a logical volume instead
-            auto physicalVolumes = geometryInfo.GetAllPhysicalVolumesFromLogical(generatorGeometryName.Data());
+            auto physicalVolumes =
+                geometryInfo.GetAllPhysicalVolumesFromLogical(generatorGeometryName.Data());
             if (physicalVolumes.size() == 1) {
                 gdmlPhysicalVolume = GetPhysicalVolume(physicalVolumes[0].Data());
                 cout << "Generator volume '" << primaryGeneratorInfo.GetSpatialGeneratorFrom()
@@ -174,9 +175,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
             exit(1);
         }
 
-        TVector3 genTranslation = geometryInfo.GetPosition(generatorGeometryName.Data());  // in world coordinates
+        TVector3 genTranslation =
+            geometryInfo.GetPosition(generatorGeometryName.Data());  // in world coordinates
         fGeneratorTranslation = {genTranslation.x(), genTranslation.y(), genTranslation.z()};
-        TRotation genRotation = geometryInfo.GetRotation(generatorGeometryName.Data());  // in world coordinates
+        TRotation genRotation =
+            geometryInfo.GetRotation(generatorGeometryName.Data());  // in world coordinates
         double angle;
         TVector3 axis;
         genRotation.AngleAxis(angle, axis);
