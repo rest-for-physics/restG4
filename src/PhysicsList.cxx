@@ -66,8 +66,8 @@ void ApplyParticleHPBooleanOption(const TRestGeant4PhysicsLists* physicsLists, c
     }
 
     const G4bool boolValue = StringToBool(value.Data());
-    G4cout << "Setting ParticleHP option '" << geant4Option << "' to '"
-           << (boolValue ? "true" : "false") << "'" << G4endl;
+    G4cout << "Setting ParticleHP option '" << geant4Option << "' to '" << (boolValue ? "true" : "false")
+           << "'" << G4endl;
     auto* manager = G4ParticleHPManager::GetInstance();
     (manager->*setter)(boolValue);
 }
@@ -196,23 +196,19 @@ void PhysicsList::InitializePhysicsLists() {
 void PhysicsList::ApplyParticleHPOptions() const {
     // ParticleHP options are global Geant4 settings. They must be applied before the hadronic
     // constructors build the neutron processes.
-    ApplyParticleHPBooleanOption(fRestPhysicsLists, "usePhotoEvaporation",
-                                 "UseOnlyPhotoEvaporation",
+    ApplyParticleHPBooleanOption(fRestPhysicsLists, "usePhotoEvaporation", "UseOnlyPhotoEvaporation",
                                  &G4ParticleHPManager::SetUseOnlyPhotoEvaporation);
-    ApplyParticleHPBooleanOption(fRestPhysicsLists, "skipMissingIsotopes",
-                                 "SkipMissingIsotopes", &G4ParticleHPManager::SetSkipMissingIsotopes);
-    ApplyParticleHPBooleanOption(fRestPhysicsLists, "neglectDopplerBroadening",
-                                 "NeglectDoppler", &G4ParticleHPManager::SetNeglectDoppler);
-    ApplyParticleHPBooleanOption(fRestPhysicsLists, "doNotAdjustFinalState",
-                                 "DoNotAdjustFinalState",
+    ApplyParticleHPBooleanOption(fRestPhysicsLists, "skipMissingIsotopes", "SkipMissingIsotopes",
+                                 &G4ParticleHPManager::SetSkipMissingIsotopes);
+    ApplyParticleHPBooleanOption(fRestPhysicsLists, "neglectDopplerBroadening", "NeglectDoppler",
+                                 &G4ParticleHPManager::SetNeglectDoppler);
+    ApplyParticleHPBooleanOption(fRestPhysicsLists, "doNotAdjustFinalState", "DoNotAdjustFinalState",
                                  &G4ParticleHPManager::SetDoNotAdjustFinalState);
-    ApplyParticleHPBooleanOption(fRestPhysicsLists, "produceFissionFragments",
-                                 "ProduceFissionFragments",
+    ApplyParticleHPBooleanOption(fRestPhysicsLists, "produceFissionFragments", "ProduceFissionFragments",
                                  &G4ParticleHPManager::SetProduceFissionFragments);
-    ApplyParticleHPBooleanOption(fRestPhysicsLists, "useNRESP71Model",
-                                 "UseNRESP71Model", &G4ParticleHPManager::SetUseNRESP71Model);
-    ApplyParticleHPBooleanOption(fRestPhysicsLists, "useWendtFissionModel",
-                                 "UseWendtFissionModel",
+    ApplyParticleHPBooleanOption(fRestPhysicsLists, "useNRESP71Model", "UseNRESP71Model",
+                                 &G4ParticleHPManager::SetUseNRESP71Model);
+    ApplyParticleHPBooleanOption(fRestPhysicsLists, "useWendtFissionModel", "UseWendtFissionModel",
                                  &G4ParticleHPManager::SetUseWendtFissionModel);
 
     const TString verbose = GetParticleHPOptionValue(fRestPhysicsLists, "verbose");
