@@ -19,6 +19,7 @@ class PhysicsList : public G4VModularPhysicsList {
    protected:
     // Construct particle and physics
     virtual void InitializePhysicsLists();
+    void ApplyParticleHPOptions() const;
 
     void ConstructParticle() override;
     void ConstructProcess() override;

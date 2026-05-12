@@ -21,6 +21,7 @@
 #include <G4IonTable.hh>
 #include <G4LossTableManager.hh>
 #include <G4NeutronTrackingCut.hh>
+#include <G4ParticleHPManager.hh>
 #include <G4ParticleTable.hh>
 #include <G4ParticleTypes.hh>
 #include <G4PhotonEvaporation.hh>
@@ -41,6 +42,36 @@
 #include "Particles.h"
 
 using namespace std;
+
+namespace {
+TString GetParticleHPOptionValue(const TRestGeant4PhysicsLists* physicsLists, const TString& option,
+                                 const TString& defaultValue = "NotDefined") {
+    const vector<TString> hpPhysicsLists = {"G4HadronPhysicsQGSP_BIC_HP", "G4HadronElasticPhysicsHP"};
+    for (const auto& physicsListName : hpPhysicsLists) {
+        const TString value = physicsLists->GetPhysicsListOptionValue(physicsListName, option, "NotDefined");
+        if (value != "NotDefined") {
+            return value;
+        }
+    }
+    return defaultValue;
+}
+
+using ParticleHPBoolSetter = void (G4ParticleHPManager::*)(G4bool);
+
+void ApplyParticleHPBooleanOption(const TRestGeant4PhysicsLists* physicsLists, const TString& option,
+                                  const string& geant4Option, ParticleHPBoolSetter setter) {
+    const TString value = GetParticleHPOptionValue(physicsLists, option);
+    if (value == "NotDefined") {
+        return;
+    }
+
+    const G4bool boolValue = StringToBool(value.Data());
+    G4cout << "Setting ParticleHP option '" << geant4Option << "' to '"
+           << (boolValue ? "true" : "false") << "'" << G4endl;
+    auto* manager = G4ParticleHPManager::GetInstance();
+    (manager->*setter)(boolValue);
+}
+}  // namespace
 
 PhysicsList::PhysicsList(SimulationManager* simulationManager, TRestGeant4PhysicsLists* physicsLists)
     : G4VModularPhysicsList(), fSimulationManager(simulationManager) {
@@ -162,6 +193,35 @@ void PhysicsList::InitializePhysicsLists() {
     G4cout << "Number of hadronic physics lists added " << fHadronPhys.size() << G4endl;
 }
 
+void PhysicsList::ApplyParticleHPOptions() const {
+    // ParticleHP options are global Geant4 settings. They must be applied before the hadronic
+    // constructors build the neutron processes.
+    ApplyParticleHPBooleanOption(fRestPhysicsLists, "usePhotoEvaporation",
+                                 "UseOnlyPhotoEvaporation",
+                                 &G4ParticleHPManager::SetUseOnlyPhotoEvaporation);
+    ApplyParticleHPBooleanOption(fRestPhysicsLists, "skipMissingIsotopes",
+                                 "SkipMissingIsotopes", &G4ParticleHPManager::SetSkipMissingIsotopes);
+    ApplyParticleHPBooleanOption(fRestPhysicsLists, "neglectDopplerBroadening",
+                                 "NeglectDoppler", &G4ParticleHPManager::SetNeglectDoppler);
+    ApplyParticleHPBooleanOption(fRestPhysicsLists, "doNotAdjustFinalState",
+                                 "DoNotAdjustFinalState",
+                                 &G4ParticleHPManager::SetDoNotAdjustFinalState);
+    ApplyParticleHPBooleanOption(fRestPhysicsLists, "produceFissionFragments",
+                                 "ProduceFissionFragments",
+                                 &G4ParticleHPManager::SetProduceFissionFragments);
+    ApplyParticleHPBooleanOption(fRestPhysicsLists, "useNRESP71Model",
+                                 "UseNRESP71Model", &G4ParticleHPManager::SetUseNRESP71Model);
+    ApplyParticleHPBooleanOption(fRestPhysicsLists, "useWendtFissionModel",
+                                 "UseWendtFissionModel",
+                                 &G4ParticleHPManager::SetUseWendtFissionModel);
+
+    const TString verbose = GetParticleHPOptionValue(fRestPhysicsLists, "verbose");
+    if (verbose != "NotDefined") {
+        G4cout << "Setting ParticleHP option 'VerboseLevel' to '" << verbose << "'" << G4endl;
+        G4ParticleHPManager::GetInstance()->SetVerboseLevel(verbose.Atoi());
+    }
+}
+
 void PhysicsList::ConstructParticle() {
     // pseudo-particles
     G4Geantino::GeantinoDefinition();
@@ -228,6 +288,8 @@ void PhysicsList::ConstructProcess() {
     if (fRadDecPhysicsList) {
         fRadDecPhysicsList->ConstructProcess();
     }
+
+    ApplyParticleHPOptions();
 
     // Hadronic physics lists
     for (auto& hadronicPhysicsList : fHadronPhys) {
