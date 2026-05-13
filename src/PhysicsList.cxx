@@ -38,6 +38,7 @@
 #include <G4UImanager.hh>
 #include <G4UnitsTable.hh>
 #include <G4UniversalFluctuation.hh>
+#include <G4Version.hh>
 
 #include "Particles.h"
 
@@ -208,8 +209,15 @@ void PhysicsList::ApplyParticleHPOptions() const {
                                  &G4ParticleHPManager::SetProduceFissionFragments);
     ApplyParticleHPBooleanOption(fRestPhysicsLists, "useNRESP71Model", "UseNRESP71Model",
                                  &G4ParticleHPManager::SetUseNRESP71Model);
+#if G4VERSION_NUMBER >= 1100
     ApplyParticleHPBooleanOption(fRestPhysicsLists, "useWendtFissionModel", "UseWendtFissionModel",
                                  &G4ParticleHPManager::SetUseWendtFissionModel);
+#else
+    if (GetParticleHPOptionValue(fRestPhysicsLists, "useWendtFissionModel") != "NotDefined") {
+        G4cout << "Ignoring ParticleHP option 'UseWendtFissionModel': "
+               << "not available in this Geant4 version" << G4endl;
+    }
+#endif
 
     const TString verbose = GetParticleHPOptionValue(fRestPhysicsLists, "verbose");
     if (verbose != "NotDefined") {
