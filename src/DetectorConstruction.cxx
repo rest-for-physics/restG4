@@ -149,18 +149,24 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
 
     if (spatialGeneratorTypeEnum == TRestGeant4PrimaryGeneratorTypes::SpatialGeneratorTypes::VOLUME &&
         primaryGeneratorInfo.GetSpatialGeneratorFrom() != "Not defined") {
-        G4VPhysicalVolume* gdmlPhysicalVolume =
-            GetPhysicalVolume(primaryGeneratorInfo.GetSpatialGeneratorFrom().Data());
+        TString generatorGeometryName = primaryGeneratorInfo.GetSpatialGeneratorFrom();
+        G4VPhysicalVolume* gdmlPhysicalVolume = GetPhysicalVolume(generatorGeometryName.Data());
+        if (gdmlPhysicalVolume != nullptr && !geometryInfo.IsValidPhysicalVolume(generatorGeometryName)) {
+            generatorGeometryName =
+                geometryInfo.GetAlternativeNameFromGeant4PhysicalName(gdmlPhysicalVolume->GetName());
+        }
         if (gdmlPhysicalVolume == nullptr) {
             // perhaps the user selected a logical volume instead
-            auto physicalVolumes = geometryInfo.GetAllPhysicalVolumesFromLogical(
-                primaryGeneratorInfo.GetSpatialGeneratorFrom().Data());
+            auto physicalVolumes =
+                geometryInfo.GetAllPhysicalVolumesFromLogical(generatorGeometryName.Data());
             if (physicalVolumes.size() == 1) {
                 gdmlPhysicalVolume = GetPhysicalVolume(physicalVolumes[0].Data());
                 cout << "Generator volume '" << primaryGeneratorInfo.GetSpatialGeneratorFrom()
                      << "' was not found in the geometry. Using the physical volume '" << physicalVolumes[0]
                      << "' instead, which was obtained from logical volume '"
                      << primaryGeneratorInfo.GetSpatialGeneratorFrom() << "'" << endl;
+                generatorGeometryName =
+                    geometryInfo.GetAlternativeNameFromGeant4PhysicalName(physicalVolumes[0]);
             }
         }
         if (gdmlPhysicalVolume == nullptr) {
@@ -169,11 +175,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
             exit(1);
         }
 
-        TVector3 genTranslation = geometryInfo.GetPosition(
-            primaryGeneratorInfo.GetSpatialGeneratorFrom().Data());  // in world coordinates
+        TVector3 genTranslation =
+            geometryInfo.GetPosition(generatorGeometryName.Data());  // in world coordinates
         fGeneratorTranslation = {genTranslation.x(), genTranslation.y(), genTranslation.z()};
-        TRotation genRotation = geometryInfo.GetRotation(
-            primaryGeneratorInfo.GetSpatialGeneratorFrom().Data());  // in world coordinates
+        TRotation genRotation =
+            geometryInfo.GetRotation(generatorGeometryName.Data());  // in world coordinates
         double angle;
         TVector3 axis;
         genRotation.AngleAxis(angle, axis);
