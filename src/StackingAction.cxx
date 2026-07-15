@@ -18,6 +18,7 @@ StackingAction::StackingAction(SimulationManager* simulationManager) : fSimulati
     fMaxAllowedLifetimeWithUnit = G4BestUnit(fMaxAllowedLifetime, "Time");
 
     fNewSubEventFromParentID = std::set<G4int>();
+    fKillDecaysFromParentID = std::set<G4int>();
     fParticlesToIgnore = {
         G4NeutrinoE::Definition(),      G4AntiNeutrinoE::Definition(), G4NeutrinoMu::Definition(),
         G4AntiNeutrinoMu::Definition(), G4NeutrinoTau::Definition(),   G4AntiNeutrinoTau::Definition(),
@@ -45,12 +46,17 @@ G4ClassificationOfNewTrack StackingAction::ClassifyNewTrack(const G4Track* track
         regex pattern("\\[.*\\]");
         std::string particleNameStripped = regex_replace(particleName, pattern, "");
         if (fSimulationManager->GetRestMetadata()->IsIsotopeFullChainStop(particleNameStripped)) {
-            return fKill;
+            fKillDecaysFromParentID.insert(track->GetTrackID());
         }
     }
 
     if (track->GetCreatorProcess()->GetProcessType() != G4ProcessType::fDecay) {
         return fUrgent;
+    }
+
+    if (track->GetCreatorProcess()->GetProcessType() == G4ProcessType::fDecay &&
+        fKillDecaysFromParentID.find(track->GetParentID()) != fKillDecaysFromParentID.end()) {
+        return fKill;
     }
 
     if (particle->GetParticleType() == "nucleus" && !particle->GetPDGStable()) {
@@ -82,6 +88,9 @@ void StackingAction::NewStage() {
     outputManager->fEvent->SetSubID(subEventID + 1);
 }
 
-void StackingAction::PrepareNewEvent() { fNewSubEventFromParentID.clear(); }
+void StackingAction::PrepareNewEvent() {
+    fNewSubEventFromParentID.clear();
+    fKillDecaysFromParentID.clear();
+}
 
 StackingAction::~StackingAction() = default;

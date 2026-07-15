@@ -30,6 +30,7 @@ class StackingAction : public G4UserStackingAction {
     SimulationManager* fSimulationManager;
     double fMaxAllowedLifetime;
     std::set<G4int> fNewSubEventFromParentID;
+    std::set<G4int> fKillDecaysFromParentID;
     G4String fMaxAllowedLifetimeWithUnit;
 
     std::set<const G4ParticleDefinition*> fParticlesToIgnore;
