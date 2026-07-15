@@ -82,8 +82,6 @@ void StackingAction::NewStage() {
     outputManager->fEvent->SetSubID(subEventID + 1);
 }
 
-void StackingAction::PrepareNewEvent() {
-    fNewSubEventFromParentID.clear();
-}
+void StackingAction::PrepareNewEvent() { fNewSubEventFromParentID.clear(); }
 
 StackingAction::~StackingAction() = default;
