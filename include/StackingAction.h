@@ -19,6 +19,7 @@ class StackingAction : public G4UserStackingAction {
 
     G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track*);
     void NewStage();
+    void PrepareNewEvent();
 
     inline std::set<const G4ParticleDefinition*> GetParticlesToIgnore() const { return fParticlesToIgnore; }
     inline void AddParticleToIgnore(const G4ParticleDefinition* particle) {
@@ -28,6 +29,7 @@ class StackingAction : public G4UserStackingAction {
    private:
     SimulationManager* fSimulationManager;
     double fMaxAllowedLifetime;
+    std::set<G4int> fNewSubEventFromParentID;
     G4String fMaxAllowedLifetimeWithUnit;
 
     std::set<const G4ParticleDefinition*> fParticlesToIgnore;
