@@ -17,6 +17,8 @@ StackingAction::StackingAction(SimulationManager* simulationManager) : fSimulati
 
     fMaxAllowedLifetimeWithUnit = G4BestUnit(fMaxAllowedLifetime, "Time");
 
+    fNewSubEventFromParentID = std::set<G4int>();
+    fKillDecaysFromParentID = std::set<G4int>();
     fParticlesToIgnore = {
         G4NeutrinoE::Definition(),      G4AntiNeutrinoE::Definition(), G4NeutrinoMu::Definition(),
         G4AntiNeutrinoMu::Definition(), G4NeutrinoTau::Definition(),   G4AntiNeutrinoTau::Definition(),
@@ -44,7 +46,7 @@ G4ClassificationOfNewTrack StackingAction::ClassifyNewTrack(const G4Track* track
         regex pattern("\\[.*\\]");
         std::string particleNameStripped = regex_replace(particleName, pattern, "");
         if (fSimulationManager->GetRestMetadata()->IsIsotopeFullChainStop(particleNameStripped)) {
-            return fKill;
+            fKillDecaysFromParentID.insert(track->GetTrackID());
         }
     }
 
@@ -52,13 +54,22 @@ G4ClassificationOfNewTrack StackingAction::ClassifyNewTrack(const G4Track* track
         return fUrgent;
     }
 
+    if (track->GetCreatorProcess()->GetProcessType() == G4ProcessType::fDecay &&
+        fKillDecaysFromParentID.find(track->GetParentID()) != fKillDecaysFromParentID.end()) {
+        return fKill;
+    }
+
     if (particle->GetParticleType() == "nucleus" && !particle->GetPDGStable()) {
         // unstable nucleus
         if (particle->GetPDGLifeTime() > fMaxAllowedLifetime) {
             G4String energy = G4BestUnit(track->GetKineticEnergy(), "Energy");
             G4String lifeTime = G4BestUnit(particle->GetPDGLifeTime(), "Time");
-            return decayClassification;
+            fNewSubEventFromParentID.insert(track->GetTrackID());
         }
+    }
+
+    if (fNewSubEventFromParentID.find(track->GetParentID()) != fNewSubEventFromParentID.end()) {
+        return decayClassification;
     }
 
     return fUrgent;
@@ -75,6 +86,11 @@ void StackingAction::NewStage() {
     const Int_t subEventID = outputManager->fEvent->GetSubID();
     outputManager->FinishAndSubmitEvent();
     outputManager->fEvent->SetSubID(subEventID + 1);
+}
+
+void StackingAction::PrepareNewEvent() {
+    fNewSubEventFromParentID.clear();
+    fKillDecaysFromParentID.clear();
 }
 
 StackingAction::~StackingAction() = default;
