@@ -544,3 +544,28 @@ jobs:
           export REST_ISOTOPE=Be7
           restG4 singleDecay.rml
           restRoot -b -q Validate.C'("Run00002_Be7_SingleChainDecay.root", 1)'
+
+  # Build restG4 with `master` version of framework. This job can fail without failing the workflow
+  framework-install-master:
+    name: Install framework with restG4 on `master` version of framework just with Geant4lib (on the ref found on framework)
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/lobis/root-geant4-garfield:rest-for-physics-dev
+    steps:
+      - name: Checkout framework
+        run: |
+          git clone https://github.com/rest-for-physics/framework.git ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
+          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
+          git log -1 --stat # should always be on master branch
+      - uses: actions/checkout@v3
+      - name: Setup, build and install
+        continue-on-error: true
+        run: |
+          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
+          git submodule init source/libraries/geant4 && git submodule update source/libraries/geant4
+          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
+          rm -rf source/packages/restG4/ && cp -r $GITHUB_WORKSPACE source/packages/restG4
+          cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}
+          mkdir -p ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build && cd ${{ env.REST_FRAMEWORK_SOURCE_DIR }}/build
+          cmake ../ -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DREST_WELCOME=ON -DREST_G4=ON -DCMAKE_INSTALL_PREFIX=${{ env.REST_PATH }}
+          make -j4 install
