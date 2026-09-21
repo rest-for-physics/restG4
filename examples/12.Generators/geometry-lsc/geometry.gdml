@@ -1,0 +1,26 @@
+<solids>
+    <box name="WorldSolid" x="world_size" y="world_size" z="world_size" lunit="mm"/>
+    <!-- Active volume: 25 x 25 x 16 cm, with the 25 cm side along the vertical (Y) axis -->
+    <box name="activeSolid" x="250" y="250" z="160" lunit="mm"/>
+</solids>
+
+<structure>
+
+<volume name="gasVolume">
+    <materialref ref="Ar_ISO"/>
+    <solidref ref="activeSolid"/>
+</volume>
+
+<!-- {{{ Physical volume definition (volume and position assignment) -->
+<volume name="World">
+    <materialref ref="Vacuum"/>
+    <solidref ref="WorldSolid"/>
+
+    <physvol name="gas">
+        <volumeref ref="gasVolume"/>
+        <position name="gasPos" unit="mm" x="0" y="0" z="0"/>
+    </physvol>
+</volume>
+<!-- }}} -->
+
+</structure>
