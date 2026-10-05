@@ -14,6 +14,6 @@ class Particles : public G4VPhysicsConstructor {
     virtual void ConstructParticle();
 
     // This method is dummy
-    virtual void ConstructProcess(){};
+    virtual void ConstructProcess() {};
 };
 #endif
