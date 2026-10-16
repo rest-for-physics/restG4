@@ -4,6 +4,7 @@
 #include <G4Nucleus.hh>
 #include <G4Threading.hh>
 #include <Randomize.hh>
+#include <utility>
 
 #include "SimulationManager.h"
 #include "SteppingAction.h"
@@ -171,11 +172,8 @@ Int_t TRestGeant4PhysicsInfo::GetProcessIDFromGeant4Process(const G4VProcess* pr
     return process->GetProcessType() * 1000 + process->GetProcessSubType();
 }
 
-void TRestGeant4Hits::InsertStep(const G4Step* step) {
-    const G4Track* track = step->GetTrack();
-
-    TRestGeant4Metadata* metadata = GetGeant4Metadata();
-
+const OutputManager::StepVolumeInfo& OutputManager::GetStepVolumeInfo(const G4Step* step) {
+    auto* metadata = GetRestMetadata();
     const auto& geometryInfo = metadata->GetGeant4GeometryInfo();
 
     // Get the full name (path) of the physical volume which uniquely identifies it
@@ -195,15 +193,35 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
             geant4path += pv->GetName();
         }
     }
-    // convert to the names used in gdml (due to assemblies)
-    const auto volumeName = geometryInfo.GetAlternativePathFromGeant4Path(geant4path);
+    auto entry = fStepVolumeCache.find(geant4path);
+    if (entry == fStepVolumeCache.end()) {
+        StepVolumeInfo info;
+        info.name = geometryInfo.GetAlternativePathFromGeant4Path(geant4path);
+        info.active = metadata->IsActiveVolume(info.name);
+        entry = fStepVolumeCache.emplace(geant4path, std::move(info)).first;
+    }
+    auto& info = entry->second;
+    if ((info.active || step->GetTrack()->GetCurrentStepNumber() == 0) && !info.storageResolved) {
+        info.kill = metadata->IsKillVolume(info.name);
+        info.id = geometryInfo.GetIDFromVolume(info.name);
+        info.storageResolved = true;
+    }
+    return info;
+}
 
-    if (!metadata->IsActiveVolume(volumeName) && step->GetTrack()->GetCurrentStepNumber() != 0) {
+void TRestGeant4Hits::InsertStep(const G4Step* step) {
+    const G4Track* track = step->GetTrack();
+
+    auto* outputManager = SimulationManager::GetOutputManager();
+    auto* metadata = outputManager->GetRestMetadata();
+    const auto& volume = outputManager->GetStepVolumeInfo(step);
+
+    if (!volume.active && step->GetTrack()->GetCurrentStepNumber() != 0) {
         // we always store the first step
         return;
     }
 
-    const bool kill = metadata->IsKillVolume(volumeName);
+    const bool kill = volume.kill;
 
     const auto& particle = step->GetTrack()->GetDefinition();
     const auto& particleID = particle->GetPDGEncoding();
@@ -235,9 +253,6 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
 
     metadata->fGeant4PhysicsInfo.InsertProcessName(processID, processName, processTypeName);
 
-    auto sensitiveVolumeName =
-        geometryInfo.GetAlternativeNameFromGeant4PhysicalName(metadata->GetSensitiveVolume());
-
     G4Track* aTrack = step->GetTrack();
 
     Double_t x = aTrack->GetPosition().x() / CLHEP::mm;
@@ -251,7 +266,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
     AddHit(hitPosition, energy, hitGlobalTime);  // this increases fNHits
 
     fProcessID.emplace_back(processID);
-    fVolumeID.emplace_back(geometryInfo.GetIDFromVolume(volumeName));
+    fVolumeID.emplace_back(volume.id);
     fKineticEnergy.emplace_back(track->GetKineticEnergy() / CLHEP::keV);
     fMomentumDirection.emplace_back(momentum.x(), momentum.y(), momentum.z());
 
@@ -278,8 +293,7 @@ void TRestGeant4Hits::InsertStep(const G4Step* step) {
         fHadronicTargetIsotopeA.emplace_back(atomicMassNumber);
     }
 
-    SimulationManager::GetOutputManager()->AddEnergyToVolumeForParticleForProcess(energy, volumeName,
-                                                                                  particleName, processName);
+    outputManager->AddEnergyToVolumeForParticleForProcess(energy, volume.name, particleName, processName);
 }
 
 void OutputManager::RemoveUnwantedTracks() {
