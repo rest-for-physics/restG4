@@ -20,6 +20,10 @@
 class G4Event;
 class SimulationManager;
 
+/// Sample a uniform perpendicular disk and project it onto the upstream sphere.
+/// The incoming direction must be normalized. Consumes two Geant4 uniform draws.
+G4ThreeVector ComputeCosmicPosition(const G4ThreeVector& direction, double radius);
+
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
    public:
     PrimaryGeneratorAction(SimulationManager*);
