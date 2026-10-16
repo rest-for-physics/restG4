@@ -18,8 +18,6 @@ G4bool SensitiveDetector::ProcessHits(G4Step* step, G4TouchableHistory*) {
     // return value will always be ignored, its present for backwards compatibility (I guess)
     TRestGeant4Metadata* restG4Metadata = fSimulationManager->GetRestMetadata();
     const auto& geometryInfo = restG4Metadata->GetGeant4GeometryInfo();
-    const auto volumeName = geometryInfo.GetAlternativeNameFromGeant4PhysicalName(
-        step->GetPreStepPoint()->GetPhysicalVolume()->GetName());
 
     /* Sensitive detector are assigned to logical volumes, but several physical volumes
     can share the same logical volume. Now we get the physical volume where the pre-step

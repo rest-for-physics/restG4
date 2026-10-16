@@ -317,8 +317,10 @@ bool OutputManager::IsValidEvent() const {
 
 void OutputManager::FinishAndSubmitEvent() {
     if (IsValidEvent()) {
+        const auto energyInVolume = fEvent->GetEnergyInVolumeMap();
         for (int i = 0; i < fEvent->GetNumberOfActiveVolumes(); i++) {
-            fEvent->SetEnergyDepositedInVolume(i, fEvent->GetEnergyInVolume(fEvent->fVolumeStoredNames[i]));
+            const auto energy = energyInVolume.find(fEvent->fVolumeStoredNames[i]);
+            fEvent->SetEnergyDepositedInVolume(i, energy == energyInVolume.end() ? 0 : energy->second);
         }
         if (fSimulationManager->GetRestMetadata()->GetRemoveUnwantedTracks()) {
             RemoveUnwantedTracks();

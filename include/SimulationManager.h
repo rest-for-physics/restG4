@@ -9,7 +9,9 @@
 #include <TRestRun.h>
 
 #include <queue>
+#include <string>
 #include <thread>
+#include <unordered_map>
 
 class OutputManager;
 
@@ -90,9 +92,20 @@ class SimulationManager {
 
 class OutputManager {
    public:
+    struct StepVolumeInfo {
+        TString name;
+        Int_t id = -1;
+        bool active = false;
+        bool kill = false;
+        bool storageResolved = false;
+    };
+
     OutputManager(const SimulationManager*);
     void UpdateEvent();
     void FinishAndSubmitEvent();
+
+    TRestGeant4Metadata* GetRestMetadata() const { return fSimulationManager->GetRestMetadata(); }
+    const StepVolumeInfo& GetStepVolumeInfo(const G4Step* step);
 
     bool IsEmptyEvent() const;
 
@@ -125,6 +138,10 @@ class OutputManager {
    private:
     std::unique_ptr<TRestGeant4Event> fEvent{};
     SimulationManager* fSimulationManager = nullptr;
+
+    // Full paths distinguish daughters shared by multiple placements. Geometry and
+    // storage selections remain fixed for this OutputManager's worker lifetime.
+    std::unordered_map<std::string, StepVolumeInfo> fStepVolumeCache;
 
     int fProcessedEventsCounter = 0;
 
