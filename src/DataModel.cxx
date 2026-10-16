@@ -153,7 +153,11 @@ void TRestGeant4Track::UpdateTrack(const G4Track* track) {
     const double precision = metadata->GetResetTimePrecision() / CLHEP::microsecond;
     const double globalTime = track->GetGlobalTime() / CLHEP::microsecond;
 
-    const auto processName = track->GetStep()->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+    const auto* process = track->GetStep()->GetPostStepPoint()->GetProcessDefinedStep();
+    // A track killed at its initial step has no terminating process or decay to reset.
+    if (process == nullptr) return;
+
+    const auto processName = process->GetProcessName();
     // ResetGloblal time in case of long Radioactive decay
     if (processName == "RadioactiveDecay")
         if (globalTime + precision == globalTime) {
