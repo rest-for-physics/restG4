@@ -290,7 +290,7 @@ void OutputManager::RemoveUnwantedTracks() {
         if (trackIDsToKeep.count(track.GetTrackID()) > 0) {
             continue;
         }
-        const auto hits = track.GetHits();
+        const auto& hits = track.GetHits();
         for (int i = 0; i < int(hits.GetNumberOfHits()); i++) {
             const auto energy = hits.GetEnergy(i);
             if (!fSimulationManager->GetRestMetadata()->GetRemoveUnwantedTracksKeepZeroEnergyTracks() &&
@@ -311,6 +311,7 @@ void OutputManager::RemoveUnwantedTracks() {
     // const size_t numberOfTracksBefore = fEvent->fTracks.size();
 
     vector<TRestGeant4Track> tracksAfterRemoval;
+    tracksAfterRemoval.reserve(trackIDsToKeep.size());
     for (const auto& track : fEvent->fTracks) {
         // we do this to preserve original order
         if (trackIDsToKeep.count(track.GetTrackID()) > 0) {
@@ -318,6 +319,7 @@ void OutputManager::RemoveUnwantedTracks() {
         }
     }
 
+    // Preserve the copy assignment: tracks contain transient references.
     fEvent->fTracks = tracksAfterRemoval;
 
     // Updated indices
