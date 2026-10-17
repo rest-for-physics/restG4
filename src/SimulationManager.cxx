@@ -129,10 +129,10 @@ void SimulationManager::EndOfRunAction() {
     }
 
     for (auto& outputManager : fOutputManagerContainer) {
-        fNumberOfProcessedEvents += outputManager->GetEventCounter();
+        fNumberOfProcessedEvents.fetch_add(outputManager->TakeEventCounter(), std::memory_order_relaxed);
         delete outputManager;
     }
-    GetRestMetadata()->SetNumberOfEvents(fNumberOfProcessedEvents);
+    GetRestMetadata()->SetNumberOfEvents(GetNumberOfProcessedEvents());
 
     fOutputManagerContainer.clear();
 }
@@ -241,9 +241,8 @@ void SimulationManager::SyncStatsFromChild(OutputManager* outputManager) {
         return;
     }
     lock_guard<mutex> guard(fSimulationManagerMutex);
-    fNumberOfProcessedEvents += outputManager->GetEventCounter();
-    outputManager->ResetEventCounter();
-    fNumberOfStoredEvents = fRestRun->GetEntries();
+    fNumberOfProcessedEvents.fetch_add(outputManager->TakeEventCounter(), std::memory_order_relaxed);
+    fNumberOfStoredEvents.store(fRestRun->GetEntries(), std::memory_order_relaxed);
 }
 
 // OutputManager
@@ -259,7 +258,7 @@ OutputManager::OutputManager(const SimulationManager* simulationManager)
 void OutputManager::BeginOfEventAction() {
     // This should only be executed once at BeginOfEventAction
     UpdateEvent();
-    fProcessedEventsCounter++;
+    fProcessedEventsCounter.Increment();
 
     if (fSimulationManager->GetAbortFlag()) {
         G4RunManager::GetRunManager()->AbortRun(true);

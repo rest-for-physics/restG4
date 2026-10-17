@@ -8,10 +8,13 @@
 #include <TRestGeant4Track.h>
 #include <TRestRun.h>
 
+#include <atomic>
 #include <queue>
 #include <string>
 #include <thread>
 #include <unordered_map>
+
+#include "ProcessedEventCounter.h"
 
 class OutputManager;
 
@@ -30,7 +33,7 @@ class SimulationManager {
     void WriteEvents();
 
     std::unique_ptr<std::thread> fPeriodicPrintThread = nullptr;
-    bool fPeriodicPrintThreadEndFlag = false;
+    std::atomic<bool> fPeriodicPrintThreadEndFlag{false};
 
    public:
     inline TRestRun* GetRestRun() const { return fRestRun; }
@@ -43,12 +46,14 @@ class SimulationManager {
         fRestGeant4PhysicsLists = physicsLists;
     }
 
-    bool GetPeriodicPrintThreadEndFlag() const { return fPeriodicPrintThreadEndFlag; }
+    bool GetPeriodicPrintThreadEndFlag() const {
+        return fPeriodicPrintThreadEndFlag.load(std::memory_order_relaxed);
+    }
 
     void BeginOfRunAction();
     void EndOfRunAction();
 
-    inline bool GetAbortFlag() const { return fAbortFlag; }
+    inline bool GetAbortFlag() const { return fAbortFlag.load(std::memory_order_relaxed); }
     void StopSimulation();
 
     inline double GetElapsedTime() const {
@@ -57,8 +62,10 @@ class SimulationManager {
 
     void SyncStatsFromChild(OutputManager* = fOutputManager);
 
-    int GetNumberOfProcessedEvents() const { return fNumberOfProcessedEvents; }
-    int GetNumberOfStoredEvents() const { return fNumberOfStoredEvents; }
+    int GetNumberOfProcessedEvents() const {
+        return fNumberOfProcessedEvents.load(std::memory_order_relaxed);
+    }
+    int GetNumberOfStoredEvents() const { return fNumberOfStoredEvents.load(std::memory_order_relaxed); }
 
     std::vector<OutputManager*> GetOutputManagerContainer() const { return fOutputManagerContainer; }
 
@@ -71,10 +78,10 @@ class SimulationManager {
     TRestGeant4PhysicsLists* fRestGeant4PhysicsLists = nullptr;
     TRestGeant4Metadata* fRestGeant4Metadata = nullptr;
 
-    int fNumberOfProcessedEvents = 0;
-    int fNumberOfStoredEvents = 0;
+    std::atomic<int> fNumberOfProcessedEvents{0};
+    std::atomic<int> fNumberOfStoredEvents{0};
 
-    bool fAbortFlag = false;
+    std::atomic<bool> fAbortFlag{false};
 
     std::vector<OutputManager*> fOutputManagerContainer = {};
     long fTimeStartUnix = 0;
@@ -122,8 +129,7 @@ class OutputManager {
     void AddEnergyToVolumeForParticleForProcess(Double_t energy, const char* volumeName,
                                                 const char* particleName, const char* processName);
 
-    inline int GetEventCounter() const { return fProcessedEventsCounter; }
-    inline void ResetEventCounter() { fProcessedEventsCounter = 0; }
+    inline int TakeEventCounter() { return fProcessedEventsCounter.Take(); }
 
     void BeginOfEventAction();
 
@@ -143,7 +149,7 @@ class OutputManager {
     // storage selections remain fixed for this OutputManager's worker lifetime.
     std::unordered_map<std::string, StepVolumeInfo> fStepVolumeCache;
 
-    int fProcessedEventsCounter = 0;
+    ProcessedEventCounter fProcessedEventsCounter;
 
     // start time
     double fEventTimeWallPrimaryGeneration = 0;
