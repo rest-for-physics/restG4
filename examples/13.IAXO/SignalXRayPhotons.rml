@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+
+<restG4>
+    <TRestRun title="Signal X-Ray Cuts">
+        <parameter name="experimentName" value="IAXO"/>
+    </TRestRun>
+
+    <TRestGeant4Metadata>
+        <parameter name="gdmlFile" value="geometry/setup.gdml"/>
+        <parameter name="seed" value="17022"/>
+        <parameter name="nRequestedEntries" value="10000000"/>
+
+        <generator type="point" position="(0,0,400)mm">
+            <source particle="gamma">
+                <energy type="flat" range="(0.1,10)keV"/>
+                <angular type="flux" direction="(0,0,-1)"/>
+            </source>
+        </generator>
+
+        <detector>
+            <parameter name="maxStepSize" value="1mm"/>
+            <parameter name="activateAllVolumes" value="true"/>
+
+            <volume name="gasVolume" sensitive="true" maxStepSize="0.05mm"/>
+        </detector>
+    </TRestGeant4Metadata>
+
+    <TRestGeant4PhysicsLists>
+        <parameter name="cutForGamma" value="1" units="mm"/>
+        <parameter name="cutForElectron" value="1" units="mm"/>
+        <parameter name="cutForPositron" value="1" units="mm"/>
+        <parameter name="cutForMuon" value="1" units="mm"/>
+        <parameter name="cutForNeutron" value="1" units="mm"/>
+
+        <parameter name="minEnergyRangeProductionCuts" value="1" units="keV"/>
+        <parameter name="maxEnergyRangeProductionCuts" value="1" units="GeV"/>
+
+        <physicsList name="G4EmLivermorePhysics">
+            <option name="pixe" value="false"/>
+        </physicsList>
+
+        <physicsList name="G4HadronElasticPhysicsHP"/>
+        <physicsList name="G4IonBinaryCascadePhysics"/>
+        <physicsList name="G4HadronPhysicsQGSP_BIC_HP"/>
+        <physicsList name="G4EmExtraPhysics"/>
+
+        <physicsList name="G4DecayPhysics"/>
+        <physicsList name="G4RadioactiveDecayPhysics"/>
+        <physicsList name="G4RadioactiveDecay">
+            <option name="ICM" value="true"/>
+            <option name="ARM" value="true"/>
+        </physicsList>
+
+        <physicsList name="G4NeutronTrackingCut"/>
+
+    </TRestGeant4PhysicsLists>
+</restG4>
