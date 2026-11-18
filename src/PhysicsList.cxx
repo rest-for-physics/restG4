@@ -32,6 +32,7 @@
 #include <G4Region.hh>
 #include <G4RegionStore.hh>
 #include <G4StepLimiter.hh>
+#include <G4StepLimiterPhysics.hh>
 #include <G4StoppingPhysics.hh>
 #include <G4SystemOfUnits.hh>
 #include <G4UAtomicDeexcitation.hh>
@@ -190,6 +191,10 @@ void PhysicsList::InitializePhysicsLists() {
     if (fRestPhysicsLists->FindPhysicsList("G4EmExtraPhysics") >= 0) {
         fHadronPhys.push_back(new G4EmExtraPhysics());
     }
+
+    fStepLimiterPhysics = new G4StepLimiterPhysics();
+    fStepLimiterPhysics->SetApplyToAll(true);  // by default only applies to charged particles
+    RegisterPhysics(fStepLimiterPhysics);
 
     G4cout << "Number of hadronic physics lists added " << fHadronPhys.size() << G4endl;
 }
