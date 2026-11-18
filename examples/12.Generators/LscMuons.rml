@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+
+<!--
+Cosmic muons surviving the 2450 m.w.e. rock overburden of the Canfranc Underground Laboratory (LSC).
+
+The slant thickness of rock grows as h0/cos(theta), so the intensity per unit solid angle falls much
+faster with the zenith angle than at sea level: I(theta) ~ cos^6(theta) instead of cos^2(theta). At 60 deg
+the muon crosses twice as much rock and the intensity drops by about two orders of magnitude. The
+azimuthal anisotropy of the Monte Tobazo affects the total rate by less than 5% and is neglected here.
+Reference: Trzaska et al., Eur. Phys. J. C 79, 721 (2019).
+
+The "LscMuons" formula is sin(theta)*cos^6(theta), where the sin(theta) is the jacobian of
+dOmega = sin(theta) dtheta dphi, needed because the formula is sampled on theta. It must be used with the
+"cosmic" generator, which samples the primary position on a disk perpendicular to the direction, so the
+projected sampling area does not depend on the direction. If instead the primaries are launched from a
+horizontal plane ("wall" or "circle" surface generator), use "LscMuonsWall" (sin*cos^7), which includes
+the extra cos(theta) projection of the plane.
+
+The energy is monoenergetic at 245 GeV, the mean muon energy at 2450 m.w.e. This is enough for direct
+muon tracks: the muon is a MIP crossing the detector in a straight line and dE/dx varies by less than 1%
+between 150 and 245 GeV on the Fermi plateau.
+WARNING: this approximation is ONLY valid for the direct muon tracks. For muon induced neutrons the
+spectrum does matter, since the neutron yield scales as E^0.75, and a monoenergetic approximation would
+underestimate the production by a factor of about 20. Use the full spectrum in that case.
+
+Only mu- is generated. The real charge ratio at the LSC is about 1.3, but the "cosmic" generator accepts a
+single source, and the track of a mu+ is identical to the one of a mu- for this purpose.
+
+The absolute rate is not given by Geant4. TRestGeant4Metadata::GetEquivalentSimulatedTime() knows about
+this generator and returns the live time as N_generated / (J * A_sampling), with
+J = Phi_horiz * (n + 2) / (n + 1) and Phi_horiz = 5e-7 cm-2 s-1 the reference flux through a horizontal
+plane. The rate of muons crossing the detector is then N_crossing / live time.
+-->
+
+<restG4>
+    <globals>
+        <parameter name="mainDataPath" value=""/>
+        <parameter name="verboseLevel" value="essential"/>
+    </globals>
+
+    <TRestRun name="LscMuons" title="LscMuons">
+        <parameter name="experimentName" value="LscMuons"/>
+        <parameter name="runType" value="simulation"/>
+        <parameter name="runNumber" value="1"/>
+        <parameter name="runTag" value="LscMuons"/>
+        <parameter name="outputFileName" value="LscMuons.root"/>
+        <parameter name="runDescription" value=""/>
+        <parameter name="user" value="${USER}"/>
+        <parameter name="overwrite" value="off"/>
+        <parameter name="readOnly" value="false"/>
+    </TRestRun>
+
+    <TRestGeant4Metadata name="lscMuons" title="LscMuons">
+        <parameter name="gdmlFile" value="geometry-lsc/setup.gdml"/>
+        <parameter name="seed" value="171981"/>
+        <parameter name="nEvents" value="20000"/>
+        <parameter name="saveAllEvents" value="true"/>
+        <parameter name="printProgress" value="true"/>
+        <generator type="cosmic">
+            <source particle="mu-">
+                <angular type="formula" name="LscMuons" direction="(0,-1,0)"/>
+                <energy type="mono" energy="245GeV"/>
+            </source>
+        </generator>
+
+        <detector>
+            <parameter name="energyRange" value="(0,10)" units="GeV"/>
+            <volume name="gas" sensitive="true" maxStepSize="1mm"/>
+        </detector>
+
+    </TRestGeant4Metadata>
+
+    <TRestGeant4PhysicsLists name="default" title="First physics list implementation">
+        <parameter name="cutForMuon" value="1" units="mm"/>
+        <physicsList name="G4EmStandardPhysics_option4"/>
+        <physicsList name="G4DecayPhysics"/>
+    </TRestGeant4PhysicsLists>
+</restG4>
