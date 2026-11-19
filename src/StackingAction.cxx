@@ -17,7 +17,6 @@ StackingAction::StackingAction(SimulationManager* simulationManager) : fSimulati
 
     fMaxAllowedLifetimeWithUnit = G4BestUnit(fMaxAllowedLifetime, "Time");
 
-    fNewSubEventFromParentID = std::set<G4int>();
     fKillDecaysFromParentID = std::set<G4int>();
     fParticlesToIgnore = {
         G4NeutrinoE::Definition(),      G4AntiNeutrinoE::Definition(), G4NeutrinoMu::Definition(),
@@ -62,13 +61,15 @@ G4ClassificationOfNewTrack StackingAction::ClassifyNewTrack(const G4Track* track
     if (particle->GetParticleType() == "nucleus" && !particle->GetPDGStable()) {
         // unstable nucleus
         if (particle->GetPDGLifeTime() > fMaxAllowedLifetime) {
-            G4String energy = G4BestUnit(track->GetKineticEnergy(), "Energy");
-            G4String lifeTime = G4BestUnit(particle->GetPDGLifeTime(), "Time");
-            fNewSubEventFromParentID.insert(track->GetTrackID());
+            // The recoil stays in this subevent, but its decay products start the next one.
+            // Keep the original primary information after the recoil track has been deleted.
+            fSubEventPrimaries.emplace(track->GetTrackID(),
+                                       SubEventPrimary{particle->GetParticleName(), track->GetKineticEnergy(),
+                                                       track->GetPosition(), track->GetMomentumDirection()});
         }
     }
 
-    if (fNewSubEventFromParentID.find(track->GetParentID()) != fNewSubEventFromParentID.end()) {
+    if (fSubEventPrimaries.find(track->GetParentID()) != fSubEventPrimaries.end()) {
         return decayClassification;
     }
 
@@ -89,7 +90,7 @@ void StackingAction::NewStage() {
 }
 
 void StackingAction::PrepareNewEvent() {
-    fNewSubEventFromParentID.clear();
+    fSubEventPrimaries.clear();
     fKillDecaysFromParentID.clear();
 }
 

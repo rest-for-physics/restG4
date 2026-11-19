@@ -1,11 +1,13 @@
 
 #include <G4Event.hh>
+#include <G4EventManager.hh>
 #include <G4HadronicProcess.hh>
 #include <G4Nucleus.hh>
 #include <G4Threading.hh>
 #include <Randomize.hh>
 
 #include "SimulationManager.h"
+#include "StackingAction.h"
 #include "SteppingAction.h"
 
 static double globalTimeOffset = 0;
@@ -59,13 +61,19 @@ bool TRestGeant4Event::InsertTrack(const G4Track* track) {
 
     if ((fTracks.empty() && IsSubEvent()) ||
         (fTracks.empty() && !IsSubEvent() && GetGeant4Metadata()->GetNumberOfSources() == 1)) {
-        // First track of sub-event (primary)
-        fSubEventPrimaryParticleName = track->GetParticleDefinition()->GetParticleName();
-        fSubEventPrimaryEnergy = track->GetKineticEnergy() / CLHEP::keV;
-        const auto& position = track->GetPosition();
+        // A delayed decay starts with a product; its parent recoil was stored in an earlier subevent.
+        const auto* stackingAction =
+            dynamic_cast<const StackingAction*>(G4EventManager::GetEventManager()->GetUserStackingAction());
+        const auto* primary = IsSubEvent() && stackingAction
+                                  ? stackingAction->GetSubEventPrimary(track->GetParentID())
+                                  : nullptr;
+        fSubEventPrimaryParticleName =
+            primary ? primary->name : track->GetParticleDefinition()->GetParticleName();
+        fSubEventPrimaryEnergy = (primary ? primary->energy : track->GetKineticEnergy()) / CLHEP::keV;
+        const auto& position = primary ? primary->position : track->GetPosition();
         fSubEventPrimaryPosition = {position.x() / CLHEP::mm, position.y() / CLHEP::mm,
                                     position.z() / CLHEP::mm};
-        const auto& momentum = track->GetMomentumDirection();
+        const auto& momentum = primary ? primary->direction : track->GetMomentumDirection();
         fSubEventPrimaryDirection = {momentum.x(), momentum.y(), momentum.z()};
     }
 
