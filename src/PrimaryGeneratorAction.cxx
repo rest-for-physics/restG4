@@ -15,6 +15,7 @@
 #include <G4SystemOfUnits.hh>
 #include <G4UnitsTable.hh>
 #include <Randomize.hh>
+#include <algorithm>
 
 #include "SimulationManager.h"
 
@@ -32,7 +33,8 @@ G4ThreeVector ComputeCosmicPosition(const G4ThreeVector& direction, double radiu
 
     // Get intersection with sphere
     const G4ThreeVector& toCenter = positionInDisk;
-    const double t = sqrt(radius * radius - toCenter.dot(toCenter));
+    // Rotation roundoff can put a point on the disk rim just outside the sphere.
+    const double t = sqrt(std::max(0.0, radius * radius - toCenter.dot(toCenter)));
     auto position = positionInDisk - t * direction;
 
     return position;
@@ -302,42 +304,13 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
         }
         const G4ThreeVector referenceDirection = {0, -1, 0};
         const auto& direction = particle.GetMomentumDirection();
-        // Compute zenith angle between Y axis and direction of the incoming particle.
-        const double zenith = TMath::ACos(
-            direction.Dot({referenceDirection.x(), referenceDirection.y(), referenceDirection.z()}));
-
-        // Uniform sampling in an ellipse
-        const TVector2 positionOnDisk = PointOnUnitDisk();  // unit disk
-        const TVector2 positionOnEllipse = {positionOnDisk.X() / TMath::Cos(zenith) + TMath::Tan(zenith),
-                                            positionOnDisk.Y()};
-
-        // Rotate the point generated in the ellipse according phi angle
-        double phi = TVector2(direction.X(), direction.Z()).Phi();
-        const TVector2 positionOnEllipseRotated = {
-            positionOnEllipse.X() * TMath::Cos(phi) - positionOnEllipse.Y() * TMath::Sin(phi),
-            positionOnEllipse.X() * TMath::Sin(phi) + positionOnEllipse.Y() * TMath::Cos(phi),
-        };
-        const TVector3 positionOrigin = {
-            -1 * positionOnEllipseRotated.X(),
-            1.0,
-            -1 * positionOnEllipseRotated.Y(),
-        };
-        // find intersection point with the unit sphere
-        auto [intersectionFlag, intersection] = IntersectionLineSphere(positionOrigin, direction);
-        if (!intersectionFlag) {
-            cerr << "PrimaryGeneratorAction - ERROR: cosmic generator failed to find intersection. This "
-                    "could happen very rarely. If it happens often, it's a bug."
-                 << endl;
-            intersection = positionOrigin;  // just use the origin position (this should almost never happen)
-        }
-
+        // Sample the perpendicular disk directly, avoiding the singular ellipse projection
+        // at grazing incidence. This preserves the projected area pi*R^2 and two position draws.
+        const G4ThreeVector incoming(direction.X(), direction.Y(), direction.Z());
+        G4ThreeVector particlePosition =
+            ComputeCosmicPosition(incoming.unit(), fCosmicCircumscribedSphereRadius);
         fParticleGun.SetParticleEnergy(particle.GetEnergy() * keV);
 
-        G4ThreeVector particlePosition = {
-            intersection.X() * fCosmicCircumscribedSphereRadius,
-            intersection.Y() * fCosmicCircumscribedSphereRadius,
-            intersection.Z() * fCosmicCircumscribedSphereRadius,
-        };
         G4ThreeVector sourceDirection = {source->GetDirection().X(), source->GetDirection().Y(),
                                          source->GetDirection().Z()};
         G4ThreeVector particleDirection = {direction.X(), direction.Y(), direction.Z()};

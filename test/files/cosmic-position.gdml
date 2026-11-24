@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<gdml>
+  <materials>
+    <element name="Hydrogen" formula="H" Z="1"><atom value="1.00794"/></element>
+    <material name="Vacuum" state="gas"><D value="1e-25" unit="g/cm3"/><fraction n="1" ref="Hydrogen"/></material>
+  </materials>
+  <solids>
+    <box name="WorldBox" x="120" y="160" z="100" lunit="mm"/>
+    <box name="TargetBox" x="1" y="1" z="1" lunit="mm"/>
+  </solids>
+  <structure>
+    <volume name="TargetLV"><materialref ref="Vacuum"/><solidref ref="TargetBox"/></volume>
+    <volume name="World">
+      <materialref ref="Vacuum"/><solidref ref="WorldBox"/>
+      <physvol name="Target"><volumeref ref="TargetLV"/></physvol>
+    </volume>
+  </structure>
+  <setup name="CosmicPositionTest" version="1.0"><world ref="World"/></setup>
+</gdml>

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<restG4>
+  <TRestGeant4Metadata>
+    <parameter name="gdmlFile" value="cosmic-position.gdml"/>
+    <parameter name="verboseLevel" value="silent"/>
+    <generator type="cosmic">
+      <source particle="geantino">
+        <energy type="mono" energy="1MeV"/>
+        <angular type="flux" direction="(0,-1,0)"/>
+      </source>
+    </generator>
+    <detector><volume name="Target" sensitive="true"/></detector>
+  </TRestGeant4Metadata>
+</restG4>
