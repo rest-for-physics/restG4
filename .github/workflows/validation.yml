@@ -379,6 +379,8 @@ jobs:
           restRoot -b -q ValidateCosineSquared.C'("CosineSquaredCircle.root")'
           restG4 CosmicGenerator.rml -o CosmicGenerator.root
           restRoot -b -q ValidateCosmicGenerator.C'("CosmicGenerator.root")'
+          restG4 LscMuons.rml -o LscMuons.root
+          restRoot -b -q ValidateLscMuons.C'("LscMuons.root")'
 
   restG4-examples-13:
     name: "Example 13: IAXO"
